@@ -41,6 +41,8 @@
   "files": [
     "dist",
     "README.md",
+    "API.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "sideEffects": false,
@@ -57,8 +59,9 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "examples": "npm run build && node examples/node.mjs tests/fixtures/jpeg-exif-little-endian.jpg && node examples/built-api-smoke.mjs && node examples/worker-smoke.mjs",
+    "package:smoke": "node scripts/package-smoke.mjs",
     "publint": "publint",
-    "check": "npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run publint && npm run examples",
+    "check": "npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run publint && npm run package:smoke && npm run examples",
     "prepublishOnly": "npm run check"
   },
   "devDependencies": {

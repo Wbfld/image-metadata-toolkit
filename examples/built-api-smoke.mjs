@@ -12,6 +12,8 @@ const webpFixture = await readFile(new URL("../tests/fixtures/webp-metadata.webp
 const iccFixture = await readFile(new URL("../tests/fixtures/jpeg-icc.jpg", import.meta.url));
 const heifFixture = await readFile(new URL("../tests/fixtures/heif-metadata.heic", import.meta.url));
 const avifFixture = await readFile(new URL("../tests/fixtures/avif-metadata.avif", import.meta.url));
+const realHeifFixture = await readFile(new URL("../tests/fixtures/sips-heic-exif-xmp.heic", import.meta.url));
+const realAvifFixture = await readFile(new URL("../tests/fixtures/libavif-paris-icc-exif-xmp.avif", import.meta.url));
 
 const esmResult = await parseEsm(new Blob([fixture], { type: "image/jpeg" }));
 const commonJsResult = await parseCommonJs(fixture);
@@ -23,6 +25,8 @@ const webpCommonJsResult = await parseCommonJs(webpFixture);
 const iccResult = await parseEsm(iccFixture);
 const heifResult = await parseEsm(heifFixture);
 const avifResult = await parseEsm(avifFixture);
+const realHeifResult = await parseEsm(realHeifFixture);
+const realAvifResult = await parseEsm(realAvifFixture);
 assert.equal(esmResult.format, "jpeg");
 assert.equal(commonJsResult.format, "jpeg");
 assert.deepEqual(esmResult.dimensions, { width: 2, height: 2 });
@@ -40,5 +44,7 @@ assert.equal(iccResult.icc?.complete, true);
 assert.equal(iccResult.fields.some(({ name }) => name === "ProfileSize"), true);
 assert.equal(heifResult.format, "heif");
 assert.equal(avifResult.format, "avif");
+assert.equal(realHeifResult.fields.some(({ name }) => name === "Make"), true);
+assert.equal(realAvifResult.icc?.complete, true);
 
 console.log("ESM, CommonJS, Blob, and Uint8Array smoke checks passed.");

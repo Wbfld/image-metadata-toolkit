@@ -1,0 +1,37 @@
+# Fixture provenance
+
+Most fixtures in this directory are generated from the repository's small,
+checked-in source images by the scripts in `scripts/`. They are deterministic
+structural fixtures designed to exercise individual parser and safety paths;
+they do not contain production photographs.
+
+`libavif-paris-icc-exif-xmp.avif` is an encoder-produced AVIF regression
+fixture from [AOMediaCodec/libavif](https://github.com/AOMediaCodec/libavif),
+commit [`66663952a677bb8a13ea1530d5694775d7d143d4`](https://github.com/AOMediaCodec/libavif/tree/66663952a677bb8a13ea1530d5694775d7d143d4).
+It is `tests/data/paris_icc_exif_xmp.avif`, generated with `avifenc -s 10`
+from the project's metadata image. The upstream fixture documentation licenses
+it under libavif's BSD two-clause license. Its SHA-256 is:
+
+```
+961bc38b61e60b7651fa20efa24269ae2f35e4958822a81c908c9bbf9b3f66e1
+```
+
+It is retained to test real primary-item associations and standard `iloc` /
+`infe` metadata layout with Exif, XMP, and ICC data. It was independently
+decoded to a thumbnail by macOS Quick Look during the release smoke test.
+
+`sips-heic-exif-xmp.heic` was produced locally from this repository's
+`jpeg-exif-little-endian.jpg` fixture by macOS 14.5's ImageIO encoder
+(`sips-306`), using `sips -s format heic`. Its source fixture contains only
+the repository's synthetic metadata and two-pixel test image. It was decoded
+with the same system ImageIO implementation before being added. Its SHA-256
+is:
+
+```
+9e45b6a90e6f76783b6b7c2561f7e6ebe60c288d5ebe181a42bdc1551f2aa5ca
+```
+
+It exercises a real HEVC/HEIF image item and its standard Exif/XMP metadata
+item layout. It was independently decoded to a thumbnail by macOS Quick Look
+during the release smoke test; tests run against the checked-in binary and do
+not require macOS.

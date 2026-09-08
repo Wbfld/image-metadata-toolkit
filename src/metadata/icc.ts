@@ -116,7 +116,10 @@ export function inspectIccProfile(chunks: readonly IccChunk[], limits: SecurityL
         iccWarning(warnings, limits, "ICC tag payload range is invalid.", entry + 4, 8);
         continue;
       }
-      if (ranges.some((range) => offset < range.end && range.start < end)) {
+      // ICC tag-table entries are allowed to share one complete payload. This
+      // is common for equivalent TRC tags. A partial overlap, however, has no
+      // unambiguous bounded interpretation and remains invalid.
+      if (ranges.some((range) => range.start !== offset && offset < range.end && range.start < end)) {
         iccWarning(warnings, limits, "ICC tag payloads overlap.", entry + 4, 8);
       }
       ranges.push({ start: offset, end });

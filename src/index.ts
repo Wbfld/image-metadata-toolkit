@@ -56,7 +56,11 @@ async function inputBytes(input: MetadataInput, limits: SecurityLimits): Promise
         `Input is ${input.size} bytes; the configured limit is ${limits.maxInputBytes} bytes.`,
       );
     }
-    bytes = new Uint8Array(await input.arrayBuffer());
+    const buffer = await input.arrayBuffer();
+    if (!isArrayBuffer(buffer)) {
+      throw new MetadataError("INVALID_VALUE", "Blob or File arrayBuffer() must resolve to an ArrayBuffer.");
+    }
+    bytes = new Uint8Array(buffer);
   } else {
     throw new MetadataError("INVALID_VALUE", "Input must be an ArrayBuffer, ArrayBufferView, Blob, or File.");
   }

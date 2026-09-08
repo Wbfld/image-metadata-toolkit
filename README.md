@@ -4,7 +4,7 @@ Parse, explain, validate, and privacy-redact image metadata locally in browsers,
 
 The package has no runtime dependencies. It accepts `ArrayBuffer`, any `ArrayBufferView` (including Node.js `Buffer`), `Blob`, and browser `File` inputs.
 
-> **Current scope:** JPEG, PNG, classic TIFF, WebP, IPTC-IIM, and bounded ICC header inspection are implemented. JPEG metadata removal and selected PNG chunk removal are lossless. HEIF/AVIF provide experimental, bounded inspection of direct EXIF/XMP boxes and common `iinf`/`iloc` metadata items; TIFF/WebP/IPTC/ICC/HEIF/AVIF writing or redaction is not exposed.
+> **Current scope:** JPEG, PNG, classic TIFF, WebP, HEIF, AVIF, IPTC-IIM, and bounded ICC header inspection are implemented. JPEG metadata removal and selected PNG chunk removal are lossless. HEIF/AVIF safely inspect direct EXIF/XMP boxes, standard `iinf`/`iloc` metadata items stored in-file or in their own `idat`, and a primary-item `colr` ICC profile. TIFF/WebP/IPTC/ICC/HEIF/AVIF writing or redaction is not exposed.
 
 ## Install
 
@@ -113,10 +113,10 @@ Complete JPEG APP2, PNG iCCP, and WebP ICCP profiles expose bounded header field
 | TIFF (classic) | Yes | EXIF ImageWidth/ImageLength when present | EXIF/IFD metadata; XMP tag 700; IPTC tag 33723; ICC tag 34675 | Not yet |
 | BigTIFF | Yes | Not yet | Not yet (explicitly warned) | Not yet |
 | WebP | Yes | VP8, VP8L, VP8X | EXIF, XMP, and ICCP chunks | Not yet |
-| HEIF | Yes | Experimental `ispe` scan | Experimental direct EXIF/XMP boxes and common `iinf`/`iloc` items | Not yet |
-| AVIF | Yes | Experimental `ispe` scan | Experimental direct EXIF/XMP boxes and common `iinf`/`iloc` items | Not yet |
+| HEIF | Yes | Primary-item `pitm`/`ipma`/`ispe` selection; conservative `ispe` fallback | Direct EXIF/XMP boxes; bounded `iinf`/`iloc` items in-file or in the same `idat`; primary `colr` ICC profile | Not yet |
+| AVIF | Yes | Primary-item `pitm`/`ipma`/`ispe` selection; conservative `ispe` fallback | Direct EXIF/XMP boxes; bounded `iinf`/`iloc` items in-file or in the same `idat`; primary `colr` ICC profile | Not yet |
 
-Detection means signature/container-brand recognition, not full pixel decoding. A detected format without a metadata parser returns `UNSUPPORTED_FORMAT`; experimental HEIF/AVIF inspection is explicitly bounded and does not claim complete item/property association or pixel decoding. Only common `iinf`/`iloc` Exif and MIME RDF/XML items using supported construction methods are resolved; unsupported methods and associations produce warnings. Fixture provenance and independent decoder validation are release requirements for promoting experimental formats to stable support.
+Detection means signature/container-brand recognition, not full pixel decoding. A detected format without a metadata parser returns `UNSUPPORTED_FORMAT`. HEIF/AVIF inspection is explicitly bounded and scoped per `meta` box: item IDs, item locations, `idat` payloads, and property indexes are never mixed across metadata contexts. It selects dimensions from common primary-item `pitm`/`ipma`/`ispe` associations and can inspect an associated `colr` `prof`/`rICC` profile header. It resolves Exif and MIME RDF/XML XMP items through `iinf`/`iloc` only when construction method 0 refers to this file or method 1 refers to the containing `idat` box. The standard HEIF Exif TIFF-header offset is validated relative to its four-byte prefix. External data references, item-relative construction, malformed locations, missing item properties, and conflicting primary metadata produce warnings rather than being guessed. The checked fixture corpus contains encoder-produced, decoder-verified HEIC and AVIF samples; provenance is recorded in [`tests/fixtures/README.md`](./tests/fixtures/README.md).
 
 ## Runtime examples
 
@@ -177,6 +177,8 @@ All offsets and lengths are checked before reads or slices. PNG IDAT image data 
 | Total metadata bytes | 16 MiB |
 | Single JPEG segment | 16 MiB |
 | JPEG segments | 4,096 |
+| HEIF/AVIF scanned boxes | 4,096 |
+| HEIF/AVIF item entries | 4,096 |
 | Total IFD entries | 4,096 |
 | IFD nesting depth | 8 |
 | Single EXIF value | 8 MiB |
@@ -209,13 +211,13 @@ npm run examples
 npm run check
 ```
 
-`npm run check` runs type-checking, linting, the complete coverage suite, both package builds, package-manifest validation, and ESM/CommonJS/Blob/typed-array example smoke tests. CI runs it on Node.js 22, 24, and 26 and verifies the npm tarball.
+`npm run check` runs type-checking, linting, the complete coverage suite, both package builds, package-manifest validation, an install-from-tarball ESM/CommonJS smoke test, and ESM/CommonJS/Blob/typed-array/worker example smoke tests. CI runs it on Node.js 22, 24, and 26.
 
 ## Known limitations
 
-- JPEG, PNG, classic TIFF, and WebP metadata are parsed in this release; IPTC and ICC remain container-scoped inspections, HEIF/AVIF inspection is experimental, and JPEG plus selected PNG chunks can be redacted.
+- JPEG, PNG, classic TIFF, WebP, HEIF, and AVIF metadata are parsed in this release; IPTC and ICC remain container-scoped inspections, and JPEG plus selected PNG chunks can be redacted.
 - XMP is UTF-8 decoded but not interpreted as XML; ICC inspection is limited to the profile header and does not interpret color transforms or tag payloads.
-- Extended XMP reassembly, MakerNote interpretation, thumbnails, and complete HEIF/AVIF item-property association are not implemented. HEIF/AVIF inspection resolves only common bounded Exif and MIME RDF/XML items through `iinf`/`iloc` (or direct metadata boxes); unsupported construction methods, malformed locations, and unrelated item associations produce warnings. TIFF/WebP/HEIF/AVIF writing remains unsupported.
+- Extended XMP reassembly, MakerNote interpretation, thumbnails, `iref` interpretation, `nclx` colour data, image sequences, and complete HEIF/AVIF item-property semantics are not implemented. HEIF/AVIF inspection uses common primary-item `pitm`/`ipma` associations only for `ispe` dimensions and one `colr` `prof`/`rICC` profile, and resolves bounded Exif and MIME RDF/XML items through `iinf`/`iloc` construction method 0 (this file) or method 1 (the same `meta` box's `idat`), or direct metadata boxes. TIFF/WebP/HEIF/AVIF writing remains unsupported.
 - EXIF date strings do not imply a timezone unless a separate offset tag exists; this release does not combine offset/subsecond companion tags into normalized dates.
 - Redaction removes metadata; arbitrary metadata editing and pixel-orientation transforms are outside the first-release API.
 - Height-deferred JPEG codestreams whose SOF height is supplied later by DNL are not supported in this first pass.

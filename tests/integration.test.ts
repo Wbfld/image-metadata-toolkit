@@ -29,6 +29,19 @@ const avifFixtureUrl = new URL("./fixtures/avif-metadata.avif", import.meta.url)
 const heifItemFixtureUrl = new URL("./fixtures/heif-item-metadata.heic", import.meta.url);
 const heifItemTruncatedUrl = new URL("./fixtures/heif-item-truncated.heic", import.meta.url);
 const avifItemFixtureUrl = new URL("./fixtures/avif-item-metadata.avif", import.meta.url);
+const heifIdatItemFixtureUrl = new URL("./fixtures/heif-idat-item-metadata.heic", import.meta.url);
+const avifIdatItemFixtureUrl = new URL("./fixtures/avif-idat-item-metadata.avif", import.meta.url);
+const heifPrimaryDimensionsUrl = new URL("./fixtures/heif-primary-dimensions.heic", import.meta.url);
+const avifPrimaryDimensionsUrl = new URL("./fixtures/avif-primary-dimensions.avif", import.meta.url);
+const heifConflictingPrimaryDimensionsUrl = new URL("./fixtures/heif-conflicting-primary-dimensions.heic", import.meta.url);
+const heifIndexedIdatItemFixtureUrl = new URL("./fixtures/heif-indexed-idat-item-metadata.heic", import.meta.url);
+const heifTailIdatItemFixtureUrl = new URL("./fixtures/heif-tail-idat-item-metadata.heic", import.meta.url);
+const heifPrimaryIccFixtureUrl = new URL("./fixtures/heif-primary-icc.heic", import.meta.url);
+const avifPrimaryIccFixtureUrl = new URL("./fixtures/avif-primary-icc.avif", import.meta.url);
+const heifMalformedPrimaryIccFixtureUrl = new URL("./fixtures/heif-primary-icc-malformed.heic", import.meta.url);
+const heifCrossMetaItemFixtureUrl = new URL("./fixtures/heif-cross-meta-item-reference.heic", import.meta.url);
+const libavifMetadataFixtureUrl = new URL("./fixtures/libavif-paris-icc-exif-xmp.avif", import.meta.url);
+const sipsHeifMetadataFixtureUrl = new URL("./fixtures/sips-heic-exif-xmp.heic", import.meta.url);
 
 function pngIdatData(bytes: Uint8Array): Uint8Array {
   const parts: Uint8Array[] = [];
@@ -47,6 +60,13 @@ function pngIdatData(bytes: Uint8Array): Uint8Array {
 
 function fieldsByName(fields: readonly MetadataField[]): Map<string, MetadataField> {
   return new Map(fields.map((field) => [field.name, field]));
+}
+
+function findFourCC(bytes: Uint8Array, type: string): number {
+  for (let offset = 0; offset + 4 <= bytes.length; offset += 1) {
+    if (String.fromCharCode(...bytes.subarray(offset, offset + 4)) === type) return offset;
+  }
+  return -1;
 }
 
 function crc32(bytes: Uint8Array, start: number, end: number): number {
@@ -126,6 +146,11 @@ describe("public parsing API", () => {
     const viewResult = await parseMetadata(view);
     expect(viewResult.format).toBe("jpeg");
     expect(viewResult.dimensions).toEqual({ width: 2, height: 2 });
+  });
+
+  it("rejects Blob-like inputs whose arrayBuffer result is not an ArrayBuffer", async () => {
+    const invalidBlob = { size: 1, arrayBuffer: () => Promise.resolve(1) } as unknown as Blob;
+    await expect(parseMetadata(invalidBlob)).rejects.toMatchObject({ code: "INVALID_VALUE" });
   });
 
   it("accepts a genuine ArrayBuffer received from another JavaScript realm", async () => {
@@ -371,16 +396,169 @@ describe("public parsing API", () => {
     expect(result.warnings).toEqual([]);
   });
 
+  it("parses an encoder-produced AVIF with primary dimensions, Exif, XMP, and ICC", async () => {
+    const result = await parseMetadata(await readFile(libavifMetadataFixtureUrl));
+    expect(result.format).toBe("avif");
+    expect(result.dimensions).toEqual({ width: 403, height: 302 });
+    expect(result.fields.find(({ name }) => name === "Make")?.value).toBe("Google");
+    expect(result.fields.find(({ name }) => name === "GPSLatitude")?.value).toBe(0);
+    expect(result.xmp?.packets).toHaveLength(1);
+    expect(result.xmp?.packets[0]).toContain("x:xmpmeta");
+    expect(result.icc).toMatchObject({ byteLength: 596, chunks: 1, complete: true });
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("parses an encoder-produced HEIC with primary dimensions, Exif, and XMP", async () => {
+    const result = await parseMetadata(await readFile(sipsHeifMetadataFixtureUrl));
+    expect(result.format).toBe("heif");
+    expect(result.dimensions).toEqual({ width: 2, height: 2 });
+    expect(result.fields.find(({ name }) => name === "Make")?.value).toBe("OpenAI Camera");
+    expect(result.fields.find(({ name }) => name === "GPSLongitude")?.value).toBeCloseTo(-7 / 60);
+    expect(result.xmp?.packets).toHaveLength(1);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("does not resolve item IDs, locations, or idat bytes across MetaBoxes", async () => {
+    const result = await parseMetadata(await readFile(heifCrossMetaItemFixtureUrl));
+    expect(result.format).toBe("heif");
+    expect(result.exif).toBeNull();
+    expect(result.fields).toEqual([]);
+    expect(result.warnings).toContainEqual(expect.objectContaining({ code: "UNSAFE_OFFSET" }));
+  });
+
+  it("resolves HEIF and AVIF metadata items stored in a bounded idat box", async () => {
+    const [heif, avif] = await Promise.all([
+      parseMetadata(await readFile(heifIdatItemFixtureUrl)),
+      parseMetadata(await readFile(avifIdatItemFixtureUrl)),
+    ]);
+    expect(heif.format).toBe("heif");
+    expect(heif.fields.find(({ name }) => name === "Make")?.value).toBe("OpenAI Camera");
+    expect(heif.xmp?.packets[0]).toContain("xmpmeta");
+    expect(heif.warnings).toEqual([]);
+    expect(avif.format).toBe("avif");
+    expect(avif.fields.find(({ name }) => name === "GPSLatitude")?.value).toBe(51.5);
+    expect(avif.xmp?.packets[0]).toContain("xmpmeta");
+    expect(avif.warnings).toEqual([]);
+  });
+
+  it("uses primary-item property associations when thumbnails have another spatial extent", async () => {
+    const [heif, avif] = await Promise.all([
+      parseMetadata(await readFile(heifPrimaryDimensionsUrl)),
+      parseMetadata(await readFile(avifPrimaryDimensionsUrl)),
+    ]);
+    expect(heif.dimensions).toEqual({ width: 2, height: 2 });
+    expect(avif.dimensions).toEqual({ width: 2, height: 2 });
+    expect(heif.warnings).toEqual([]);
+    expect(avif.warnings).toEqual([]);
+  });
+
+  it("handles indexed and to-end HEIF idat item extents", async () => {
+    const [indexed, tail] = await Promise.all([
+      parseMetadata(await readFile(heifIndexedIdatItemFixtureUrl)),
+      parseMetadata(await readFile(heifTailIdatItemFixtureUrl)),
+    ]);
+    expect(indexed.fields.find(({ name }) => name === "Make")?.value).toBe("OpenAI Camera");
+    expect(indexed.xmp?.packets[0]).toContain("xmpmeta");
+    expect(indexed.warnings).toEqual([]);
+    expect(tail.xmp?.packets[0]).toContain("xmpmeta");
+    expect(tail.warnings).toEqual([]);
+  });
+
+  it("inspects a primary HEIF or AVIF ICC colour property without reading image data", async () => {
+    const [heif, avif] = await Promise.all([
+      parseMetadata(await readFile(heifPrimaryIccFixtureUrl)),
+      parseMetadata(await readFile(avifPrimaryIccFixtureUrl)),
+    ]);
+    expect(heif.icc).toMatchObject({ byteLength: 132, chunks: 1, complete: true });
+    expect(heif.fields.find(({ ifd, name }) => ifd === "ICC" && name === "ColorSpace")?.value).toBe("RGB ");
+    expect(avif.icc).toMatchObject({ byteLength: 132, chunks: 1, complete: true });
+    expect(avif.warnings).toEqual([]);
+
+    const profileLimited = await parseMetadata(await readFile(heifPrimaryIccFixtureUrl), { limits: { maxMetadataBytes: 600 } });
+    expect(profileLimited.warnings).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
+    expect(profileLimited.fields.some(({ ifd }) => ifd === "ICC")).toBe(false);
+
+    const malformed = await parseMetadata(await readFile(heifMalformedPrimaryIccFixtureUrl));
+    expect(malformed.icc).not.toBeNull();
+    expect(malformed.warnings).toContainEqual(expect.objectContaining({ code: "INVALID_VALUE" }));
+  });
+
+  it("warns rather than guessing conflicting or malformed HEIF property associations", async () => {
+    const conflicting = await parseMetadata(await readFile(heifConflictingPrimaryDimensionsUrl));
+    expect(conflicting.dimensions).toBeNull();
+    expect(conflicting.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const item = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    const pitm = findFourCC(item, "pitm");
+    const ipma = findFourCC(item, "ipma");
+    expect(pitm).toBeGreaterThan(0);
+    expect(ipma).toBeGreaterThan(0);
+    item[pitm + 4] = 2;
+    item[ipma + 7] = 2;
+    const malformed = await parseMetadata(item);
+    expect(malformed.warnings.filter(({ code }) => code === "MALFORMED_HEIF")).toHaveLength(2);
+
+    const zeroProperty = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    zeroProperty[findFourCC(zeroProperty, "ipma") + 15] = 0;
+    const reservedIndex = await parseMetadata(zeroProperty);
+    expect(reservedIndex.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const missingProperty = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    missingProperty[findFourCC(missingProperty, "ipma") + 15] = 127;
+    const unresolvedProperty = await parseMetadata(missingProperty);
+    expect(unresolvedProperty.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const truncatedAssociations = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    truncatedAssociations[findFourCC(truncatedAssociations, "ipma") + 14] = 4;
+    const unsafeAssociations = await parseMetadata(truncatedAssociations);
+    expect(unsafeAssociations.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const unsupportedInfo = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    unsupportedInfo[findFourCC(unsupportedInfo, "infe") + 4] = 1;
+    const unsupportedInfe = await parseMetadata(unsupportedInfo);
+    expect(unsupportedInfe.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const unterminatedMime = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    const firstInfe = findFourCC(unterminatedMime, "infe");
+    const secondInfe = findFourCC(unterminatedMime.subarray(firstInfe + 4), "infe") + firstInfe + 4;
+    const secondInfeSize = new DataView(unterminatedMime.buffer).getUint32(secondInfe - 4);
+    unterminatedMime[secondInfe - 4 + secondInfeSize - 1] = 0x61;
+    const malformedMime = await parseMetadata(unterminatedMime);
+    expect(malformedMime.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const duplicatePrimary = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    duplicatePrimary.set(new TextEncoder().encode("pitm"), findFourCC(duplicatePrimary, "iinf"));
+    const duplicatePitm = await parseMetadata(duplicatePrimary);
+    expect(duplicatePitm.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const duplicatePropertyContainer = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    duplicatePropertyContainer.set(new TextEncoder().encode("ipco"), findFourCC(duplicatePropertyContainer, "ipma"));
+    const duplicateIpco = await parseMetadata(duplicatePropertyContainer);
+    expect(duplicateIpco.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+  });
+
+  it("applies HEIF item scan, item-info, and item-size limits before resolving data", async () => {
+    const bytes = await readFile(heifIdatItemFixtureUrl);
+    const limitedScan = await parseMetadata(bytes, { limits: { maxSegments: 1 } });
+    expect(limitedScan.warnings).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
+
+    const limitedName = await parseMetadata(bytes, { limits: { maxStringBytes: 1 } });
+    expect(limitedName.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const limitedItem = await parseMetadata(bytes, { limits: { maxMetadataBytes: 64 } });
+    expect(limitedItem.warnings).toContainEqual(expect.objectContaining({ code: "UNSAFE_OFFSET" }));
+  });
+
   it("reports unsafe or truncated HEIF item extents without throwing", async () => {
     const result = await parseMetadata(await readFile(heifItemTruncatedUrl));
     expect(result.format).toBe("heif");
     expect(result.warnings.some(({ code }) => code === "TRUNCATED_DATA" || code === "UNSAFE_OFFSET")).toBe(true);
   });
 
-  it("validates direct HEIF Exif offsets and rejects unsupported item construction", async () => {
+  it("validates direct HEIF Exif offsets", async () => {
     const tiff = new Uint8Array(await readFile(tiffFixtureUrl));
     const exifPayload = new Uint8Array(4 + tiff.length);
-    new DataView(exifPayload.buffer).setUint32(0, 4);
+    new DataView(exifPayload.buffer).setUint32(0, 0);
     exifPayload.set(tiff, 4);
     const makeBox = (type: string, payload: Uint8Array): Uint8Array => {
       const result = new Uint8Array(8 + payload.length);
@@ -396,16 +574,43 @@ describe("public parsing API", () => {
     const ftyp = makeBox("ftyp", new TextEncoder().encode("heic\0\0\0\0"));
     const parsed = await parseMetadata(new Uint8Array([...ftyp, ...direct]));
     expect(parsed.fields.find(({ name }) => name === "Make")?.value).toBe("OpenAI Camera");
+  });
 
+  it("uses the standard HEIF Exif offset relative to its four-byte prefix", async () => {
+    const fixture = new Uint8Array(await readFile(libavifMetadataFixtureUrl));
+    fixture[0x407] = 1;
+    const result = await parseMetadata(fixture);
+    expect(result.exif).toBeNull();
+    expect(result.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+  });
+
+  it("rejects unsafe HEIF item locations without resolving external or unsupported data", async () => {
     const item = new Uint8Array(await readFile(heifItemFixtureUrl));
-    let iloc = -1;
-    for (let offset = 0; offset + 4 <= item.length; offset += 1) {
-      if (String.fromCharCode(...item.subarray(offset, offset + 4)) === "iloc") { iloc = offset; break; }
-    }
+    const iloc = findFourCC(item, "iloc");
     expect(iloc).toBeGreaterThan(0);
-    new DataView(item.buffer).setUint16(iloc + 18, 2);
-    const unsupported = await parseMetadata(item);
-    expect(unsupported.warnings).toContainEqual(expect.objectContaining({ code: "UNSAFE_OFFSET" }));
+    new DataView(item.buffer).setUint16(iloc + 14, 1);
+    const externalReference = await parseMetadata(item);
+    expect(externalReference.warnings).toContainEqual(expect.objectContaining({ code: "UNSAFE_OFFSET" }));
+
+    const idatItem = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    const idatIloc = findFourCC(idatItem, "iloc");
+    expect(idatIloc).toBeGreaterThan(0);
+    new DataView(idatItem.buffer).setUint16(idatIloc + 14, 2);
+    const unsupportedMethod = await parseMetadata(idatItem);
+    expect(unsupportedMethod.warnings).toContainEqual(expect.objectContaining({ code: "UNSAFE_OFFSET" }));
+
+    const malformed = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    new DataView(malformed.buffer).setUint8(idatIloc + 9, 0x20);
+    const malformedLocation = await parseMetadata(malformed);
+    expect(malformedLocation.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const reservedConstructionBits = new Uint8Array(await readFile(heifIdatItemFixtureUrl));
+    new DataView(reservedConstructionBits.buffer).setUint16(idatIloc + 14, 0x10);
+    const reservedConstruction = await parseMetadata(reservedConstructionBits);
+    expect(reservedConstruction.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const limitedLocations = await parseMetadata(await readFile(heifIdatItemFixtureUrl), { limits: { maxIfdEntries: 1 } });
+    expect(limitedLocations.warnings).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
   });
 
   it("distinguishes unknown and truncated signatures", async () => {
