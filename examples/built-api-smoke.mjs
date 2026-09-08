@@ -1,0 +1,44 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { parseMetadata as parseEsm } from "../dist/index.js";
+
+const require = createRequire(import.meta.url);
+const { parseMetadata: parseCommonJs } = require("../dist/index.cjs");
+const fixture = await readFile(new URL("../tests/fixtures/jpeg-exif-little-endian.jpg", import.meta.url));
+const pngFixture = await readFile(new URL("../tests/fixtures/png-metadata.png", import.meta.url));
+const tiffFixture = await readFile(new URL("../tests/fixtures/tiff-exif-little-endian.tif", import.meta.url));
+const webpFixture = await readFile(new URL("../tests/fixtures/webp-metadata.webp", import.meta.url));
+const iccFixture = await readFile(new URL("../tests/fixtures/jpeg-icc.jpg", import.meta.url));
+const heifFixture = await readFile(new URL("../tests/fixtures/heif-metadata.heic", import.meta.url));
+const avifFixture = await readFile(new URL("../tests/fixtures/avif-metadata.avif", import.meta.url));
+
+const esmResult = await parseEsm(new Blob([fixture], { type: "image/jpeg" }));
+const commonJsResult = await parseCommonJs(fixture);
+const pngResult = await parseEsm(pngFixture);
+const pngCommonJsResult = await parseCommonJs(pngFixture);
+const tiffResult = await parseEsm(tiffFixture);
+const webpResult = await parseEsm(webpFixture);
+const webpCommonJsResult = await parseCommonJs(webpFixture);
+const iccResult = await parseEsm(iccFixture);
+const heifResult = await parseEsm(heifFixture);
+const avifResult = await parseEsm(avifFixture);
+assert.equal(esmResult.format, "jpeg");
+assert.equal(commonJsResult.format, "jpeg");
+assert.deepEqual(esmResult.dimensions, { width: 2, height: 2 });
+assert.equal(commonJsResult.fields.some(({ name }) => name === "GPSLatitude"), true);
+assert.equal(pngResult.format, "png");
+assert.equal(pngResult.pngText.some(({ keyword }) => keyword === "Author"), true);
+assert.equal(pngResult.xmp?.packets.length, 1);
+assert.equal(pngCommonJsResult.pngText.some(({ keyword }) => keyword === "Description"), true);
+assert.equal(tiffResult.format, "tiff");
+assert.equal(tiffResult.fields.some(({ name }) => name === "Make"), true);
+assert.equal(webpResult.format, "webp");
+assert.equal(webpResult.xmp?.packets.length, 1);
+assert.equal(webpCommonJsResult.exif?.byteOrder, "little-endian");
+assert.equal(iccResult.icc?.complete, true);
+assert.equal(iccResult.fields.some(({ name }) => name === "ProfileSize"), true);
+assert.equal(heifResult.format, "heif");
+assert.equal(avifResult.format, "avif");
+
+console.log("ESM, CommonJS, Blob, and Uint8Array smoke checks passed.");

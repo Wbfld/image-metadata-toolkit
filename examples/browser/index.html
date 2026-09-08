@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>browser-image-metadata local file example</title>
+    <style>
+      body { font: 16px/1.5 system-ui, sans-serif; max-width: 52rem; margin: 3rem auto; padding: 0 1rem; }
+      pre { background: #f4f4f4; overflow: auto; padding: 1rem; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Parse a local image</h1>
+    <p>The selected file stays in this browser. JPEG EXIF and PNG EXIF/text/XMP are parsed locally; the library makes no network requests.</p>
+    <input id="image" type="file" accept="image/*" />
+    <pre id="output">Choose an image…</pre>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

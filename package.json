@@ -1,0 +1,78 @@
+{
+  "name": "browser-image-metadata",
+  "version": "0.1.0",
+  "description": "Parse, explain, validate, and privacy-redact image metadata locally without pixel recompression.",
+  "keywords": [
+    "exif",
+    "image-metadata",
+    "jpeg",
+    "privacy",
+    "browser",
+    "web-worker"
+  ],
+  "license": "MIT",
+  "author": "wbfld",
+  "homepage": "https://github.com/Wbfld/image-metadata-toolkit#readme",
+  "bugs": "https://github.com/Wbfld/image-metadata-toolkit/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wbfld/image-metadata-toolkit.git"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "examples": "npm run build && node examples/node.mjs tests/fixtures/jpeg-exif-little-endian.jpg && node examples/built-api-smoke.mjs && node examples/worker-smoke.mjs",
+    "publint": "publint",
+    "check": "npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run publint && npm run examples",
+    "prepublishOnly": "npm run check"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@types/node": "^22.18.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.35.0",
+    "publint": "^0.3.24",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.42.0",
+    "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1"
+  }
+}

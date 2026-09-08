@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>browser-image-metadata Web Worker example</title>
+  </head>
+  <body>
+    <h1>Parse a local image in a Web Worker</h1>
+    <input id="image" type="file" accept="image/*" />
+    <pre id="output">Choose an image…</pre>
+    <script type="module">
+      const worker = new Worker("./worker.js", { type: "module" });
+      const output = document.querySelector("#output");
+      document.querySelector("#image").addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const bytes = await file.arrayBuffer();
+        worker.postMessage(bytes, [bytes]);
+      });
+      worker.addEventListener("message", ({ data }) => {
+        output.textContent = data.ok ? JSON.stringify(data.result, null, 2) : data.error;
+      });
+    </script>
+  </body>
+</html>
