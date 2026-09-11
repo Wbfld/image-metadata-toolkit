@@ -1,4 +1,4 @@
-# External fixture corpora
+# browser-image-metadata external fixture corpora
 
 The repository keeps its small, targeted fixtures under version control. Broader camera interoperability coverage runs from a pinned public source so the npm package and this repository do not redistribute image assets with mixed upstream licenses.
 
@@ -15,4 +15,20 @@ npm ci
 EXTERNAL_FIXTURE_ROOT=/path/to/exif-py/tests/resources npm run test:corpus
 ```
 
-The gate requires at least 100 supported files and compares overlapping Make, Model, Orientation, and dimensions against pinned ExifTool output. It keeps malformed inputs in the scan to ensure bounded handling, while only asserting fields both tools report.
+The gate requires at least 100 supported files and compares the checked-in
+registry in [`scripts/external-registry.json`](./scripts/external-registry.json):
+standardized EXIF fields, dimensions, metadata-family block presence, and
+selected XMP/IPTC values. Every comparison is counted as found, matched,
+normalized-match, mismatched, missing-local, or missing-reference, both overall
+and per producer. Missing local values are counted rather than skipped; the
+default gate fails above a 5% missing-local rate
+(`EXTERNAL_CORPUS_MAX_MISSING_LOCAL_RATE` can tighten or relax this explicitly).
+
+Each run writes `external-corpus-report.json` and
+`external-corpus-report.md` under `EXTERNAL_CORPUS_OUTPUT_DIR` (default
+`artifacts/external-corpus`). Reports include relative fixture names and exact
+SHA-256 hashes, never image bytes. The reviewed exception schema is
+[`scripts/external-allowlist.json`](./scripts/external-allowlist.json); every
+entry must include `issueUrl` and `expiryVersion` (semver). The comparator and gate are
+tested independently, including a deliberately missing decoder field that must
+fail the gate.

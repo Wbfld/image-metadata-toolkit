@@ -60,4 +60,25 @@ describe("worker entry point", () => {
     await expect(aborted).rejects.toMatchObject({ code: "ABORTED" });
     aborting.close();
   });
+
+  it("keeps Blob inputs intact so metadata-scoped worker reads can slice them", async () => {
+    const clientPort = new TestPort();
+    const workerPort = new TestPort();
+    clientPort.peer = workerPort;
+    workerPort.peer = clientPort;
+    const uninstall = installMetadataWorker(workerPort);
+    const client = createMetadataWorkerClient(clientPort);
+    const fixture = await readFile(new URL("./fixtures/jpeg-exif-little-endian.jpg", import.meta.url));
+    const blob = new Blob([fixture]);
+    Object.defineProperty(blob, "arrayBuffer", {
+      configurable: true,
+      value: () => Promise.reject(new Error("The client must not materialize a Blob before sending it to a worker.")),
+    });
+
+    const result = await client.parse(blob, { scope: "metadata" });
+    expect(result.format).toBe("jpeg");
+    expect(result.completeness.scope).toBe("partial");
+    client.close();
+    uninstall();
+  });
 });

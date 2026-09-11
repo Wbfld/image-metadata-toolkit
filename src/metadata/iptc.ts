@@ -258,7 +258,7 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
     if (dataset.key === 0x023c && typeof decoded === "string" && !/^\d{6}(?:[+-]\d{4})?$/.test(decoded) && warnings.length < limits.maxWarnings) warnings.push({ code: "INVALID_VALUE", message: "IPTC TimeCreated must use HHMMSS with an optional numeric offset.", severity: "warning", offset: dataset.offset, length: dataset.raw.length });
     if (dataset.key === 0x0264 && typeof decoded === "string" && !/^[A-Za-z]{3}$/.test(decoded) && warnings.length < limits.maxWarnings) warnings.push({ code: "INVALID_VALUE", message: "IPTC CountryCode must contain three ASCII letters.", severity: "warning", offset: dataset.offset, length: dataset.raw.length });
     const display = typeof value === "number" ? `Urgency ${value}` : typeof value === "string" ? value : `0x${hex(dataset.raw)}`;
-    fields.push({ id: `IPTC:${dataset.record}:${dataset.dataset}`, ifd: "IPTC", tag: dataset.key, name, raw: dataset.raw, value, display, description: DATASET_DESCRIPTIONS[name] ?? `IPTC-IIM record ${dataset.record}, dataset ${dataset.dataset}.`, type, editable: true, sensitivity: dataset.key === 0x0274 ? "moderate" : "low" });
+    fields.push({ id: `IPTC:${dataset.record}:${dataset.dataset}`, ifd: "IPTC", tag: dataset.key, name, raw: dataset.raw, value, display, description: DATASET_DESCRIPTIONS[name] ?? `IPTC-IIM record ${dataset.record}, dataset ${dataset.dataset}.`, type, sensitivity: dataset.key === 0x0274 ? "moderate" : "low" });
   }
   const data = byteLength > 0
     ? { byteLength, ...(charsetDataset === undefined ? {} : { characterSet }), fields }

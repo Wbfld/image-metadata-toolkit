@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to browser-image-metadata
 
 Thank you for improving `browser-image-metadata`. The project prioritizes bounded parsing, accurate source preservation, explicit warnings, and browser integration that never uploads a user's image.
 

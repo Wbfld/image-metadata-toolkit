@@ -2,6 +2,7 @@ import type {
   ExifData,
   ExifDataType,
   ExifIfd,
+  Integer64Value,
   MetadataField,
   MetadataValue,
   MetadataWarning,
@@ -11,6 +12,7 @@ import type {
   WarningSeverity,
 } from "../types.js";
 import { getTagDefinition, formatUnknownTag } from "../normalize/descriptions.js";
+import { DEFAULT_METADATA_REGISTRY, type MetadataRegistry } from "../registry.js";
 import {
   displayExifValue,
   interpretExifValue,
@@ -72,6 +74,13 @@ const TIFF_TYPES: Readonly<Record<number, TiffTypeDefinition>> = {
   13: { type: "IFD", size: 4 },
 };
 
+const BIG_TIFF_TYPES: Readonly<Record<number, TiffTypeDefinition>> = {
+  ...TIFF_TYPES,
+  16: { type: "LONG8", size: 8 },
+  17: { type: "SLONG8", size: 8 },
+  18: { type: "IFD8", size: 8 },
+};
+
 /**
  * Parse a classic TIFF byte stream used by an EXIF APP1 payload.
  *
@@ -84,6 +93,7 @@ export function parseExif(
   limits: SecurityLimits,
   warningBaseOffset = 0,
   selectedTags?: ReadonlySet<string> | null,
+  registry: MetadataRegistry = DEFAULT_METADATA_REGISTRY,
 ): ParsedExif {
   const maxWarnings = finiteLimit(limits.maxWarnings);
   const warnings: MetadataWarning[] = [];
@@ -313,7 +323,7 @@ export function parseExif(
         entriesVisited += 1;
         const tag = view.getUint16(entryOffset, littleEndian);
         const isPointer = (work.name === "IFD0" && (tag === 0x8769 || tag === 0x8825)) || (work.name === "ExifIFD" && tag === 0xa005);
-        const definition = getTagDefinition(work.name, tag);
+        const definition = getTagDefinition(work.name, tag, registry);
         const stableId = `${work.name}:0x${hexTag(tag)}`;
         const selected = selectedTags === undefined || selectedTags === null ||
           selectedTags.has(definition?.name ?? formatUnknownTag(tag)) || selectedTags.has(stableId);
@@ -329,6 +339,7 @@ export function parseExif(
           decodeBudget,
           structuralRanges,
           addWarning,
+          registry,
         );
         if (field === null) continue;
         if (selected) rawFields.push(field);
@@ -355,7 +366,7 @@ export function parseExif(
     addWarning("MALFORMED_EXIF", `EXIF decoding stopped safely: ${detail}.`, "error");
   }
 
-  const normalized = normalizeExifFields(rawFields);
+  const normalized = normalizeExifFields(rawFields, registry);
   for (const warning of normalized.warnings) {
     if (warnings.length >= maxWarnings) break;
     warnings.push(warning);
@@ -363,6 +374,231 @@ export function parseExif(
 
   const exif: ExifData = { byteOrder, fields: rawFields, ifds };
   return { exif, fields: normalized.fields, warnings };
+}
+
+/** Parse a bounded BigTIFF directory tree without materialising pixel data. */
+export function parseBigTiff(
+  tiffBytes: Uint8Array,
+  limits: SecurityLimits,
+  warningBaseOffset = 0,
+  selectedTags?: ReadonlySet<string> | null,
+  registry: MetadataRegistry = DEFAULT_METADATA_REGISTRY,
+): ParsedExif {
+  const warnings: MetadataWarning[] = [];
+  const rawFields: MetadataField[] = [];
+  const ifds: ExifIfd[] = [];
+  const maxWarnings = finiteLimit(limits.maxWarnings);
+  const baseOffset = Number.isSafeInteger(warningBaseOffset) && warningBaseOffset >= 0 ? warningBaseOffset : 0;
+  const warn = (code: WarningCode, message: string, severity: WarningSeverity, offset?: number, length?: number, ifd?: string, tag?: number): void => {
+    if (warnings.length >= maxWarnings) return;
+    const warning: {
+      code: WarningCode;
+      message: string;
+      severity: WarningSeverity;
+      offset?: number;
+      length?: number;
+      ifd?: string;
+      tag?: number;
+    } = { code, message, severity };
+    if (offset !== undefined && Number.isSafeInteger(offset) && offset >= 0 && Number.isSafeInteger(baseOffset + offset)) warning.offset = baseOffset + offset;
+    if (length !== undefined && Number.isSafeInteger(length) && length >= 0) warning.length = length;
+    if (ifd !== undefined) warning.ifd = ifd;
+    if (tag !== undefined) warning.tag = tag;
+    warnings.push(warning);
+  };
+  if (tiffBytes.byteLength < 16) {
+    warn("TRUNCATED_DATA", "The BigTIFF header is shorter than 16 bytes.", "error", 0, tiffBytes.byteLength);
+    return { exif: null, fields: [], warnings };
+  }
+  const first = tiffBytes[0];
+  const second = tiffBytes[1];
+  const byteOrder: ByteOrder | null = first === 0x49 && second === 0x49 ? "little-endian" : first === 0x4d && second === 0x4d ? "big-endian" : null;
+  if (byteOrder === null) {
+    warn("MALFORMED_EXIF", "Invalid BigTIFF byte-order marker; expected II or MM.", "error", 0, 2);
+    return { exif: null, fields: [], warnings };
+  }
+  const littleEndian = byteOrder === "little-endian";
+  const view = new DataView(tiffBytes.buffer, tiffBytes.byteOffset, tiffBytes.byteLength);
+  if (view.getUint16(2, littleEndian) !== 43 || view.getUint16(4, littleEndian) !== 8 || view.getUint16(6, littleEndian) !== 0) {
+    warn("MALFORMED_EXIF", "Invalid BigTIFF version, offset size, or reserved header field.", "error", 2, 6);
+    return { exif: null, fields: [], warnings };
+  }
+  const firstIfdOffset = safeBigTiffNumber(view.getBigUint64(8, littleEndian));
+  if (firstIfdOffset === null || firstIfdOffset < 16) {
+    warn("UNSAFE_OFFSET", "BigTIFF root IFD offset is absent, unsafe, or overlaps the header.", "error", 8, 8);
+    return { exif: null, fields: [], warnings };
+  }
+  const queue: IfdWorkItem[] = [{ name: "IFD0", offset: firstIfdOffset, depth: 0 }];
+  const visited = new Map<number, string>();
+  const ranges: StructuralRange[] = [{ offset: 0, length: 16, category: "header", label: "BigTIFF header" }];
+  const decodeBudget: DecodeBudget = { remainingBytes: finiteLimit(limits.maxMetadataBytes) };
+  const maxEntries = finiteLimit(limits.maxIfdEntries);
+  const maxDepth = finiteLimit(limits.maxIfdDepth);
+  const maxValueBytes = finiteLimit(limits.maxValueBytes);
+  const maxStringBytes = Math.min(maxValueBytes, finiteLimit(limits.maxStringBytes));
+  let entriesVisited = 0;
+  const enqueue = (field: MetadataField, name: IfdWorkItem["name"], depth: number): void => {
+    if ((field.type !== "LONG" && field.type !== "IFD" && field.type !== "LONG8" && field.type !== "IFD8") || field.count !== 1 || typeof field.raw !== "number" || !Number.isSafeInteger(field.raw)) {
+      warn("MALFORMED_EXIF", `${field.name} must contain one safe IFD offset.`, "warning", undefined, undefined, field.ifd, field.tag);
+      return;
+    }
+    if (field.raw !== 0) queue.push({ name, offset: field.raw, depth, sourceIfd: field.ifd, sourceTag: field.tag });
+  };
+  try {
+    while (queue.length > 0) {
+      const work = queue.shift();
+      if (work === undefined) break;
+      if (work.depth > maxDepth) {
+        warn("LIMIT_EXCEEDED", `BigTIFF IFD nesting exceeds the configured maximum depth of ${maxDepth}.`, "error", work.offset, undefined, work.sourceIfd ?? work.name, work.sourceTag);
+        continue;
+      }
+      if (visited.has(work.offset)) {
+        warn("MALFORMED_EXIF", `BigTIFF IFD offset ${work.offset} was already visited.`, "warning", work.offset, undefined, work.sourceIfd ?? work.name, work.sourceTag);
+        continue;
+      }
+      if (!validRange(tiffBytes.byteLength, work.offset, 8)) {
+        warn("UNSAFE_OFFSET", `${work.name} offset ${work.offset} is outside the BigTIFF data.`, "error", work.offset, undefined, work.sourceIfd ?? work.name, work.sourceTag);
+        continue;
+      }
+      const declaredCount = safeBigTiffNumber(view.getBigUint64(work.offset, littleEndian));
+      if (declaredCount === null) {
+        warn("LIMIT_EXCEEDED", `${work.name} declares an entry count outside the safe integer range.`, "error", work.offset, 8, work.name);
+        continue;
+      }
+      const entriesOffset = work.offset + 8;
+      const declaredBytes = checkedMultiply(declaredCount, 20);
+      if (declaredBytes === null) {
+        warn("UNSAFE_OFFSET", `${work.name} entry table size overflows safe arithmetic.`, "error", work.offset, 8, work.name);
+        continue;
+      }
+      const completeTable = validRange(tiffBytes.byteLength, entriesOffset, declaredBytes + 8);
+      const tableLength = completeTable ? 8 + declaredBytes + 8 : tiffBytes.byteLength - work.offset;
+      const conflict = overlappingRange(ranges, work.offset, tableLength);
+      if (conflict !== undefined) {
+        warn("UNSAFE_OFFSET", `${work.name} overlaps ${conflict.label}; the ambiguous directory was not decoded.`, "error", work.offset, tableLength, work.sourceIfd ?? work.name, work.sourceTag);
+        continue;
+      }
+      ranges.push({ offset: work.offset, length: tableLength, category: "ifd", label: `${work.name} table` });
+      visited.set(work.offset, work.name);
+      ifds.push({ name: work.name, offset: work.offset, entryCount: declaredCount });
+      const availableCount = completeTable ? declaredCount : Math.floor(Math.max(0, tiffBytes.byteLength - entriesOffset) / 20);
+      if (!completeTable) warn("TRUNCATED_DATA", `${work.name} declares ${declaredCount} entries but its table is truncated.`, "error", work.offset, tableLength, work.name);
+      const countToParse = Math.min(availableCount, Math.max(0, maxEntries - entriesVisited));
+      if (availableCount > countToParse) warn("LIMIT_EXCEEDED", `BigTIFF entries exceed the configured maximum of ${maxEntries}.`, "error", entriesOffset + countToParse * 20, undefined, work.name);
+      for (let index = 0; index < countToParse; index += 1) {
+        const entryOffset = entriesOffset + index * 20;
+        entriesVisited += 1;
+        const tag = view.getUint16(entryOffset, littleEndian);
+        const pointer = (work.name === "IFD0" && (tag === 0x8769 || tag === 0x8825)) || (work.name === "ExifIFD" && tag === 0xa005);
+        const definition = getTagDefinition(work.name, tag, registry);
+        const stableId = `${work.name}:0x${hexTag(tag)}`;
+        const selected = selectedTags === undefined || selectedTags === null || selectedTags.has(definition?.name ?? formatUnknownTag(tag)) || selectedTags.has(stableId);
+        if (!selected && !pointer) continue;
+        const field = decodeBigTiffEntry(tiffBytes, view, littleEndian, work.name, entryOffset, maxValueBytes, maxStringBytes, decodeBudget, ranges, warn, registry);
+        if (field === null) continue;
+        if (selected) rawFields.push(field);
+        if (work.name === "IFD0" && field.tag === 0x8769) enqueue(field, "ExifIFD", work.depth + 1);
+        else if (work.name === "IFD0" && field.tag === 0x8825) enqueue(field, "GPSIFD", work.depth + 1);
+        else if (work.name === "ExifIFD" && field.tag === 0xa005) enqueue(field, "InteropIFD", work.depth + 1);
+      }
+      if (completeTable && work.name === "IFD0") {
+        const next = safeBigTiffNumber(view.getBigUint64(entriesOffset + declaredBytes, littleEndian));
+        if (next === null) warn("UNSAFE_OFFSET", "BigTIFF next-IFD pointer exceeds the safe integer range.", "error", entriesOffset + declaredBytes, 8, work.name);
+        else if (next !== 0) queue.push({ name: "IFD1", offset: next, depth: work.depth + 1, sourceIfd: work.name });
+      }
+    }
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "unknown decoder failure";
+    warn("MALFORMED_EXIF", `BigTIFF decoding stopped safely: ${detail}.`, "error");
+  }
+  const normalized = normalizeExifFields(rawFields, registry);
+  for (const warning of normalized.warnings) {
+    if (warnings.length >= maxWarnings) break;
+    warnings.push(warning);
+  }
+  return { exif: { byteOrder, fields: rawFields, ifds }, fields: normalized.fields, warnings };
+}
+
+function safeBigTiffNumber(value: bigint): number | null {
+  return value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
+}
+
+function bigTiffInteger(value: bigint, signed: boolean): number | Integer64Value {
+  if (value >= BigInt(Number.MIN_SAFE_INTEGER) && value <= BigInt(Number.MAX_SAFE_INTEGER)) return Number(value);
+  return { decimal: value.toString(10), signed };
+}
+
+function decodeBigTiffEntry(
+  bytes: Uint8Array,
+  view: DataView,
+  littleEndian: boolean,
+  ifd: string,
+  entryOffset: number,
+  maxValueBytes: number,
+  maxStringBytes: number,
+  decodeBudget: DecodeBudget,
+  ranges: StructuralRange[],
+  warn: (code: WarningCode, message: string, severity: WarningSeverity, offset?: number, length?: number, ifd?: string, tag?: number) => void,
+  registry: MetadataRegistry,
+): MetadataField | null {
+  const tag = view.getUint16(entryOffset, littleEndian);
+  const typeNumber = view.getUint16(entryOffset + 2, littleEndian);
+  const count = safeBigTiffNumber(view.getBigUint64(entryOffset + 4, littleEndian));
+  if (count === null) {
+    warn("LIMIT_EXCEEDED", `Tag 0x${hexTag(tag)} has a count outside the safe integer range.`, "warning", entryOffset + 4, 8, ifd, tag);
+    return null;
+  }
+  const definition = BIG_TIFF_TYPES[typeNumber];
+  if (definition === undefined) {
+    if (maxValueBytes < 8 || decodeBudget.remainingBytes < 8) {
+      warn("LIMIT_EXCEEDED", `Unknown BigTIFF type ${typeNumber} cannot be retained within the configured budget.`, "warning", entryOffset + 2, 2, ifd, tag);
+      return null;
+    }
+    decodeBudget.remainingBytes -= 8;
+    const raw = bytes.slice(entryOffset + 12, entryOffset + 20);
+    warn("MALFORMED_EXIF", `Tag 0x${hexTag(tag)} uses unknown BigTIFF type ${typeNumber}; its inline slot was preserved.`, "warning", entryOffset + 2, 2, ifd, tag);
+    return createField(ifd, tag, "UNKNOWN", count, raw, raw, undefined, registry);
+  }
+  const byteCount = checkedMultiply(count, definition.size);
+  if (byteCount === null || byteCount > maxValueBytes || (definition.type === "ASCII" && byteCount > maxStringBytes)) {
+    warn("LIMIT_EXCEEDED", `Tag 0x${hexTag(tag)} exceeds a configured BigTIFF value limit.`, "warning", entryOffset + 4, 8, ifd, tag);
+    return null;
+  }
+  let valueOffset = entryOffset + 12;
+  if (byteCount > 8) {
+    const offset = safeBigTiffNumber(view.getBigUint64(entryOffset + 12, littleEndian));
+    if (offset === null || !validRange(bytes.byteLength, offset, byteCount)) {
+      warn("UNSAFE_OFFSET", `Tag 0x${hexTag(tag)} points outside the BigTIFF data.`, "error", entryOffset + 12, 8, ifd, tag);
+      return null;
+    }
+    valueOffset = offset;
+    const conflict = overlappingRange(ranges, valueOffset, byteCount, "value");
+    if (conflict !== undefined) {
+      warn("UNSAFE_OFFSET", `Tag 0x${hexTag(tag)} value overlaps ${conflict.label}.`, "error", valueOffset, byteCount, ifd, tag);
+      return null;
+    }
+    if (byteCount > 0) ranges.push({ offset: valueOffset, length: byteCount, category: "value", label: `${ifd} tag 0x${hexTag(tag)} value` });
+  }
+  if (!validRange(bytes.byteLength, valueOffset, byteCount)) {
+    warn("TRUNCATED_DATA", `Inline value for tag 0x${hexTag(tag)} is truncated.`, "error", valueOffset, byteCount, ifd, tag);
+    return null;
+  }
+  const decodedCost = estimatedDecodedBytes(definition.type, count, byteCount);
+  if (decodedCost === null || decodedCost > decodeBudget.remainingBytes) {
+    warn("LIMIT_EXCEEDED", `Tag 0x${hexTag(tag)} exceeds the remaining BigTIFF decode-work budget.`, "warning", entryOffset + 4, 8, ifd, tag);
+    return null;
+  }
+  decodeBudget.remainingBytes -= decodedCost;
+  let raw: MetadataValue;
+  if (definition.type === "LONG8" || definition.type === "IFD8" || definition.type === "SLONG8") {
+    const signed = definition.type === "SLONG8";
+    const values = Array.from({ length: count }, (_, index) => bigTiffInteger(signed ? view.getBigInt64(valueOffset + index * 8, littleEndian) : view.getBigUint64(valueOffset + index * 8, littleEndian), signed));
+    raw = count === 1 ? values[0] ?? null : values;
+  } else {
+    raw = decodeValue(bytes, view, littleEndian, definition.type, count, valueOffset, ifd, tag, warn).raw;
+  }
+  const value = interpretExifValue(ifd, tag, raw, definition.type);
+  return createField(ifd, tag, definition.type, count, raw, value, { entryOffset, entryLength: 20, valueOffset, valueLength: byteCount }, registry);
 }
 
 function decodeEntry(
@@ -384,6 +620,7 @@ function decodeEntry(
     ifd?: string,
     tag?: number,
   ) => void,
+  registry: MetadataRegistry,
 ): MetadataField | null {
   const tag = view.getUint16(entryOffset, littleEndian);
   const typeNumber = view.getUint16(entryOffset + 2, littleEndian);
@@ -425,7 +662,7 @@ function decodeEntry(
       ifd,
       tag,
     );
-    return createField(ifd, tag, "UNKNOWN", count, raw, raw);
+    return createField(ifd, tag, "UNKNOWN", count, raw, raw, undefined, registry);
   }
 
   const byteCount = checkedMultiply(count, typeDefinition.size);
@@ -551,7 +788,7 @@ function decodeEntry(
     ? interpretExifValue(ifd, tag, decoded.raw, typeDefinition.type)
     : null;
   validateSpecialEncoding(ifd, tag, typeDefinition.type, count, decoded.raw, value, valueOffset, byteCount, warn);
-  return createField(ifd, tag, typeDefinition.type, count, decoded.raw, value);
+  return createField(ifd, tag, typeDefinition.type, count, decoded.raw, value, { entryOffset, entryLength: 12, valueOffset, valueLength: byteCount }, registry);
 }
 
 function validateSpecialEncoding(
@@ -780,8 +1017,10 @@ function createField(
   count: number,
   raw: MetadataValue,
   value: MetadataValue,
+  source?: Omit<NonNullable<MetadataField["source"]>, "blockId">,
+  registry: MetadataRegistry = DEFAULT_METADATA_REGISTRY,
 ): MetadataField {
-  const definition = getTagDefinition(ifd, tag);
+  const definition = getTagDefinition(ifd, tag, registry);
   const name = definition?.name ?? formatUnknownTag(tag);
   return {
     id: `${ifd}:0x${hexTag(tag)}`,
@@ -793,10 +1032,10 @@ function createField(
     display: displayExifValue(ifd, tag, raw, value),
     description: definition?.description ?? "Unrecognized TIFF/EXIF tag; retained without assigning semantics.",
     type,
-    editable: definition?.editable ?? false,
     sensitivity: definition?.sensitivity ?? "none",
     count,
     known: definition !== undefined,
+    ...(source === undefined ? {} : { source: { blockId: "", ...source } }),
   };
 }
 

@@ -1,12 +1,14 @@
 import { parseMetadata } from "../index.js";
 import { materializeInput } from "../input.js";
+import { throwIfAborted } from "../security/abort.js";
 import { resolveLimits } from "../security/limits.js";
-import type { MetadataInput, MetadataResult, MetadataWarning, Sensitivity } from "../types.js";
+import type { MetadataCoverage, MetadataCoverageReasonCode, MetadataInput, MetadataResult, MetadataWarning, PrivacyAuditOptions, PrivacyReasonCode, Sensitivity } from "../types.js";
 
 export interface PrivacyFinding {
   readonly target: string;
   readonly sensitivity: Sensitivity;
   readonly message: string;
+  readonly reasonCode: PrivacyReasonCode;
 }
 
 export interface PrivacyAuditResult {
@@ -19,6 +21,8 @@ export interface PrivacyAuditResult {
   readonly trailingBytes: number;
   readonly gaps: readonly string[];
   readonly warnings: readonly MetadataWarning[];
+  readonly coverage: MetadataCoverage;
+  readonly reasonCodes: readonly PrivacyReasonCode[];
 }
 
 export interface PrivacyOpaqueBlock {
@@ -60,11 +64,30 @@ function jpegInspection(bytes: Uint8Array): { readonly opaqueBlocks: readonly Pr
 }
 
 /** Inspect recognized privacy-sensitive metadata without modifying the input. */
-export async function auditPrivacy(input: MetadataInput): Promise<PrivacyAuditResult> {
-  const limits = resolveLimits();
-  const bytes = await materializeInput(input, limits);
-  const result = await parseMetadata(bytes, { limits });
+export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOptions = {}): Promise<PrivacyAuditResult> {
+  const limits = resolveLimits(options.limits);
+  throwIfAborted(options.signal);
+  const bytes = await materializeInput(input, limits, options.signal);
+  throwIfAborted(options.signal);
+  const result = await parseMetadata(bytes, { limits, ...(options.signal === undefined ? {} : { signal: options.signal }) });
+  throwIfAborted(options.signal);
   const findings: PrivacyFinding[] = [];
+  const reasonCodes: PrivacyReasonCode[] = [];
+  const coverageReasons = [...result.coverage.reasons];
+  const unclassifiedBlockIds = [...result.coverage.unclassifiedBlockIds];
+  let wholeFile = result.coverage.wholeFile;
+  const addReasonCode = (code: PrivacyReasonCode): void => {
+    if (!reasonCodes.includes(code)) reasonCodes.push(code);
+  };
+  const addCoverageReason = (code: MetadataCoverageReasonCode, message: string, blockId?: string): void => {
+    coverageReasons.push({ code, message });
+    addReasonCode(code);
+    if (blockId !== undefined && !unclassifiedBlockIds.includes(blockId)) unclassifiedBlockIds.push(blockId);
+  };
+  const worsenCoverage = (state: "partial" | "malformed" | "opaque" | "unsupported"): void => {
+    const rank = { complete: 0, "skipped-by-selection": 1, partial: 2, unsupported: 3, opaque: 4, malformed: 5 } as const;
+    if (rank[state] > rank[wholeFile]) wholeFile = state;
+  };
   const classes: Array<[string, boolean, Sensitivity, string]> = [
     ["EXIF", result.exif !== null, "moderate", "EXIF metadata is present."],
     ["XMP", result.xmp !== null, "moderate", "XMP metadata is present and its packet contents were not semantically inspected."],
@@ -74,35 +97,70 @@ export async function auditPrivacy(input: MetadataInput): Promise<PrivacyAuditRe
     ["PNGText", result.pngText.length > 0, "moderate", "PNG textual metadata is present."],
   ];
   for (const [target, present, sensitivity, message] of classes) {
-    if (present) findings.push({ target, sensitivity, message });
+    if (present) {
+      findings.push({ target, sensitivity, message, reasonCode: target === "XMP" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT" });
+      addReasonCode(target === "XMP" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT");
+    }
   }
   for (const item of result.fields) {
     if (item.sensitivity === "high" || item.sensitivity === "moderate") {
-      findings.push({ target: item.name, sensitivity: item.sensitivity, message: `${item.name} is present in ${item.ifd}.` });
+      findings.push({ target: item.name, sensitivity: item.sensitivity, message: `${item.name} is present in ${item.ifd}.`, reasonCode: "SENSITIVE_METADATA_PRESENT" });
+      addReasonCode("SENSITIVE_METADATA_PRESENT");
     }
   }
   const gaps: string[] = [];
   const opaqueBlocks: PrivacyOpaqueBlock[] = [];
   const thumbnails: string[] = [];
   let trailingBytes = 0;
-  if (result.format === "unknown") gaps.push("The image format was not recognized, so metadata safety could not be established.");
-  if (result.xmp !== null) gaps.push("XMP packets are retained as raw XML and may contain additional sensitive properties.");
+  if (result.format === "unknown") {
+    gaps.push("The image format was not recognized, so metadata safety could not be established.");
+    addCoverageReason("UNKNOWN_FORMAT", "The image format was not recognized.");
+    worsenCoverage("unsupported");
+  }
+  if (result.xmp !== null) {
+    gaps.push("XMP packets are retained as raw XML and may contain additional sensitive properties.");
+    addReasonCode("RAW_XMP");
+  }
   if (result.format === "jpeg") {
     const inspection = jpegInspection(bytes);
     opaqueBlocks.push(...inspection.opaqueBlocks);
     trailingBytes = inspection.trailingBytes;
-    if (inspection.opaqueBlocks.length > 0) gaps.push("Opaque JPEG APP markers are retained by lossless redaction.");
+    if (inspection.opaqueBlocks.length > 0) {
+      gaps.push("Opaque JPEG APP markers are retained by lossless redaction.");
+      for (const block of inspection.opaqueBlocks) {
+        addCoverageReason("OPAQUE_JPEG_MARKER", `${block.label} is not classified by the JPEG metadata policy.`, `jpeg:opaque:${block.offset}`);
+      }
+      worsenCoverage("opaque");
+    }
     if (inspection.opaqueBlocks.some(({ label }) => label === "MPF multi-picture")) gaps.push("JPEG MPF secondary images are not rewritten by lossless redaction.");
     if (inspection.opaqueBlocks.some(({ label }) => label === "Ultra HDR gain map")) gaps.push("Ultra HDR gain-map structures are not rewritten by lossless redaction.");
-    if (inspection.trailingBytes > 0) gaps.push("Bytes after the JPEG end marker are retained by lossless redaction.");
-    if (inspection.malformed) gaps.push("JPEG marker structure could not be fully inspected.");
+    if (inspection.trailingBytes > 0) {
+      gaps.push("Bytes after the JPEG end marker are retained by lossless redaction.");
+      addCoverageReason("TRAILING_BYTES", "Bytes after the JPEG end marker are outside the classified image structure.", "jpeg:trailing");
+      worsenCoverage("opaque");
+    }
+    if (inspection.malformed) {
+      gaps.push("JPEG marker structure could not be fully inspected.");
+      addCoverageReason("BLOCK_MALFORMED", "JPEG marker structure could not be fully inspected.");
+      worsenCoverage("malformed");
+    }
   }
-  if (result.format === "heif" || result.format === "avif") gaps.push("HEIF/AVIF item properties outside the bounded metadata paths are not inspected.");
+  if (result.format === "heif" || result.format === "avif") {
+    gaps.push("HEIF/AVIF item properties outside the bounded metadata paths are not inspected.");
+    addCoverageReason("UNSUPPORTED_STRUCTURE", "HEIF/AVIF item properties outside the bounded metadata paths are not inspected.", `${result.format}:unbounded-properties`);
+    worsenCoverage("opaque");
+  }
   if (result.exif?.fields.some((field) => field.name === "JPEGInterchangeFormat" || field.name === "JPEGInterchangeFormatLength")) thumbnails.push("EXIF JPEG thumbnail");
-  const complete = result.format !== "unknown" && !result.warnings.some(({ severity, code }) => severity === "error" || code === "UNSUPPORTED_FORMAT");
+  const coverage: MetadataCoverage = {
+    requested: result.coverage.requested,
+    wholeFile,
+    reasons: coverageReasons,
+    unclassifiedBlockIds,
+  };
+  const complete = coverage.requested === "complete";
   return {
     format: result.format,
-    safe: complete && findings.length === 0 && gaps.length === 0,
+    safe: complete && coverage.wholeFile === "complete" && coverage.unclassifiedBlockIds.length === 0 && findings.length === 0 && gaps.length === 0,
     complete,
     findings,
     opaqueBlocks,
@@ -110,5 +168,7 @@ export async function auditPrivacy(input: MetadataInput): Promise<PrivacyAuditRe
     trailingBytes,
     gaps,
     warnings: result.warnings,
+    coverage,
+    reasonCodes,
   };
 }

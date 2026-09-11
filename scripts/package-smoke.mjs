@@ -11,7 +11,7 @@ const root = resolve(import.meta.dirname, "..");
 const stage = await mkdtemp(join(tmpdir(), "browser-image-metadata-package-"));
 
 async function run(command, args, cwd) {
-  return execFile(command, args, { cwd, encoding: "utf8" });
+  return execFile(command, args, { cwd, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 });
 }
 
 try {
@@ -28,10 +28,12 @@ try {
     "package/README.md",
     "package/API.md",
     "package/CAPABILITIES.md",
+    "package/METADATA_REGISTRY.md",
     "package/MIGRATION.md",
     "package/CONTRIBUTING.md",
     "package/PUBLISHING.md",
     "package/BENCHMARKS.md",
+    "package/RELEASE_CHECKLIST.md",
     "package/EXTERNAL_CORPORA.md",
     "package/CHANGELOG.md",
     "package/LICENSE",
@@ -41,6 +43,10 @@ try {
     "package/dist/index.d.cts",
     "package/dist/detect.js",
     "package/dist/detect.cjs",
+    "package/dist/fetch.js",
+    "package/dist/fetch.cjs",
+    "package/dist/fetch.d.ts",
+    "package/dist/fetch.d.cts",
     "package/dist/jpeg.js",
     "package/dist/jpeg.cjs",
     "package/dist/mini.js",
@@ -79,18 +85,24 @@ try {
   const fixtureLiteral = JSON.stringify([...fixture]);
   await writeFile(join(consumer, "esm-smoke.mjs"), [
     'import assert from "node:assert/strict";',
-    'import { detectFormat, parseMetadata } from "browser-image-metadata";',
+    'import { detectFormat, getCapabilities, parseMetadata, readGps, readTags } from "browser-image-metadata";',
     'import { detectFormat as detectOnly } from "browser-image-metadata/detect";',
+    'import { fetchMetadata } from "browser-image-metadata/fetch";',
     'import { parseJpegMetadata } from "browser-image-metadata/jpeg";',
     'import { parseMetadata as parseMiniMetadata } from "browser-image-metadata/mini";',
     'import { redactMetadata as redactFocused } from "browser-image-metadata/redact";',
     'import { parseStructuredXmp } from "browser-image-metadata/xmp";',
     `const bytes = Uint8Array.from(${fixtureLiteral});`,
     'assert.equal(detectFormat(bytes).format, "jpeg");',
+    'assert.deepEqual(getCapabilities("jpeg").readScopes, ["full", "jpeg-header", "metadata"]);',
     'assert.equal(detectOnly(bytes).format, "jpeg");',
+    'assert.equal((await fetchMetadata("https://example.invalid/photo.jpg", { fetch: () => Promise.resolve(new Response(bytes)) })).format, "jpeg");',
     'assert.equal(parseStructuredXmp(`<x:xmpmeta xmlns:x="x"/>`)?.properties !== undefined, true);',
     'assert.equal((await parseMetadata(bytes)).dimensions?.width, 2);',
+    'assert.equal((await readGps(bytes)).latitude, 51.5);',
+    'assert.deepEqual((await readTags(bytes, ["Make"])).map((field) => field.name), ["Make"]);',
     'assert.equal((await parseJpegMetadata(bytes, { scope: "jpeg-header" })).completeness.scope, "partial");',
+    'assert.equal((await parseJpegMetadata(new Blob([bytes, new Uint8Array(64 * 1024)], { type: "image/jpeg" }), { scope: "metadata", select: { tags: ["Make"] } })).completeness.scope, "partial");',
     'assert.equal((await parseMiniMetadata(bytes)).format, "jpeg");',
     'assert.equal((await redactFocused(bytes, { remove: ["EXIF"] })).format, "jpeg");',
   ].join("\n"));

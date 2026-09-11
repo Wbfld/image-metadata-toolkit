@@ -1,4 +1,4 @@
-import type { IccData, MetadataField, MetadataWarning, SecurityLimits } from "../types.js";
+import type { IccData, IccTag, MetadataField, MetadataWarning, SecurityLimits } from "../types.js";
 import { readUint32 } from "../security/bounds.js";
 
 const ICC_IDENTIFIER = [0x49, 0x43, 0x43, 0x5f, 0x50, 0x52, 0x4f, 0x46, 0x49, 0x4c, 0x45, 0x00] as const;
@@ -92,6 +92,7 @@ export function inspectIccProfile(chunks: readonly IccChunk[], limits: SecurityL
     cursor += chunk.data.length;
   }
   const warnings: MetadataWarning[] = [];
+  const tags: IccTag[] = [];
   if (profile.length < 132) {
     warnings.push({ code: "TRUNCATED_DATA", message: "ICC profile is shorter than the 128-byte header and tag-count table.", severity: "error" });
     return { data: summary, fields: [], warnings };
@@ -120,7 +121,10 @@ export function inspectIccProfile(chunks: readonly IccChunk[], limits: SecurityL
       const offset = uint32BigEndian(profile, entry + 4);
       const length = uint32BigEndian(profile, entry + 8);
       const end = offset + length;
-      if (offset % 4 !== 0 || offset < tagTableEnd || !Number.isSafeInteger(end) || end > profile.length) {
+      const signature = ascii(profile, entry);
+      const valid = offset % 4 === 0 && offset >= tagTableEnd && Number.isSafeInteger(end) && end <= profile.length;
+      tags.push({ signature, offset, byteLength: length, valid });
+      if (!valid) {
         iccWarning(warnings, limits, "ICC tag payload range is invalid.", entry + 4, 8);
         continue;
       }
@@ -144,8 +148,8 @@ export function inspectIccProfile(chunks: readonly IccChunk[], limits: SecurityL
         ? `0x${Number(raw).toString(16).padStart(8, "0")}`
         : String(raw);
     const value: MetadataField["value"] = raw;
-    fields.push({ id: `ICC:0x${offset.toString(16).padStart(4, "0")}`, ifd: "ICC", tag: offset, name: definition.name, raw, value, display, description: definition.description, type: numeric ? "LONG" : "UNDEFINED", editable: false, sensitivity: "low" });
+    fields.push({ id: `ICC:0x${offset.toString(16).padStart(4, "0")}`, ifd: "ICC", tag: offset, name: definition.name, raw, value, display, description: definition.description, type: numeric ? "LONG" : "UNDEFINED", sensitivity: "low" });
   }
-  const data: IccData = { ...summary, fields };
+  const data: IccData = { ...summary, tags, fields };
   return { data, fields, warnings };
 }

@@ -27,3 +27,10 @@ jobs:
       - run: npm run test:corpus
         env:
           EXTERNAL_FIXTURE_ROOT: external-fixtures/exif-py/tests/resources
+      - name: Upload differential report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-corpus-differential-report
+          path: artifacts/external-corpus/
+          if-no-files-found: error

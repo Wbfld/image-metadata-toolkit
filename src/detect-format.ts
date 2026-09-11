@@ -4,6 +4,8 @@ const JPEG: FormatDetection = Object.freeze({ format: "jpeg", mimeType: "image/j
 const PNG: FormatDetection = Object.freeze({ format: "png", mimeType: "image/png" });
 const TIFF: FormatDetection = Object.freeze({ format: "tiff", mimeType: "image/tiff" });
 const WEBP: FormatDetection = Object.freeze({ format: "webp", mimeType: "image/webp" });
+const GIF: FormatDetection = Object.freeze({ format: "gif", mimeType: "image/gif" });
+const JXL: FormatDetection = Object.freeze({ format: "jxl", mimeType: "image/jxl" });
 const HEIF: FormatDetection = Object.freeze({ format: "heif", mimeType: "image/heif" });
 const AVIF: FormatDetection = Object.freeze({ format: "avif", mimeType: "image/avif" });
 const UNKNOWN: FormatDetection = Object.freeze({
@@ -149,6 +151,10 @@ export function detectFormat(bytes: Uint8Array): FormatDetection {
     return PNG;
   }
 
+  if (hasBytes(bytes, [0xff, 0x0a]) || hasBytes(bytes, [0x00, 0x00, 0x00, 0x0c, 0x4a, 0x58, 0x4c, 0x20, 0x0d, 0x0a, 0x87, 0x0a])) {
+    return JXL;
+  }
+
   if (
     hasBytes(bytes, [0x49, 0x49, 0x2a, 0x00]) ||
     hasBytes(bytes, [0x4d, 0x4d, 0x00, 0x2a]) ||
@@ -164,6 +170,10 @@ export function detectFormat(bytes: Uint8Array): FormatDetection {
     hasBytes(bytes, [0x57, 0x45, 0x42, 0x50], 8)
   ) {
     return WEBP;
+  }
+
+  if (hasBytes(bytes, [0x47, 0x49, 0x46, 0x38, 0x37, 0x61]) || hasBytes(bytes, [0x47, 0x49, 0x46, 0x38, 0x39, 0x61])) {
+    return GIF;
   }
 
   return detectIsoBmff(bytes) ?? UNKNOWN;

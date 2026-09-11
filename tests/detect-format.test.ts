@@ -38,6 +38,9 @@ describe("detectFormat", () => {
     ["little-endian BigTIFF", [0x49, 0x49, 0x2b, 0x00, 0x08, 0x00, 0x00, 0x00], "tiff", "image/tiff"],
     ["big-endian BigTIFF", [0x4d, 0x4d, 0x00, 0x2b, 0x00, 0x08, 0x00, 0x00], "tiff", "image/tiff"],
     ["WebP", [...ascii("RIFF"), 4, 0, 0, 0, ...ascii("WEBP")], "webp", "image/webp"],
+    ["GIF89a", [...ascii("GIF89a")], "gif", "image/gif"],
+    ["JPEG XL codestream", [0xff, 0x0a], "jxl", "image/jxl"],
+    ["JPEG XL container", [0, 0, 0, 12, ...ascii("JXL "), 0x0d, 0x0a, 0x87, 0x0a], "jxl", "image/jxl"],
   ])("detects %s", (_name, signature, format, mimeType) => {
     expect(detectFormat(Uint8Array.from(signature))).toEqual({ format, mimeType });
   });

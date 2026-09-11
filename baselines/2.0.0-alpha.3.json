@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "competitors": {
+    "exifreader": "4.45.0",
+    "exifr": null
+  },
+  "fixtures": [
+    { "file": "avif-idat-item-metadata.avif", "bytes": 834, "sha256": "0ec4bd1d69f2e837d9b1509621465b71f9ee0d50936bc16aedb8ff544cfa8102" },
+    { "file": "heif-item-metadata.heic", "bytes": 830, "sha256": "45827c242151888ad23d4dcf493d53e8a161ad0d968e207db1de2afc4cb8efa5" },
+    { "file": "jpeg-exif-little-endian.jpg", "bytes": 1332, "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e" },
+    { "file": "libavif-paris-icc-exif-xmp.avif", "bytes": 21132, "sha256": "961bc38b61e60b7651fa20efa24269ae2f35e4958822a81c908c9bbf9b3f66e1" },
+    { "file": "png-metadata.png", "bytes": 985, "sha256": "5811509f52bb9ca60ca7d077e8b5dac9720794b5f2a7882ae349a6899f329506" },
+    { "file": "sips-heic-exif-xmp.heic", "bytes": 3950, "sha256": "9e45b6a90e6f76783b6b7c2561f7e6ebe60c288d5ebe181a42bdc1551f2aa5ca" },
+    { "file": "tiff-metadata.tif", "bytes": 262, "sha256": "a27c42137f0443afd9dcbedc635b4529f60d7b9e84b360d7dc14a5003c7a2875" },
+    { "file": "webp-metadata.webp", "bytes": 804, "sha256": "0bdc0894e5b76fabacb7bbad5f590b1ec58b796f8a96db1076cb5e066edbae71" }
+  ]
+}

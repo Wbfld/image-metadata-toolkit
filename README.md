@@ -4,7 +4,9 @@ Parse, explain, validate, and privacy-redact image metadata locally in browsers,
 
 The package has no runtime dependencies. It accepts `ArrayBuffer`, any `ArrayBufferView` (including Node.js `Buffer`), `Blob`, and browser `File` inputs.
 
-> **Current scope:** JPEG, PNG, classic TIFF, WebP, HEIF, AVIF, IPTC-IIM, and bounded ICC header inspection are implemented. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. HEIF/AVIF safely inspect direct EXIF/XMP boxes, standard `iinf`/`iloc` metadata items stored in-file or in their own `idat`, `cdsc` primary-image associations, and primary-item `colr` ICC or `nclx` colour data. Arbitrary metadata writing and HEIF/AVIF rewriting are not exposed.
+> **Current scope:** JPEG, PNG, TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, AVIF, IPTC-IIM, and bounded ICC header and tag-directory inspection are implemented. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. HEIF/AVIF safely inspect direct EXIF/XMP boxes, standard `iinf`/`iloc` metadata items stored in-file or in their own `idat`, `cdsc` primary-image associations, and primary-item `colr` ICC or `nclx` colour data. Arbitrary metadata writing and HEIF/AVIF rewriting are not exposed.
+
+> **Support boundaries:** Container detection is signature recognition, not a promise of full metadata support. Blob/File preview and metadata scopes are intentionally partial and report `completeness` and `coverage`; malformed, opaque, and unsupported structures remain visible through warnings and explicit outcomes. TIFF/WebP/HEIF/AVIF writing, MakerNote interpretation, image-sequence semantics, and arbitrary metadata editing are unsupported—check [the generated capability matrix](./CAPABILITIES.md) before relying on a format or operation.
 
 ## Install
 
@@ -32,6 +34,13 @@ for (const warning of result.warnings) {
 }
 ```
 
+Every result also exposes `coverage`: `coverage.requested` describes the
+operation that was requested, while `coverage.wholeFile` stays conservative for
+privacy decisions when blocks are skipped, partial, malformed, opaque, or
+unsupported. Use `coverage.reasons` and `coverage.unclassifiedBlockIds` for
+machine-readable policy decisions; each `result.blocks` entry carries its own
+normalized coverage state.
+
 For common UI work, the root entry point also provides focused helpers. They
 retain uncertainty instead of choosing between conflicting source values:
 
@@ -49,6 +58,54 @@ const thumbnail = getThumbnail(result);
 browser-friendly CSS instructions, and `getThumbnail()` returns a defensive
 copy of a bounded embedded EXIF thumbnail.
 
+For the usual one-task case, pass the image input directly. These helpers apply
+the smallest safe EXIF selection needed for their result:
+
+```ts
+import { readCaptureTime, readGps, readOrientation, readRotation, readTags } from "browser-image-metadata";
+
+const gps = await readGps(file);
+const orientation = await readOrientation(file);
+const rotation = await readRotation(file);
+const captureTime = await readCaptureTime(file);
+const camera = await readTags(file, ["Make", "Model", "LensModel"]);
+```
+
+`readPreset(file, "essential" | "camera" | "location" | "privacy" | "all")`
+offers a concise starting point for application views. Use
+`indexMetadataFields(result)` when repeated field lookup is needed while
+preserving duplicates under `allByName`.
+
+Use `readStructuredXmp(file)` when an application needs bounded RDF properties
+from retained XMP packets. It keeps packet-level failures visible instead of
+discarding malformed or unsafe XML.
+
+Advanced integrations can use `createByteSource(input)` for validated seekable
+ranges over byte views or Blob/File inputs. Overlapping reads are coalesced,
+repeated ranges are served from a bounded LRU cache, and `source.telemetry()`
+exposes request, byte, cache-hit, and coalescing evidence. Parsing results from
+metadata-scoped Blob reads include the same telemetry.
+
+For galleries and import queues, `parseMetadataMany()` preserves input order
+while limiting simultaneous local work:
+
+```ts
+const results = await parseMetadataMany(files, {
+  concurrency: 4,
+  select: { groups: ["Dimensions", "EXIF"], tags: ["Make", "Model", "Orientation"] },
+});
+```
+
+The core parser never fetches. If an application needs an explicit browser
+network adapter, import it separately; response bytes are streamed under the
+same input limit before parsing:
+
+```ts
+import { fetchMetadata } from "browser-image-metadata/fetch";
+
+const result = await fetchMetadata("/images/photo.jpg", { limits: { maxInputBytes: 20 * 1024 * 1024 } });
+```
+
 For a fast JPEG preview, request only header metadata. `Blob` and `File`
 inputs are read with `slice()` only through the start-of-scan header; the result
 records its intentionally partial scope.
@@ -60,10 +117,24 @@ const preview = await parseMetadata(file, {
 });
 ```
 
-For PNG and WebP `Blob` or `File` inputs, use `scope: "metadata"` to skip
-image payload chunks and read only the selected metadata ranges. The result
-records `completeness.bytesRead` and `completeness.inputBytes`; TIFF, HEIF, and
-AVIF currently use a full read for this scope.
+The same `select` groups and EXIF tag names apply to JPEG, PNG, WebP, classic
+TIFF, HEIF, and AVIF readers. Unrequested decoded metadata is skipped; TIFF,
+HEIF, and AVIF follow bounded directory or box structures while they inspect
+metadata.
+
+For JPEG, PNG, WebP, classic TIFF, HEIF, and AVIF `Blob` or `File` inputs, use
+`scope: "metadata"` to skip image payload ranges and read only selected
+metadata. JPEG follows marker lengths and reads selected APP/SOF segments;
+PNG/WebP traverse chunk headers; TIFF follows bounded IFD/value offsets. The
+result records `completeness.bytesRead` and
+`completeness.inputBytes`. HEIF and AVIF reconstruct bounded `meta` boxes and
+read only selected metadata item extents; malformed or unsupported layouts
+fall back to a full read so the legacy parser can report its diagnostics.
+
+Pass an `AbortSignal` in `ParseOptions` to stop range reads, PNG
+decompression, and bounded container traversal at safe checkpoints. Worker
+clients can set `terminateOnAbort: true` when immediate interruption of a
+synchronous parse is required.
 
 The result always has this stable top-level shape:
 
@@ -79,6 +150,7 @@ The result always has this stable top-level shape:
   icc,
   jfif,
   pngText,
+  blocks,
   completeness,
   warnings
 }
@@ -97,7 +169,6 @@ Every normalized field includes:
   display,
   description,
   type,
-  editable, // deprecated: this package does not expose editing
   sensitivity
 }
 ```
@@ -149,21 +220,22 @@ Unknown EXIF tags are retained in `result.exif.fields` with their numeric tag, T
 
 Photoshop APP13 IPTC-IIM datasets are exposed as `result.iptc.fields` and in `result.fields` with stable `IPTC:record:dataset` identifiers. Repeated datasets such as `Keywords` are preserved as separate entries. The declared IPTC coded character set is honored for UTF-8 (`ESC % G`); each field retains exact raw bytes, and unsupported encodings remain raw with warnings. Urgency, dates, times, and country codes are validated.
 
-Complete JPEG APP2, PNG iCCP, and WebP ICCP profiles expose bounded header fields through `result.icc.fields` and `result.fields` (profile size, version, device class, color space, PCS, and rendering intent). Tag payloads and color transforms are intentionally not interpreted.
+Complete JPEG APP2, PNG iCCP, and WebP ICCP profiles expose bounded header fields through `result.icc.fields` and `result.fields` (profile size, version, device class, color space, PCS, and rendering intent). `result.icc.tags` exposes each bounded tag-directory signature and range without decoding tag payloads or color transforms.
 
 ## Format status
 
-| Format | Signature detection | Dimensions | Metadata parsing | Lossless redaction |
-| --- | --- | --- | --- | --- |
-| JPEG | Yes | SOF markers | EXIF; bounded JFIF/XMP/IPTC/ICC parsing | Yes |
-| PNG | Yes | IHDR | eXIf EXIF; iCCP ICC; tEXt, zTXt, iTXt text and XMP | Selected chunks |
-| TIFF (classic) | Yes | EXIF ImageWidth/ImageLength when present | EXIF/IFD metadata; XMP tag 700; IPTC tag 33723; ICC tag 34675 | Not yet |
-| BigTIFF | Yes | Not yet | Not yet (explicitly warned) | Not yet |
-| WebP | Yes | VP8, VP8L, VP8X | EXIF, XMP, and ICCP chunks | EXIF/XMP/ICC chunks |
-| HEIF | Yes | Primary-item `pitm`/`ipma`/`ispe` selection; conservative `ispe` fallback | Direct EXIF/XMP boxes; bounded `iinf`/`iloc` items in-file or in the same `idat`; `cdsc` association; primary `colr` ICC or `nclx` data | Not yet |
-| AVIF | Yes | Primary-item `pitm`/`ipma`/`ispe` selection; conservative `ispe` fallback | Direct EXIF/XMP boxes; bounded `iinf`/`iloc` items in-file or in the same `idat`; `cdsc` association; primary `colr` ICC or `nclx` data | Not yet |
+The [generated capability matrix](./CAPABILITIES.md) is the source of truth for
+format support, selective decode, Blob/File scopes, lossless removal, strict
+sanitization, and positive/malformed/selection evidence. Detection means
+signature or container-brand recognition only; it is never presented as full
+metadata support. BigTIFF, HEIF, and AVIF inspection remains bounded and
+conservative, with unsafe or conflicting structures reported instead of
+guessed. See [`tests/fixtures/README.md`](./tests/fixtures/README.md) for
+fixture provenance.
 
-Detection means signature/container-brand recognition, not full pixel decoding. A detected format without a metadata parser returns `UNSUPPORTED_FORMAT`. HEIF/AVIF inspection is explicitly bounded and scoped per `meta` box: item IDs, item locations, `idat` payloads, and property indexes are never mixed across metadata contexts. It selects dimensions from common primary-item `pitm`/`ipma`/`ispe` associations and can inspect an associated `colr` `prof`/`rICC` profile header. It resolves Exif and MIME RDF/XML XMP items through `iinf`/`iloc` only when construction method 0 refers to this file or method 1 refers to the containing `idat` box. The standard HEIF Exif TIFF-header offset is validated relative to its four-byte prefix. External data references, item-relative construction, malformed locations, missing item properties, and conflicting primary metadata produce warnings rather than being guessed. The checked fixture corpus contains encoder-produced, decoder-verified HEIC and AVIF samples; provenance is recorded in [`tests/fixtures/README.md`](./tests/fixtures/README.md).
+The EXIF/TIFF vocabulary is generated from an auditable, provenance-aware
+[metadata registry](./METADATA_REGISTRY.md). Applications can pass immutable
+custom registries per parse without changing global behavior.
 
 ## Runtime examples
 
@@ -212,14 +284,15 @@ node examples/node.mjs photo.jpg
 After publication, Deno can consume the dependency-free ESM build through its npm compatibility layer:
 
 ```ts
-import { parseMetadata } from "npm:browser-image-metadata@^0.5.0";
+import { parseMetadata } from "npm:browser-image-metadata@2.0.0-alpha.3";
 const result = await parseMetadata(await Deno.readFile("photo.jpg"));
 ```
 
 ## Capabilities and privacy audit
 
-Use `getCapabilities(format)` to discover which metadata groups and lossless
-redaction targets are supported before rendering controls. `getMetadataSummary`
+Use `getCapabilities(format)` to discover which metadata groups, read scopes,
+and lossless redaction targets are supported before rendering controls.
+`getMetadataSummary`
 provides typed camera, lens, exposure, capture, location, and orientation values
 without replacing the raw result; conflicts are surfaced instead of silently
 chosen. `auditPrivacy(input)` parses locally and reports recognized sensitive
@@ -233,13 +306,15 @@ const result = await parseMetadata(file);
 const summary = getMetadataSummary(result);
 const audit = await auditPrivacy(file);
 if (!audit.safe) console.warn(audit.findings, audit.gaps);
+console.log(audit.coverage, audit.reasonCodes);
 console.log(getCapabilities(result.format).redaction);
 ```
 
 ## Focused imports and workers
 
 Use `browser-image-metadata/detect` when only container detection is needed.
-Use `browser-image-metadata/jpeg` for a JPEG-only reader and
+Use `browser-image-metadata/jpeg` for a JPEG-only reader with header and
+metadata-only Blob scopes, and
 `browser-image-metadata/mini` for a small JPEG reader plus GPS, orientation,
 rotation, capture-time, thumbnail, and summary helpers. Use
 `browser-image-metadata/redact` for lossless JPEG/PNG/WebP redaction without
@@ -297,13 +372,14 @@ npm run examples
 npm run test:fuzz
 npm run test:browser
 npm run test:deno
+npm run capabilities:check
 npm run benchmark
 npm run check
 ```
 
 `npm run check` runs type-checking, linting, the complete coverage suite, both package builds, package-manifest validation, an install-from-tarball ESM/CommonJS smoke test, and ESM/CommonJS/Blob/typed-array/worker example smoke tests. CI runs it on Node.js 22, 24, and 26. Separate CI jobs run Chromium, Firefox, WebKit, Deno, and the scheduled malformed-input property suite. `npm run benchmark` produces local reproducible latency and bundle-size evidence; it does not make a portability claim.
 
-The [capability matrix](./CAPABILITIES.md) and [migration guide](./MIGRATION.md) describe supported operations and common adoption paths. See [CONTRIBUTING.md](./CONTRIBUTING.md) for development and fixture-submission guidance, [EXTERNAL_CORPORA.md](./EXTERNAL_CORPORA.md) for the pinned 100-plus-sample interoperability corpus, and [PUBLISHING.md](./PUBLISHING.md) to configure npm trusted publishing and cut a release.
+The [capability matrix](./CAPABILITIES.md) and [migration guide](./MIGRATION.md) describe supported operations and common adoption paths. See [CONTRIBUTING.md](./CONTRIBUTING.md) for development and fixture-submission guidance, [EXTERNAL_CORPORA.md](./EXTERNAL_CORPORA.md) for the pinned 100-plus-sample interoperability corpus, and [PUBLISHING.md](./PUBLISHING.md) plus the [release checklist](./RELEASE_CHECKLIST.md) to configure npm trusted publishing and cut a release.
 
 ## Known limitations
 

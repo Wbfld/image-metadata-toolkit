@@ -27,6 +27,7 @@ jobs:
       - run: node scripts/assert-release-version.mjs
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
+      - run: npm run release:check
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run check
       - run: npm run test:fuzz

@@ -1,4 +1,4 @@
-import { getMetadataSummary, parseMetadata } from "npm:browser-image-metadata@^0.5.0";
+import { getMetadataSummary, parseMetadata } from "npm:browser-image-metadata@2.0.0-alpha.3";
 
 const path = Deno.args[0];
 if (!path) throw new Error("Usage: deno run --allow-read examples/integrations/deno.ts image.jpg");

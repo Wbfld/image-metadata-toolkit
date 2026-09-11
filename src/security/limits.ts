@@ -20,6 +20,9 @@ export const DEFAULT_LIMITS: SecurityLimits = Object.freeze({
   maxPngChunks: 4096,
   maxDecompressedBytes: 8 * MEBIBYTE,
   maxDecompressedMetadataBytes: 16 * MEBIBYTE,
+  maxReadRequests: 65_536,
+  maxReadBytes: 256 * MEBIBYTE,
+  maxReadCacheBytes: 4 * MEBIBYTE,
   maxWarnings: 256,
 });
 
@@ -35,6 +38,9 @@ const LIMIT_KEYS = [
   "maxPngChunks",
   "maxDecompressedBytes",
   "maxDecompressedMetadataBytes",
+  "maxReadRequests",
+  "maxReadBytes",
+  "maxReadCacheBytes",
   "maxWarnings",
 ] as const satisfies readonly (keyof SecurityLimits)[];
 
@@ -77,6 +83,9 @@ export function resolveLimits(overrides: Partial<SecurityLimits> = {}): Security
     maxPngChunks: resolveLimit(overrides, "maxPngChunks"),
     maxDecompressedBytes: resolveLimit(overrides, "maxDecompressedBytes"),
     maxDecompressedMetadataBytes: resolveLimit(overrides, "maxDecompressedMetadataBytes"),
+    maxReadRequests: resolveLimit(overrides, "maxReadRequests"),
+    maxReadBytes: resolveLimit(overrides, "maxReadBytes"),
+    maxReadCacheBytes: resolveLimit(overrides, "maxReadCacheBytes"),
     maxWarnings: resolveLimit(overrides, "maxWarnings"),
   });
 }

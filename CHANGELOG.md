@@ -1,7 +1,51 @@
 # Changelog
 
-## Unreleased — 2.0 convenience layer
+## 2.0.0-alpha.3 — unreleased
 
+- added bounded `ByteSource` adapters for byte views and Blob/File ranges with
+  overlap coalescing, an LRU cache, aborts, read budgets, and telemetry;
+- preserved original JPEG source offsets and provenance when metadata-scoped
+  reads fetch only selected marker ranges;
+- replaced the external corpus smoke check with a registry-driven differential
+  report, per-tag/per-producer counters, SHA-256 fixture identities, reviewed
+  allowlist validation, and a strict missing-local gate;
+- added fair ExifReader/exifr competitor benchmarks with equal-output semantic
+  gates, separate cold/warm timing, fixture hashes, and instrumented range
+  request/byte telemetry;
+- aligned the public `browser-image-metadata` identity with a generated
+  capability manifest, explicit support-boundary documentation, evidence checks,
+  and a clean-tree release preflight/checklist;
+- added explicit requested-scope and whole-file coverage states for every
+  metadata result, including block-level selection, malformed, opaque, and
+  unsupported reason codes;
+- made privacy audits fail closed from block coverage and emit machine-readable
+  policy reason codes; strict sanitization now rejects unclassified metadata;
+- added root-level structured-XMP helpers that preserve one result per original
+  packet, including bounded decode failures.
+- added bounded BigTIFF parsing for both byte orders, including 64-bit IFD
+  pointers, safe legacy EXIF decoding, and exact out-of-range integer values.
+- added GIF dimensions, comments, animation loop/frame metadata, and bounded
+  XMP application-extension parsing.
+- added bounded JPEG XL container Exif and XML metadata parsing, with explicit
+  raw-codestream inspection limits.
+- added validated ICC profile-tag directory entries, including signatures,
+  byte ranges, and invalid-range status without exposing unbounded profile data.
+
+## 2.0.0-alpha.2
+
+- added `parseMetadataMany()` for ordered, bounded-concurrency local batch parsing;
+- added an explicit, input-bounded `browser-image-metadata/fetch` adapter;
+- preserve Blob and File inputs across worker messages, so metadata-scoped
+  worker parsing can range-read with `Blob.slice()` without a client-side full copy.
+
+## 2.0.0-alpha.1
+
+- added direct input helpers for GPS, orientation, rotation, thumbnails,
+  capture time, selected tags, typed summaries, and common metadata presets;
+- added duplicate-preserving field indexes for repeat application lookup;
+- removed the misleading public `MetadataField.editable` flag;
+- made strict sanitization a discriminated success/failure result and added
+  audit limits plus cancellation;
 - added typed `getGps`, `getOrientation`, `getRotation`, `getThumbnail`, and
   `getCaptureTime` helpers for common browser workflows;
 - preserved source conflicts and incomplete GPS state instead of silently
@@ -12,8 +56,28 @@
   convenience helpers for common browser workflows.
 - added a metadata-only parsing scope for PNG and WebP Blob/File inputs with
   chunk-header traversal, selected metadata reads, and bytes-read reporting.
+- extended metadata-family and EXIF-tag selection to classic TIFF, HEIF, and
+  AVIF parsing, so unrequested decoded metadata is skipped consistently.
+- added bounded classic TIFF metadata range reads for Blob/File inputs, with
+  compacted IFD/value views and bytes-read completeness evidence.
+- added bounded HEIF/AVIF metadata range reads for Blob/File inputs, compacting
+  `meta` structures and remapping selected direct, `iloc`, and `idat` item
+  payloads without reading image data.
+- added marker-level JPEG metadata range reads for Blob/File inputs, retaining
+  selected APP/SOF segments and the SOS header while skipping opaque headers
+  and entropy-coded image data.
+- extended `AbortSignal` checks through Blob range reads, PNG decompression, and
+  bounded JPEG/WebP/TIFF/HEIF traversal so long metadata operations can stop at
+  safe checkpoints.
+- aligned the focused JPEG entry point with the root metadata scope so
+  `browser-image-metadata/jpeg` and `/mini` also skip JPEG image payloads for
+  Blob/File metadata reads and report range completeness.
+- expanded the reproducible benchmark matrix to cover selected metadata-only
+  Blob reads for all six supported image containers.
+- exposed supported `readScopes` through `getCapabilities()` so browser UIs can
+  select full, metadata-only, and JPEG-header workflows without format tables.
 
-## Unreleased — 1.0 stabilization
+## Internal 1.0 stabilization
 
 - added a precise capability matrix, migration guidance, a local-only metadata playground, and framework integration snippets;
 - added contributor, fixture-provenance, issue-triage, and npm trusted-publishing guidance;

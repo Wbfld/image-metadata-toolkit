@@ -1,4 +1,4 @@
-# API reference
+# browser-image-metadata API reference
 
 ## `parseMetadata(input, options?)`
 
@@ -11,7 +11,25 @@ locally. It returns a stable result with `format`, `mimeType`, `dimensions`,
 normalized `fields`, raw `exif`, `xmp`, `iptc`, `icc`, `jfif`, `pngText`, and
 bounded `warnings`. `result.completeness` explicitly records whether the full
 requested inspection completed without error warnings. `ParseOptions.signal`
-supports cancellation at asynchronous boundaries.
+supports cancellation before work, between Blob range reads, during PNG
+decompression, and at bounded container traversal checkpoints. A synchronous
+ArrayBuffer parse can only observe cancellation at parser checkpoints; worker
+clients can opt into `terminateOnAbort` for immediate interruption.
+
+`result.blocks` records every recognized metadata family retained in the
+result, its container role, inspection status, sensitivity, and related warning
+codes. Block offsets and lengths are null when a parser cannot establish an
+unambiguous source range.
+
+`result.coverage` separates the requested operation from whole-file knowledge.
+`coverage.requested` describes whether the requested selection completed;
+`coverage.wholeFile` is conservative for privacy decisions and becomes
+`skipped-by-selection`, `partial`, `malformed`, `opaque`, or `unsupported` when
+any metadata-bearing block is not fully classified. `coverage.reasons` contains
+stable machine-readable codes and human messages, while
+`coverage.unclassifiedBlockIds` identifies the affected blocks. Each block also
+has a normalized `coverage` state (`complete`, `partial`, `skipped-by-selection`,
+`malformed`, or `opaque`).
 
 Supported metadata readers are JPEG EXIF/JFIF/XMP/IPTC/ICC, PNG EXIF/text/XMP/
 ICC, classic TIFF EXIF/XMP/IPTC/ICC, WebP EXIF/XMP/ICC, and bounded HEIF/AVIF
@@ -20,18 +38,56 @@ EXIF/XMP/primary dimensions/ICC/`nclx` inspection. HEIF and AVIF use bounded
 image. Unknown EXIF tags remain in
 `result.exif.fields`.
 
-`ParseOptions.select` accepts metadata `groups` and EXIF `tags`. JPEG, PNG,
-and WebP readers skip unrequested metadata decoding; `tags` accepts names such
-as `Make` and stable IDs such as `IFD0:0x010f`. The default is a complete scan.
+`ParseOptions.select` accepts metadata `groups` and EXIF `tags`. All container
+readers avoid decoding unrequested EXIF fields and metadata families; `tags`
+accepts names such as `Make` and stable IDs such as `IFD0:0x010f`. The default
+is a complete scan.
 Set `scope: "jpeg-header"` for a latency-sensitive JPEG preview. With a `Blob`
 or `File`, the reader uses `slice()` and stops immediately after the
 start-of-scan header, leaving entropy-coded image data unread. The result has
 `completeness.scope: "partial"` and records the intentional scope reason.
-Set `scope: "metadata"` for PNG and WebP `Blob`/`File` inputs to scan chunk
-headers while skipping image payload chunks. Only selected metadata chunks are
-read, and `completeness.bytesRead` plus `completeness.inputBytes` report the
-range-read evidence. TIFF, HEIF, and AVIF currently fall back to a full read
-because their metadata offsets need a separate bounded random-access reader.
+Set `scope: "metadata"` for JPEG, PNG, WebP, classic TIFF, HEIF, and AVIF `Blob`/`File` inputs
+to read metadata ranges while skipping image payload data. PNG/WebP scan chunk
+headers; JPEG follows marker lengths and fetches selected APP/SOF ranges;
+TIFF follows bounded IFD and value offsets and compacts only the requested
+metadata for the existing parser. `completeness.bytesRead` plus
+`completeness.inputBytes` report the range-read evidence. HEIF and AVIF copy
+bounded `ftyp`/`meta` structures and resolve only selected direct metadata
+boxes or `iinf`/`iloc` Exif and RDF/XML XMP item extents. Unsupported or
+malformed item layouts conservatively fall back to a full read.
+
+Range-backed reads use the exported `createByteSource()` abstraction. It accepts
+the same `ArrayBuffer`, `ArrayBufferView`, and Blob/File inputs, validates every
+half-open range, coalesces overlapping reads queued together, and maintains a
+bounded LRU cache. `source.telemetry()` reports underlying requests, fetched
+bytes, cache hits, coalesced reads, and cache occupancy. `maxReadRequests`,
+`maxReadBytes`, and `maxReadCacheBytes` are enforced alongside the existing
+input and metadata limits. JPEG metadata-scope provenance is remapped to the
+original source offsets even when only selected marker ranges were fetched.
+
+## `parseMetadataMany(inputs, options?)`
+
+```ts
+parseMetadataMany(inputs: readonly MetadataInput[], options?: ParseManyOptions): Promise<readonly MetadataResult[]>
+```
+
+Parses an ordered collection locally and returns results in the same order.
+`options.concurrency` bounds simultaneous work and defaults to four. Every
+item receives the same parse selection, limits, scope, and cancellation signal.
+The function rejects invalid concurrency and propagates parse or cancellation
+errors without concealing them in a result array.
+
+## `browser-image-metadata/fetch`
+
+```ts
+fetchMetadata(input: RequestInfo | URL, options?: FetchMetadataOptions): Promise<MetadataResult>
+```
+
+The optional fetch entry point makes network access explicit. It streams the
+response with the same `maxInputBytes` bound used for local inputs, rejects
+non-successful HTTP responses, and passes downloaded bytes to the local
+parser. Supply `options.fetch` for custom runtimes or tests. The root entry
+point never fetches URLs.
 
 ## `redactMetadata(input, options)`
 
@@ -46,9 +102,9 @@ normalized EXIF privacy targets. `preserve` wins over a conflicting removal.
 Unsafe or malformed surgery is atomic: the original bytes are returned with an
 error warning and no removal record. `result.outcome` identifies typed
 unapplied targets, human-readable reasons, and whether the operation was fully
-satisfied. `RedactOptions.signal` is checked before materialization and before
-surgery begins; worker clients can terminate a running worker for immediate
-interruption.
+satisfied. `RedactOptions.signal` is checked before and during input
+materialization and before surgery begins; worker clients can terminate a
+running worker for immediate interruption.
 JPEG MPF multi-picture files and Ultra HDR gain-map XMP are detected before
 surgery. They return an `UNSUPPORTED_STRUCTURE` warning and unchanged bytes
 until secondary-image offsets can be rewritten safely.
@@ -61,7 +117,9 @@ sanitizeMetadata(input: MetadataInput, options?: SanitizeOptions): Promise<Sanit
 
 Performs a strict sharing-oriented redaction. It keeps ICC rendering information
 and EXIF orientation by default, but returns `data: null` if the requested
-policy cannot be proved complete.
+policy cannot be proved complete. Failed results include stable `reasonCodes`
+when a remaining opaque, malformed, or unsupported structure explains the
+failure.
 
 ## `getCapabilities(format)`
 
@@ -69,8 +127,10 @@ policy cannot be proved complete.
 getCapabilities(format: ImageFormat): FormatCapabilities
 ```
 
-Returns the metadata groups and lossless redaction targets supported for a
-format. The returned arrays are copies and can be used directly to build UI.
+Returns the metadata groups, supported parse scopes, and lossless redaction
+targets supported for a format. `readScopes` reports `full` for ordinary
+inputs, `metadata` for Blob/File range reads, and `jpeg-header` for JPEG
+previews. The returned arrays are copies and can be used directly to build UI.
 
 ## `getMetadataSummary(result)`
 
@@ -103,22 +163,47 @@ workflows:
   `DateTimeDigitized`, and preserves an explicitly stored timezone offset
   without inferring one from the runtime environment.
 
-## `auditPrivacy(input)`
+Direct input variants avoid a full application-level parse for common tasks:
+
+- `readGps(input, options?)`
+- `readOrientation(input, options?)`
+- `readRotation(input, options?)`
+- `readThumbnail(input, options?)`
+- `readCaptureTime(input, options?)`
+- `readTags(input, tags, options?)`
+- `readMetadataSummary(input, options?)`
+- `readStructuredXmp(input, options?)`
+- `readPreset(input, preset, options?)`, where `preset` is `essential`,
+  `camera`, `location`, `privacy`, or `all`.
+
+`DirectReadOptions` accepts limits, cancellation, and scope, but helpers own
+their selections. `indexMetadataFields(result)` exposes `byId`, `byName`, and
+`allByName` maps for repeat lookup without flattening duplicate metadata.
+`getStructuredXmp(result, options?)` and `readStructuredXmp(input, options?)`
+decode retained XMP packets into bounded RDF property maps while retaining a
+document entry for every packet that could not be decoded safely.
+
+## `auditPrivacy(input, options?)`
 
 ```ts
-auditPrivacy(input: MetadataInput): Promise<PrivacyAuditResult>
+auditPrivacy(input: MetadataInput, options?: PrivacyAuditOptions): Promise<PrivacyAuditResult>
 ```
 
 Parses locally and reports recognized metadata classes, sensitive normalized
 fields, opaque blocks, thumbnails, trailing bytes, parser warnings, and known inspection gaps. `safe` is conservative: it
-is true only when parsing completed without error warnings, no recognized or
-opaque metadata findings remain, and no inspection gaps are reported.
+is true only when requested and whole-file coverage are complete, every block is
+classified, no recognized or opaque metadata findings remain, and no inspection
+gaps are reported. `coverage` mirrors the parser coverage model and
+`reasonCodes` provides stable machine-readable policy outcomes (for example
+`RAW_XMP`, `OPAQUE_JPEG_MARKER`, `TRAILING_BYTES`, and
+`SENSITIVE_METADATA_PRESENT`). Audit options accept the same limits and
+`AbortSignal` controls as other local inspection operations.
 
 ## Limits and warnings
 
-`ParseOptions.limits` and `RedactOptions.limits` accept positive safe integer
+`ParseOptions.limits`, `RedactOptions.limits`, and `PrivacyAuditOptions.limits` accept positive safe integer
 overrides for input, metadata, segment, chunk, IFD, nesting, string, per-chunk
-decompression, cumulative decoded metadata, and warning budgets. Every parser warning has a stable `code`,
+decompression, cumulative decoded metadata, range requests/bytes/cache, and warning budgets. Every parser warning has a stable `code`,
 `message`, and `severity` (`warning` or `error`), with offsets where available.
 Oversized top-level input rejects with `MetadataError` code `LIMIT_EXCEEDED`.
 PNG `iTXt` text is decoded as UTF-8. PNG selective EXIF redaction uses the same
@@ -129,7 +214,7 @@ Unknown redaction targets are reported as warnings and do not change bytes.
 
 `browser-image-metadata/detect` contains signature detection only.
 `browser-image-metadata/jpeg` contains JPEG-only parsing, including the
-header-only Blob path. `browser-image-metadata/redact` contains lossless JPEG,
+header-only and metadata-only Blob paths. `browser-image-metadata/redact` contains lossless JPEG,
 PNG, and WebP redaction without importing metadata readers.
 `browser-image-metadata/mini` provides a small JPEG-focused reader with the
 same task-oriented summary helpers as the root entry point. Its

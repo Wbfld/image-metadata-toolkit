@@ -2,6 +2,12 @@ import { detectFormat } from "./detect-format.js";
 import { MetadataError, type MetadataInput, type MetadataWarning, type SecurityLimits } from "./types.js";
 import { jpegHeaderEnd } from "./jpeg-header.js";
 import { wantsGroup, type ResolvedSelection } from "./selection.js";
+import { materializeTiffMetadata } from "./tiff-range.js";
+import { materializeHeifMetadata } from "./heif-range.js";
+import { materializeJpegMetadata } from "./jpeg-range.js";
+import { throwIfAborted } from "./security/abort.js";
+import { createByteSource, type ByteSource } from "./io/byte-source.js";
+import type { ReadTelemetry } from "./types.js";
 
 export interface MetadataMaterialization {
   readonly bytes: Uint8Array;
@@ -9,6 +15,9 @@ export interface MetadataMaterialization {
   readonly bytesRead?: number;
   readonly inputBytes?: number;
   readonly warnings: readonly MetadataWarning[];
+  readonly telemetry?: ReadTelemetry;
+  /** Map offsets in a compact parser view back to source-file offsets. */
+  readonly mapOffset?: (offset: number) => number;
 }
 
 export function isBlobLike(value: unknown): value is Blob {
@@ -21,9 +30,10 @@ export function isBlobLike(value: unknown): value is Blob {
  * Read only the JPEG prefix through the start-of-scan header. Blob slices avoid
  * materialising pixel data for latency-sensitive metadata previews.
  */
-export async function materializeJpegHeader(input: MetadataInput, limits: SecurityLimits): Promise<Uint8Array> {
+export async function materializeJpegHeader(input: MetadataInput, limits: SecurityLimits, signal?: AbortSignal): Promise<Uint8Array> {
+  throwIfAborted(signal);
   if (!isBlobLike(input)) {
-    const bytes = await materializeInput(input, limits);
+    const bytes = await materializeInput(input, limits, signal);
     const end = jpegHeaderEnd(bytes);
     return end === null ? bytes : bytes.subarray(0, end).slice();
   }
@@ -32,7 +42,9 @@ export async function materializeJpegHeader(input: MetadataInput, limits: Securi
   if (input.size > limits.maxInputBytes) throw new MetadataError("LIMIT_EXCEEDED", `Input is ${input.size} bytes; the configured limit is ${limits.maxInputBytes} bytes.`);
   let end = Math.min(input.size, 64 * 1024);
   for (;;) {
+    throwIfAborted(signal);
     const buffer = await input.slice(0, end).arrayBuffer();
+    throwIfAborted(signal);
     if (!isArrayBuffer(buffer)) throw new MetadataError("INVALID_VALUE", "Blob or File slice arrayBuffer() must resolve to an ArrayBuffer.");
     const bytes = new Uint8Array(buffer);
     const headerEnd = jpegHeaderEnd(bytes);
@@ -103,33 +115,26 @@ function selectedWebpChunk(type: string, selection: ResolvedSelection): boolean 
   return false;
 }
 
-interface BlobReader {
+export interface BlobReader {
   readonly size: number;
   readonly read: (start: number, end: number) => Promise<Uint8Array>;
   readonly bytesRead: () => number;
+  readonly telemetry: () => ReadTelemetry;
 }
 
-function blobReader(input: Blob, limits: SecurityLimits): BlobReader {
-  if (typeof input.slice !== "function") throw new MetadataError("INVALID_VALUE", "Metadata scope requires Blob or File slice support.");
-  if (!Number.isSafeInteger(input.size) || input.size < 0) throw new MetadataError("INVALID_VALUE", "Blob size must be a non-negative safe integer.");
-  if (input.size > limits.maxInputBytes) throw new MetadataError("LIMIT_EXCEEDED", `Input is ${input.size} bytes; the configured limit is ${limits.maxInputBytes} bytes.`);
-  let total = 0;
+function blobReader(input: Blob, limits: SecurityLimits, signal?: AbortSignal): BlobReader {
+  const source: ByteSource = createByteSource(input, limits, signal);
   return {
-    size: input.size,
-    read: async (start, end) => {
-      if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || end > input.size) throw new MetadataError("UNSAFE_OFFSET", "Metadata range is outside the Blob.");
-      const buffer = await input.slice(start, end).arrayBuffer();
-      if (!isArrayBuffer(buffer)) throw new MetadataError("INVALID_VALUE", "Blob slice arrayBuffer() must resolve to an ArrayBuffer.");
-      total += end - start;
-      return new Uint8Array(buffer);
-    },
-    bytesRead: () => total,
+    size: source.size,
+    read: source.read,
+    bytesRead: () => source.telemetry().bytesRead,
+    telemetry: source.telemetry,
   };
 }
 
 async function materializePngMetadata(reader: BlobReader, selection: ResolvedSelection, limits: SecurityLimits): Promise<MetadataMaterialization> {
   const signature = await reader.read(0, Math.min(reader.size, 8));
-  if (signature.length < 8 || ascii(signature, 0, 8) !== "\x89PNG\r\n\x1a\n") return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.size, warnings: [] };
+  if (signature.length < 8 || ascii(signature, 0, 8) !== "\x89PNG\r\n\x1a\n") return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [], telemetry: reader.telemetry() };
   const chunks: Uint8Array[] = [];
   let cursor = 8;
   let sawIdat = false;
@@ -141,7 +146,7 @@ async function materializePngMetadata(reader: BlobReader, selection: ResolvedSel
     const length = uint32BigEndian(header, 0);
     const type = ascii(header, 4, 4);
     if (!Number.isSafeInteger(length) || length > reader.size - cursor - 12) {
-      return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [] };
+      return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [], telemetry: reader.telemetry() };
     }
     const next = cursor + 12 + length;
     if (type === "IDAT") {
@@ -170,30 +175,31 @@ async function materializePngMetadata(reader: BlobReader, selection: ResolvedSel
     bytesRead: reader.bytesRead(),
     inputBytes: reader.size,
     warnings: sawIend ? warnings : [...warnings, { code: "TRUNCATED_DATA", message: "PNG metadata scan did not reach IEND.", severity: "error", offset: cursor }],
+    telemetry: reader.telemetry(),
   };
 }
 
 async function materializeWebpMetadata(reader: BlobReader, selection: ResolvedSelection, limits: SecurityLimits): Promise<MetadataMaterialization> {
   const header = await reader.read(0, Math.min(reader.size, 12));
-  if (header.length < 12 || ascii(header, 0, 4) !== "RIFF" || ascii(header, 8, 4) !== "WEBP") return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [] };
+  if (header.length < 12 || ascii(header, 0, 4) !== "RIFF" || ascii(header, 8, 4) !== "WEBP") return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [], telemetry: reader.telemetry() };
   const chunks: Uint8Array[] = [];
   let cursor = 12;
   let imageChunk: Uint8Array | null = null;
   let metadataBytes = 0;
   const warnings: MetadataWarning[] = [];
   const declaredEnd = uint32LittleEndian(header, 4) + 8;
-  if (!Number.isSafeInteger(declaredEnd) || declaredEnd > reader.size) return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [] };
+  if (!Number.isSafeInteger(declaredEnd) || declaredEnd > reader.size) return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [], telemetry: reader.telemetry() };
   const scanEnd = Math.min(declaredEnd, reader.size);
   while (cursor + 8 <= scanEnd) {
     const chunkHeader = await reader.read(cursor, cursor + 8);
     const type = ascii(chunkHeader, 0, 4);
     const length = uint32LittleEndian(chunkHeader, 4);
     if (!Number.isSafeInteger(length) || length > scanEnd - cursor - 8) {
-      return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [] };
+      return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [], telemetry: reader.telemetry() };
     }
     const dataStart = cursor + 8;
     const next = dataStart + length + (length & 1);
-    if (next > scanEnd) return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [] };
+    if (next > scanEnd) return { bytes: await reader.read(0, reader.size), partial: false, inputBytes: reader.size, bytesRead: reader.bytesRead(), warnings: [], telemetry: reader.telemetry() };
     if (type === "VP8X" || type === "VP8L" || type === "VP8 ") {
       const needed = type === "VP8X" ? 10 : type === "VP8L" ? 5 : 10;
       if (length >= needed) imageChunk = webpChunk(type, await reader.read(dataStart, dataStart + needed));
@@ -212,32 +218,37 @@ async function materializeWebpMetadata(reader: BlobReader, selection: ResolvedSe
   riff.set([0x57, 0x45, 0x42, 0x50], 8);
   new DataView(riff.buffer).setUint32(4, size, true);
   if (declaredEnd < reader.size) warnings.push({ code: "MALFORMED_WEBP", message: "WebP contains bytes after its declared RIFF boundary; trailing bytes were not read.", severity: "warning", offset: declaredEnd, length: reader.size - declaredEnd });
-  return { bytes: concatenate([riff, ...payload]), partial: true, bytesRead: reader.bytesRead(), inputBytes: reader.size, warnings };
+  return { bytes: concatenate([riff, ...payload]), partial: true, bytesRead: reader.bytesRead(), inputBytes: reader.size, warnings, telemetry: reader.telemetry() };
 }
 
 /** Read only metadata-bearing ranges for PNG/WebP Blob inputs. */
-export async function materializeMetadata(input: MetadataInput, limits: SecurityLimits, selection: ResolvedSelection): Promise<MetadataMaterialization> {
+export async function materializeMetadata(input: MetadataInput, limits: SecurityLimits, selection: ResolvedSelection, signal?: AbortSignal): Promise<MetadataMaterialization> {
+  throwIfAborted(signal);
   if (!isBlobLike(input)) {
-    const bytes = await materializeInput(input, limits);
+    const bytes = await materializeInput(input, limits, signal);
     return { bytes, partial: false, bytesRead: bytes.byteLength, inputBytes: bytes.byteLength, warnings: [] };
   }
-  const reader = blobReader(input, limits);
-  const prefix = await reader.read(0, Math.min(reader.size, 16));
+  const reader = blobReader(input, limits, signal);
+  // ISO BMFF brand lists can be longer than the minimum 16-byte ftyp box;
+  // read a small bounded prefix so AVIF/HEIF files with extended brand lists
+  // can enter the range planner without touching image payload data.
+  const prefix = await reader.read(0, Math.min(reader.size, 64));
   const format = detectFormat(prefix).format;
   if (format === "png") return materializePngMetadata(reader, selection, limits);
   if (format === "webp") return materializeWebpMetadata(reader, selection, limits);
+  if (format === "tiff") {
+    const tiff = await materializeTiffMetadata(reader, limits, selection);
+    if (tiff !== null) return tiff;
+  }
+  if (format === "heif" || format === "avif") {
+    const heif = await materializeHeifMetadata(reader, limits, selection);
+    if (heif !== null) return heif;
+  }
   if (format === "jpeg") {
-    let end = Math.min(reader.size, 64 * 1024);
-    for (;;) {
-      const bytes = await reader.read(0, end);
-      const headerEnd = jpegHeaderEnd(bytes);
-      if (headerEnd !== null) return { bytes: bytes.subarray(0, headerEnd).slice(), partial: true, bytesRead: reader.bytesRead(), inputBytes: reader.size, warnings: [] };
-      if (end >= reader.size) return { bytes, partial: true, bytesRead: reader.bytesRead(), inputBytes: reader.size, warnings: [] };
-      end = Math.min(reader.size, end * 2);
-    }
+    return materializeJpegMetadata(reader, limits, selection);
   }
   const bytes = await reader.read(0, reader.size);
-  return { bytes, partial: false, bytesRead: reader.size, inputBytes: reader.size, warnings: [] };
+  return { bytes, partial: false, bytesRead: reader.bytesRead(), inputBytes: reader.size, warnings: [], telemetry: reader.telemetry() };
 }
 
 function isArrayBuffer(value: unknown): value is ArrayBuffer {
@@ -251,7 +262,8 @@ function isArrayBuffer(value: unknown): value is ArrayBuffer {
 }
 
 /** Materialize supported inputs with the same limits enforced by public APIs. */
-export async function materializeInput(input: MetadataInput, limits: SecurityLimits): Promise<Uint8Array> {
+export async function materializeInput(input: MetadataInput, limits: SecurityLimits, signal?: AbortSignal): Promise<Uint8Array> {
+  throwIfAborted(signal);
   let bytes: Uint8Array;
   if (isArrayBuffer(input)) {
     bytes = new Uint8Array(input);
@@ -261,11 +273,13 @@ export async function materializeInput(input: MetadataInput, limits: SecurityLim
     if (!Number.isSafeInteger(input.size) || input.size < 0) throw new MetadataError("INVALID_VALUE", "Blob size must be a non-negative safe integer.");
     if (input.size > limits.maxInputBytes) throw new MetadataError("LIMIT_EXCEEDED", `Input is ${input.size} bytes; the configured limit is ${limits.maxInputBytes} bytes.`);
     const buffer = await input.arrayBuffer();
+    throwIfAborted(signal);
     if (!isArrayBuffer(buffer)) throw new MetadataError("INVALID_VALUE", "Blob or File arrayBuffer() must resolve to an ArrayBuffer.");
     bytes = new Uint8Array(buffer);
   } else {
     throw new MetadataError("INVALID_VALUE", "Input must be an ArrayBuffer, ArrayBufferView, Blob, or File.");
   }
+  throwIfAborted(signal);
   if (bytes.byteLength > limits.maxInputBytes) throw new MetadataError("LIMIT_EXCEEDED", `Input is ${bytes.byteLength} bytes; the configured limit is ${limits.maxInputBytes} bytes.`);
   return bytes;
 }

@@ -1,0 +1,157 @@
+{
+  "schema": "browser-image-metadata.capabilities.v1",
+  "brand": "browser-image-metadata",
+  "packageName": "browser-image-metadata",
+  "matrixColumns": [
+    { "key": "read", "label": "Read" },
+    { "key": "selectiveDecode", "label": "Selective decode" },
+    { "key": "jpegHeaderBlobRead", "label": "JPEG header Blob read" },
+    { "key": "metadataBlobFileRead", "label": "Metadata-only Blob/File read" },
+    { "key": "losslessRemoval", "label": "Lossless removal" },
+    { "key": "strictSanitization", "label": "Strict sanitization" }
+  ],
+  "formats": [
+    {
+      "format": "JPEG",
+      "code": "jpeg",
+      "read": "Dimensions, EXIF, XMP, IPTC-IIM, ICC header and tag directory, JFIF",
+      "selectiveDecode": "EXIF tags and metadata groups",
+      "jpegHeaderBlobRead": "Yes",
+      "metadataBlobFileRead": "Yes",
+      "losslessRemoval": "EXIF, XMP, IPTC, ICC, JFIF, recognized EXIF fields",
+      "strictSanitization": "Yes, subject to the reported outcome and inspection gaps",
+      "positiveFixture": "jpeg-exif-little-endian.jpg",
+      "malformedFixture": "jpeg-icc-malformed.jpg",
+      "evidence": {
+        "positive": "tests/integration.test.ts#parses the real JPEG fixture and all first-pass normalized fields",
+        "malformed": "tests/integration.test.ts#warns for truncated scan data, missing frames, invalid frames, and duplicate SOI",
+        "selection": "tests/integration.test.ts#supports selective JPEG metadata and Blob-backed header-only reads"
+      }
+    },
+    {
+      "format": "PNG",
+      "code": "png",
+      "read": "Dimensions, EXIF, XMP, ICC header, text chunks",
+      "selectiveDecode": "EXIF and metadata groups",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "Yes",
+      "losslessRemoval": "EXIF, XMP, ICC, PNG text",
+      "strictSanitization": "Yes, subject to the reported outcome",
+      "positiveFixture": "png-metadata.png",
+      "malformedFixture": "png-truncated.png",
+      "evidence": {
+        "positive": "tests/integration.test.ts#parses PNG EXIF, text chunks, zTXt, and XMP from a real fixture",
+        "malformed": "tests/integration.test.ts#accepts PNG Blob input and reports malformed PNG fixtures safely",
+        "selection": "tests/integration.test.ts#does not decode unrequested PNG or WebP metadata families"
+      }
+    },
+    {
+      "format": "TIFF / BigTIFF",
+      "code": "tiff",
+      "read": "Dimensions, EXIF, XMP, IPTC-IIM, ICC header",
+      "selectiveDecode": "EXIF tags and metadata groups",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "Yes (classic TIFF only)",
+      "losslessRemoval": "No",
+      "strictSanitization": "No",
+      "positiveFixture": "tiff-metadata.tif",
+      "malformedFixture": "tiff-truncated.tif",
+      "evidence": {
+        "positive": "tests/integration.test.ts#parses TIFF XMP and ICC tags with bounded values",
+        "malformed": "tests/integration.test.ts#reports truncated standalone TIFF data without throwing",
+        "selection": "tests/integration.test.ts#applies selection while decoding TIFF metadata families"
+      }
+    },
+    {
+      "format": "WebP",
+      "code": "webp",
+      "read": "Dimensions, EXIF, XMP, ICC header",
+      "selectiveDecode": "EXIF and metadata groups",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "Yes",
+      "losslessRemoval": "EXIF, XMP, ICC",
+      "strictSanitization": "Yes, subject to the reported outcome",
+      "positiveFixture": "webp-metadata.webp",
+      "malformedFixture": "webp-truncated.webp",
+      "evidence": {
+        "positive": "tests/integration.test.ts#parses WebP EXIF and XMP chunks from a real fixture",
+        "malformed": "tests/integration.test.ts#bounds malformed WebP chunks and metadata",
+        "selection": "tests/integration.test.ts#does not decode unrequested PNG or WebP metadata families"
+      }
+    },
+    {
+      "format": "GIF",
+      "code": "gif",
+      "read": "Dimensions, comments, animation loop data, XMP application extensions",
+      "selectiveDecode": "XMP only",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "No",
+      "losslessRemoval": "No",
+      "strictSanitization": "No",
+      "positiveFixture": "generated GIF contract fixture",
+      "malformedFixture": "generated malformed GIF contract fixture",
+      "evidence": {
+        "positive": "tests/integration.test.ts#parses bounded GIF dimensions, comments, animation, and XMP extensions",
+        "malformed": "tests/integration.test.ts#reports malformed GIF extension and image sub-block chains safely",
+        "selection": "tests/integration.test.ts#selects GIF and JPEG XL metadata families before decoding payloads"
+      }
+    },
+    {
+      "format": "JPEG XL",
+      "code": "jxl",
+      "read": "EXIF and XMP from container boxes",
+      "selectiveDecode": "EXIF and metadata groups",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "No",
+      "losslessRemoval": "No",
+      "strictSanitization": "No",
+      "positiveFixture": "generated JPEG XL container contract fixture",
+      "malformedFixture": "generated malformed JPEG XL contract fixture",
+      "evidence": {
+        "positive": "tests/integration.test.ts#parses JPEG XL container XML metadata without decoding pixels",
+        "malformed": "tests/integration.test.ts#parses JPEG XL container XML metadata without decoding pixels",
+        "selection": "tests/integration.test.ts#selects GIF and JPEG XL metadata families before decoding payloads"
+      }
+    },
+    {
+      "format": "HEIF",
+      "code": "heif",
+      "read": "Primary dimensions, EXIF, XMP, ICC header, transforms, nclx",
+      "selectiveDecode": "EXIF tags and metadata groups",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "Yes",
+      "losslessRemoval": "No",
+      "strictSanitization": "No",
+      "positiveFixture": "heif-item-metadata.heic",
+      "malformedFixture": "heif-truncated.heic",
+      "evidence": {
+        "positive": "tests/integration.test.ts#inspects HEIF EXIF/XMP boxes and dimensions",
+        "malformed": "tests/integration.test.ts#reports truncated HEIF boxes without throwing",
+        "selection": "tests/integration.test.ts#applies selection while decoding HEIF and AVIF metadata families"
+      }
+    },
+    {
+      "format": "AVIF",
+      "code": "avif",
+      "read": "Primary dimensions, EXIF, XMP, ICC header, transforms, nclx",
+      "selectiveDecode": "EXIF tags and metadata groups",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "Yes",
+      "losslessRemoval": "No",
+      "strictSanitization": "No",
+      "positiveFixture": "avif-idat-item-metadata.avif",
+      "malformedFixture": "avif-metadata.avif",
+      "evidence": {
+        "positive": "tests/integration.test.ts#inspects AVIF metadata with the same bounded BMFF reader",
+        "malformed": "tests/integration.test.ts#warns rather than guessing conflicting or malformed HEIF property associations",
+        "selection": "tests/integration.test.ts#applies selection while decoding HEIF and AVIF metadata families"
+      }
+    }
+  ],
+  "notes": [
+    "Detection is signature recognition only; it is not a claim that every metadata family is supported.",
+    "Partial Blob/File scopes report completeness.scope, bytesRead, inputBytes, and coverage reasons.",
+    "Unsupported and malformed structures remain visible through capabilities, coverage, warnings, and explicit redaction outcomes.",
+    "The public npm brand and import name are browser-image-metadata; image-metadata-toolkit is the repository slug only."
+  ]
+}

@@ -2,7 +2,10 @@ import { parseExif } from "../metadata/exif.js";
 import { inspectIccProfile, type IccChunk } from "../metadata/icc.js";
 import { parseXmpPacket } from "../metadata/xmp.js";
 import { extractExifThumbnail } from "../metadata/thumbnail.js";
-import type { ExifData, ImageDimensions, ImageTransform, MetadataField, NclxColorData, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
+import { wantsGroup, type ResolvedSelection } from "../selection.js";
+import { throwIfAborted } from "../security/abort.js";
+import type { ExifData, ImageDimensions, ImageTransform, MetadataBlock, MetadataField, NclxColorData, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
+import type { MetadataRegistry } from "../registry.js";
 
 const CONTAINER_BOXES = new Set(["meta", "iprp", "ipco", "moov", "trak", "mdia", "minf", "stbl"]);
 
@@ -39,10 +42,13 @@ function scanBoxes(
   maxDepth: number,
   budget: ScanBudget,
   found: ImageDimensions[],
+  signal?: AbortSignal,
 ): boolean {
+  throwIfAborted(signal);
   if (depth > maxDepth) return false;
   let cursor = start;
   while (cursor < end) {
+    throwIfAborted(signal);
     if (budget.remainingBoxes <= 0) return false;
     budget.remainingBoxes -= 1;
     if (cursor + 8 > end) return false;
@@ -73,7 +79,7 @@ function scanBoxes(
       found.push({ width, height });
     } else if (CONTAINER_BOXES.has(type)) {
       const childStart = type === "meta" ? payloadStart + 4 : payloadStart;
-      if (childStart > boxEnd || !scanBoxes(bytes, childStart, boxEnd, depth + 1, maxDepth, budget, found)) return false;
+      if (childStart > boxEnd || !scanBoxes(bytes, childStart, boxEnd, depth + 1, maxDepth, budget, found, signal)) return false;
     }
     cursor = boxEnd;
   }
@@ -81,13 +87,14 @@ function scanBoxes(
 }
 
 /** Returns dimensions only when every discovered image-spatial property agrees. */
-export function parseHeifDimensions(bytes: Uint8Array, maxDepth = 8, maxBoxes = 4096): ImageDimensions | null {
+export function parseHeifDimensions(bytes: Uint8Array, maxDepth = 8, maxBoxes = 4096, signal?: AbortSignal): ImageDimensions | null {
+  throwIfAborted(signal);
   if (!Number.isSafeInteger(maxDepth) || maxDepth < 0 || !Number.isSafeInteger(maxBoxes) || maxBoxes < 1) {
     return null;
   }
   const found: ImageDimensions[] = [];
   const budget: ScanBudget = { remainingBoxes: maxBoxes };
-  if (!scanBoxes(bytes, 0, bytes.length, 0, maxDepth, budget, found) || found.length === 0) return null;
+  if (!scanBoxes(bytes, 0, bytes.length, 0, maxDepth, budget, found, signal) || found.length === 0) return null;
   const first = found[0];
   if (first === undefined) return null;
   return found.every(({ width, height }) => width === first.width && height === first.height) ? first : null;
@@ -148,6 +155,9 @@ interface ParsedItemInfos {
   readonly limited: boolean;
 }
 interface ItemProperty {
+  readonly type?: string;
+  readonly sourceOffset?: number;
+  readonly byteLength?: number;
   readonly dimensions?: ImageDimensions;
   readonly icc?: Uint8Array;
   readonly nclx?: NclxColorData;
@@ -311,6 +321,7 @@ interface ItemScanState {
   locations: Map<number, ItemLocation>;
   warnings: MetadataWarning[];
   idat: Uint8Array | null;
+  idatOffset: number | null;
   boxBudget: ScanBudget;
   primaryItemId: number | null;
   properties: Map<number, ItemProperty>;
@@ -357,7 +368,7 @@ function parseColourProperty(payload: Uint8Array): ColourProperty | null {
   };
 }
 
-function parsePropertyContainer(payload: Uint8Array, limits: SecurityLimits, state: ItemScanState): void {
+function parsePropertyContainer(payload: Uint8Array, sourceOffset: number, limits: SecurityLimits, state: ItemScanState): void {
   if (state.propertyContainerSeen) {
     warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF metadata contains multiple item-property containers.", offset: 0 });
     return;
@@ -384,6 +395,9 @@ function parsePropertyContainer(payload: Uint8Array, limits: SecurityLimits, sta
     const rotation = type === "irot" && propertyPayload.length >= 1 ? (((propertyPayload[0] ?? 0) & 0x03) * 90) as ImageTransform["rotation"] : undefined;
     const mirrorAxis = type === "imir" && propertyPayload.length >= 1 ? ((propertyPayload[0] ?? 0) & 0x01) === 0 ? "vertical" as const : "horizontal" as const : undefined;
     state.properties.set(index, {
+      type,
+      sourceOffset: sourceOffset + cursor,
+      byteLength: size,
       ...(dimensions === null ? {} : { dimensions }),
       ...(colour?.icc === undefined ? {} : { icc: colour.icc }),
       ...(colour?.nclx === undefined ? {} : { nclx: colour.nclx }),
@@ -660,9 +674,9 @@ function scanItemBoxes(bytes: Uint8Array, start: number, end: number, depth: num
       }
     } else if (type === "idat") {
       if (state.idat !== null) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF metadata contains multiple idat boxes.", offset: payloadStart });
-      else state.idat = payload;
+      else { state.idat = payload; state.idatOffset = payloadStart; }
     } else if (type === "ipco") {
-      parsePropertyContainer(payload, limits, state);
+      parsePropertyContainer(payload, cursor, limits, state);
     } else if (type === "ipma") {
       parsePropertyAssociations(payload, limits, state);
     } else if (type === "iref") {
@@ -764,10 +778,27 @@ interface ResolvedItem {
   readonly sourceOffset?: number;
 }
 
+interface MetadataItemProvenance {
+  readonly id: number;
+  readonly family: "EXIF" | "XMP";
+  readonly sourceOffset?: number;
+  readonly byteLength: number;
+  readonly associatedImage: string | null;
+}
+
+interface MetadataPropertyProvenance {
+  readonly index: number;
+  readonly type: string;
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+  readonly associatedImage: string;
+}
+
 function resolveItem(
   bytes: Uint8Array,
   location: ItemLocation,
   idat: Uint8Array | null,
+  idatOffset: number | null,
   limits: SecurityLimits,
   maxBytes: number,
 ): ResolvedItem | null {
@@ -798,10 +829,23 @@ function resolveItem(
   let cursor = 0;
   for (const part of parts) { result.set(part, cursor); cursor += part.length; }
   const firstExtent = location.extents[0];
-  return { data: result, ...(location.method === 0 && firstExtent !== undefined ? { sourceOffset: location.baseOffset + firstExtent.offset } : {}) };
+  const sourceOffset = firstExtent === undefined
+    ? undefined
+    : location.method === 0
+      ? location.baseOffset + firstExtent.offset
+      : idatOffset === null ? undefined : idatOffset + location.baseOffset + firstExtent.offset;
+  return { data: result, ...(sourceOffset === undefined ? {} : { sourceOffset }) };
 }
 
-function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetadataBytes = limits.maxMetadataBytes): { exif: Uint8Array | null; exifOffset?: number; xmp: Uint8Array[]; dimensions: ImageDimensions | null; displayDimensions?: ImageDimensions; transform?: ImageTransform; icc: Uint8Array | null; nclx: NclxColorData | null; metadataBytes: number; warnings: readonly MetadataWarning[] } {
+function inspectItemMetadata(
+  bytes: Uint8Array,
+  limits: SecurityLimits,
+  maxMetadataBytes = limits.maxMetadataBytes,
+  selection: { readonly exif?: boolean; readonly xmp?: boolean; readonly icc?: boolean } = {},
+): { exif: Uint8Array | null; exifOffset?: number; xmp: Uint8Array[]; items: readonly MetadataItemProvenance[]; properties: readonly MetadataPropertyProvenance[]; dimensions: ImageDimensions | null; displayDimensions?: ImageDimensions; transform?: ImageTransform; icc: Uint8Array | null; nclx: NclxColorData | null; metadataBytes: number; warnings: readonly MetadataWarning[] } {
+  const includeExif = selection.exif !== false;
+  const includeXmp = selection.xmp !== false;
+  const includeIcc = selection.icc !== false;
   const warnings: MetadataWarning[] = [];
   const boxBudget: ScanBudget = { remainingBoxes: limits.maxSegments };
   const ranges: MetaRange[] = [];
@@ -812,6 +856,7 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
       locations: new Map<number, ItemLocation>(),
       warnings,
       idat: null,
+      idatOffset: null,
       boxBudget,
       primaryItemId: null,
       properties: new Map<number, ItemProperty>(),
@@ -828,6 +873,8 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
   let itemData: Uint8Array | null = null;
   let itemDataOffset: number | undefined;
   const foundXmp: Uint8Array[] = [];
+  const items: MetadataItemProvenance[] = [];
+  const properties: MetadataPropertyProvenance[] = [];
   let metadataBytes = 0;
   for (const state of states) {
     const associatedMetadataIds = metadataItemIds(state);
@@ -835,18 +882,26 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
       const isExif = info.type === "Exif";
       const isXmp = info.type === "mime" && info.contentType?.toLowerCase().includes("rdf+xml");
       if (!isExif && !isXmp) continue;
+      if ((isExif && !includeExif) || (isXmp && !includeXmp)) continue;
       if (associatedMetadataIds !== null && !associatedMetadataIds.has(info.id)) continue;
       const location = state.locations.get(info.id);
       if (location === undefined) {
         warning(warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has no item-location entry.`, offset: 0 });
         continue;
       }
-      const resolved = resolveItem(bytes, location, state.idat, limits, maxMetadataBytes - metadataBytes);
+      const resolved = resolveItem(bytes, location, state.idat, state.idatOffset, limits, maxMetadataBytes - metadataBytes);
       if (resolved === null) {
         warning(warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has an unsafe or unsupported extent.`, offset: 0 });
         continue;
       }
       metadataBytes += resolved.data.length;
+      items.push({
+        id: info.id,
+        family: isExif ? "EXIF" : "XMP",
+        ...(resolved.sourceOffset === undefined ? {} : { sourceOffset: resolved.sourceOffset }),
+        byteLength: resolved.data.length,
+        associatedImage: state.primaryItemId === null ? null : `item:${state.primaryItemId}`,
+      });
       if (isExif) {
         if (itemData === null) { itemData = resolved.data; itemDataOffset = resolved.sourceOffset; }
         else warning(warnings, limits, { code: "DUPLICATE_EXIF", message: "A later HEIF Exif item was ignored.", offset: 0 });
@@ -854,11 +909,19 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
     }
   }
   const dimensions = states.map((state) => primaryDimensions(state, limits)).filter((value): value is ImageDimensions => value !== null);
+  for (const state of states) {
+    if (state.primaryItemId === null) continue;
+    for (const index of state.associations.get(state.primaryItemId) ?? []) {
+      const property = state.properties.get(index);
+      if (property?.type === undefined || property.sourceOffset === undefined || property.byteLength === undefined) continue;
+      properties.push({ index, type: property.type, sourceOffset: property.sourceOffset, byteLength: property.byteLength, associatedImage: `item:${state.primaryItemId}` });
+    }
+  }
   const dimension = dimensions[0] ?? null;
   if (dimension !== null && dimensions.some(({ width, height }) => width !== dimension.width || height !== dimension.height)) {
     warning(warnings, limits, { code: "MALFORMED_HEIF", message: "Multiple HEIF MetaBoxes identify conflicting primary-item dimensions.", offset: 0 });
   }
-  const profiles = states.map((state) => primaryIccProfile(state, limits)).filter((value): value is Uint8Array => value !== null);
+  const profiles = includeIcc ? states.map((state) => primaryIccProfile(state, limits)).filter((value): value is Uint8Array => value !== null) : [];
   const profile = profiles[0] ?? null;
   if (profile !== null && profiles.some((candidate) => candidate.length !== profile.length || candidate.some((value, index) => value !== profile[index]))) {
     warning(warnings, limits, { code: "MALFORMED_HEIF", message: "Multiple HEIF MetaBoxes identify conflicting primary ICC profiles.", offset: 0 });
@@ -880,6 +943,8 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
     exif: itemData,
     ...(itemDataOffset === undefined ? {} : { exifOffset: itemDataOffset }),
     xmp: foundXmp,
+    items,
+    properties,
     dimensions: dimension !== null && dimensions.every(({ width, height }) => width === dimension.width && height === dimension.height) ? dimension : null,
     ...(displayDimensions === null ? {} : { displayDimensions }),
     ...(transform === null ? {} : { transform }),
@@ -891,15 +956,23 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
 }
 
 /** Inspect bounded HEIF/AVIF metadata boxes and common Exif/XMP item locations. */
-export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "heif" | "avif"): ParsedMetadataResult {
+export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "heif" | "avif", selection?: ResolvedSelection, signal?: AbortSignal, registry?: MetadataRegistry): ParsedMetadataResult {
+  throwIfAborted(signal);
   const warnings: MetadataWarning[] = [];
   const fields: MetadataField[] = [];
+  const blocks: MetadataBlock[] = [];
   const xmpPackets: string[] = [];
   let exif: ExifData | null = null;
   let icc: ParsedMetadataResult["icc"] = null;
+  let iccMalformed = false;
   let metadataBytes = 0;
   let boxCount = 0;
-  const fallbackDimensions = parseHeifDimensions(bytes, limits.maxIfdDepth, limits.maxSegments);
+  const includeExif = wantsGroup(selection, "EXIF");
+  const includeXmp = wantsGroup(selection, "XMP");
+  const includeIcc = wantsGroup(selection, "ICC");
+  const fallbackDimensions = wantsGroup(selection, "Dimensions")
+    ? parseHeifDimensions(bytes, limits.maxIfdDepth, limits.maxSegments, signal)
+    : null;
 
   const visit = (start: number, end: number, depth: number): void => {
     if (depth > limits.maxIfdDepth) {
@@ -908,6 +981,7 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
     }
     let cursor = start;
     while (cursor < end) {
+      throwIfAborted(signal);
       if (boxCount >= limits.maxSegments) { warningError(warnings, limits, { code: "LIMIT_EXCEEDED", message: "HEIF box count exceeds the configured limit.", offset: cursor }); return; }
       if (cursor > end - 8) { warningError(warnings, limits, { code: "TRUNCATED_DATA", message: "HEIF box header is truncated.", offset: cursor }); return; }
       const size32 = uint32(bytes, cursor);
@@ -921,7 +995,9 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
       boxCount += 1;
       const payloadStart = cursor + header;
       const payload = bytes.subarray(payloadStart, boxEnd);
-      if (type === "Exif" || type === "exif") {
+      if ((type === "Exif" || type === "exif") && includeExif) {
+        const blockId = `${format}:Exif:${cursor}`;
+        blocks.push({ id: blockId, family: "EXIF", container: "HEIF Exif box", status: "decoded", offset: cursor, length: boxEnd - cursor, associatedImage: null, sensitivity: "moderate", warningCodes: [] });
         metadataBytes += payload.length;
         if (payload.length > limits.maxSegmentBytes || metadataBytes > limits.maxMetadataBytes) warning(warnings, limits, { code: "LIMIT_EXCEEDED", message: "HEIF EXIF payload exceeds the configured metadata limit.", offset: payloadStart, length: payload.length });
         else if (exif === null) {
@@ -929,16 +1005,25 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
           if (tiff === null) {
             warning(warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF Exif payload has no valid TIFF header at its declared offset.", offset: payloadStart, length: payload.length });
           } else {
-            const parsed = parseExif(tiff.tiff, limits, payloadStart + tiff.offset);
+            const parsed = parseExif(tiff.tiff, limits, payloadStart + tiff.offset, selection?.tags, registry);
             for (const item of parsed.warnings) warning(warnings, limits, item);
             if (parsed.exif !== null) {
               const thumbnail = extractExifThumbnail(tiff.tiff, parsed.exif, limits);
               exif = thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
-              fields.push(...parsed.fields);
+              fields.push(...parsed.fields.map((field) => field.source === undefined ? field : ({
+                ...field,
+                source: {
+                  ...field.source,
+                  blockId,
+                  entryOffset: field.source.entryOffset === null ? null : payloadStart + tiff.offset + field.source.entryOffset,
+                  valueOffset: field.source.valueOffset === null ? null : payloadStart + tiff.offset + field.source.valueOffset,
+                },
+              })));
             }
           }
         } else warning(warnings, limits, { code: "DUPLICATE_EXIF", message: "A later HEIF EXIF box was ignored.", offset: payloadStart });
-      } else if (type === "xml " || type === "XMP ") {
+      } else if ((type === "xml " || type === "XMP ") && includeXmp) {
+        blocks.push({ id: `${format}:XMP:${cursor}`, family: "XMP", container: "HEIF XMP box", status: "decoded", offset: cursor, length: boxEnd - cursor, associatedImage: null, sensitivity: "moderate", warningCodes: [] });
         metadataBytes += payload.length;
         if (payload.length > limits.maxSegmentBytes || metadataBytes > limits.maxMetadataBytes) warning(warnings, limits, { code: "LIMIT_EXCEEDED", message: "HEIF XMP payload exceeds the configured metadata limit.", offset: payloadStart, length: payload.length });
         else { const wrapped = parseXmpPacket(payload, limits.maxStringBytes); const packet = wrapped.matched ? wrapped.packet : payload.length <= limits.maxStringBytes ? decodeUtf8(payload) : null; if (packet === null) warning(warnings, limits, { code: "INVALID_VALUE", message: "HEIF XMP payload is invalid UTF-8 or exceeds the configured string limit.", offset: payloadStart, length: payload.length }); else xmpPackets.push(packet); }
@@ -953,29 +1038,72 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
   };
 
   visit(0, bytes.length, 0);
-  const itemMetadata = inspectItemMetadata(bytes, limits, Math.max(0, limits.maxMetadataBytes - metadataBytes));
+  throwIfAborted(signal);
+  const itemMetadata = inspectItemMetadata(bytes, limits, Math.max(0, limits.maxMetadataBytes - metadataBytes), {
+    exif: includeExif,
+    xmp: includeXmp,
+    icc: includeIcc,
+  });
   for (const item of itemMetadata.warnings) warning(warnings, limits, item);
-  if (itemMetadata.exif !== null && !isPresent(exif)) {
+  for (const item of itemMetadata.items) {
+    const offset = item.sourceOffset ?? null;
+    blocks.push({
+      id: `${format}:${item.family}-item:${item.id}`,
+      family: item.family,
+      container: `HEIF ${item.family === "EXIF" ? "Exif" : "MIME XMP"} item`,
+      status: offset === null ? "partial" : "decoded",
+      offset,
+      length: item.byteLength,
+      associatedImage: item.associatedImage,
+      sensitivity: "moderate",
+      warningCodes: offset === null ? ["UNSUPPORTED_STRUCTURE"] : [],
+    });
+  }
+  for (const property of itemMetadata.properties) {
+    const family = property.type === "colr" ? "ICC" : "Unknown";
+    blocks.push({
+      id: `${format}:property:${property.index}:${property.sourceOffset}`,
+      family,
+      container: `HEIF ${property.type} item property`,
+      status: "decoded",
+      offset: property.sourceOffset,
+      length: property.byteLength,
+      associatedImage: property.associatedImage,
+      sensitivity: family === "ICC" ? "low" : "none",
+      warningCodes: [],
+    });
+  }
+  if (includeExif && itemMetadata.exif !== null && !isPresent(exif)) {
     const payload = itemMetadata.exif;
     const tiff = extractHeifExifTiff(payload);
     if (tiff === null) {
       warning(warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF Exif item has no valid TIFF header at its declared offset.", offset: 0, length: payload.length });
     } else {
-      const parsed = parseExif(tiff.tiff, limits, (itemMetadata.exifOffset ?? 0) + tiff.offset);
+      const parsed = parseExif(tiff.tiff, limits, (itemMetadata.exifOffset ?? 0) + tiff.offset, selection?.tags, registry);
       for (const item of parsed.warnings) warning(warnings, limits, item);
       if (parsed.exif !== null) {
         const thumbnail = extractExifThumbnail(tiff.tiff, parsed.exif, limits);
         exif = thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
-        fields.push(...parsed.fields);
+        const item = itemMetadata.items.find((candidate) => candidate.family === "EXIF" && candidate.sourceOffset === itemMetadata.exifOffset);
+        const blockId = item === undefined ? null : `${format}:EXIF-item:${item.id}`;
+        fields.push(...parsed.fields.map((field) => field.source === undefined || blockId === null ? field : ({
+          ...field,
+          source: {
+            ...field.source,
+            blockId,
+            entryOffset: field.source.entryOffset === null ? null : (itemMetadata.exifOffset ?? 0) + tiff.offset + field.source.entryOffset,
+            valueOffset: field.source.valueOffset === null ? null : (itemMetadata.exifOffset ?? 0) + tiff.offset + field.source.valueOffset,
+          },
+        })));
       }
     }
   }
-  for (const packetBytes of itemMetadata.xmp) {
+  for (const packetBytes of includeXmp ? itemMetadata.xmp : []) {
     const packet = packetBytes.length <= limits.maxStringBytes ? decodeUtf8(packetBytes) : null;
     if (packet === null) warning(warnings, limits, { code: "INVALID_VALUE", message: "HEIF item XMP payload is invalid UTF-8 or exceeds the configured string limit.", length: packetBytes.length });
     else xmpPackets.push(packet);
   }
-  if (itemMetadata.icc !== null) {
+  if (includeIcc && itemMetadata.icc !== null) {
     if (itemMetadata.icc.length > limits.maxSegmentBytes) {
       warning(warnings, limits, { code: "LIMIT_EXCEEDED", message: "HEIF ICC profile exceeds the configured segment limit.", length: itemMetadata.icc.length });
     } else {
@@ -990,10 +1118,23 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
         fields.push(field);
       }
       for (const item of inspected.warnings) warning(warnings, limits, item);
+      iccMalformed = inspected.warnings.length > 0;
     }
   }
   if (bytes.length < 16 || ascii(bytes, 4) !== "ftyp") warningError(warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF/AVIF input has no valid ftyp box.", offset: 0 });
   const storedDimensions = itemMetadata.dimensions ?? fallbackDimensions;
+  const resolvedBlocks = blocks.map((block) => {
+    const offset = block.offset;
+    const length = block.length;
+    const local = offset === null || length === null
+      ? []
+      : warnings.filter((item) => item.offset !== undefined && item.offset >= offset && item.offset < offset + length);
+    return {
+      ...block,
+      status: block.family === "ICC" && iccMalformed ? "malformed" : local.some((item) => item.severity === "error") ? "partial" : block.status,
+      warningCodes: [...new Set([...block.warningCodes, ...local.map((item) => item.code)])],
+    };
+  });
   return {
     format,
     mimeType: format === "avif" ? "image/avif" : "image/heif",
@@ -1008,6 +1149,7 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
     icc,
     jfif: null,
     pngText: [],
+    blocks: resolvedBlocks,
     warnings,
   };
 }

@@ -3,6 +3,7 @@ import type {
   ExifDataType,
   FlashValue,
   GpsCoordinateRaw,
+  Integer64Value,
   MetadataField,
   MetadataValue,
   MetadataWarning,
@@ -14,6 +15,7 @@ import {
   describeOrientation,
   getTagDefinition,
 } from "./descriptions.js";
+import { DEFAULT_METADATA_REGISTRY, type MetadataRegistry } from "../registry.js";
 
 export interface NormalizationResult {
   readonly fields: readonly MetadataField[];
@@ -131,13 +133,20 @@ export function displayExifValue(
   if (isRationalArray(raw)) return raw.map(formatExactRational).join(", ");
   if (raw instanceof Uint8Array) return displayBytes(raw);
   if (Array.isArray(raw)) return displayArray(raw);
+  if (isInteger64Value(raw)) return raw.decimal;
   if (typeof raw === "string") return raw.split("\0").join(" / ");
   if (raw === null) return "";
   if (typeof raw === "number" || typeof raw === "boolean") return String(raw);
   return "Composite metadata value";
 }
 
-export function normalizeExifFields(rawFields: readonly MetadataField[]): NormalizationResult {
+function isInteger64Value(value: MetadataValue): value is Integer64Value {
+  if (typeof value !== "object" || value === null || Array.isArray(value) || value instanceof Uint8Array) return false;
+  const candidate = value as { readonly decimal?: unknown; readonly signed?: unknown };
+  return typeof candidate.decimal === "string" && typeof candidate.signed === "boolean";
+}
+
+export function normalizeExifFields(rawFields: readonly MetadataField[], registry: MetadataRegistry = DEFAULT_METADATA_REGISTRY): NormalizationResult {
   const fields: MetadataField[] = [];
   const warnings: MetadataWarning[] = [];
   const byLocation = indexFields(rawFields);
@@ -174,7 +183,12 @@ export function normalizeExifFields(rawFields: readonly MetadataField[]): Normal
   normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa435, "LensSerialNumber", "high");
   normalizeUserComment(byLocation, fields, warnings);
 
-  return { fields, warnings };
+  const remapped = fields.map((field) => {
+    const definition = registry.get(field.ifd, field.tag);
+    if (definition === undefined || definition.name === field.name) return field;
+    return { ...field, id: `normalized:${definition.name}`, name: definition.name, description: definition.description, sensitivity: definition.sensitivity };
+  });
+  return { fields: remapped, warnings };
 }
 
 function apex(apexValue: RationalValue, computed: number, unit: ApexValue["unit"]): ApexValue {
@@ -295,7 +309,6 @@ function normalizedField(
     display: string;
     description: string;
     type: MetadataField["type"];
-    editable: boolean;
     sensitivity: Sensitivity;
     count?: number;
     known: boolean;
@@ -309,12 +322,11 @@ function normalizedField(
     display,
     description: definition?.description ?? source.description,
     type,
-    editable: true,
     sensitivity,
     known: true,
   };
   if (source.count !== undefined) field.count = source.count;
-  return field;
+  return source.source === undefined ? field : { ...field, source: source.source };
 }
 
 function normalizeString(

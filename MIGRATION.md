@@ -20,6 +20,9 @@ const make = result.fields.find((field) => field.name === "Make")?.value;
 
 Use `getMetadataSummary(result)` when an application needs camera, capture, location, exposure, or orientation values. It preserves source ambiguity in `summary.conflicts` instead of picking an arbitrary duplicate.
 
+For exifr-style one-call helpers, use `readGps(file)`, `readOrientation(file)`,
+`readRotation(file)`, `readThumbnail(file)`, or `readCaptureTime(file)`.
+
 ## From ExifReader
 
 Replace a flat tag object with the normalized `fields` array or the typed summary. The raw EXIF directory stays available under `result.exif.fields`, where every entry has a stable identifier such as `IFD0:0x010f`.

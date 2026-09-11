@@ -1,13 +1,17 @@
 /** Binary inputs accepted in browsers, workers, Node.js, and Deno. */
+import type { MetadataRegistry, MetadataRegistryFieldInput, MetadataRegistrySource } from "./registry.js";
+
 export type MetadataInput = ArrayBuffer | ArrayBufferView | Blob;
 
-export type ImageFormat = "jpeg" | "png" | "tiff" | "webp" | "heif" | "avif" | "unknown";
+export type ImageFormat = "jpeg" | "png" | "tiff" | "webp" | "gif" | "jxl" | "heif" | "avif" | "unknown";
 
 export type ImageMimeType =
   | "image/jpeg"
   | "image/png"
   | "image/tiff"
   | "image/webp"
+  | "image/gif"
+  | "image/jxl"
   | "image/heif"
   | "image/avif"
   | "application/octet-stream";
@@ -49,6 +53,8 @@ export type WarningCode =
   | "MALFORMED_JPEG"
   | "MALFORMED_PNG"
   | "MALFORMED_WEBP"
+  | "MALFORMED_GIF"
+  | "MALFORMED_JXL"
   | "MALFORMED_HEIF"
   | "MALFORMED_IPTC"
   | "MALFORMED_EXIF"
@@ -79,6 +85,12 @@ export interface RationalValue {
   readonly denominator: number;
 }
 
+/** Exact TIFF 64-bit integer retained when it exceeds JavaScript's safe range. */
+export interface Integer64Value {
+  readonly decimal: string;
+  readonly signed: boolean;
+}
+
 export interface FlashValue {
   readonly code: number;
   readonly fired: boolean;
@@ -106,11 +118,14 @@ export type MetadataValue =
   | string
   | Uint8Array
   | RationalValue
+  | Integer64Value
   | FlashValue
   | ApexValue
   | GpsCoordinateRaw
   | readonly number[]
-  | readonly RationalValue[];
+  | readonly RationalValue[]
+  | readonly Integer64Value[]
+  | readonly (number | Integer64Value)[];
 
 export type ExifDataType =
   | "BYTE"
@@ -126,10 +141,23 @@ export type ExifDataType =
   | "FLOAT"
   | "DOUBLE"
   | "IFD"
+  | "LONG8"
+  | "SLONG8"
+  | "IFD8"
   | "COMPOSITE"
   | "UNKNOWN";
 
 export type Sensitivity = "none" | "low" | "moderate" | "high";
+
+/** Original-input provenance for a decoded metadata field. Offsets are absent
+ * only when a container cannot safely preserve a field's exact source span. */
+export interface MetadataFieldSource {
+  readonly blockId: string;
+  readonly entryOffset: number | null;
+  readonly entryLength: number | null;
+  readonly valueOffset: number | null;
+  readonly valueLength: number | null;
+}
 
 export interface MetadataField<TRaw extends MetadataValue = MetadataValue, TValue extends MetadataValue = MetadataValue> {
   /** Stable identifier such as `IFD0:0x010f` or `normalized:Make`. */
@@ -142,11 +170,10 @@ export interface MetadataField<TRaw extends MetadataValue = MetadataValue, TValu
   readonly display: string;
   readonly description: string;
   readonly type: ExifDataType;
-  /** @deprecated Editing is not exposed by this package; consult `getCapabilities()` instead. */
-  readonly editable: boolean;
   readonly sensitivity: Sensitivity;
   readonly count?: number;
   readonly known?: boolean;
+  readonly source?: MetadataFieldSource;
 }
 
 export interface ExifIfd {
@@ -183,7 +210,16 @@ export interface IccData {
   readonly byteLength: number;
   readonly chunks: number;
   readonly complete: boolean;
+  /** Bounded directory entries from a complete ICC profile. */
+  readonly tags?: readonly IccTag[];
   readonly fields?: readonly MetadataField[];
+}
+
+export interface IccTag {
+  readonly signature: string;
+  readonly offset: number;
+  readonly byteLength: number;
+  readonly valid: boolean;
 }
 
 export type PngTextChunkType = "tEXt" | "zTXt" | "iTXt";
@@ -206,6 +242,54 @@ export interface JfifData {
   readonly yDensity: number;
 }
 
+export type MetadataBlockFamily = "EXIF" | "XMP" | "IPTC" | "ICC" | "JFIF" | "PNGText" | "MakerNote" | "Photoshop" | "MPF" | "Unknown";
+export type MetadataBlockStatus = "decoded" | "partial" | "opaque" | "malformed" | "skipped";
+export type MetadataCoverageState = "complete" | "partial" | "skipped-by-selection" | "unsupported" | "malformed" | "opaque";
+export type MetadataCoverageReasonCode =
+  | "REQUEST_SCOPE_LIMITED"
+  | "PARSER_ERROR"
+  | "UNSUPPORTED_FORMAT"
+  | "BLOCK_SKIPPED_BY_SELECTION"
+  | "BLOCK_PARTIAL"
+  | "BLOCK_MALFORMED"
+  | "BLOCK_OPAQUE"
+  | "UNKNOWN_FORMAT"
+  | "OPAQUE_JPEG_MARKER"
+  | "TRAILING_BYTES"
+  | "UNSUPPORTED_STRUCTURE"
+  | WarningCode;
+
+export interface MetadataCoverageReason {
+  readonly code: MetadataCoverageReasonCode;
+  readonly message: string;
+}
+
+/** Separates the requested operation's result from whole-file privacy knowledge. */
+export interface MetadataCoverage {
+  readonly requested: MetadataCoverageState;
+  readonly wholeFile: MetadataCoverageState;
+  readonly reasons: readonly MetadataCoverageReason[];
+  /** IDs of metadata-bearing blocks not fully classified for the whole file. */
+  readonly unclassifiedBlockIds: readonly string[];
+}
+
+/** A provenance record for one recognized or opaque metadata-bearing source. */
+export interface MetadataBlock {
+  readonly id: string;
+  readonly family: MetadataBlockFamily;
+  readonly container: string;
+  readonly status: MetadataBlockStatus;
+  /** Normalized coverage meaning of `status` for policy and privacy consumers. */
+  readonly coverage?: MetadataCoverageState;
+  readonly offset: number | null;
+  readonly length: number | null;
+  readonly associatedImage: string | null;
+  readonly sensitivity: Sensitivity;
+  readonly warningCodes: readonly WarningCode[];
+  /** Component blocks contributing to an assembled logical metadata value. */
+  readonly relatedBlockIds?: readonly string[];
+}
+
 export interface MetadataResult {
   readonly format: ImageFormat;
   readonly mimeType: ImageMimeType;
@@ -225,9 +309,24 @@ export interface MetadataResult {
   readonly jfif: JfifData | null;
   /** Bounded PNG textual chunks, when parsing a PNG input. */
   readonly pngText: readonly PngTextEntry[];
+  /** Recognized metadata sources with family-level provenance and inspection status. */
+  readonly blocks: readonly MetadataBlock[];
+  /** Requested-scope and whole-file inspection coverage. */
+  readonly coverage: MetadataCoverage;
   /** Whether this result covers the requested inspection scope without parser errors. */
   readonly completeness: ParseCompleteness;
+  /** Read telemetry for range-backed inputs. Absent for direct in-memory parses. */
+  readonly telemetry?: ReadTelemetry;
   readonly warnings: readonly MetadataWarning[];
+}
+
+/** Bounded range-read evidence collected by a ByteSource. */
+export interface ReadTelemetry {
+  readonly readRequests: number;
+  readonly bytesRead: number;
+  readonly cacheHits: number;
+  readonly coalescedReads: number;
+  readonly cacheBytes: number;
 }
 
 /** Describes how much of an input was inspected and whether a range scope was used. */
@@ -242,7 +341,11 @@ export interface ParseCompleteness {
 }
 
 /** Internal parser result before the public completeness annotation is added. */
-export type ParsedMetadataResult = Omit<MetadataResult, "completeness">;
+/** Parser result before common completeness is attached. Parsers may provide
+ * source-level provenance while older container readers are migrated. */
+export type ParsedMetadataResult = Omit<MetadataResult, "completeness" | "blocks" | "coverage"> & {
+  readonly blocks?: readonly MetadataBlock[];
+};
 
 export interface SecurityLimits {
   readonly maxInputBytes: number;
@@ -257,6 +360,12 @@ export interface SecurityLimits {
   readonly maxDecompressedBytes: number;
   /** Cumulative decoded output budget for compressed metadata chunks. */
   readonly maxDecompressedMetadataBytes: number;
+  /** Maximum underlying range reads performed by a ByteSource. */
+  readonly maxReadRequests: number;
+  /** Maximum cumulative bytes fetched by a ByteSource. */
+  readonly maxReadBytes: number;
+  /** Maximum bytes retained by a ByteSource's LRU range cache. */
+  readonly maxReadCacheBytes: number;
   readonly maxWarnings: number;
 }
 
@@ -281,6 +390,14 @@ export interface ParseOptions {
   readonly select?: MetadataSelection;
   /** Stop after JPEG headers and metadata before entropy-coded image data. */
   readonly scope?: "full" | "jpeg-header" | "metadata";
+  /** Immutable field vocabulary used for EXIF names, descriptions, and sensitivity. */
+  readonly registry?: MetadataRegistry | readonly MetadataRegistryFieldInput[] | { readonly fields: readonly MetadataRegistryFieldInput[]; readonly sources?: readonly MetadataRegistrySource[] };
+}
+
+/** Options for bounded-concurrency parsing of an ordered input collection. */
+export interface ParseManyOptions extends ParseOptions {
+  /** Maximum simultaneous parses. Defaults to 4. */
+  readonly concurrency?: number;
 }
 
 export type RedactionTarget =
@@ -354,15 +471,34 @@ export interface SanitizeOptions {
   readonly preserveOrientation?: boolean;
 }
 
-export interface SanitizationResult {
+export interface PrivacyAuditOptions {
+  readonly limits?: Partial<SecurityLimits>;
+  readonly signal?: AbortSignal;
+}
+
+/** Machine-readable policy outcomes emitted by the privacy audit. */
+export type PrivacyReasonCode = MetadataCoverageReasonCode | "SENSITIVE_METADATA_PRESENT" | "RAW_XMP";
+
+interface SanitizationResultBase {
   readonly format: ImageFormat;
-  /** Bytes are supplied only if the requested policy was fully satisfied. */
-  readonly data: Uint8Array | null;
-  readonly successful: boolean;
   readonly retained: readonly RedactionTarget[];
   readonly warnings: readonly MetadataWarning[];
   readonly reasons: readonly string[];
+  readonly reasonCodes?: readonly PrivacyReasonCode[];
 }
+
+export interface SuccessfulSanitizationResult extends SanitizationResultBase {
+  readonly successful: true;
+  /** Bytes are supplied only when the requested policy was fully satisfied. */
+  readonly data: Uint8Array;
+}
+
+export interface FailedSanitizationResult extends SanitizationResultBase {
+  readonly successful: false;
+  readonly data: null;
+}
+
+export type SanitizationResult = SuccessfulSanitizationResult | FailedSanitizationResult;
 
 export class MetadataError extends Error {
   public readonly code: WarningCode;

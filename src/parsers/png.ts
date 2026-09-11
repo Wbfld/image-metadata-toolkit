@@ -2,16 +2,19 @@ import { parseExif } from "../metadata/exif.js";
 import { inspectIccProfile, type IccChunk } from "../metadata/icc.js";
 import { extractExifThumbnail } from "../metadata/thumbnail.js";
 import { wantsGroup, type ResolvedSelection } from "../selection.js";
+import { throwIfAborted } from "../security/abort.js";
 import type {
   ExifData,
   ImageDimensions,
   MetadataField,
+  MetadataBlock,
   ParsedMetadataResult,
   MetadataWarning,
   PngTextChunkType,
   PngTextEntry,
   SecurityLimits,
 } from "../types.js";
+import type { MetadataRegistry } from "../registry.js";
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] as const;
 const XMP_KEYWORD = "XML:com.adobe.xmp";
@@ -210,7 +213,9 @@ function parseTextChunk(
   data: Uint8Array,
   limits: SecurityLimits,
   maxDecodedBytes = limits.maxDecompressedBytes,
+  signal?: AbortSignal,
 ): Promise<TextParseResult> {
+  throwIfAborted(signal);
   const keywordEnd = findNull(data, 0);
   if (keywordEnd === null) return Promise.resolve(textWarning("MALFORMED_PNG", `PNG ${type} chunk has no keyword terminator.`));
 
@@ -226,7 +231,7 @@ function parseTextChunk(
     if (keywordEnd + 2 > data.length) return Promise.resolve(textWarning("TRUNCATED_DATA", "PNG zTXt chunk is missing its compression method."));
     if (data[keywordEnd + 1] !== 0) return Promise.resolve(textWarning("UNSUPPORTED_COMPRESSION", "PNG zTXt uses an unsupported compression method."));
     const compressed = data.subarray(keywordEnd + 2);
-    return inflateZlib(compressed, Math.min(limits.maxDecompressedBytes, maxDecodedBytes)).then((inflated) => {
+    return inflateZlib(compressed, Math.min(limits.maxDecompressedBytes, maxDecodedBytes), signal).then((inflated) => {
       if (inflated.bytes === null) {
         return textWarning(inflated.error ?? "INVALID_VALUE", "PNG zTXt decompression failed or exceeded its output limit.", maxDecodedBytes + 1);
       }
@@ -266,7 +271,7 @@ function parseTextChunk(
     }
     return Promise.resolve(parseTextBytes(type, data.subarray(0, keywordEnd), sourceText, limits, language, translatedKeyword));
   }
-    return inflateZlib(sourceText, Math.min(limits.maxDecompressedBytes, maxDecodedBytes)).then((inflated) => {
+    return inflateZlib(sourceText, Math.min(limits.maxDecompressedBytes, maxDecodedBytes), signal).then((inflated) => {
       if (inflated.bytes === null) {
       return textWarning(inflated.error ?? "INVALID_VALUE", "PNG iTXt decompression failed or exceeded its output limit.", maxDecodedBytes + 1);
     }
@@ -274,7 +279,8 @@ function parseTextChunk(
   });
 }
 
-export async function inflateZlib(compressed: Uint8Array, maxOutputBytes: number): Promise<InflateResult> {
+export async function inflateZlib(compressed: Uint8Array, maxOutputBytes: number, signal?: AbortSignal): Promise<InflateResult> {
+  throwIfAborted(signal);
   if (typeof DecompressionStream !== "function") {
     return { bytes: null, error: "UNSUPPORTED_COMPRESSION" };
   }
@@ -287,7 +293,9 @@ export async function inflateZlib(compressed: Uint8Array, maxOutputBytes: number
     const chunks: Uint8Array[] = [];
     let total = 0;
     for (;;) {
+      throwIfAborted(signal);
       const result = await reader.read();
+      throwIfAborted(signal);
       if (result.done) break;
       const chunk = result.value;
       if (chunk.byteLength > maxOutputBytes - total) {
@@ -304,18 +312,22 @@ export async function inflateZlib(compressed: Uint8Array, maxOutputBytes: number
       offset += chunk.length;
     }
     return { bytes: output };
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error;
     return { bytes: null, error: "INVALID_VALUE" };
   }
 }
 
 /** Parse bounded PNG chunks without decoding IDAT image pixels. */
-export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, selection?: ResolvedSelection): Promise<ParsedMetadataResult> {
+export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, selection?: ResolvedSelection, signal?: AbortSignal, registry?: MetadataRegistry): Promise<ParsedMetadataResult> {
+  throwIfAborted(signal);
   const warnings: MetadataWarning[] = [];
   const fields: MetadataField[] = [];
+  const blocks: MetadataBlock[] = [];
   const pngText: PngTextEntry[] = [];
   const xmpPackets: string[] = [];
   let icc: ParsedMetadataResult["icc"] = null;
+  let iccMalformed = false;
   let exif: ExifData | null = null;
   let dimensions: ImageDimensions | null = null;
   let cursor: number = PNG_SIGNATURE.length;
@@ -334,6 +346,7 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
     });
   } else {
     while (cursor < bytes.length) {
+      throwIfAborted(signal);
       if (sawIend) {
         warning(warnings, limits, {
           code: "MALFORMED_PNG",
@@ -422,6 +435,13 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
         continue;
       }
 
+      const skippedBlock = (family: MetadataBlock["family"], container: string, sensitivity: MetadataBlock["sensitivity"]): void => {
+        blocks.push({ id: `png:${type}:${cursor}`, family, container, status: "skipped", offset: cursor, length: next - cursor, associatedImage: null, sensitivity, warningCodes: [] });
+      };
+      if (type === "eXIf" && !wantsGroup(selection, "EXIF")) skippedBlock("EXIF", "eXIf chunk", "moderate");
+      else if (type === "iCCP" && !wantsGroup(selection, "ICC")) skippedBlock("ICC", "iCCP chunk", "low");
+      else if (TEXT_CHUNK_TYPES.has(type as PngTextChunkType) && !wantsGroup(selection, "PNGText") && !wantsGroup(selection, "XMP")) skippedBlock("PNGText", `${type} chunk`, "moderate");
+
       if (type === "IHDR") {
         if (sawIhdr || chunkCount !== 1 || length !== 13) {
           warning(warnings, limits, {
@@ -445,6 +465,8 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
       } else if (type === "IDAT") {
         sawIdat = true;
       } else if (wantsGroup(selection, "EXIF") && type === "eXIf") {
+        const blockId = `png:eXIf:${cursor}`;
+        blocks.push({ id: blockId, family: "EXIF", container: "eXIf chunk", status: "decoded", offset: cursor, length: next - cursor, associatedImage: null, sensitivity: "moderate", warningCodes: [] });
         if (length > limits.maxSegmentBytes || metadataBytes > limits.maxMetadataBytes) {
           // The bounded warning above is sufficient; do not materialize EXIF values.
         } else if (exif !== null) {
@@ -454,7 +476,7 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
             offset: dataStart,
           });
         } else {
-          const parsed = parseExif(bytes.subarray(dataStart, dataEnd), limits, dataStart, selection?.tags);
+          const parsed = parseExif(bytes.subarray(dataStart, dataEnd), limits, dataStart, selection?.tags, registry);
           for (const item of parsed.warnings) {
             if (warnings.length >= limits.maxWarnings) break;
             warnings.push(item);
@@ -462,28 +484,43 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
           if (parsed.exif !== null) {
             const thumbnail = extractExifThumbnail(bytes.subarray(dataStart, dataEnd), parsed.exif, limits);
             exif = thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
-            fields.push(...parsed.fields);
+            fields.push(...parsed.fields.map((field) => field.source === undefined ? field : ({
+              ...field,
+              source: {
+                ...field.source,
+                blockId,
+                entryOffset: field.source.entryOffset === null ? null : dataStart + field.source.entryOffset,
+                valueOffset: field.source.valueOffset === null ? null : dataStart + field.source.valueOffset,
+              },
+            })));
           }
         }
       } else if (wantsGroup(selection, "ICC") && type === "iCCP") {
+        blocks.push({ id: `png:iCCP:${cursor}`, family: "ICC", container: "iCCP chunk", status: "decoded", offset: cursor, length: next - cursor, associatedImage: null, sensitivity: "low", warningCodes: [] });
         if (length > limits.maxSegmentBytes || metadataBytes > limits.maxMetadataBytes) {
           // The bounded warning above is sufficient; do not decompress this chunk.
+          iccMalformed = true;
         } else if (icc !== null) {
+          iccMalformed = true;
           warning(warnings, limits, { code: "INVALID_VALUE", message: "A later PNG iCCP chunk was ignored.", offset: dataStart });
         } else {
           const payload = bytes.subarray(dataStart, dataEnd);
           const keywordEnd = findNull(payload, 0);
           if (keywordEnd === null || !validKeyword(payload.subarray(0, keywordEnd)) || keywordEnd + 2 > payload.length) {
+            iccMalformed = true;
             warning(warnings, limits, { code: "MALFORMED_PNG", message: "PNG iCCP chunk has an invalid profile name or truncated compression fields.", offset: dataStart, length });
           } else if (payload[keywordEnd + 1] !== 0) {
+            iccMalformed = true;
             warning(warnings, limits, { code: "UNSUPPORTED_COMPRESSION", message: "PNG iCCP uses an unsupported compression method.", offset: dataStart + keywordEnd + 1 });
           } else {
             const remainingDecodedBytes = Math.max(0, limits.maxDecompressedMetadataBytes - decompressedMetadataBytes);
             const inflated = await inflateZlib(
               payload.subarray(keywordEnd + 2),
               Math.min(limits.maxDecompressedBytes, remainingDecodedBytes),
+              signal,
             );
             if (inflated.bytes === null) {
+              iccMalformed = true;
               decompressedMetadataBytes += remainingDecodedBytes + 1;
               warning(warnings, limits, { code: inflated.error ?? "INVALID_VALUE", message: "PNG iCCP profile decompression failed or exceeded its output limit.", offset: dataStart, length });
             } else {
@@ -496,10 +533,12 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
                 fields.push(item);
               }
               for (const item of inspected.warnings) warning(warnings, limits, item);
+              if (inspected.warnings.length > 0) iccMalformed = true;
             }
           }
         }
       } else if ((wantsGroup(selection, "PNGText") || wantsGroup(selection, "XMP")) && TEXT_CHUNK_TYPES.has(type as PngTextChunkType)) {
+        blocks.push({ id: `png:${type}:${cursor}`, family: "PNGText", container: `${type} chunk`, status: "decoded", offset: cursor, length: next - cursor, associatedImage: null, sensitivity: "moderate", warningCodes: [] });
         if (length > limits.maxSegmentBytes || metadataBytes > limits.maxMetadataBytes) {
           // The bounded warning above is sufficient; avoid decoding this chunk.
         } else {
@@ -509,6 +548,7 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
             bytes.subarray(dataStart, dataEnd),
             limits,
             remainingDecodedBytes,
+            signal,
           );
           decompressedMetadataBytes += parsed.decodedBytes;
           if (parsed.warning !== undefined) {
@@ -559,6 +599,13 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
     });
   }
 
+  const resolvedBlocks = blocks.map((block) => {
+    if (block.offset === null || block.length === null) return block;
+    const offset = block.offset;
+    const length = block.length;
+    const local = warnings.filter((item) => item.offset !== undefined && item.offset >= offset && item.offset < offset + length);
+    return { ...block, status: block.family === "ICC" && iccMalformed ? "malformed" : local.some((item) => item.severity === "error") ? "partial" : block.status, warningCodes: [...new Set(local.map((item) => item.code))] };
+  });
   return {
     format: "png",
     mimeType: "image/png",
@@ -570,6 +617,7 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
     icc,
     jfif: null,
     pngText,
+    blocks: resolvedBlocks,
     warnings,
   };
 }

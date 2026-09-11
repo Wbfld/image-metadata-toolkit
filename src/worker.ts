@@ -1,22 +1,26 @@
 import { MetadataError, parseMetadata, redactMetadata, sanitizeMetadata } from "./index.js";
+import { throwIfAborted } from "./security/abort.js";
 import type {
   MetadataInput,
   MetadataResult,
   ParseOptions,
   RedactOptions,
   RedactionResult,
+  SanitizeOptions,
   SanitizationResult,
 } from "./types.js";
 
 type WorkerOperation = "parse" | "redact" | "sanitize";
 type WorkerResult = MetadataResult | RedactionResult | SanitizationResult;
+type WorkerOptions = ParseOptions | RedactOptions | SanitizeOptions;
+type WorkerInput = ArrayBuffer | Blob;
 
 interface WorkerRequest {
   readonly type: "browser-image-metadata:request";
   readonly id: number;
   readonly operation: WorkerOperation;
-  readonly data: ArrayBuffer;
-  readonly options: ParseOptions | RedactOptions;
+  readonly data: WorkerInput;
+  readonly options: WorkerOptions;
 }
 
 interface WorkerCancel {
@@ -59,10 +63,25 @@ function ownedBuffer(input: ArrayBuffer | ArrayBufferView): ArrayBuffer {
   return copy.buffer;
 }
 
-async function transferableInput(input: MetadataInput): Promise<ArrayBuffer> {
-  if (typeof Blob !== "undefined" && input instanceof Blob) return input.arrayBuffer();
-  if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) return ownedBuffer(input);
+function workerInput(input: MetadataInput, signal?: AbortSignal): WorkerInput {
+  throwIfAborted(signal);
+  if (typeof Blob !== "undefined" && input instanceof Blob) {
+    return input;
+  }
+  if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
+    const data = ownedBuffer(input);
+    throwIfAborted(signal);
+    return data;
+  }
   throw new MetadataError("INVALID_VALUE", "Worker requests require an ArrayBuffer, view, Blob, or File.");
+}
+
+function inputTransfer(input: WorkerInput): readonly Transferable[] {
+  return input instanceof ArrayBuffer ? [input] : [];
+}
+
+function isWorkerInput(value: unknown): value is WorkerInput {
+  return value instanceof ArrayBuffer || (typeof Blob !== "undefined" && value instanceof Blob);
 }
 
 function responseTransfer(result: WorkerResult): readonly Transferable[] {
@@ -72,8 +91,10 @@ function responseTransfer(result: WorkerResult): readonly Transferable[] {
 
 /**
  * Create a request-ID based client for a module worker that calls
- * `installMetadataWorker()` below. Inputs are copied into owned transferable
- * buffers so callers retain their original views.
+ * `installMetadataWorker()` below. Binary views are copied into owned
+ * transferable buffers so callers retain their original views. Blob and File
+ * inputs are structured-cloned intact, allowing metadata-scoped reads inside
+ * the worker to use `Blob.slice()` rather than materializing the whole file.
  */
 export function createMetadataWorkerClient(port: MessagePortLike, options: MetadataWorkerClientOptions = {}) {
   const maxPending = options.maxPending ?? 16;
@@ -99,11 +120,12 @@ export function createMetadataWorkerClient(port: MessagePortLike, options: Metad
   };
   port.addEventListener("message", receive);
 
-  const request = async <T extends WorkerResult>(operation: WorkerOperation, input: MetadataInput, requestOptions: ParseOptions | RedactOptions = {}): Promise<T> => {
+  const request = async <T extends WorkerResult>(operation: WorkerOperation, input: MetadataInput, requestOptions: WorkerOptions = {}): Promise<T> => {
     if (closed) throw new MetadataError("ABORTED", "Metadata worker client has been closed.");
     if (pending.size >= maxPending) throw new MetadataError("LIMIT_EXCEEDED", `Metadata worker queue is limited to ${maxPending} requests.`);
     if (requestOptions.signal?.aborted) throw new MetadataError("ABORTED", "Metadata operation was aborted.");
-    const data = await transferableInput(input);
+    const data = workerInput(input, requestOptions.signal);
+    throwIfAborted(requestOptions.signal);
     const id = nextId++;
     return new Promise<T>((resolve, reject) => {
       const onAbort = (): void => {
@@ -120,14 +142,14 @@ export function createMetadataWorkerClient(port: MessagePortLike, options: Metad
       const wireOptions = { ...requestOptions } as { signal?: AbortSignal };
       delete wireOptions.signal;
       const message: WorkerRequest = { type: "browser-image-metadata:request", id, operation, data, options: wireOptions };
-      port.postMessage(message, [data]);
+      port.postMessage(message, inputTransfer(data));
     });
   };
 
   return {
     parse: (input: MetadataInput, requestOptions: ParseOptions = {}) => request<MetadataResult>("parse", input, requestOptions),
     redact: (input: MetadataInput, requestOptions: RedactOptions) => request<RedactionResult>("redact", input, requestOptions),
-    sanitize: (input: MetadataInput, requestOptions: ParseOptions = {}) => request<SanitizationResult>("sanitize", input, requestOptions),
+    sanitize: (input: MetadataInput, requestOptions: SanitizeOptions = {}) => request<SanitizationResult>("sanitize", input, requestOptions),
     close: (): void => {
       if (closed) return;
       closed = true;
@@ -156,7 +178,7 @@ export function installMetadataWorker(port: MessagePortLike = self as unknown as
       controllers.get(message.id)?.abort();
       return;
     }
-    if (message.type !== "browser-image-metadata:request" || typeof message.id !== "number" || !(message.data instanceof ArrayBuffer) || (message.operation !== "parse" && message.operation !== "redact" && message.operation !== "sanitize")) return;
+    if (message.type !== "browser-image-metadata:request" || typeof message.id !== "number" || !isWorkerInput(message.data) || (message.operation !== "parse" && message.operation !== "redact" && message.operation !== "sanitize")) return;
     const controller = new AbortController();
     controllers.set(message.id, controller);
     try {
