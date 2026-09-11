@@ -1,4 +1,5 @@
 import type { IccData, MetadataField, MetadataWarning, SecurityLimits } from "../types.js";
+import { readUint32 } from "../security/bounds.js";
 
 const ICC_IDENTIFIER = [0x49, 0x43, 0x43, 0x5f, 0x50, 0x52, 0x4f, 0x46, 0x49, 0x4c, 0x45, 0x00] as const;
 
@@ -42,7 +43,7 @@ const ICC_FIELD_DEFINITIONS: Readonly<Record<number, { name: string; description
   0x000c: { name: "DeviceClass", description: "ICC device class signature." },
   0x0010: { name: "ColorSpace", description: "Encoded device color space signature." },
   0x0014: { name: "PCS", description: "Profile connection space signature." },
-  0x0064: { name: "RenderingIntent", description: "Default rendering intent." },
+  0x0040: { name: "RenderingIntent", description: "Default rendering intent." },
 };
 
 function ascii(bytes: Uint8Array, offset: number): string {
@@ -50,7 +51,7 @@ function ascii(bytes: Uint8Array, offset: number): string {
 }
 
 function uint32BigEndian(bytes: Uint8Array, offset: number): number {
-  return (bytes[offset] ?? 0) * 0x1000000 + (bytes[offset + 1] ?? 0) * 0x10000 + (bytes[offset + 2] ?? 0) * 0x100 + (bytes[offset + 3] ?? 0);
+  return readUint32(bytes, offset, "big-endian");
 }
 
 function iccWarning(
@@ -99,6 +100,13 @@ export function inspectIccProfile(chunks: readonly IccChunk[], limits: SecurityL
   if (declaredSize < 132 || declaredSize > profile.length) iccWarning(warnings, limits, "ICC profile size is invalid or exceeds the assembled profile.", 0, 4);
   if (declaredSize !== profile.length) iccWarning(warnings, limits, "ICC profile contains trailing or missing bytes relative to its declared size.", 0, 4);
   if (ascii(profile, 36) !== "acsp") iccWarning(warnings, limits, "ICC profile signature is invalid; expected acsp.", 36, 4);
+  const renderingIntent = uint32BigEndian(profile, 64);
+  if (renderingIntent > 3) {
+    iccWarning(warnings, limits, "ICC rendering intent is outside the four defined values.", 64, 4);
+  }
+  if ((renderingIntent & 0xffff0000) !== 0) {
+    iccWarning(warnings, limits, "ICC rendering intent has non-zero reserved high bits.", 64, 4);
+  }
   const tagCount = uint32BigEndian(profile, 128);
   const tagTableEnd = 132 + tagCount * 12;
   if (!Number.isSafeInteger(tagTableEnd) || tagTableEnd > profile.length) {
@@ -128,10 +136,15 @@ export function inspectIccProfile(chunks: readonly IccChunk[], limits: SecurityL
   const fields: MetadataField[] = [];
   for (const [offsetText, definition] of Object.entries(ICC_FIELD_DEFINITIONS)) {
     const offset = Number(offsetText);
-    const numeric = offset === 0 || offset === 8 || offset === 100;
+    const numeric = offset === 0 || offset === 8 || offset === 64;
     const raw = numeric ? uint32BigEndian(profile, offset) : ascii(profile, offset);
+    const display = offset === 64
+      ? `${raw} (${["perceptual", "media-relative colorimetric", "saturation", "ICC-absolute colorimetric"][Number(raw)] ?? "unknown"})`
+      : offset === 8
+        ? `0x${Number(raw).toString(16).padStart(8, "0")}`
+        : String(raw);
     const value: MetadataField["value"] = raw;
-    fields.push({ id: `ICC:0x${offset.toString(16).padStart(4, "0")}`, ifd: "ICC", tag: offset, name: definition.name, raw, value, display: offset === 8 ? `0x${Number(raw).toString(16).padStart(8, "0")}` : String(value), description: definition.description, type: numeric ? "LONG" : "UNDEFINED", editable: false, sensitivity: "low" });
+    fields.push({ id: `ICC:0x${offset.toString(16).padStart(4, "0")}`, ifd: "ICC", tag: offset, name: definition.name, raw, value, display, description: definition.description, type: numeric ? "LONG" : "UNDEFINED", editable: false, sensitivity: "low" });
   }
   const data: IccData = { ...summary, fields };
   return { data, fields, warnings };

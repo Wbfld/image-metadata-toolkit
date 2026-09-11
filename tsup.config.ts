@@ -1,13 +1,28 @@
 import { defineConfig } from "tsup";
 
-export default defineConfig({
-  entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
-  dts: true,
-  clean: true,
+const entry = ["src/index.ts", "src/detect.ts", "src/jpeg.ts", "src/mini.ts", "src/redact.ts", "src/xmp.ts", "src/xmp-rgrove.ts", "src/worker.ts"];
+const shared = {
+  entry,
   sourcemap: true,
-  splitting: false,
   target: "es2022",
-  platform: "neutral",
+  platform: "neutral" as const,
+  external: ["@rgrove/parse-xml"],
   treeshake: true,
-});
+};
+
+export default defineConfig([
+  {
+    ...shared,
+    format: ["esm"],
+    clean: true,
+    splitting: true,
+    dts: true,
+  },
+  {
+    ...shared,
+    format: ["cjs"],
+    clean: false,
+    splitting: false,
+    dts: true,
+  },
+]);

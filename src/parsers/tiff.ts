@@ -1,7 +1,8 @@
 import { parseExif, type ParsedExif } from "../metadata/exif.js";
 import { inspectIccProfile, type IccChunk } from "../metadata/icc.js";
 import { parseIptcMetadata } from "../metadata/iptc.js";
-import type { ImageDimensions, MetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
+import { extractExifThumbnail } from "../metadata/thumbnail.js";
+import type { ImageDimensions, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
 
 /** True for a classic TIFF header in either byte order. */
 export function isTiffHeader(bytes: Uint8Array): boolean {
@@ -41,7 +42,7 @@ function appendWarnings(destination: MetadataWarning[], source: readonly Metadat
 }
 
 /** Parse a standalone classic TIFF through the bounded EXIF/IFD decoder. */
-export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits): MetadataResult {
+export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits): ParsedMetadataResult {
   const littleEndian = bytes[0] === 0x49 && bytes[1] === 0x49;
   const bigTiffMagic = littleEndian
     ? bytes.length >= 4 && bytes[2] === 0x2b && bytes[3] === 0x00
@@ -69,7 +70,11 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits): Me
   }
 
   const parsed = parseTiff(bytes, limits);
-  const sourceFields = parsed.exif?.fields ?? [];
+  const exif = parsed.exif === null ? null : (() => {
+    const thumbnail = extractExifThumbnail(bytes, parsed.exif, limits);
+    return thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
+  })();
+  const sourceFields = exif?.fields ?? [];
   const warnings = [...parsed.warnings];
   const xmpField = sourceFields.find(({ tag, raw }) => tag === 700 && raw instanceof Uint8Array);
   const xmpBytes = xmpField?.raw instanceof Uint8Array ? xmpField.raw : null;
@@ -79,8 +84,8 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits): Me
   }
   const iccField = sourceFields.find(({ tag, raw }) => tag === 34675 && raw instanceof Uint8Array);
   const iptcField = sourceFields.find(({ tag, raw }) => tag === 33723 && raw instanceof Uint8Array);
-  let icc: MetadataResult["icc"] = null;
-  let iptc: MetadataResult["iptc"] = null;
+  let icc: ParsedMetadataResult["icc"] = null;
+  let iptc: ParsedMetadataResult["iptc"] = null;
   const fields = [...parsed.fields];
   if (iccField?.raw instanceof Uint8Array) {
     const chunk: IccChunk = { sequence: 1, total: 1, byteLength: iccField.raw.length, data: iccField.raw.slice() };
@@ -108,7 +113,7 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits): Me
     mimeType: "image/tiff",
     dimensions: tiffDimensions(sourceFields),
     fields,
-    exif: parsed.exif,
+    exif,
     xmp: xmpText === null ? null : { packets: [xmpText] },
     iptc,
     icc,

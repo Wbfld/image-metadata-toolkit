@@ -1,0 +1,43 @@
+name: Fixture submission
+description: Offer a legally shareable image that improves metadata interoperability coverage.
+title: "fixture: "
+labels: [fixture]
+body:
+  - type: markdown
+    attributes:
+      value: Only submit images that may be redistributed. Remove personal, location, serial-number, and confidential metadata unless that value is the expressly consented regression target.
+  - type: dropdown
+    id: format
+    attributes:
+      label: Container
+      options:
+        - JPEG
+        - PNG
+        - TIFF
+        - WebP
+        - HEIF
+        - AVIF
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: provenance
+    attributes:
+      label: Provenance and redistribution permission
+      description: State the license or consent, source link when available, producer device/application and version, and SHA-256.
+    validations:
+      required: true
+  - type: textarea
+    id: expectations
+    attributes:
+      label: Independently verified expectations
+      description: List dimensions, metadata values, relevant container structure, and the independent tool or decoder used to establish each expectation.
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Regression purpose
+      description: Explain the parser, redaction, compatibility, or safety behavior the fixture would cover.
+    validations:
+      required: true

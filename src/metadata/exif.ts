@@ -83,6 +83,7 @@ export function parseExif(
   tiffBytes: Uint8Array,
   limits: SecurityLimits,
   warningBaseOffset = 0,
+  selectedTags?: ReadonlySet<string> | null,
 ): ParsedExif {
   const maxWarnings = finiteLimit(limits.maxWarnings);
   const warnings: MetadataWarning[] = [];
@@ -310,6 +311,13 @@ export function parseExif(
       for (let index = 0; index < countToParse; index += 1) {
         const entryOffset = entriesOffset + index * 12;
         entriesVisited += 1;
+        const tag = view.getUint16(entryOffset, littleEndian);
+        const isPointer = (work.name === "IFD0" && (tag === 0x8769 || tag === 0x8825)) || (work.name === "ExifIFD" && tag === 0xa005);
+        const definition = getTagDefinition(work.name, tag);
+        const stableId = `${work.name}:0x${hexTag(tag)}`;
+        const selected = selectedTags === undefined || selectedTags === null ||
+          selectedTags.has(definition?.name ?? formatUnknownTag(tag)) || selectedTags.has(stableId);
+        if (!selected && !isPointer) continue;
         const field = decodeEntry(
           tiffBytes,
           view,
@@ -323,7 +331,7 @@ export function parseExif(
           addWarning,
         );
         if (field === null) continue;
-        rawFields.push(field);
+        if (selected) rawFields.push(field);
 
         if (work.name === "IFD0" && field.tag === 0x8769) {
           enqueuePointer(field, "ExifIFD", work.depth + 1);

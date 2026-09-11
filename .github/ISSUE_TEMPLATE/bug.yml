@@ -1,0 +1,41 @@
+name: Bug report
+description: Report an incorrect parse, redaction outcome, runtime failure, or documentation problem.
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include private image metadata or an unredacted personal photograph. Report security issues privately instead.
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: 0.5.0
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime
+      options:
+        - Chromium browser
+        - Firefox browser
+        - Safari/WebKit browser
+        - Web Worker
+        - Node.js
+        - Deno
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include input type, options, expected result, actual result, and relevant warnings. Remove private metadata.
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Shareable fixture details
+      description: If a fixture is needed, state its license or consent, SHA-256, source application or device, and an independent expected result. Do not attach confidential images.

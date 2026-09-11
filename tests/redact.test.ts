@@ -286,6 +286,28 @@ describe("lossless JPEG metadata redaction", () => {
     expect(redacted.removed).toEqual([]);
     expect(redacted.warnings[0]?.code).toBe("REDACTION_SKIPPED");
   });
+
+  it("refuses JPEG surgery when MPF secondary-image offsets could become stale", () => {
+    const fixture = makeJpeg();
+    const mpf = makeSegment(0xe2, encoder.encode("MPF\0"));
+    const input = concat(fixture.jpeg.subarray(0, 2), mpf, fixture.jpeg.subarray(2));
+    const redacted = redactBytes(input, { remove: ["EXIF"] }, DEFAULT_LIMITS);
+
+    expect(redacted.data).toEqual(input);
+    expect(redacted.removed).toEqual([]);
+    expect(redacted.warnings).toContainEqual(expect.objectContaining({ code: "UNSUPPORTED_STRUCTURE" }));
+  });
+
+  it("refuses JPEG surgery when Ultra HDR gain-map XMP is present", () => {
+    const fixture = makeJpeg();
+    const xmp = makeSegment(0xe1, encoder.encode("http://ns.adobe.com/xap/1.0/\0<hdrgm:Version=\"1.0\"/>"));
+    const input = concat(fixture.jpeg.subarray(0, 2), xmp, fixture.jpeg.subarray(2));
+    const redacted = redactBytes(input, { remove: ["EXIF"] }, DEFAULT_LIMITS);
+
+    expect(redacted.data).toEqual(input);
+    expect(redacted.removed).toEqual([]);
+    expect(redacted.warnings).toContainEqual(expect.objectContaining({ code: "UNSUPPORTED_STRUCTURE" }));
+  });
 });
 
 function makeJpeg(): Fixture {

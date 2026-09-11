@@ -2,11 +2,23 @@ import { readFile } from "node:fs/promises";
 import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vitest";
 import {
+  auditPrivacy,
+  getCapabilities,
+  getCaptureTime,
+  getGps,
+  getMetadataSummary,
+  getOrientation,
+  getRotation,
+  getThumbnail,
   MetadataError,
   parseMetadata,
   redactMetadata,
+  sanitizeMetadata,
   type MetadataField,
+  type MetadataResult,
 } from "../src/index.js";
+import { parseJpegMetadata } from "../src/jpeg.js";
+import { redactMetadata as redactFocusedMetadata } from "../src/redact.js";
 
 const fixtureUrl = new URL("./fixtures/jpeg-exif-little-endian.jpg", import.meta.url);
 const pngFixtureUrl = new URL("./fixtures/png-metadata.png", import.meta.url);
@@ -40,6 +52,8 @@ const heifPrimaryIccFixtureUrl = new URL("./fixtures/heif-primary-icc.heic", imp
 const avifPrimaryIccFixtureUrl = new URL("./fixtures/avif-primary-icc.avif", import.meta.url);
 const heifMalformedPrimaryIccFixtureUrl = new URL("./fixtures/heif-primary-icc-malformed.heic", import.meta.url);
 const heifCrossMetaItemFixtureUrl = new URL("./fixtures/heif-cross-meta-item-reference.heic", import.meta.url);
+const heifReferencedExifFixtureUrl = new URL("./fixtures/heif-iref-exif.heic", import.meta.url);
+const avifNclxFixtureUrl = new URL("./fixtures/avif-primary-nclx.avif", import.meta.url);
 const libavifMetadataFixtureUrl = new URL("./fixtures/libavif-paris-icc-exif-xmp.avif", import.meta.url);
 const sipsHeifMetadataFixtureUrl = new URL("./fixtures/sips-heic-exif-xmp.heic", import.meta.url);
 
@@ -78,6 +92,33 @@ function crc32(bytes: Uint8Array, start: number, end: number): number {
   return (crc ^ 0xffffffff) >>> 0;
 }
 
+function pngChunk(type: string, data: Uint8Array): Uint8Array {
+  const chunk = new Uint8Array(data.length + 12);
+  const view = new DataView(chunk.buffer);
+  view.setUint32(0, data.length);
+  chunk.set(Array.from(type, (character) => character.charCodeAt(0)), 4);
+  chunk.set(data, 8);
+  view.setUint32(data.length + 8, crc32(chunk, 4, data.length + 8));
+  return chunk;
+}
+
+function insertBeforeIdat(png: Uint8Array, inserted: Uint8Array): Uint8Array {
+  let cursor = 8;
+  while (cursor + 12 <= png.length) {
+    const length = new DataView(png.buffer, png.byteOffset, png.byteLength).getUint32(cursor);
+    const type = String.fromCharCode(...png.subarray(cursor + 4, cursor + 8));
+    if (type === "IDAT") {
+      const output = new Uint8Array(png.length + inserted.length);
+      output.set(png.subarray(0, cursor), 0);
+      output.set(inserted, cursor);
+      output.set(png.subarray(cursor), cursor + inserted.length);
+      return output;
+    }
+    cursor += 12 + length;
+  }
+  throw new Error("PNG fixture has no IDAT chunk");
+}
+
 describe("public parsing API", () => {
   it("parses the real JPEG fixture and all first-pass normalized fields", async () => {
     const result = await parseMetadata(await readFile(fixtureUrl));
@@ -106,6 +147,7 @@ describe("public parsing API", () => {
       "Copyright",
       "Artist",
       "Software",
+      "BodySerialNumber",
     ]);
 
     expect(fields.get("Make")?.value).toBe("OpenAI Camera");
@@ -132,6 +174,126 @@ describe("public parsing API", () => {
     expect(shutter?.raw).toEqual({ numerator: 6965784, denominator: 1000000 });
     expect(shutter?.value).toMatchObject({ unit: "seconds" });
     expect(shutter?.display).toContain("APEX 6965784/1000000");
+
+    expect(getMetadataSummary(result)).toMatchObject({
+      camera: { make: "OpenAI Camera", model: "Fixture One" },
+      exposure: { time: 1 / 125, fNumber: 2.8, iso: 400 },
+      location: { latitude: 51.5, altitude: 35 },
+      orientation: 6,
+    });
+    expect(getCapabilities("jpeg").losslessRedaction).toBe(true);
+  });
+
+  it("provides task-oriented GPS, orientation, rotation, and capture helpers", async () => {
+    const result = await parseMetadata(await readFile(fixtureUrl));
+    expect(getGps(result)).toEqual({
+      latitude: 51.5,
+      longitude: -7 / 60,
+      altitude: 35,
+      complete: true,
+      conflicts: [],
+    });
+    expect(getOrientation(result)).toEqual({
+      value: 6,
+      transform: null,
+      source: "exif",
+      conflicts: [],
+    });
+    expect(getRotation(result)).toMatchObject({
+      degrees: 90,
+      scaleX: 1,
+      scaleY: 1,
+      dimensionSwapped: true,
+      css: "rotate(90deg) scale(1, 1)",
+    });
+    expect(getCaptureTime(result)).toMatchObject({
+      value: "2026-09-07 12:34:56",
+      source: "DateTimeOriginal",
+    });
+    expect(getThumbnail(result)).toBeNull();
+  });
+
+  it("keeps container transforms and incomplete GPS explicit", () => {
+    const result = {
+      format: "heif",
+      mimeType: "image/heif",
+      dimensions: { width: 10, height: 20 },
+      fields: [],
+      exif: null,
+      xmp: null,
+      iptc: null,
+      icc: null,
+      jfif: null,
+      pngText: [],
+      completeness: { complete: true, scope: "full", reasons: [] },
+      warnings: [],
+      transform: { rotation: 270, mirrored: true, mirrorAxis: "vertical" },
+    } as MetadataResult;
+    expect(getGps(result)).toMatchObject({ complete: false, latitude: null, longitude: null });
+    expect(getOrientation(result)).toMatchObject({ value: null, source: "container", transform: { rotation: 270, mirrored: true } });
+    expect(getRotation(result)).toMatchObject({ degrees: 270, scaleX: 1, scaleY: -1, dimensionSwapped: true });
+  });
+
+  it("returns a defensive thumbnail copy", () => {
+    const thumbnail = Uint8Array.from([0xff, 0xd8, 0xff, 0xd9]);
+    const result = {
+      format: "jpeg",
+      mimeType: "image/jpeg",
+      dimensions: null,
+      fields: [],
+      exif: { byteOrder: "little-endian", fields: [], ifds: [], thumbnail: { data: thumbnail.slice(), mimeType: "image/jpeg" } },
+      xmp: null,
+      iptc: null,
+      icc: null,
+      jfif: null,
+      pngText: [],
+      completeness: { complete: true, scope: "full", reasons: [] },
+      warnings: [],
+    } as MetadataResult;
+    const copy = getThumbnail(result);
+    expect(copy).toMatchObject({ mimeType: "image/jpeg", data: thumbnail });
+    if (copy === null) throw new Error("expected thumbnail");
+    copy.data[0] = 0;
+    expect(result.exif?.thumbnail?.data[0]).toBe(0xff);
+  });
+
+  it("audits recognized privacy metadata and reports concrete inspection evidence", async () => {
+    const result = await auditPrivacy(await readFile(fixtureUrl));
+    expect(result.format).toBe("jpeg");
+    expect(result.safe).toBe(false);
+    expect(result.complete).toBe(true);
+    expect(result.findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ target: "EXIF" }),
+      expect.objectContaining({ target: "GPSLatitude", sensitivity: "high" }),
+    ]));
+    expect(result.opaqueBlocks).toEqual([]);
+    expect(result.trailingBytes).toBe(0);
+
+    const tailed = new Uint8Array((await readFile(fixtureUrl)).length + 3);
+    tailed.set(await readFile(fixtureUrl));
+    tailed.set([1, 2, 3], tailed.length - 3);
+    const trailing = await auditPrivacy(tailed);
+    expect(trailing.trailingBytes).toBe(3);
+    expect(trailing.gaps.some((gap) => gap.includes("end marker"))).toBe(true);
+
+    const opaque = new Uint8Array((await readFile(fixtureUrl)).length + 6);
+    opaque.set([0xff, 0xd8, 0xff, 0xef, 0x00, 0x04, 1, 2]);
+    opaque.set((await readFile(fixtureUrl)).subarray(2), 8);
+    const opaqueAudit = await auditPrivacy(opaque);
+    expect(opaqueAudit.opaqueBlocks).toContainEqual(expect.objectContaining({ label: "APP15" }));
+
+    const mpf = Uint8Array.from([0xff, 0xe2, 0x00, 0x06, 0x4d, 0x50, 0x46, 0x00]);
+    const mpfInput = new Uint8Array((await readFile(fixtureUrl)).length + mpf.length);
+    mpfInput.set((await readFile(fixtureUrl)).subarray(0, 2));
+    mpfInput.set(mpf, 2);
+    mpfInput.set((await readFile(fixtureUrl)).subarray(2), 2 + mpf.length);
+    const mpfAudit = await auditPrivacy(mpfInput);
+    expect(mpfAudit.opaqueBlocks).toContainEqual(expect.objectContaining({ label: "MPF multi-picture" }));
+    expect(mpfAudit.gaps).toContain("JPEG MPF secondary images are not rewritten by lossless redaction.");
+
+    const unknown = await auditPrivacy(Uint8Array.of(1, 2, 3));
+    expect(unknown.complete).toBe(false);
+    expect(unknown.gaps).toContain("The image format was not recognized, so metadata safety could not be established.");
   });
 
   it("accepts Blob and offset ArrayBufferView inputs without reading unrelated bytes", async () => {
@@ -146,6 +308,89 @@ describe("public parsing API", () => {
     const viewResult = await parseMetadata(view);
     expect(viewResult.format).toBe("jpeg");
     expect(viewResult.dimensions).toEqual({ width: 2, height: 2 });
+  });
+
+  it("supports selective JPEG metadata and Blob-backed header-only reads", async () => {
+    const fixture = new Uint8Array(await readFile(fixtureUrl));
+    const selected = await parseMetadata(fixture, { select: { groups: ["Dimensions", "EXIF"], tags: ["Make"] } });
+    expect(selected.dimensions).toEqual({ width: 2, height: 2 });
+    expect(selected.exif?.fields.map(({ name }) => name)).toEqual(["Make"]);
+    expect(selected.fields.map(({ name }) => name)).toEqual(["Make"]);
+    expect(selected.jfif).toBeNull();
+
+    const padded = new Uint8Array(fixture.length + 128 * 1024);
+    padded.set(fixture);
+    const reads: number[] = [];
+    const slicedBlob = {
+      size: padded.length,
+      arrayBuffer: () => Promise.resolve(padded.buffer.slice(0)),
+      slice: (start = 0, end = padded.length) => {
+        reads.push(end - start);
+        return new Blob([padded.subarray(start, end)]);
+      },
+    } as unknown as Blob;
+    const header = await parseMetadata(slicedBlob, { scope: "jpeg-header", select: { groups: ["Dimensions", "EXIF"] } });
+    expect(header.completeness).toEqual({ complete: true, scope: "partial", reasons: ["JPEG scan data was intentionally not read."] });
+    expect(header.dimensions).toEqual({ width: 2, height: 2 });
+    expect(header.exif?.fields.some(({ name }) => name === "Make")).toBe(true);
+    expect(Math.max(...reads)).toBeLessThanOrEqual(64 * 1024);
+
+    await expect(parseMetadata(fixture, { select: { groups: ["not-a-group"] as never } })).rejects.toThrow("Unknown metadata group");
+  });
+
+  it("reads PNG and WebP metadata scopes without materializing image payload chunks", async () => {
+    const makeTrackingBlob = (source: Uint8Array) => {
+      const reads: Array<readonly [number, number]> = [];
+      const blob = {
+        size: source.byteLength,
+        arrayBuffer: () => Promise.resolve(source.buffer.slice(source.byteOffset, source.byteOffset + source.byteLength) as ArrayBuffer),
+        slice: (start = 0, end = source.byteLength) => {
+          reads.push([start, end]);
+          return new Blob([Uint8Array.from(source.subarray(start, end)).buffer]);
+        },
+      } as unknown as Blob;
+      return { blob, reads };
+    };
+    const pngSource = await readFile(pngFixtureUrl);
+    const pngTracked = makeTrackingBlob(pngSource);
+    const png = await parseMetadata(pngTracked.blob, { scope: "metadata", select: { groups: ["Dimensions", "EXIF"] } });
+    expect(png.format).toBe("png");
+    expect(png.exif?.fields.some(({ name }) => name === "Make")).toBe(true);
+    expect(png.completeness).toMatchObject({ scope: "partial", inputBytes: pngSource.byteLength });
+    expect(png.completeness.bytesRead).toBeLessThan(pngSource.byteLength);
+
+    const webpSource = await readFile(webpFixtureUrl);
+    const webpTracked = makeTrackingBlob(webpSource);
+    const webp = await parseMetadata(webpTracked.blob, { scope: "metadata", select: { groups: ["Dimensions", "EXIF"] } });
+    expect(webp.format).toBe("webp");
+    expect(webp.exif?.fields.some(({ name }) => name === "Make")).toBe(true);
+    expect(webp.completeness).toMatchObject({ scope: "partial", inputBytes: webpSource.byteLength });
+    expect(webp.completeness.bytesRead).toBeLessThan(webpSource.byteLength);
+  });
+
+  it("provides focused JPEG and redaction entry points", async () => {
+    const fixture = await readFile(fixtureUrl);
+    const parsed = await parseJpegMetadata(fixture, { scope: "jpeg-header", select: { tags: ["Make"] } });
+    expect(parsed.completeness.scope).toBe("partial");
+    expect(parsed.exif?.fields.map(({ name }) => name)).toEqual(["Make"]);
+    const redacted = await redactFocusedMetadata(fixture, { remove: ["EXIF"] });
+    expect(redacted.removed).toContainEqual({ target: "EXIF", occurrences: 1 });
+  });
+
+  it("does not decode unrequested PNG or WebP metadata families", async () => {
+    const [png, webp] = await Promise.all([
+      parseMetadata(await readFile(pngFixtureUrl), { select: { groups: ["Dimensions"] } }),
+      parseMetadata(await readFile(webpFixtureUrl), { select: { groups: ["Dimensions"] } }),
+    ]);
+    expect(png.dimensions).toEqual({ width: 2, height: 2 });
+    expect(png.exif).toBeNull();
+    expect(png.icc).toBeNull();
+    expect(png.xmp).toBeNull();
+    expect(png.pngText).toEqual([]);
+    expect(webp.dimensions).toEqual({ width: 2, height: 2 });
+    expect(webp.exif).toBeNull();
+    expect(webp.icc).toBeNull();
+    expect(webp.xmp).toBeNull();
   });
 
   it("rejects Blob-like inputs whose arrayBuffer result is not an ArrayBuffer", async () => {
@@ -178,6 +423,18 @@ describe("public parsing API", () => {
     expect(result.pngText.find(({ keyword }) => keyword === "Compressed")?.text).toBe("compressed iTXt text");
     expect(result.xmp?.packets[0]).toContain("xmpmeta");
     expect(result.warnings).toEqual([]);
+    expect(result.completeness).toEqual({ complete: true, scope: "full", reasons: [] });
+  });
+
+  it("reports incomplete inspection and supports pre-aborted requests", async () => {
+    const truncated = await parseMetadata(await readFile(pngTruncatedUrl));
+    expect(truncated.completeness.complete).toBe(false);
+    expect(truncated.completeness.reasons).toContain("TRUNCATED_DATA");
+
+    const controller = new AbortController();
+    controller.abort();
+    await expect(parseMetadata(await readFile(fixtureUrl), { signal: controller.signal }))
+      .rejects.toMatchObject({ code: "ABORTED" });
   });
 
   it("accepts PNG Blob input and reports malformed PNG fixtures safely", async () => {
@@ -199,6 +456,22 @@ describe("public parsing API", () => {
     expect(decompression.warnings).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
     const metadata = await parseMetadata(png, { limits: { maxMetadataBytes: 1 } });
     expect(metadata.warnings).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
+    const aggregate = await parseMetadata(png, { limits: { maxDecompressedMetadataBytes: 4 } });
+    expect(aggregate.warnings).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
+  });
+
+  it("decodes PNG iTXt text as UTF-8 regardless of its keyword", async () => {
+    const png = new Uint8Array(await readFile(pngFixtureUrl));
+    const text = new TextEncoder().encode("café 東京 😀");
+    const data = new Uint8Array([
+      ...new TextEncoder().encode("Description"), 0, 0, 0,
+      0, // empty language
+      0, // empty translated keyword
+      ...text,
+    ]);
+    const result = await parseMetadata(insertBeforeIdat(png, pngChunk("iTXt", data)));
+    expect(result.pngText.filter(({ keyword }) => keyword === "Description").at(-1)?.text).toBe("café 東京 😀");
+    expect(result.warnings).toEqual([]);
   });
 
   it("still reports dimensions for an incomplete PNG container", async () => {
@@ -426,6 +699,14 @@ describe("public parsing API", () => {
     expect(result.warnings).toContainEqual(expect.objectContaining({ code: "UNSAFE_OFFSET" }));
   });
 
+  it("uses cdsc item references to select metadata describing the primary HEIF item", async () => {
+    const result = await parseMetadata(await readFile(heifReferencedExifFixtureUrl));
+    expect(result.format).toBe("heif");
+    expect(result.fields.find(({ name }) => name === "Make")?.value).toBe("OpenAI Camera");
+    expect(result.xmp).toBeNull();
+    expect(result.warnings).toEqual([]);
+  });
+
   it("resolves HEIF and AVIF metadata items stored in a bounded idat box", async () => {
     const [heif, avif] = await Promise.all([
       parseMetadata(await readFile(heifIdatItemFixtureUrl)),
@@ -483,6 +764,23 @@ describe("public parsing API", () => {
     expect(malformed.warnings).toContainEqual(expect.objectContaining({ code: "INVALID_VALUE" }));
   });
 
+  it("inspects bounded primary AVIF nclx colour parameters", async () => {
+    const result = await parseMetadata(await readFile(avifNclxFixtureUrl));
+    expect(result.format).toBe("avif");
+    expect(result.nclx).toEqual({ colourPrimaries: 9, transferCharacteristics: 16, matrixCoefficients: 9, fullRange: true });
+    expect(result.icc).toBeNull();
+    expect(result.warnings).toEqual([]);
+    expect(getCapabilities("avif").metadata).toEqual(expect.arrayContaining(["Nclx", "Transform"]));
+
+    const malformed = new Uint8Array(await readFile(avifNclxFixtureUrl));
+    const nclx = findFourCC(malformed, "nclx");
+    expect(nclx).toBeGreaterThan(0);
+    malformed[nclx + 10] = 1;
+    const rejected = await parseMetadata(malformed);
+    expect(rejected.nclx).toBeUndefined();
+    expect(rejected.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+  });
+
   it("warns rather than guessing conflicting or malformed HEIF property associations", async () => {
     const conflicting = await parseMetadata(await readFile(heifConflictingPrimaryDimensionsUrl));
     expect(conflicting.dimensions).toBeNull();
@@ -535,6 +833,13 @@ describe("public parsing API", () => {
     duplicatePropertyContainer.set(new TextEncoder().encode("ipco"), findFourCC(duplicatePropertyContainer, "ipma"));
     const duplicateIpco = await parseMetadata(duplicatePropertyContainer);
     expect(duplicateIpco.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const malformedReference = new Uint8Array(await readFile(heifReferencedExifFixtureUrl));
+    const cdsc = findFourCC(malformedReference, "cdsc");
+    expect(cdsc).toBeGreaterThan(0);
+    malformedReference[cdsc + 6] = 2;
+    const rejectedReference = await parseMetadata(malformedReference);
+    expect(rejectedReference.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
   });
 
   it("applies HEIF item scan, item-info, and item-size limits before resolving data", async () => {
@@ -650,6 +955,35 @@ describe("public parsing API", () => {
 });
 
 describe("public redaction API", () => {
+  it("accepts omitted preserve options and honors whole-metadata preservation", async () => {
+    const fixture = await readFile(pngFixtureUrl);
+    const removed = await redactMetadata(fixture, { remove: ["EXIF"] });
+    expect(removed.warnings).toEqual([]);
+    expect(removed.removed).toEqual([{ target: "EXIF", occurrences: 1 }]);
+    expect(removed.outcome).toEqual({ successful: true, complete: true, unapplied: [], reasons: [] });
+
+    const preservedAll = await redactMetadata(fixture, { remove: ["AllMetadata"], preserve: ["AllMetadata"] });
+    expect(preservedAll.data).toEqual(Uint8Array.from(fixture));
+    expect(preservedAll.removed).toEqual([]);
+
+    const preservedField = await redactMetadata(fixture, { remove: ["AllMetadata"], preserve: ["Orientation"] });
+    expect(preservedField.removed).not.toContainEqual(expect.objectContaining({ target: "EXIF" }));
+    expect(preservedField.warnings).toEqual([]);
+    const selectivelyPreserved = await parseMetadata(preservedField.data);
+    expect(selectivelyPreserved.exif).not.toBeNull();
+    expect(fieldsByName(selectivelyPreserved.fields).get("Orientation")?.value).toBe(6);
+    expect(fieldsByName(selectivelyPreserved.fields).has("Make")).toBe(false);
+  });
+
+  it("reports unknown redaction targets without changing bytes", async () => {
+    const fixture = await readFile(pngFixtureUrl);
+    const result = await redactMetadata(fixture, { remove: ["FutureMetadata"] as never });
+    expect(result.data).toEqual(Uint8Array.from(fixture));
+    expect(result.removed).toEqual([]);
+    expect(result.warnings).toContainEqual(expect.objectContaining({ code: "REDACTION_SKIPPED" }));
+    expect(result.outcome.successful).toBe(false);
+  });
+
   it("removes PNG EXIF/text/XMP chunks without changing IDAT bytes", async () => {
     const fixture = await readFile(pngFixtureUrl);
     const beforePixels = pngIdatData(fixture);
@@ -665,6 +999,39 @@ describe("public redaction API", () => {
     expect(reparsed.xmp).toBeNull();
     expect(reparsed.dimensions).toEqual({ width: 2, height: 2 });
     expect(pngIdatData(cleaned.data)).toEqual(beforePixels);
+  });
+
+  it("removes WebP metadata chunks without changing image payload chunks", async () => {
+    const fixture = new Uint8Array(await readFile(webpFixtureUrl));
+    const cleaned = await redactMetadata(fixture, { remove: ["AllMetadata"] });
+    expect(cleaned.format).toBe("webp");
+    expect(cleaned.removed).toEqual(expect.arrayContaining([
+      expect.objectContaining({ target: "EXIF" }),
+      expect.objectContaining({ target: "XMP" }),
+    ]));
+    expect(new TextDecoder("latin1").decode(cleaned.data)).not.toContain("EXIF");
+    expect(new TextDecoder("latin1").decode(cleaned.data)).not.toContain("XMP ");
+    expect((await parseMetadata(cleaned.data)).dimensions).toEqual((await parseMetadata(fixture)).dimensions);
+  });
+
+  it("returns strict sanitized PNG bytes only when the policy is satisfied", async () => {
+    const fixture = await readFile(pngFixtureUrl);
+    const sanitized = await sanitizeMetadata(fixture);
+    expect(sanitized.successful).toBe(true);
+    expect(sanitized.data).not.toBeNull();
+    if (sanitized.data === null) throw new Error("expected sanitized bytes");
+    const result = await parseMetadata(sanitized.data);
+    expect(result.xmp).toBeNull();
+    expect(result.pngText).toEqual([]);
+    expect(fieldsByName(result.fields).get("Orientation")?.value).toBe(6);
+    expect(fieldsByName(result.fields).has("Make")).toBe(false);
+  });
+
+  it("refuses a WebP strict policy that cannot preserve EXIF orientation selectively", async () => {
+    const sanitized = await sanitizeMetadata(await readFile(webpFixtureUrl));
+    expect(sanitized.successful).toBe(false);
+    expect(sanitized.data).toBeNull();
+    expect(sanitized.reasons.some((reason) => reason.includes("selective EXIF"))).toBe(true);
   });
 
   it("keeps PNG XMP while removing ordinary text when targets are explicit", async () => {

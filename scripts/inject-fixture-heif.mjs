@@ -50,14 +50,33 @@ function ipma(associations) {
   return box("ipma", Buffer.concat([payload, ...entries]));
 }
 
-function itemProperties(dimensions, associations, profile = null) {
+function nclx(colourPrimaries, transferCharacteristics, matrixCoefficients, fullRange) {
+  const payload = Buffer.alloc(11);
+  payload.write("nclx", 0, "ascii");
+  payload.writeUInt16BE(colourPrimaries, 4);
+  payload.writeUInt16BE(transferCharacteristics, 6);
+  payload.writeUInt16BE(matrixCoefficients, 8);
+  payload[10] = fullRange ? 0x80 : 0;
+  return box("colr", payload);
+}
+
+function itemProperties(dimensions, associations, profile = null, colour = null) {
   return box("iprp", Buffer.concat([
     box("ipco", Buffer.concat([
       ...dimensions.map(([width, height]) => ispe(width, height)),
       ...(profile === null ? [] : [box("colr", Buffer.concat([Buffer.from("prof", "ascii"), profile]))]),
+      ...(colour === null ? [] : [nclx(...colour)]),
     ])),
     ipma(associations),
   ]));
+}
+
+function iref(fromItemId, toItemIds) {
+  const payload = Buffer.alloc(4 + 2 + 2 + toItemIds.length * 2);
+  payload.writeUInt16BE(fromItemId, 4);
+  payload.writeUInt16BE(toItemIds.length, 6);
+  toItemIds.forEach((itemId, index) => payload.writeUInt16BE(itemId, 8 + index * 2));
+  return box("iref", Buffer.concat([Buffer.alloc(4), box("cdsc", payload.subarray(4))]));
 }
 
 function makeFile(brand) {
@@ -143,9 +162,15 @@ function makeIdatItemFile(brand, options = {}) {
     Buffer.alloc(4),
     pitm(3),
     box("iinf", Buffer.concat([Buffer.from([0, 0, 0, 0, 0, 2]), infe(1, "Exif"), infe(2, "mime", "application/rdf+xml")])),
+    ...(options.describeExif ? [iref(1, [3])] : []),
     ilocIdat(exif.length, xmp.length, options),
     box("idat", Buffer.concat([exif, xmp])),
-    itemProperties([[2, 2]], [[3, options.includeIcc ? [1, 2] : [1]]], options.includeIcc ? iccProfile : null),
+    itemProperties(
+      [[2, 2]],
+      [[3, options.includeIcc || options.includeNclx ? [1, 2] : [1]]],
+      options.includeIcc ? iccProfile : null,
+      options.includeNclx ? [9, 16, 9, true] : null,
+    ),
   ]));
   return Buffer.concat([ftyp, meta]);
 }
@@ -181,6 +206,8 @@ const heifIndexedIdatItem = makeIdatItemFile("heic", { indexed: true });
 const heifTailIdatItem = makeIdatItemFile("heic", { xmpToEnd: true });
 const heifIccItem = makeIdatItemFile("heic", { includeIcc: true });
 const avifIccItem = makeIdatItemFile("avif", { includeIcc: true });
+const heifReferencedExifItem = makeIdatItemFile("heic", { describeExif: true });
+const avifNclxItem = makeIdatItemFile("avif", { includeNclx: true });
 const heifCrossMetaItem = makeCrossMetaItemFile("heic");
 const malformedHeifIccItem = Buffer.from(heifIccItem);
 const iccSignature = malformedHeifIccItem.indexOf(Buffer.from("acsp", "ascii"));
@@ -203,3 +230,5 @@ await writeFile(resolve(root, "tests/fixtures/heif-primary-icc.heic"), heifIccIt
 await writeFile(resolve(root, "tests/fixtures/avif-primary-icc.avif"), avifIccItem);
 await writeFile(resolve(root, "tests/fixtures/heif-primary-icc-malformed.heic"), malformedHeifIccItem);
 await writeFile(resolve(root, "tests/fixtures/heif-cross-meta-item-reference.heic"), heifCrossMetaItem);
+await writeFile(resolve(root, "tests/fixtures/heif-iref-exif.heic"), heifReferencedExifItem);
+await writeFile(resolve(root, "tests/fixtures/avif-primary-nclx.avif"), avifNclxItem);

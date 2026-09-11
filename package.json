@@ -1,14 +1,22 @@
 {
   "name": "browser-image-metadata",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "Parse, explain, validate, and privacy-redact image metadata locally without pixel recompression.",
   "keywords": [
     "exif",
     "image-metadata",
+    "exif-parser",
+    "metadata-removal",
+    "image-privacy",
     "jpeg",
+    "png",
+    "webp",
+    "heif",
+    "avif",
     "privacy",
     "browser",
-    "web-worker"
+    "web-worker",
+    "typescript"
   ],
   "license": "MIT",
   "author": "wbfld",
@@ -36,16 +44,120 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./detect": {
+      "browser": {
+        "types": "./dist/detect.d.ts",
+        "default": "./dist/detect.js"
+      },
+      "import": {
+        "types": "./dist/detect.d.ts",
+        "default": "./dist/detect.js"
+      },
+      "require": {
+        "types": "./dist/detect.d.cts",
+        "default": "./dist/detect.cjs"
+      }
+    },
+    "./jpeg": {
+      "browser": {
+        "types": "./dist/jpeg.d.ts",
+        "default": "./dist/jpeg.js"
+      },
+      "import": {
+        "types": "./dist/jpeg.d.ts",
+        "default": "./dist/jpeg.js"
+      },
+      "require": {
+        "types": "./dist/jpeg.d.cts",
+        "default": "./dist/jpeg.cjs"
+      }
+    },
+    "./mini": {
+      "browser": {
+        "types": "./dist/mini.d.ts",
+        "default": "./dist/mini.js"
+      },
+      "import": {
+        "types": "./dist/mini.d.ts",
+        "default": "./dist/mini.js"
+      },
+      "require": {
+        "types": "./dist/mini.d.cts",
+        "default": "./dist/mini.cjs"
+      }
+    },
+    "./redact": {
+      "browser": {
+        "types": "./dist/redact.d.ts",
+        "default": "./dist/redact.js"
+      },
+      "import": {
+        "types": "./dist/redact.d.ts",
+        "default": "./dist/redact.js"
+      },
+      "require": {
+        "types": "./dist/redact.d.cts",
+        "default": "./dist/redact.cjs"
+      }
+    },
+    "./xmp": {
+      "import": {
+        "types": "./dist/xmp.d.ts",
+        "default": "./dist/xmp.js"
+      },
+      "require": {
+        "types": "./dist/xmp.d.cts",
+        "default": "./dist/xmp.cjs"
+      }
+    },
+    "./xmp/rgrove": {
+      "import": {
+        "types": "./dist/xmp-rgrove.d.ts",
+        "default": "./dist/xmp-rgrove.js"
+      },
+      "require": {
+        "types": "./dist/xmp-rgrove.d.cts",
+        "default": "./dist/xmp-rgrove.cjs"
+      }
+    },
+    "./worker": {
+      "browser": {
+        "types": "./dist/worker.d.ts",
+        "default": "./dist/worker.js"
+      },
+      "import": {
+        "types": "./dist/worker.d.ts",
+        "default": "./dist/worker.js"
+      },
+      "require": {
+        "types": "./dist/worker.d.cts",
+        "default": "./dist/worker.cjs"
+      }
     }
   },
   "files": [
     "dist",
     "README.md",
     "API.md",
+    "CAPABILITIES.md",
+    "MIGRATION.md",
+    "CONTRIBUTING.md",
+    "PUBLISHING.md",
+    "BENCHMARKS.md",
+    "EXTERNAL_CORPORA.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
   "sideEffects": false,
+  "peerDependencies": {
+    "@rgrove/parse-xml": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@rgrove/parse-xml": {
+      "optional": true
+    }
+  },
   "engines": {
     "node": ">=22"
   },
@@ -58,6 +170,11 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:fuzz": "vitest run tests/fuzz.test.ts --testTimeout=15000",
+    "test:browser": "npm run build && playwright test",
+    "test:deno": "deno check src/index.ts && npm run build && deno test --no-check --allow-read tests/deno-smoke.ts",
+    "test:corpus": "npm run build && node scripts/external-corpus.mjs",
+    "benchmark": "npm run build && node scripts/benchmark.mjs",
     "examples": "npm run build && node examples/node.mjs tests/fixtures/jpeg-exif-little-endian.jpg && node examples/built-api-smoke.mjs && node examples/worker-smoke.mjs",
     "package:smoke": "node scripts/package-smoke.mjs",
     "publint": "publint",
@@ -66,9 +183,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
+    "@playwright/test": "1.63.0",
+    "@rgrove/parse-xml": "^5.0.0",
     "@types/node": "^22.18.0",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.35.0",
+    "exifreader": "4.45.0",
+    "exiftool-vendored": "33.5.0",
+    "fast-check": "4.10.0",
     "publint": "^0.3.24",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",

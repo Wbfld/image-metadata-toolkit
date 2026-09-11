@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "coverage/**", "node_modules/**"],
+    ignores: ["dist/**", "coverage/**", "node_modules/**", "examples/integrations/**"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
@@ -25,7 +25,7 @@ export default tseslint.config(
     ...tseslint.configs.disableTypeChecked,
   },
   {
-    files: ["examples/browser/**/*.js"],
+    files: ["examples/browser/**/*.js", "examples/playground/**/*.js"],
     languageOptions: {
       globals: { document: "readonly", console: "readonly" },
     },
@@ -40,6 +40,16 @@ export default tseslint.config(
         console: "readonly",
         process: "readonly",
       },
+    },
+  },
+  {
+    files: ["tests/browser/**/*.ts"],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    files: ["tests/browser/**/*.mjs"],
+    languageOptions: {
+      globals: { URL: "readonly" },
     },
   },
 );

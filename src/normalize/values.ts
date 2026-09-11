@@ -147,17 +147,32 @@ export function normalizeExifFields(rawFields: readonly MetadataField[]): Normal
   normalizeOrientation(byLocation, fields, warnings);
   normalizeDate(byLocation, fields, warnings, "IFD0", 0x0132, "DateTime");
   normalizeDate(byLocation, fields, warnings, "ExifIFD", 0x9003, "DateTimeOriginal");
+  normalizeDate(byLocation, fields, warnings, "ExifIFD", 0x9004, "DateTimeDigitized");
   normalizePositiveRational(byLocation, fields, warnings, 0x829a, "ExposureTime", "seconds");
   normalizePositiveRational(byLocation, fields, warnings, 0x829d, "FNumber", "f-number");
   normalizeIso(byLocation, fields, warnings);
+  normalizeNumber(byLocation, fields, warnings, 0x8831, "StandardOutputSensitivity", 100_000_000);
+  normalizeNumber(byLocation, fields, warnings, 0x8832, "RecommendedExposureIndex", 100_000_000);
+  normalizeNumber(byLocation, fields, warnings, 0x8833, "ISOSpeed", 100_000_000);
+  normalizeNumber(byLocation, fields, warnings, 0x8834, "ISOSpeedLatitudeyyy", 100_000_000);
+  normalizeNumber(byLocation, fields, warnings, 0x8835, "ISOSpeedLatitudezzz", 100_000_000);
   normalizeFlash(byLocation, fields, warnings);
   normalizePositiveRational(byLocation, fields, warnings, 0x920a, "FocalLength", "millimetres");
+  normalizeNumber(byLocation, fields, warnings, 0xa405, "FocalLengthIn35mmFilm", 100_000);
+  normalizeRationalArray(byLocation, fields, warnings, 0xa432, "LensSpecification");
   normalizeGpsCoordinate(byLocation, fields, warnings, "latitude");
   normalizeGpsCoordinate(byLocation, fields, warnings, "longitude");
   normalizeGpsAltitude(byLocation, fields, warnings);
+  normalizeString(byLocation, fields, warnings, "IFD0", 0x010e, "ImageDescription", "low");
   normalizeString(byLocation, fields, warnings, "IFD0", 0x8298, "Copyright", "moderate", true);
   normalizeString(byLocation, fields, warnings, "IFD0", 0x013b, "Artist", "moderate");
   normalizeString(byLocation, fields, warnings, "IFD0", 0x0131, "Software", "moderate");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa430, "CameraOwnerName", "high");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa431, "BodySerialNumber", "high");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa433, "LensMake", "low");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa434, "LensModel", "low");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa435, "LensSerialNumber", "high");
+  normalizeUserComment(byLocation, fields, warnings);
 
   return { fields, warnings };
 }
@@ -459,6 +474,66 @@ function normalizeIso(index: FieldIndex, fields: MetadataField[], warnings: Meta
   }
   const value: MetadataValue = values.length === 1 ? values[0] ?? 0 : values;
   fields.push(normalizedField(source, "ISOSpeedRatings", value, `ISO ${values.join(", ")}`));
+}
+
+function normalizeNumber(
+  index: FieldIndex,
+  fields: MetadataField[],
+  warnings: MetadataWarning[],
+  tag: number,
+  name: string,
+  maximum: number,
+): void {
+  const source = findSource(index, warnings, "ExifIFD", tag);
+  if (source === undefined) return;
+  if (typeof source.value !== "number" || !Number.isInteger(source.value) || source.value <= 0 || source.value > maximum) {
+    warnings.push(validationWarning("INVALID_VALUE", `${name} must be a positive integer within the supported range.`, "ExifIFD", tag));
+    return;
+  }
+  fields.push(normalizedField(source, name, source.value, String(source.value)));
+}
+
+function normalizeRationalArray(index: FieldIndex, fields: MetadataField[], warnings: MetadataWarning[], tag: number, name: string): void {
+  const source = findSource(index, warnings, "ExifIFD", tag);
+  if (source === undefined) return;
+  if (!isRationalArray(source.raw) || source.raw.length !== 4) {
+    warnings.push(validationWarning("INVALID_VALUE", `${name} must contain four rational values.`, "ExifIFD", tag));
+    return;
+  }
+  const values = source.raw.map(rationalToNumber);
+  if (values.some((value): value is null => value === null || !Number.isFinite(value) || value < 0)) {
+    warnings.push(validationWarning("INVALID_VALUE", `${name} contains an invalid rational value.`, "ExifIFD", tag));
+    return;
+  }
+  const numericValues = values as number[];
+  fields.push(normalizedField(source, name, numericValues, numericValues.map((value) => formatNumber(value)).join(", ")));
+}
+
+function normalizeUserComment(index: FieldIndex, fields: MetadataField[], warnings: MetadataWarning[]): void {
+  const source = findSource(index, warnings, "ExifIFD", 0x9286);
+  if (source === undefined) return;
+  if (!(source.value instanceof Uint8Array)) {
+    if (typeof source.value === "string") fields.push(normalizedField(source, "UserComment", source.value.trim(), source.value.trim(), source.type, source.raw, "moderate"));
+    return;
+  }
+  const bytes = source.value;
+  let body = bytes;
+  let encoding: "utf-8" | "utf-16le" | "latin1" = "latin1";
+  if (bytes.length >= 8 && String.fromCharCode(...bytes.subarray(0, 8)) === "UNICODE\0") {
+    body = bytes.subarray(8);
+    encoding = "utf-16le";
+  } else if (bytes.length >= 8 && String.fromCharCode(...bytes.subarray(0, 8)) === "ASCII\0\0\0") {
+    body = bytes.subarray(8);
+    encoding = "utf-8";
+  } else if (bytes.length >= 8 && String.fromCharCode(...bytes.subarray(0, 8)) === "JIS\0\0\0\0\0") {
+    body = bytes.subarray(8);
+  }
+  try {
+    const value = new TextDecoder(encoding, { fatal: encoding !== "latin1" }).decode(body).replace(/\0+$/, "").trim();
+    fields.push(normalizedField(source, "UserComment", value, value, source.type, source.raw, "moderate"));
+  } catch {
+    warnings.push(validationWarning("INVALID_VALUE", "UserComment uses an unsupported or invalid character encoding.", "ExifIFD", 0x9286));
+  }
 }
 
 function normalizeFlash(index: FieldIndex, fields: MetadataField[], warnings: MetadataWarning[]): void {

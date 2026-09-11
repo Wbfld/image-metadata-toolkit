@@ -1,7 +1,7 @@
 import type {
   MetadataWarning,
   RedactionRecord,
-  RedactionResult,
+  SurgeryResult,
   RedactionTarget,
   RedactOptions,
   SecurityLimits,
@@ -23,6 +23,7 @@ const EXIF_IDENTIFIER = asciiBytes("Exif\0\0");
 const XMP_IDENTIFIER = asciiBytes("http://ns.adobe.com/xap/1.0/\0");
 const EXTENDED_XMP_IDENTIFIER = asciiBytes("http://ns.adobe.com/xmp/extension/\0");
 const ICC_IDENTIFIER = asciiBytes("ICC_PROFILE\0");
+const MPF_IDENTIFIER = asciiBytes("MPF\0");
 const JFIF_IDENTIFIER = asciiBytes("JFIF\0");
 const JFXX_IDENTIFIER = asciiBytes("JFXX\0");
 
@@ -123,6 +124,12 @@ interface SelectiveResult {
   readonly counts: ReadonlyMap<RedactionTarget, number>;
 }
 
+/** Result of lossless selective surgery on a TIFF payload carried by EXIF. */
+export interface ExifTiffRedactionResult {
+  readonly bytes: Uint8Array;
+  readonly counts: ReadonlyMap<RedactionTarget, number>;
+}
+
 class SurgeryFailure extends Error {
   public readonly code: WarningCode;
   public readonly offset: number | undefined;
@@ -145,7 +152,7 @@ export function redactJpeg(
   bytes: Uint8Array,
   options: RedactOptions,
   limits: SecurityLimits,
-): RedactionResult {
+): SurgeryResult {
   const original = new Uint8Array(bytes);
 
   try {
@@ -155,6 +162,11 @@ export function redactJpeg(
 
     if (preserve.has("AllMetadata") || remove.size === 0) {
       return result(original, new Map(), options, []);
+    }
+
+    const unsupported = findUnsupportedStructure(bytes, parsed.segments);
+    if (unsupported !== null) {
+      throw new SurgeryFailure("UNSUPPORTED_STRUCTURE", unsupported.message, unsupported.offset);
     }
 
     const removedSegments = new Set<number>();
@@ -451,6 +463,31 @@ function classifySegment(bytes: Uint8Array, segment: JpegSegment): SegmentCatego
   return "OTHER";
 }
 
+function findUnsupportedStructure(
+  bytes: Uint8Array,
+  segments: readonly JpegSegment[],
+): { readonly message: string; readonly offset: number } | null {
+  for (const segment of segments) {
+    const payload = bytes.subarray(segment.payloadStart, segment.payloadEnd);
+    if (segment.marker === 0xe2 && startsWith(payload, MPF_IDENTIFIER)) {
+      return {
+        message: "JPEG contains an MPF multi-picture structure; metadata surgery is refused until secondary-image offsets are supported.",
+        offset: segment.start,
+      };
+    }
+    if (segment.marker === 0xe1 && (startsWith(payload, XMP_IDENTIFIER) || startsWith(payload, EXTENDED_XMP_IDENTIFIER))) {
+      const text = new TextDecoder("latin1").decode(payload);
+      if (text.includes("http://ns.adobe.com/hdr-gain-map/1.0/") || text.includes("hdrgm:Version")) {
+        return {
+          message: "JPEG contains an Ultra HDR gain-map XMP structure; metadata surgery is refused until secondary-image offsets are supported.",
+          offset: segment.start,
+        };
+      }
+    }
+  }
+  return null;
+}
+
 function removalTargetForSegment(
   segment: JpegSegment,
   category: SegmentCategory,
@@ -537,7 +574,40 @@ function redactExifSegment(
   limits: SecurityLimits,
   context: SelectiveContext,
 ): SelectiveResult {
-  const parsed = parseExif(segment, payloadStart, limits);
+  if (!startsWith(segment.subarray(payloadStart), EXIF_IDENTIFIER)) {
+    throw new SurgeryFailure("MALFORMED_EXIF", "APP1 segment lacks the EXIF identifier.", payloadStart);
+  }
+  const tiffStart = payloadStart + EXIF_IDENTIFIER.length;
+  const transformed = redactExifTiffWithContext(segment.subarray(tiffStart), limits, context);
+  segment.set(transformed.bytes, tiffStart);
+  return { bytes: segment, counts: transformed.counts };
+}
+
+/**
+ * Selectively remove EXIF fields from a standalone TIFF payload, such as a
+ * PNG `eXIf` chunk. The caller owns atomicity: malformed input throws before
+ * any output bytes are returned.
+ */
+export function redactExifTiff(
+  tiff: Uint8Array,
+  options: RedactOptions,
+  limits: SecurityLimits,
+): ExifTiffRedactionResult {
+  const remove = new Set(options.remove);
+  const preserve = new Set(options.preserve ?? []);
+  return redactExifTiffWithContext(tiff, limits, {
+    remove,
+    preserve,
+    broadTarget: broadExifTarget(remove, preserve),
+  });
+}
+
+function redactExifTiffWithContext(
+  tiff: Uint8Array,
+  limits: SecurityLimits,
+  context: SelectiveContext,
+): ExifTiffRedactionResult {
+  const parsed = parseExifTiff(tiff, limits);
   const selections = new Map<IfdEntry, RedactionTarget>();
   const counts = new Map<RedactionTarget, number>();
 
@@ -552,26 +622,26 @@ function redactExifSegment(
   }
 
   if (selections.size === 0 && context.broadTarget === null) {
-    return { bytes: segment, counts };
+    return { bytes: new Uint8Array(tiff), counts };
   }
 
-  const tiffStart = payloadStart + EXIF_IDENTIFIER.length;
-  validateWipeRanges(parsed.directories, selections, tiffStart);
-  const original = new Uint8Array(segment);
+  validateWipeRanges(parsed.directories, selections, 0);
+  const output = new Uint8Array(tiff);
+  const original = new Uint8Array(tiff);
 
   for (const directory of parsed.directories) {
-    compactDirectory(segment, original, directory, parsed.order, selections);
+    compactDirectory(output, original, directory, parsed.order, selections);
   }
   for (const [entry] of selections) {
     if (entry.valueRange !== null) {
-      segment.fill(0, entry.valueRange.start, entry.valueRange.end);
+      output.fill(0, entry.valueRange.start, entry.valueRange.end);
     }
   }
   if (context.broadTarget !== null) {
-    scrubUnretainedExifBytes(segment, parsed.directories, selections, tiffStart);
+    scrubUnretainedExifBytes(output, parsed.directories, selections, 0);
   }
 
-  return { bytes: segment, counts };
+  return { bytes: output, counts };
 }
 
 function scrubUnretainedExifBytes(
@@ -601,13 +671,10 @@ function scrubUnretainedExifBytes(
   }
 }
 
-function parseExif(segment: Uint8Array, payloadStart: number, limits: SecurityLimits): ParsedExif {
-  if (!startsWith(segment.subarray(payloadStart), EXIF_IDENTIFIER)) {
-    throw new SurgeryFailure("MALFORMED_EXIF", "APP1 segment lacks the EXIF identifier.", payloadStart);
-  }
-  const tiffStart = payloadStart + EXIF_IDENTIFIER.length;
-  if (tiffStart + 8 > segment.length) {
-    throw new SurgeryFailure("TRUNCATED_DATA", "EXIF TIFF header is truncated.", tiffStart);
+function parseExifTiff(segment: Uint8Array, limits: SecurityLimits): ParsedExif {
+  const tiffStart = 0;
+  if (segment.length < 8) {
+    throw new SurgeryFailure("TRUNCATED_DATA", "EXIF TIFF header is truncated.", 0);
   }
 
   const first = requiredByte(segment, tiffStart);
@@ -1031,7 +1098,7 @@ function result(
   counts: ReadonlyMap<RedactionTarget, number>,
   options: RedactOptions,
   warnings: readonly MetadataWarning[],
-): RedactionResult {
+): SurgeryResult {
   const removed: RedactionRecord[] = [];
   const emitted = new Set<RedactionTarget>();
   for (const target of options.remove) {

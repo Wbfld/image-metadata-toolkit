@@ -4,7 +4,7 @@ Parse, explain, validate, and privacy-redact image metadata locally in browsers,
 
 The package has no runtime dependencies. It accepts `ArrayBuffer`, any `ArrayBufferView` (including Node.js `Buffer`), `Blob`, and browser `File` inputs.
 
-> **Current scope:** JPEG, PNG, classic TIFF, WebP, HEIF, AVIF, IPTC-IIM, and bounded ICC header inspection are implemented. JPEG metadata removal and selected PNG chunk removal are lossless. HEIF/AVIF safely inspect direct EXIF/XMP boxes, standard `iinf`/`iloc` metadata items stored in-file or in their own `idat`, and a primary-item `colr` ICC profile. TIFF/WebP/IPTC/ICC/HEIF/AVIF writing or redaction is not exposed.
+> **Current scope:** JPEG, PNG, classic TIFF, WebP, HEIF, AVIF, IPTC-IIM, and bounded ICC header inspection are implemented. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. HEIF/AVIF safely inspect direct EXIF/XMP boxes, standard `iinf`/`iloc` metadata items stored in-file or in their own `idat`, `cdsc` primary-image associations, and primary-item `colr` ICC or `nclx` colour data. Arbitrary metadata writing and HEIF/AVIF rewriting are not exposed.
 
 ## Install
 
@@ -17,11 +17,13 @@ Both ESM and CommonJS builds, source maps, and TypeScript declarations are inclu
 ## Parse metadata
 
 ```ts
-import { parseMetadata } from "browser-image-metadata";
+import { getMetadataSummary, parseMetadata } from "browser-image-metadata";
 
 const result = await parseMetadata(fileOrBytes);
+const summary = getMetadataSummary(result);
 
 console.log(result.format, result.mimeType, result.dimensions);
+console.log(summary.camera, summary.location);
 for (const field of result.fields) {
   console.log(field.name, field.raw, field.value, field.display);
 }
@@ -29,6 +31,39 @@ for (const warning of result.warnings) {
   console.warn(warning.code, warning.message);
 }
 ```
+
+For common UI work, the root entry point also provides focused helpers. They
+retain uncertainty instead of choosing between conflicting source values:
+
+```ts
+import { getCaptureTime, getGps, getOrientation, getRotation, getThumbnail } from "browser-image-metadata";
+
+const gps = getGps(result);
+const orientation = getOrientation(result);
+const rotation = getRotation(result);
+const captureTime = getCaptureTime(result);
+const thumbnail = getThumbnail(result);
+```
+
+`getGps()` reports whether both coordinates are complete, `getRotation()` gives
+browser-friendly CSS instructions, and `getThumbnail()` returns a defensive
+copy of a bounded embedded EXIF thumbnail.
+
+For a fast JPEG preview, request only header metadata. `Blob` and `File`
+inputs are read with `slice()` only through the start-of-scan header; the result
+records its intentionally partial scope.
+
+```ts
+const preview = await parseMetadata(file, {
+  scope: "jpeg-header",
+  select: { groups: ["Dimensions", "EXIF"], tags: ["Make", "Model", "Orientation"] },
+});
+```
+
+For PNG and WebP `Blob` or `File` inputs, use `scope: "metadata"` to skip
+image payload chunks and read only the selected metadata ranges. The result
+records `completeness.bytesRead` and `completeness.inputBytes`; TIFF, HEIF, and
+AVIF currently use a full read for this scope.
 
 The result always has this stable top-level shape:
 
@@ -44,6 +79,7 @@ The result always has this stable top-level shape:
   icc,
   jfif,
   pngText,
+  completeness,
   warnings
 }
 ```
@@ -61,7 +97,7 @@ Every normalized field includes:
   display,
   description,
   type,
-  editable,
+  editable, // deprecated: this package does not expose editing
   sensitivity
 }
 ```
@@ -80,13 +116,24 @@ const cleaned = await redactMetadata(fileOrBytes, {
 
 await saveBytes(cleaned.data);
 console.log(cleaned.removed, cleaned.warnings);
+console.log(cleaned.outcome.successful, cleaned.outcome.unapplied);
 ```
 
 Whole-segment targets are `EXIF`, `XMP`, `IPTC`, `ICC`, `JFIF`, and `AllMetadata`. PNG additionally supports `PNGText` for non-XMP `tEXt`, `zTXt`, and `iTXt` chunks. Selective EXIF targets include every normalized field, `GPS`, and `SerialNumber`. A `preserve` selection wins over a conflicting `remove` selection.
 
 `AllMetadata` means every metadata class the library can positively identify plus JPEG comments and PNG text chunks. Unknown APP markers are retained because some—such as Adobe APP14—can affect decoding. Removing `IPTC` removes the containing Photoshop APP13 resource block segment.
 
-JPEG redaction rewrites marker segments only. Selective EXIF redaction removes directory entries, zeroes their detached value bytes, and scrubs orphaned EXIF payload bytes during broad removal; whole EXIF removal drops the APP1 segment. PNG redaction removes selected ancillary chunks while copying IHDR, IDAT, and IEND bytes byte-for-byte. JPEG entropy-coded scan bytes and PNG IDAT payloads are never decoded or recompressed. If a structure required for the selected surgery is unsafe, redaction is atomic: the original bytes are copied to the result and an error warning explains why nothing was changed.
+JPEG redaction rewrites marker segments only. Selective EXIF redaction removes directory entries, zeroes their detached value bytes, and scrubs orphaned EXIF payload bytes during broad removal; whole EXIF removal drops the APP1 segment. PNG uses the same validated selective EXIF surgery and regenerates its changed chunk CRC. WebP surgery updates RIFF length and VP8X metadata flags while copying image payloads unchanged. JPEG entropy-coded scan bytes and PNG IDAT payloads are never decoded or recompressed. Every redaction includes an explicit `outcome`; if a structure required for surgery is unsafe, the operation is atomic and reports an unsuccessful outcome. JPEGs containing MPF secondary images or Ultra HDR gain-map XMP are refused atomically until their secondary-image offsets can be rewritten safely.
+
+For strict sharing workflows, use `sanitizeMetadata()`. It retains orientation and ICC data by default, removes recognized descriptive metadata, and returns `data: null` unless the policy is completely satisfied.
+
+```ts
+import { sanitizeMetadata } from "browser-image-metadata";
+
+const sanitized = await sanitizeMetadata(file);
+if (sanitized.successful && sanitized.data) await saveBytes(sanitized.data);
+else console.warn(sanitized.reasons);
+```
 
 ## Normalized EXIF fields
 
@@ -112,9 +159,9 @@ Complete JPEG APP2, PNG iCCP, and WebP ICCP profiles expose bounded header field
 | PNG | Yes | IHDR | eXIf EXIF; iCCP ICC; tEXt, zTXt, iTXt text and XMP | Selected chunks |
 | TIFF (classic) | Yes | EXIF ImageWidth/ImageLength when present | EXIF/IFD metadata; XMP tag 700; IPTC tag 33723; ICC tag 34675 | Not yet |
 | BigTIFF | Yes | Not yet | Not yet (explicitly warned) | Not yet |
-| WebP | Yes | VP8, VP8L, VP8X | EXIF, XMP, and ICCP chunks | Not yet |
-| HEIF | Yes | Primary-item `pitm`/`ipma`/`ispe` selection; conservative `ispe` fallback | Direct EXIF/XMP boxes; bounded `iinf`/`iloc` items in-file or in the same `idat`; primary `colr` ICC profile | Not yet |
-| AVIF | Yes | Primary-item `pitm`/`ipma`/`ispe` selection; conservative `ispe` fallback | Direct EXIF/XMP boxes; bounded `iinf`/`iloc` items in-file or in the same `idat`; primary `colr` ICC profile | Not yet |
+| WebP | Yes | VP8, VP8L, VP8X | EXIF, XMP, and ICCP chunks | EXIF/XMP/ICC chunks |
+| HEIF | Yes | Primary-item `pitm`/`ipma`/`ispe` selection; conservative `ispe` fallback | Direct EXIF/XMP boxes; bounded `iinf`/`iloc` items in-file or in the same `idat`; `cdsc` association; primary `colr` ICC or `nclx` data | Not yet |
+| AVIF | Yes | Primary-item `pitm`/`ipma`/`ispe` selection; conservative `ispe` fallback | Direct EXIF/XMP boxes; bounded `iinf`/`iloc` items in-file or in the same `idat`; `cdsc` association; primary `colr` ICC or `nclx` data | Not yet |
 
 Detection means signature/container-brand recognition, not full pixel decoding. A detected format without a metadata parser returns `UNSUPPORTED_FORMAT`. HEIF/AVIF inspection is explicitly bounded and scoped per `meta` box: item IDs, item locations, `idat` payloads, and property indexes are never mixed across metadata contexts. It selects dimensions from common primary-item `pitm`/`ipma`/`ispe` associations and can inspect an associated `colr` `prof`/`rICC` profile header. It resolves Exif and MIME RDF/XML XMP items through `iinf`/`iloc` only when construction method 0 refers to this file or method 1 refers to the containing `idat` box. The standard HEIF Exif TIFF-header offset is validated relative to its four-byte prefix. External data references, item-relative construction, malformed locations, missing item properties, and conflicting primary metadata produce warnings rather than being guessed. The checked fixture corpus contains encoder-produced, decoder-verified HEIC and AVIF samples; provenance is recorded in [`tests/fixtures/README.md`](./tests/fixtures/README.md).
 
@@ -131,7 +178,9 @@ fileInput.addEventListener("change", async () => {
 });
 ```
 
-The runnable browser examples are in [`examples/browser`](./examples/browser), including [`worker.html`](./examples/browser/worker.html) for off-main-thread parsing. They parse the selected local `File`; they do not upload it. The checked Node worker transferable-buffer smoke test is `node examples/worker-smoke.mjs`.
+The runnable browser examples are in [`examples/browser`](./examples/browser), including [`worker.html`](./examples/browser/worker.html) for off-main-thread parsing. The local [playground](./examples/playground) presents summary, raw values, warnings, and strict-sanitization outcomes side by side. They parse the selected local `File`; they do not upload it. The checked Node worker transferable-buffer smoke test is `node examples/worker-smoke.mjs`.
+
+Framework integration snippets for Vite, React, Next.js client components, and Deno are in [`examples/integrations`](./examples/integrations). They import the package's ESM entry point and keep file bytes in the browser or runtime where the application already received them.
 
 ### Node.js
 
@@ -163,13 +212,49 @@ node examples/node.mjs photo.jpg
 After publication, Deno can consume the dependency-free ESM build through its npm compatibility layer:
 
 ```ts
-import { parseMetadata } from "npm:browser-image-metadata@0.1.0";
+import { parseMetadata } from "npm:browser-image-metadata@^0.5.0";
 const result = await parseMetadata(await Deno.readFile("photo.jpg"));
 ```
 
+## Capabilities and privacy audit
+
+Use `getCapabilities(format)` to discover which metadata groups and lossless
+redaction targets are supported before rendering controls. `getMetadataSummary`
+provides typed camera, lens, exposure, capture, location, and orientation values
+without replacing the raw result; conflicts are surfaced instead of silently
+chosen. `auditPrivacy(input)` parses locally and reports recognized sensitive
+fields, metadata classes, opaque JPEG APP blocks, thumbnails, trailing bytes,
+warnings, and inspection gaps; it never modifies the input.
+
+```ts
+import { auditPrivacy, getCapabilities, getMetadataSummary, parseMetadata } from "browser-image-metadata";
+
+const result = await parseMetadata(file);
+const summary = getMetadataSummary(result);
+const audit = await auditPrivacy(file);
+if (!audit.safe) console.warn(audit.findings, audit.gaps);
+console.log(getCapabilities(result.format).redaction);
+```
+
+## Focused imports and workers
+
+Use `browser-image-metadata/detect` when only container detection is needed.
+Use `browser-image-metadata/jpeg` for a JPEG-only reader and
+`browser-image-metadata/mini` for a small JPEG reader plus GPS, orientation,
+rotation, capture-time, thumbnail, and summary helpers. Use
+`browser-image-metadata/redact` for lossless JPEG/PNG/WebP redaction without
+the general metadata-reader entry point.
+`browser-image-metadata/xmp` provides the opt-in bounded structured XMP decoder;
+it preserves raw packets in the main parser and rejects DTDs and entity
+declarations. Applications that install the optional `@rgrove/parse-xml` peer
+can import `browser-image-metadata/xmp/rgrove` for standards-focused XML
+validation before the same bounded RDF mapping. `browser-image-metadata/worker` exports
+`createMetadataWorkerClient()` and `installMetadataWorker()` for module-worker
+integration with request IDs, transferable buffers, bounded queues, and cleanup.
+
 ## Security limits
 
-All offsets and lengths are checked before reads or slices. PNG IDAT image data is never decompressed. zTXt and compressed iTXt text are decompressed only through a bounded `DecompressionStream`; the library never makes a network request.
+All offsets and lengths are checked before reads or slices. PNG IDAT image data is never decompressed. zTXt and compressed iTXt text are decompressed only through a bounded `DecompressionStream`; per-chunk and cumulative decoded-metadata limits are enforced. The library never makes a network request.
 
 | Limit | Default |
 | --- | ---: |
@@ -186,12 +271,13 @@ All offsets and lengths are checked before reads or slices. PNG IDAT image data 
 | Warnings | 256 |
 | PNG chunks | 4,096 |
 | PNG decompressed text | 8 MiB |
+| Cumulative decoded metadata | 16 MiB |
 
-Callers can tighten any limit:
+Callers can tighten any limit. `maxDecompressedBytes` limits one compressed chunk, while `maxDecompressedMetadataBytes` limits decoded output across PNG text and compressed ICC chunks:
 
 ```ts
 const result = await parseMetadata(bytes, {
-  limits: { maxInputBytes: 20 * 1024 * 1024, maxIfdEntries: 512 },
+  limits: { maxInputBytes: 20 * 1024 * 1024, maxIfdEntries: 512, maxDecompressedMetadataBytes: 2 * 1024 * 1024 },
 });
 ```
 
@@ -208,17 +294,23 @@ npm run test:coverage
 npm run build
 npm run publint
 npm run examples
+npm run test:fuzz
+npm run test:browser
+npm run test:deno
+npm run benchmark
 npm run check
 ```
 
-`npm run check` runs type-checking, linting, the complete coverage suite, both package builds, package-manifest validation, an install-from-tarball ESM/CommonJS smoke test, and ESM/CommonJS/Blob/typed-array/worker example smoke tests. CI runs it on Node.js 22, 24, and 26.
+`npm run check` runs type-checking, linting, the complete coverage suite, both package builds, package-manifest validation, an install-from-tarball ESM/CommonJS smoke test, and ESM/CommonJS/Blob/typed-array/worker example smoke tests. CI runs it on Node.js 22, 24, and 26. Separate CI jobs run Chromium, Firefox, WebKit, Deno, and the scheduled malformed-input property suite. `npm run benchmark` produces local reproducible latency and bundle-size evidence; it does not make a portability claim.
+
+The [capability matrix](./CAPABILITIES.md) and [migration guide](./MIGRATION.md) describe supported operations and common adoption paths. See [CONTRIBUTING.md](./CONTRIBUTING.md) for development and fixture-submission guidance, [EXTERNAL_CORPORA.md](./EXTERNAL_CORPORA.md) for the pinned 100-plus-sample interoperability corpus, and [PUBLISHING.md](./PUBLISHING.md) to configure npm trusted publishing and cut a release.
 
 ## Known limitations
 
-- JPEG, PNG, classic TIFF, WebP, HEIF, and AVIF metadata are parsed in this release; IPTC and ICC remain container-scoped inspections, and JPEG plus selected PNG chunks can be redacted.
-- XMP is UTF-8 decoded but not interpreted as XML; ICC inspection is limited to the profile header and does not interpret color transforms or tag payloads.
-- Extended XMP reassembly, MakerNote interpretation, thumbnails, `iref` interpretation, `nclx` colour data, image sequences, and complete HEIF/AVIF item-property semantics are not implemented. HEIF/AVIF inspection uses common primary-item `pitm`/`ipma` associations only for `ispe` dimensions and one `colr` `prof`/`rICC` profile, and resolves bounded Exif and MIME RDF/XML items through `iinf`/`iloc` construction method 0 (this file) or method 1 (the same `meta` box's `idat`), or direct metadata boxes. TIFF/WebP/HEIF/AVIF writing remains unsupported.
-- EXIF date strings do not imply a timezone unless a separate offset tag exists; this release does not combine offset/subsecond companion tags into normalized dates.
+- JPEG, PNG, classic TIFF, WebP, HEIF, and AVIF metadata are parsed in this release; IPTC and ICC remain container-scoped inspections, and JPEG, PNG, plus WebP metadata chunks can be redacted.
+- XMP remains available as its original UTF-8 packet by default. The optional `browser-image-metadata/xmp` entry point decodes bounded RDF properties with no DTD or entity support, or applies an application's supplied decoder behind the same packet and output bounds. ICC inspection is limited to the profile header and does not interpret color transforms or tag payloads.
+- MakerNote interpretation, image sequences, and complete HEIF/AVIF item-property semantics are not implemented. JPEG extended XMP is reassembled when referenced by a standard XMP packet. HEIF/AVIF inspection uses bounded primary-item `pitm`/`ipma` associations for `ispe` dimensions, `irot`/`imir` transforms, `colr` `prof`/`rICC` profiles, and `nclx` parameters. It follows `cdsc` references from metadata items to the primary image when selecting Exif and MIME RDF/XML metadata; without such references it preserves the legacy all-recognized-item behavior. It resolves bounded metadata through `iinf`/`iloc` construction method 0 (this file) or method 1 (the same `meta` box's `idat`), or direct metadata boxes. TIFF/WebP/HEIF/AVIF writing remains unsupported.
+- EXIF date strings do not imply a timezone unless a separate offset tag exists. `getMetadataSummary()` combines valid offset/subsecond companions while retaining that uncertainty when no offset is stored.
 - Redaction removes metadata; arbitrary metadata editing and pixel-orientation transforms are outside the first-release API.
 - Height-deferred JPEG codestreams whose SOF height is supplied later by DNL are not supported in this first pass.
 

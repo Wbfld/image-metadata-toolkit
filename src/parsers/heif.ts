@@ -1,7 +1,8 @@
 import { parseExif } from "../metadata/exif.js";
 import { inspectIccProfile, type IccChunk } from "../metadata/icc.js";
 import { parseXmpPacket } from "../metadata/xmp.js";
-import type { ExifData, ImageDimensions, MetadataField, MetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
+import { extractExifThumbnail } from "../metadata/thumbnail.js";
+import type { ExifData, ImageDimensions, ImageTransform, MetadataField, NclxColorData, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
 
 const CONTAINER_BOXES = new Set(["meta", "iprp", "ipco", "moov", "trak", "mdia", "minf", "stbl"]);
 
@@ -149,6 +150,9 @@ interface ParsedItemInfos {
 interface ItemProperty {
   readonly dimensions?: ImageDimensions;
   readonly icc?: Uint8Array;
+  readonly nclx?: NclxColorData;
+  readonly rotation?: ImageTransform["rotation"];
+  readonly mirrorAxis?: "vertical" | "horizontal";
 }
 
 function uint16(bytes: Uint8Array, offset: number): number { return ((bytes[offset] ?? 0) << 8) | (bytes[offset + 1] ?? 0); }
@@ -311,6 +315,8 @@ interface ItemScanState {
   primaryItemId: number | null;
   properties: Map<number, ItemProperty>;
   associations: Map<number, readonly number[]>;
+  /** `cdsc` references from a metadata item to the item it describes. */
+  descriptions: Map<number, ReadonlySet<number>>;
   itemPropertiesSeen: boolean;
   propertyContainerSeen: boolean;
 }
@@ -329,10 +335,26 @@ function parseSpatialExtent(payload: Uint8Array): ImageDimensions | null {
   return width > 0 && height > 0 ? { width, height } : null;
 }
 
-function parseColourProperty(payload: Uint8Array): Uint8Array | null {
+interface ColourProperty {
+  readonly icc?: Uint8Array;
+  readonly nclx?: NclxColorData;
+  readonly malformed?: boolean;
+}
+
+function parseColourProperty(payload: Uint8Array): ColourProperty | null {
   if (payload.length < 4) return null;
   const colourType = boxType(payload, 0);
-  return colourType === "prof" || colourType === "rICC" ? payload.subarray(4) : null;
+  if (colourType === "prof" || colourType === "rICC") return { icc: payload.subarray(4) };
+  if (colourType !== "nclx") return null;
+  if (payload.length !== 11 || ((payload[10] ?? 0) & 0x7f) !== 0) return { malformed: true };
+  return {
+    nclx: {
+      colourPrimaries: uint16(payload, 4),
+      transferCharacteristics: uint16(payload, 6),
+      matrixCoefficients: uint16(payload, 8),
+      fullRange: ((payload[10] ?? 0) & 0x80) !== 0,
+    },
+  };
 }
 
 function parsePropertyContainer(payload: Uint8Array, limits: SecurityLimits, state: ItemScanState): void {
@@ -355,10 +377,18 @@ function parsePropertyContainer(payload: Uint8Array, limits: SecurityLimits, sta
     }
     const propertyPayload = payload.subarray(cursor + 8, cursor + size);
     const dimensions = type === "ispe" ? parseSpatialExtent(propertyPayload) : null;
-    const icc = type === "colr" ? parseColourProperty(propertyPayload) : null;
+    const colour = type === "colr" ? parseColourProperty(propertyPayload) : null;
+    if (colour?.malformed === true) {
+      warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF nclx colour property is truncated or has reserved range bits.", offset: cursor + 8 });
+    }
+    const rotation = type === "irot" && propertyPayload.length >= 1 ? (((propertyPayload[0] ?? 0) & 0x03) * 90) as ImageTransform["rotation"] : undefined;
+    const mirrorAxis = type === "imir" && propertyPayload.length >= 1 ? ((propertyPayload[0] ?? 0) & 0x01) === 0 ? "vertical" as const : "horizontal" as const : undefined;
     state.properties.set(index, {
       ...(dimensions === null ? {} : { dimensions }),
-      ...(icc === null ? {} : { icc }),
+      ...(colour?.icc === undefined ? {} : { icc: colour.icc }),
+      ...(colour?.nclx === undefined ? {} : { nclx: colour.nclx }),
+      ...(rotation === undefined ? {} : { rotation }),
+      ...(mirrorAxis === undefined ? {} : { mirrorAxis }),
     });
     index += 1;
     cursor += size;
@@ -401,6 +431,90 @@ function parsePropertyAssociations(payload: Uint8Array, limits: SecurityLimits, 
   }
 }
 
+/** Read bounded `cdsc` ItemReferenceBox entries. A descriptive item points to
+ * the image item it describes, so metadata selection uses the reverse lookup
+ * from the primary image. */
+function parseItemReferences(payload: Uint8Array, limits: SecurityLimits, state: ItemScanState): void {
+  if (payload.length < 4) {
+    warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF item-reference box is truncated.", offset: 0 });
+    return;
+  }
+  const version = payload[0] ?? 0;
+  const flags = ((payload[1] ?? 0) << 16) | ((payload[2] ?? 0) << 8) | (payload[3] ?? 0);
+  if ((version !== 0 && version !== 1) || flags !== 0) {
+    warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF item-reference version is unsupported.", offset: 0 });
+    return;
+  }
+  const itemIdSize = version === 0 ? 2 : 4;
+  let cursor = 4;
+  while (cursor < payload.length) {
+    if (state.boxBudget.remainingBoxes <= 0) {
+      warning(state.warnings, limits, { code: "LIMIT_EXCEEDED", message: "HEIF item-reference box count exceeds the configured limit.", offset: cursor });
+      return;
+    }
+    state.boxBudget.remainingBoxes -= 1;
+    if (cursor > payload.length - 8) {
+      warning(state.warnings, limits, { code: "TRUNCATED_DATA", message: "HEIF item-reference child box header is truncated.", offset: cursor });
+      return;
+    }
+    const size32 = uint32(payload, cursor);
+    const type = boxType(payload, cursor + 4);
+    let header = 8;
+    let size = size32;
+    if (size32 === 1) {
+      if (cursor > payload.length - 16) {
+        warning(state.warnings, limits, { code: "TRUNCATED_DATA", message: "HEIF extended item-reference child box header is truncated.", offset: cursor });
+        return;
+      }
+      const extended = uint64(payload, cursor + 8);
+      if (extended === null) {
+        warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF extended item-reference child box size is unsafe.", offset: cursor });
+        return;
+      }
+      header = 16;
+      size = extended;
+    } else if (size32 === 0) {
+      size = payload.length - cursor;
+    }
+    const end = cursor + size;
+    if (!Number.isSafeInteger(end) || size < header || end > payload.length) {
+      warning(state.warnings, limits, { code: "TRUNCATED_DATA", message: "HEIF item-reference child box extends beyond its parent.", offset: cursor, length: size });
+      return;
+    }
+    if (type === "cdsc") {
+      let referenceCursor = cursor + header;
+      if (referenceCursor + itemIdSize + 2 > end) {
+        warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF content-description reference is truncated.", offset: referenceCursor });
+        return;
+      }
+      const fromItemId = itemIdSize === 2 ? uint16(payload, referenceCursor) : uint32(payload, referenceCursor);
+      referenceCursor += itemIdSize;
+      const count = uint16(payload, referenceCursor);
+      referenceCursor += 2;
+      if (count > limits.maxIfdEntries || referenceCursor + count * itemIdSize !== end) {
+        warning(state.warnings, limits, { code: count > limits.maxIfdEntries ? "LIMIT_EXCEEDED" : "MALFORMED_HEIF", message: "HEIF content-description reference list is truncated or exceeds the configured limit.", offset: referenceCursor });
+        return;
+      }
+      if (fromItemId === 0) {
+        warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF content-description reference uses reserved item ID zero.", offset: cursor + header });
+        return;
+      }
+      const targets = new Set<number>(state.descriptions.get(fromItemId) ?? []);
+      for (let index = 0; index < count; index += 1) {
+        const target = itemIdSize === 2 ? uint16(payload, referenceCursor) : uint32(payload, referenceCursor);
+        referenceCursor += itemIdSize;
+        if (target === 0) {
+          warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF content-description reference uses reserved item ID zero.", offset: referenceCursor - itemIdSize });
+          continue;
+        }
+        targets.add(target);
+      }
+      state.descriptions.set(fromItemId, targets);
+    }
+    cursor = end;
+  }
+}
+
 function primaryDimensions(state: ItemScanState, limits: SecurityLimits): ImageDimensions | null {
   if (state.primaryItemId === null) return null;
   const associated = state.associations.get(state.primaryItemId);
@@ -430,6 +544,47 @@ function primaryIccProfile(state: ItemScanState, limits: SecurityLimits): Uint8A
   return null;
 }
 
+function sameNclx(left: NclxColorData, right: NclxColorData): boolean {
+  return left.colourPrimaries === right.colourPrimaries &&
+    left.transferCharacteristics === right.transferCharacteristics &&
+    left.matrixCoefficients === right.matrixCoefficients &&
+    left.fullRange === right.fullRange;
+}
+
+function primaryNclx(state: ItemScanState, limits: SecurityLimits): NclxColorData | null {
+  if (state.primaryItemId === null) return null;
+  const associated = state.associations.get(state.primaryItemId);
+  if (associated === undefined) return null;
+  const values = associated
+    .map((index) => state.properties.get(index)?.nclx)
+    .filter((value): value is NclxColorData => value !== undefined);
+  if (values.length === 0) return null;
+  const first = values[0];
+  if (first === undefined) return null;
+  if (values.some((value) => !sameNclx(value, first))) {
+    warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF primary item has conflicting nclx colour properties.", offset: 0 });
+    return null;
+  }
+  return first;
+}
+
+function primaryTransform(state: ItemScanState, limits: SecurityLimits): ImageTransform | null {
+  if (state.primaryItemId === null) return null;
+  const associated = state.associations.get(state.primaryItemId);
+  if (associated === undefined) return null;
+  const transforms = associated.map((index) => state.properties.get(index)).filter((value): value is ItemProperty => value !== undefined);
+  const rotations = transforms.map(({ rotation }) => rotation).filter((value): value is ImageTransform["rotation"] => value !== undefined);
+  const mirrors = transforms.map(({ mirrorAxis }) => mirrorAxis).filter((value): value is "vertical" | "horizontal" => value !== undefined);
+  if (rotations.length === 0 && mirrors.length === 0) return null;
+  const rotation = rotations[0] ?? 0;
+  const mirrorAxis = mirrors[0];
+  if (rotations.some((value) => value !== rotation) || mirrors.some((value) => value !== mirrorAxis)) {
+    warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF primary item has conflicting rotation or mirror properties.", offset: 0 });
+    return null;
+  }
+  return { rotation, mirrored: mirrorAxis !== undefined, ...(mirrorAxis === undefined ? {} : { mirrorAxis }) };
+}
+
 function validatePropertyAssociations(state: ItemScanState, limits: SecurityLimits): void {
   for (const [itemId, indices] of state.associations) {
     for (const index of indices) {
@@ -438,6 +593,28 @@ function validatePropertyAssociations(state: ItemScanState, limits: SecurityLimi
       }
     }
   }
+}
+
+function validateItemReferences(state: ItemScanState, limits: SecurityLimits): void {
+  const known = new Set(state.infos.map(({ id }) => id));
+  if (state.primaryItemId !== null) known.add(state.primaryItemId);
+  for (const [source, targets] of state.descriptions) {
+    if (!known.has(source)) {
+      warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF content-description reference has an unknown source item ${source}.`, offset: 0 });
+    }
+    for (const target of targets) {
+      if (!known.has(target)) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF content-description reference has an unknown target item ${target}.`, offset: 0 });
+    }
+  }
+}
+
+function metadataItemIds(state: ItemScanState): ReadonlySet<number> | null {
+  if (state.primaryItemId === null || state.descriptions.size === 0) return null;
+  const associated = new Set<number>();
+  for (const [itemId, targets] of state.descriptions) {
+    if (targets.has(state.primaryItemId)) associated.add(itemId);
+  }
+  return associated.size > 0 ? associated : null;
 }
 
 function scanItemBoxes(bytes: Uint8Array, start: number, end: number, depth: number, limits: SecurityLimits, state: ItemScanState): void {
@@ -488,6 +665,8 @@ function scanItemBoxes(bytes: Uint8Array, start: number, end: number, depth: num
       parsePropertyContainer(payload, limits, state);
     } else if (type === "ipma") {
       parsePropertyAssociations(payload, limits, state);
+    } else if (type === "iref") {
+      parseItemReferences(payload, limits, state);
     }
     if (type === "iprp") {
       if (state.itemPropertiesSeen) {
@@ -579,13 +758,19 @@ function findMetaRanges(
   }
 }
 
+interface ResolvedItem {
+  readonly data: Uint8Array;
+  /** Offset in the original file when the item is stored directly in mdat. */
+  readonly sourceOffset?: number;
+}
+
 function resolveItem(
   bytes: Uint8Array,
   location: ItemLocation,
   idat: Uint8Array | null,
   limits: SecurityLimits,
   maxBytes: number,
-): Uint8Array | null {
+): ResolvedItem | null {
   if (location.method !== 0 && location.method !== 1) return null;
   if (location.dataReferenceIndex !== 0 || location.extents.length === 0) return null;
   const source = location.method === 1 ? idat : bytes;
@@ -612,10 +797,11 @@ function resolveItem(
   const result = new Uint8Array(total);
   let cursor = 0;
   for (const part of parts) { result.set(part, cursor); cursor += part.length; }
-  return result;
+  const firstExtent = location.extents[0];
+  return { data: result, ...(location.method === 0 && firstExtent !== undefined ? { sourceOffset: location.baseOffset + firstExtent.offset } : {}) };
 }
 
-function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetadataBytes = limits.maxMetadataBytes): { exif: Uint8Array | null; xmp: Uint8Array[]; dimensions: ImageDimensions | null; icc: Uint8Array | null; metadataBytes: number; warnings: readonly MetadataWarning[] } {
+function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetadataBytes = limits.maxMetadataBytes): { exif: Uint8Array | null; exifOffset?: number; xmp: Uint8Array[]; dimensions: ImageDimensions | null; displayDimensions?: ImageDimensions; transform?: ImageTransform; icc: Uint8Array | null; nclx: NclxColorData | null; metadataBytes: number; warnings: readonly MetadataWarning[] } {
   const warnings: MetadataWarning[] = [];
   const boxBudget: ScanBudget = { remainingBoxes: limits.maxSegments };
   const ranges: MetaRange[] = [];
@@ -630,21 +816,26 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
       primaryItemId: null,
       properties: new Map<number, ItemProperty>(),
       associations: new Map<number, readonly number[]>(),
+      descriptions: new Map<number, ReadonlySet<number>>(),
       itemPropertiesSeen: false,
       propertyContainerSeen: false,
     };
     scanItemBoxes(bytes, range.start, range.end, range.depth, limits, state);
     validatePropertyAssociations(state, limits);
+    validateItemReferences(state, limits);
     return state;
   });
   let itemData: Uint8Array | null = null;
+  let itemDataOffset: number | undefined;
   const foundXmp: Uint8Array[] = [];
   let metadataBytes = 0;
   for (const state of states) {
+    const associatedMetadataIds = metadataItemIds(state);
     for (const info of state.infos) {
       const isExif = info.type === "Exif";
       const isXmp = info.type === "mime" && info.contentType?.toLowerCase().includes("rdf+xml");
       if (!isExif && !isXmp) continue;
+      if (associatedMetadataIds !== null && !associatedMetadataIds.has(info.id)) continue;
       const location = state.locations.get(info.id);
       if (location === undefined) {
         warning(warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has no item-location entry.`, offset: 0 });
@@ -655,11 +846,11 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
         warning(warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has an unsafe or unsupported extent.`, offset: 0 });
         continue;
       }
-      metadataBytes += resolved.length;
+      metadataBytes += resolved.data.length;
       if (isExif) {
-        if (itemData === null) itemData = resolved;
+        if (itemData === null) { itemData = resolved.data; itemDataOffset = resolved.sourceOffset; }
         else warning(warnings, limits, { code: "DUPLICATE_EXIF", message: "A later HEIF Exif item was ignored.", offset: 0 });
-      } else foundXmp.push(resolved);
+      } else foundXmp.push(resolved.data);
     }
   }
   const dimensions = states.map((state) => primaryDimensions(state, limits)).filter((value): value is ImageDimensions => value !== null);
@@ -672,23 +863,40 @@ function inspectItemMetadata(bytes: Uint8Array, limits: SecurityLimits, maxMetad
   if (profile !== null && profiles.some((candidate) => candidate.length !== profile.length || candidate.some((value, index) => value !== profile[index]))) {
     warning(warnings, limits, { code: "MALFORMED_HEIF", message: "Multiple HEIF MetaBoxes identify conflicting primary ICC profiles.", offset: 0 });
   }
+  const nclxValues = states.map((state) => primaryNclx(state, limits)).filter((value): value is NclxColorData => value !== null);
+  const nclx = nclxValues[0] ?? null;
+  if (nclx !== null && nclxValues.some((candidate) => !sameNclx(candidate, nclx))) {
+    warning(warnings, limits, { code: "MALFORMED_HEIF", message: "Multiple HEIF MetaBoxes identify conflicting primary nclx colour properties.", offset: 0 });
+  }
+  const transforms = states.map((state) => primaryTransform(state, limits)).filter((value): value is ImageTransform => value !== null);
+  const transform = transforms[0] ?? null;
+  if (transform !== null && transforms.some((candidate) => candidate.rotation !== transform.rotation || candidate.mirrored !== transform.mirrored || candidate.mirrorAxis !== transform.mirrorAxis)) {
+    warning(warnings, limits, { code: "MALFORMED_HEIF", message: "Multiple HEIF MetaBoxes identify conflicting primary-item transforms.", offset: 0 });
+  }
+  const displayDimensions = dimension === null || transform === null
+    ? null
+    : (transform.rotation === 90 || transform.rotation === 270 ? { width: dimension.height, height: dimension.width } : dimension);
   return {
     exif: itemData,
+    ...(itemDataOffset === undefined ? {} : { exifOffset: itemDataOffset }),
     xmp: foundXmp,
     dimensions: dimension !== null && dimensions.every(({ width, height }) => width === dimension.width && height === dimension.height) ? dimension : null,
+    ...(displayDimensions === null ? {} : { displayDimensions }),
+    ...(transform === null ? {} : { transform }),
     icc: profile !== null && profiles.every((candidate) => candidate.length === profile.length && candidate.every((value, index) => value === profile[index])) ? profile : null,
+    nclx: nclx !== null && nclxValues.every((candidate) => sameNclx(candidate, nclx)) ? nclx : null,
     metadataBytes,
     warnings,
   };
 }
 
 /** Inspect bounded HEIF/AVIF metadata boxes and common Exif/XMP item locations. */
-export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "heif" | "avif"): MetadataResult {
+export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "heif" | "avif"): ParsedMetadataResult {
   const warnings: MetadataWarning[] = [];
   const fields: MetadataField[] = [];
   const xmpPackets: string[] = [];
   let exif: ExifData | null = null;
-  let icc: MetadataResult["icc"] = null;
+  let icc: ParsedMetadataResult["icc"] = null;
   let metadataBytes = 0;
   let boxCount = 0;
   const fallbackDimensions = parseHeifDimensions(bytes, limits.maxIfdDepth, limits.maxSegments);
@@ -723,7 +931,11 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
           } else {
             const parsed = parseExif(tiff.tiff, limits, payloadStart + tiff.offset);
             for (const item of parsed.warnings) warning(warnings, limits, item);
-            if (parsed.exif !== null) { exif = parsed.exif; fields.push(...parsed.fields); }
+            if (parsed.exif !== null) {
+              const thumbnail = extractExifThumbnail(tiff.tiff, parsed.exif, limits);
+              exif = thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
+              fields.push(...parsed.fields);
+            }
           }
         } else warning(warnings, limits, { code: "DUPLICATE_EXIF", message: "A later HEIF EXIF box was ignored.", offset: payloadStart });
       } else if (type === "xml " || type === "XMP ") {
@@ -749,9 +961,13 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
     if (tiff === null) {
       warning(warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF Exif item has no valid TIFF header at its declared offset.", offset: 0, length: payload.length });
     } else {
-      const parsed = parseExif(tiff.tiff, limits, tiff.offset);
+      const parsed = parseExif(tiff.tiff, limits, (itemMetadata.exifOffset ?? 0) + tiff.offset);
       for (const item of parsed.warnings) warning(warnings, limits, item);
-      if (parsed.exif !== null) { exif = parsed.exif; fields.push(...parsed.fields); }
+      if (parsed.exif !== null) {
+        const thumbnail = extractExifThumbnail(tiff.tiff, parsed.exif, limits);
+        exif = thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
+        fields.push(...parsed.fields);
+      }
     }
   }
   for (const packetBytes of itemMetadata.xmp) {
@@ -777,5 +993,21 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
     }
   }
   if (bytes.length < 16 || ascii(bytes, 4) !== "ftyp") warningError(warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF/AVIF input has no valid ftyp box.", offset: 0 });
-  return { format, mimeType: format === "avif" ? "image/avif" : "image/heif", dimensions: itemMetadata.dimensions ?? fallbackDimensions, fields, exif, xmp: xmpPackets.length > 0 ? { packets: xmpPackets } : null, iptc: null, icc, jfif: null, pngText: [], warnings };
+  const storedDimensions = itemMetadata.dimensions ?? fallbackDimensions;
+  return {
+    format,
+    mimeType: format === "avif" ? "image/avif" : "image/heif",
+    dimensions: storedDimensions,
+    ...(itemMetadata.displayDimensions === undefined ? {} : { displayDimensions: itemMetadata.displayDimensions }),
+    ...(itemMetadata.transform === undefined ? {} : { transform: itemMetadata.transform }),
+    ...(itemMetadata.nclx === null ? {} : { nclx: itemMetadata.nclx }),
+    fields,
+    exif,
+    xmp: xmpPackets.length > 0 ? { packets: xmpPackets } : null,
+    iptc: null,
+    icc,
+    jfif: null,
+    pngText: [],
+    warnings,
+  };
 }

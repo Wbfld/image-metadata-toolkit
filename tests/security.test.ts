@@ -18,6 +18,7 @@ import {
   subarrayChecked,
 } from "../src/security/bounds.js";
 import { DEFAULT_LIMITS, resolveLimits } from "../src/security/limits.js";
+import { WarningCollector } from "../src/security/warnings.js";
 
 describe("security limits", () => {
   it("exposes positive, immutable defaults", () => {
@@ -53,6 +54,20 @@ describe("security limits", () => {
   it("does not accept inherited values as caller overrides", () => {
     const inherited = Object.create({ maxInputBytes: 1 }) as Partial<typeof DEFAULT_LIMITS>;
     expect(resolveLimits(inherited).maxInputBytes).toBe(DEFAULT_LIMITS.maxInputBytes);
+  });
+
+  it("bounds shared warning collection and returns an isolated snapshot", () => {
+    const collector = new WarningCollector(resolveLimits({ maxWarnings: 2 }));
+    const warning = { code: "INVALID_VALUE" as const, message: "bad value", severity: "warning" as const };
+    collector.add(warning);
+    collector.add({ ...warning, message: "second" });
+    collector.add({ ...warning, message: "discarded" });
+
+    expect(collector.length).toBe(2);
+    expect(collector.some((item) => item.message === "second")).toBe(true);
+    const snapshot = collector.toArray();
+    expect(snapshot).toHaveLength(2);
+    expect(snapshot).not.toBe(collector.toArray());
   });
 });
 

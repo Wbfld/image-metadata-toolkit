@@ -2,16 +2,19 @@ import { inspectIccProfile, parseIccChunk, type IccChunk } from "../metadata/icc
 import { parseExif } from "../metadata/exif.js";
 import { parseIptcMetadata } from "../metadata/iptc.js";
 import { parseJfif } from "../metadata/jfif.js";
-import { parseXmpPacket } from "../metadata/xmp.js";
+import { extractExifThumbnail } from "../metadata/thumbnail.js";
+import { extendedXmpGuid, parseExtendedXmpChunk, parseXmpPacket, reassembleExtendedXmp, type ExtendedXmpChunk } from "../metadata/xmp.js";
 import type {
   ExifData,
   ImageDimensions,
   JfifData,
   MetadataField,
-  MetadataResult,
+  ParsedMetadataResult,
   MetadataWarning,
   SecurityLimits,
 } from "../types.js";
+import { WarningCollector } from "../security/warnings.js";
+import { wantsGroup, type ResolvedSelection } from "../selection.js";
 
 const EXIF_IDENTIFIER = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00] as const;
 const JFIF_IDENTIFIER = [0x4a, 0x46, 0x49, 0x46, 0x00] as const;
@@ -21,11 +24,11 @@ function hasPrefix(bytes: Uint8Array, prefix: readonly number[]): boolean {
 }
 
 function warning(
-  warnings: MetadataWarning[],
-  limits: SecurityLimits,
+  warnings: WarningCollector,
+  _limits: SecurityLimits,
   value: MetadataWarning,
 ): void {
-  if (warnings.length < limits.maxWarnings) warnings.push(value);
+  warnings.add(value);
 }
 
 function isRestartMarker(marker: number): boolean {
@@ -72,10 +75,17 @@ function findMarkerAfterScan(bytes: Uint8Array, from: number): number | null {
   return null;
 }
 
-export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataResult {
-  const warnings: MetadataWarning[] = [];
+export interface JpegParseOptions {
+  readonly selection?: ResolvedSelection;
+  /** The supplied bytes stop immediately after a valid start-of-scan header. */
+  readonly headerOnly?: boolean;
+}
+
+export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: JpegParseOptions = {}): ParsedMetadataResult {
+  const warnings = new WarningCollector(limits);
   const normalizedFields: MetadataField[] = [];
   const xmpPackets: string[] = [];
+  const extendedXmp = new Map<string, ExtendedXmpChunk[]>();
   const iccChunks: IccChunk[] = [];
   let exif: ExifData | null = null;
   let jfif: JfifData | null = null;
@@ -238,6 +248,10 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
         }
         reachedScan = true;
         cursor = segmentEnd;
+        if (options.headerOnly) {
+          reachedEnd = true;
+          break;
+        }
         inEntropyData = true;
         continue;
       }
@@ -256,7 +270,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
         inEntropyData = true;
         continue;
       }
-      if (isStartOfFrame(marker)) {
+      if (wantsGroup(options.selection, "Dimensions") && isStartOfFrame(marker)) {
         const frameDimensions = readDimensions(payload);
         if (frameDimensions === null) {
           warning(warnings, limits, {
@@ -286,7 +300,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
         }
       }
 
-      if (marker === 0xe0 && hasPrefix(payload, JFIF_IDENTIFIER)) {
+      if (wantsGroup(options.selection, "JFIF") && marker === 0xe0 && hasPrefix(payload, JFIF_IDENTIFIER)) {
         const parsedJfif = parseJfif(payload);
         if (parsedJfif === null) {
           const xThumbnail = payload[12] ?? 0;
@@ -302,7 +316,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
         } else if (jfif === null) {
           jfif = parsedJfif;
         }
-      } else if (marker === 0xe1 && hasPrefix(payload, EXIF_IDENTIFIER)) {
+      } else if (wantsGroup(options.selection, "EXIF") && marker === 0xe1 && hasPrefix(payload, EXIF_IDENTIFIER)) {
         if (exif !== null) {
           warning(warnings, limits, {
             code: "DUPLICATE_EXIF",
@@ -311,16 +325,24 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
             offset: dataStart,
           });
         } else {
-          const parsed = parseExif(payload.subarray(EXIF_IDENTIFIER.length), limits, dataStart + EXIF_IDENTIFIER.length);
+          const parsed = parseExif(payload.subarray(EXIF_IDENTIFIER.length), limits, dataStart + EXIF_IDENTIFIER.length, options.selection?.tags);
           for (const item of parsed.warnings) warning(warnings, limits, item);
           if (parsed.exif !== null) {
-            exif = parsed.exif;
+            const tiff = payload.subarray(EXIF_IDENTIFIER.length);
+            const thumbnail = extractExifThumbnail(tiff, parsed.exif, limits);
+            exif = thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
             normalizedFields.push(...parsed.fields);
           }
         }
-      } else if (marker === 0xe1) {
-        const parsed = parseXmpPacket(payload, limits.maxStringBytes);
-        if (parsed.matched && parsed.packet === null) {
+      } else if (wantsGroup(options.selection, "XMP") && marker === 0xe1) {
+        const extended = parseExtendedXmpChunk(payload);
+        if (extended !== null) {
+          const chunks = extendedXmp.get(extended.guid) ?? [];
+          chunks.push(extended);
+          extendedXmp.set(extended.guid, chunks);
+        } else {
+          const parsed = parseXmpPacket(payload, limits.maxStringBytes);
+          if (parsed.matched && parsed.packet === null) {
           warning(warnings, limits, {
             code: "INVALID_VALUE",
             message: "XMP packet is invalid UTF-8 or exceeds the configured string limit.",
@@ -328,13 +350,14 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
             offset: dataStart,
             length: payload.length,
           });
-        } else if (parsed.packet !== null) {
-          xmpPackets.push(parsed.packet);
+          } else if (parsed.packet !== null) {
+            xmpPackets.push(parsed.packet);
+          }
         }
-      } else if (marker === 0xe2) {
+      } else if (wantsGroup(options.selection, "ICC") && marker === 0xe2) {
         const chunk = parseIccChunk(payload);
         if (chunk !== null) iccChunks.push(chunk);
-      } else if (marker === 0xed) {
+      } else if (wantsGroup(options.selection, "IPTC") && marker === 0xed) {
         const parsedIptc = parseIptcMetadata(payload, limits, dataStart);
         if (parsedIptc.data !== null) {
           iptcBytes += parsedIptc.data.byteLength;
@@ -374,7 +397,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
       severity: "error",
     });
   }
-  if (reachedScan && dimensions === null && !warnings.some(({ code }) => code === "MALFORMED_JPEG")) {
+  if (reachedScan && wantsGroup(options.selection, "Dimensions") && dimensions === null && !warnings.some(({ code }) => code === "MALFORMED_JPEG")) {
     warning(warnings, limits, {
       code: "MALFORMED_JPEG",
       message: "JPEG scan has no preceding valid start-of-frame dimensions.",
@@ -382,7 +405,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
     });
   }
 
-  const inspectedIcc = inspectIccProfile(iccChunks, limits);
+  const inspectedIcc = wantsGroup(options.selection, "ICC") ? inspectIccProfile(iccChunks, limits) : { data: null, fields: [], warnings: [] };
   const icc = inspectedIcc.data;
   for (const item of inspectedIcc.fields) normalizedFields.push(item);
   for (const item of inspectedIcc.warnings) warning(warnings, limits, item);
@@ -392,6 +415,18 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
       message: "JPEG ICC_PROFILE chunks are incomplete, duplicated, or inconsistent.",
       severity: "warning",
     });
+  }
+
+  const referencedExtended = wantsGroup(options.selection, "XMP")
+    ? new Set(xmpPackets.map(extendedXmpGuid).filter((guid): guid is string => guid !== null))
+    : new Set<string>();
+  for (const guid of referencedExtended) {
+    const packet = reassembleExtendedXmp(extendedXmp.get(guid) ?? [], limits.maxStringBytes);
+    if (packet === null) {
+      warning(warnings, limits, { code: "INVALID_VALUE", message: "Extended XMP chunks are incomplete, overlapping, or invalid UTF-8.", severity: "warning" });
+    } else {
+      xmpPackets.push(packet);
+    }
   }
 
   return {
@@ -412,6 +447,6 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
     icc,
     jfif,
     pngText: [],
-    warnings,
+    warnings: warnings.toArray(),
   };
 }

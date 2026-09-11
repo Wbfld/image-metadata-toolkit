@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
+import { gzipSync } from "node:zlib";
 
 const execFile = promisify(execFileCallback);
 const root = resolve(import.meta.dirname, "..");
@@ -26,18 +27,44 @@ try {
     "package/package.json",
     "package/README.md",
     "package/API.md",
+    "package/CAPABILITIES.md",
+    "package/MIGRATION.md",
+    "package/CONTRIBUTING.md",
+    "package/PUBLISHING.md",
+    "package/BENCHMARKS.md",
+    "package/EXTERNAL_CORPORA.md",
     "package/CHANGELOG.md",
     "package/LICENSE",
     "package/dist/index.js",
     "package/dist/index.cjs",
     "package/dist/index.d.ts",
     "package/dist/index.d.cts",
+    "package/dist/detect.js",
+    "package/dist/detect.cjs",
+    "package/dist/jpeg.js",
+    "package/dist/jpeg.cjs",
+    "package/dist/mini.js",
+    "package/dist/mini.cjs",
+    "package/dist/mini.d.ts",
+    "package/dist/mini.d.cts",
+    "package/dist/redact.js",
+    "package/dist/redact.cjs",
+    "package/dist/xmp.js",
+    "package/dist/xmp.cjs",
+    "package/dist/xmp-rgrove.js",
+    "package/dist/xmp-rgrove.cjs",
+    "package/dist/worker.js",
+    "package/dist/worker.cjs",
   ]) assert.ok(entries.has(required), `published tarball is missing ${required}`);
   assert.ok(![...entries].some((entry) => entry.startsWith("package/tests/") || entry.startsWith("package/src/") || entry.startsWith("package/examples/") || entry.startsWith("package/.github/")), "published tarball contains development-only sources, tests, examples, or CI files");
   assert.ok(![...entries].some((entry) => /(?:fixture|\.env|\.pem|\.key|secret|credential|token)/i.test(entry)), "published tarball contains a fixture or secret-like file");
   const browserBundle = await readFile(join(root, "dist/index.js"), "utf8");
   assert.ok(!/\bnode:(?:fs|net|http|https|worker_threads)\b/.test(browserBundle), "browser ESM bundle contains a Node-only import");
   assert.ok(Buffer.byteLength(browserBundle, "utf8") < 300 * 1024, "browser ESM bundle exceeds the release size budget");
+  for (const [entry, budget] of [["detect.js", 1.5], ["jpeg.js", 15], ["mini.js", 4], ["index.js", 30], ["redact.js", 12]]) {
+    const compressedKiB = gzipSync(await readFile(join(root, "dist", entry))).byteLength / 1024;
+    assert.ok(compressedKiB <= budget, `${entry} initial ESM shell is ${compressedKiB.toFixed(2)} KiB gzip, above its ${budget} KiB budget`);
+  }
   for (const entry of [...entries].filter((name) => /\.(?:js|cjs|map|json|md|d\.ts|d\.cts)$/.test(name))) {
     const content = (await run("tar", ["-xOf", tarball, entry], root)).stdout;
     assert.ok(!/(SECRET-123|-----BEGIN [A-Z ]+PRIVATE KEY-----|(?:api[_-]?key|password)\s*[:=])/i.test(content), `published tarball contains secret-like content in ${entry}`);
@@ -53,15 +80,27 @@ try {
   await writeFile(join(consumer, "esm-smoke.mjs"), [
     'import assert from "node:assert/strict";',
     'import { detectFormat, parseMetadata } from "browser-image-metadata";',
+    'import { detectFormat as detectOnly } from "browser-image-metadata/detect";',
+    'import { parseJpegMetadata } from "browser-image-metadata/jpeg";',
+    'import { parseMetadata as parseMiniMetadata } from "browser-image-metadata/mini";',
+    'import { redactMetadata as redactFocused } from "browser-image-metadata/redact";',
+    'import { parseStructuredXmp } from "browser-image-metadata/xmp";',
     `const bytes = Uint8Array.from(${fixtureLiteral});`,
     'assert.equal(detectFormat(bytes).format, "jpeg");',
+    'assert.equal(detectOnly(bytes).format, "jpeg");',
+    'assert.equal(parseStructuredXmp(`<x:xmpmeta xmlns:x="x"/>`)?.properties !== undefined, true);',
     'assert.equal((await parseMetadata(bytes)).dimensions?.width, 2);',
+    'assert.equal((await parseJpegMetadata(bytes, { scope: "jpeg-header" })).completeness.scope, "partial");',
+    'assert.equal((await parseMiniMetadata(bytes)).format, "jpeg");',
+    'assert.equal((await redactFocused(bytes, { remove: ["EXIF"] })).format, "jpeg");',
   ].join("\n"));
   await writeFile(join(consumer, "cjs-smoke.cjs"), [
     'const assert = require("node:assert/strict");',
     'const { detectFormat, parseMetadata } = require("browser-image-metadata");',
+    'const { detectFormat: detectOnly } = require("browser-image-metadata/detect");',
     `const bytes = Uint8Array.from(${fixtureLiteral});`,
     'assert.equal(detectFormat(bytes).format, "jpeg");',
+    'assert.equal(detectOnly(bytes).format, "jpeg");',
     '(async () => assert.equal((await parseMetadata(bytes)).dimensions?.height, 2))().catch((error) => { throw error; });',
   ].join("\n"));
   await run(process.execPath, ["esm-smoke.mjs"], consumer);

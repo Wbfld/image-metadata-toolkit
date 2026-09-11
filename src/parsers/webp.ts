@@ -1,7 +1,8 @@
 import { parseExif } from "../metadata/exif.js";
 import { inspectIccProfile, type IccChunk } from "../metadata/icc.js";
 import { parseXmpPacket } from "../metadata/xmp.js";
-import type { ExifData, ImageDimensions, MetadataField, MetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
+import { wantsGroup, type ResolvedSelection } from "../selection.js";
+import type { ExifData, ImageDimensions, MetadataField, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
 
 function isAscii(bytes: Uint8Array, offset: number, text: string): boolean {
   if (offset + text.length > bytes.length) return false;
@@ -84,12 +85,12 @@ export function parseWebpDimensions(bytes: Uint8Array): ImageDimensions | null {
 }
 
 /** Parse bounded WebP EXIF and XMP chunks without decoding image payloads. */
-export function parseWebp(bytes: Uint8Array, limits: SecurityLimits): MetadataResult {
+export function parseWebp(bytes: Uint8Array, limits: SecurityLimits, selection?: ResolvedSelection): ParsedMetadataResult {
   const warnings: MetadataWarning[] = [];
   const fields: MetadataField[] = [];
   const xmpPackets: string[] = [];
   let exif: ExifData | null = null;
-  let icc: MetadataResult["icc"] = null;
+  let icc: ParsedMetadataResult["icc"] = null;
   let dimensions: ImageDimensions | null = null;
   let cursor = 12;
   let chunks = 0;
@@ -127,11 +128,11 @@ export function parseWebp(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
           if (length > limits.maxSegmentBytes || metadataBytes > limits.maxMetadataBytes) {
             warning(warnings, limits, { code: "LIMIT_EXCEEDED", message: "WebP metadata exceeds the configured limit; this chunk was skipped.", offset: dataStart, length });
           } else if (type === "EXIF") {
-            if (exif !== null) warning(warnings, limits, { code: "DUPLICATE_EXIF", message: "A later WebP EXIF chunk was ignored.", offset: dataStart });
-            else {
+            if (wantsGroup(selection, "EXIF") && exif !== null) warning(warnings, limits, { code: "DUPLICATE_EXIF", message: "A later WebP EXIF chunk was ignored.", offset: dataStart });
+            else if (wantsGroup(selection, "EXIF")) {
               const payload = bytes.subarray(dataStart, dataEnd);
               const tiff = payload.length >= 6 && payload[0] === 0x45 && payload[1] === 0x78 && payload[2] === 0x69 && payload[3] === 0x66 && payload[4] === 0 && payload[5] === 0 ? payload.subarray(6) : payload;
-              const parsed = parseExif(tiff, limits, dataStart + (tiff === payload ? 0 : 6));
+              const parsed = parseExif(tiff, limits, dataStart + (tiff === payload ? 0 : 6), selection?.tags);
               for (const item of parsed.warnings) {
                 if (warnings.length >= limits.maxWarnings) break;
                 warnings.push(item);
@@ -142,32 +143,36 @@ export function parseWebp(bytes: Uint8Array, limits: SecurityLimits): MetadataRe
               }
             }
           } else if (type === "XMP ") {
-            const payload = bytes.subarray(dataStart, dataEnd);
-            const wrapped = parseXmpPacket(payload, limits.maxStringBytes);
-            const packet = wrapped.matched ? wrapped.packet : payload.length <= limits.maxStringBytes ? decodeUtf8(payload) : null;
-            if (packet === null) warning(warnings, limits, { code: "INVALID_VALUE", message: "WebP XMP payload is invalid UTF-8 or exceeds the configured string limit.", offset: dataStart, length });
-            else xmpPackets.push(packet);
-          } else if (icc !== null) {
-            warning(warnings, limits, { code: "INVALID_VALUE", message: "A later WebP ICCP chunk was ignored.", offset: dataStart });
-          } else {
-            const profile = bytes.subarray(dataStart, dataEnd);
-            const chunk: IccChunk = { sequence: 1, total: 1, byteLength: profile.length, data: profile.slice() };
-            const inspected = inspectIccProfile([chunk], limits);
-            icc = inspected.data;
-            for (const item of inspected.fields) {
-              if (fields.length >= limits.maxIfdEntries) break;
-              fields.push(item);
+            if (wantsGroup(selection, "XMP")) {
+              const payload = bytes.subarray(dataStart, dataEnd);
+              const wrapped = parseXmpPacket(payload, limits.maxStringBytes);
+              const packet = wrapped.matched ? wrapped.packet : payload.length <= limits.maxStringBytes ? decodeUtf8(payload) : null;
+              if (packet === null) warning(warnings, limits, { code: "INVALID_VALUE", message: "WebP XMP payload is invalid UTF-8 or exceeds the configured string limit.", offset: dataStart, length });
+              else xmpPackets.push(packet);
             }
-            for (const item of inspected.warnings) warning(warnings, limits, item);
+          } else if (wantsGroup(selection, "ICC")) {
+            if (icc !== null) {
+              warning(warnings, limits, { code: "INVALID_VALUE", message: "A later WebP ICCP chunk was ignored.", offset: dataStart });
+            } else {
+              const profile = bytes.subarray(dataStart, dataEnd);
+              const chunk: IccChunk = { sequence: 1, total: 1, byteLength: profile.length, data: profile.slice() };
+              const inspected = inspectIccProfile([chunk], limits);
+              icc = inspected.data;
+              for (const item of inspected.fields) {
+                if (fields.length >= limits.maxIfdEntries) break;
+                fields.push(item);
+              }
+              for (const item of inspected.warnings) warning(warnings, limits, item);
+            }
           }
         }
-        if (chunks === 1 && type === "VP8X") dimensions = parseWebpDimensions(bytes);
+        if (chunks === 1 && type === "VP8X" && wantsGroup(selection, "Dimensions")) dimensions = parseWebpDimensions(bytes);
         cursor = next;
       }
     }
   }
 
-  if (dimensions === null) dimensions = parseWebpDimensions(bytes);
+  if (dimensions === null && wantsGroup(selection, "Dimensions")) dimensions = parseWebpDimensions(bytes);
   return {
     format: "webp",
     mimeType: "image/webp",

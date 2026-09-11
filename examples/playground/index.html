@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>browser-image-metadata playground</title>
+    <style>
+      body { font: 16px/1.5 system-ui, sans-serif; max-width: 70rem; margin: 2rem auto; padding: 0 1rem; }
+      button { margin-left: .5rem; } pre { background: #f4f4f4; overflow: auto; padding: 1rem; white-space: pre-wrap; }
+      .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr)); }
+      h2 { margin-bottom: .25rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Local metadata playground</h1>
+    <p>Choose an image to inspect it locally. This page makes no network request and never uploads the selected file.</p>
+    <input id="image" type="file" accept="image/*" />
+    <button id="sanitize" type="button" disabled>Try strict sanitization</button>
+    <p id="status">Choose an image…</p>
+    <div class="grid">
+      <section><h2>Summary</h2><pre id="summary">—</pre></section>
+      <section><h2>Warnings and completeness</h2><pre id="warnings">—</pre></section>
+      <section><h2>Raw metadata result</h2><pre id="raw">—</pre></section>
+      <section><h2>Strict-sanitization outcome</h2><pre id="sanitized">—</pre></section>
+    </div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
