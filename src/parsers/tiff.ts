@@ -4,7 +4,7 @@ import { parseIptcMetadata } from "../metadata/iptc.js";
 import { extractExifThumbnail } from "../metadata/thumbnail.js";
 import { wantsGroup, type ResolvedSelection } from "../selection.js";
 import { throwIfAborted } from "../security/abort.js";
-import type { ImageDimensions, MetadataBlock, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
+import type { ExifData, ExifDirectory, ImageDimensions, MetadataBlock, MetadataField, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
 import type { MetadataRegistry } from "../registry.js";
 
 /** True for a classic TIFF header in either byte order. */
@@ -46,6 +46,40 @@ function appendWarnings(destination: MetadataWarning[], source: readonly Metadat
   }
 }
 
+function mapExifOffsets(exif: ExifData, offsetMap?: (offset: number) => number): ExifData {
+  if (offsetMap === undefined) return exif;
+  const fields = exif.fields.map((field) => mapFieldOffsets(field, offsetMap));
+  const ifds: ExifDirectory[] = exif.ifds.map((ifd) => ({
+    ...ifd,
+    id: ifd.id ?? `${ifd.name}@${ifd.offset}`,
+    kind: ifd.kind ?? "unknown",
+    parentId: ifd.parentId ?? null,
+    depth: ifd.depth ?? 0,
+    nextId: ifd.nextId ?? null,
+    sharedOffset: ifd.sharedOffset ?? false,
+    associatedImage: ifd.associatedImage ?? null,
+    offset: offsetMap(ifd.offset),
+  }));
+  const byId = new Map(ifds.map((ifd) => [ifd.id, ifd]));
+  const topology = exif.topology === undefined ? undefined : {
+    directories: exif.topology.directories.map((ifd) => byId.get(ifd.id) ?? { ...ifd, offset: offsetMap(ifd.offset) }),
+    relations: exif.topology.relations,
+  };
+  return { ...exif, fields, ifds, ...(topology === undefined ? {} : { topology }) };
+}
+
+function mapFieldOffsets(field: MetadataField, offsetMap?: (offset: number) => number): MetadataField {
+  if (offsetMap === undefined || field.source === undefined) return field;
+  return {
+    ...field,
+    source: {
+      ...field.source,
+      ...(field.source.entryOffset === null ? {} : { entryOffset: offsetMap(field.source.entryOffset) }),
+      ...(field.source.valueOffset === null ? {} : { valueOffset: offsetMap(field.source.valueOffset) }),
+    },
+  };
+}
+
 /** Parse a standalone classic TIFF through the bounded EXIF/IFD decoder. */
 function tiffSelectionTags(selection: ResolvedSelection | undefined): ReadonlySet<string> | null | undefined {
   if (selection === undefined || selection.groups === null) return selection?.tags;
@@ -73,7 +107,7 @@ function tiffSelectionTags(selection: ResolvedSelection | undefined): ReadonlySe
   return tags;
 }
 
-export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, selection?: ResolvedSelection, extractThumbnail = true, signal?: AbortSignal, registry?: MetadataRegistry): ParsedMetadataResult {
+export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, selection?: ResolvedSelection, extractThumbnail = true, signal?: AbortSignal, registry?: MetadataRegistry, offsetMap?: (offset: number) => number): ParsedMetadataResult {
   throwIfAborted(signal);
   const littleEndian = bytes[0] === 0x49 && bytes[1] === 0x49;
   const bigTiffMagic = littleEndian
@@ -87,12 +121,13 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, sel
     ? parseBigTiff(bytes, limits, 0, tiffSelectionTags(selection), registry)
     : parseTiff(bytes, limits, 0, tiffSelectionTags(selection), registry);
   throwIfAborted(signal);
-  const exif = !includeExif || parsed.exif === null ? null : (() => {
-    const thumbnail = extractThumbnail ? extractExifThumbnail(bytes, parsed.exif, limits) : null;
-    return thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
+  const mappedExif = parsed.exif === null ? null : mapExifOffsets(parsed.exif, offsetMap);
+  const exif = !includeExif || mappedExif === null ? null : (() => {
+    const thumbnail = extractThumbnail && offsetMap === undefined ? extractExifThumbnail(bytes, mappedExif, limits) : null;
+    return thumbnail === null ? mappedExif : { ...mappedExif, thumbnail };
   })();
-  const sourceFields = parsed.exif?.fields ?? [];
-  const warnings = [...parsed.warnings];
+  const sourceFields = mappedExif?.fields ?? [];
+  const warnings = parsed.warnings.map((warning) => warning.offset === undefined || offsetMap === undefined ? warning : { ...warning, offset: offsetMap(warning.offset) });
   const xmpField = includeXmp ? sourceFields.find(({ tag, raw }) => tag === 700 && raw instanceof Uint8Array) : undefined;
   const xmpBytes = xmpField?.raw instanceof Uint8Array ? xmpField.raw : null;
   const xmpText = xmpBytes !== null && xmpBytes.length <= limits.maxStringBytes ? decodeUtf8(xmpBytes) : null;
@@ -107,9 +142,9 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, sel
   const entryBytes = bigTiffMagic ? 20 : 12;
   const directoryPrefixBytes = bigTiffMagic ? 8 : 2;
   const nextOffsetBytes = bigTiffMagic ? 8 : 4;
-  const blocks: MetadataBlock[] = (parsed.exif?.ifds ?? []).map((ifd) => {
+  const blocks: MetadataBlock[] = (mappedExif?.ifds ?? []).map((ifd) => {
     const length = directoryPrefixBytes + ifd.entryCount * entryBytes + nextOffsetBytes;
-    const complete = Number.isSafeInteger(length) && ifd.offset <= bytes.length && length <= bytes.length - ifd.offset;
+    const complete = Number.isSafeInteger(length) && (offsetMap !== undefined || (ifd.offset <= bytes.length && length <= bytes.length - ifd.offset));
     return {
       id: `tiff:IFD:${ifd.offset}`,
       family: "EXIF",
@@ -117,12 +152,30 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, sel
       status: complete ? "decoded" : "partial",
       offset: ifd.offset,
       length: complete ? length : Math.max(0, bytes.length - ifd.offset),
-      associatedImage: ifd.name === "IFD1" ? "thumbnail" : "primary",
+      associatedImage: ifd.associatedImage ?? (ifd.name === "IFD1" ? "thumbnail" : "primary"),
       sensitivity: "moderate",
       warningCodes: complete ? [] : ["TRUNCATED_DATA"],
+      ...(ifd.id === undefined ? {} : { directoryId: ifd.id }),
+      ...(ifd.kind === undefined ? {} : { role: ifd.kind }),
     };
   });
-  const blockForIfd = new Map((parsed.exif?.ifds ?? []).map((ifd) => [ifd.name, `tiff:IFD:${ifd.offset}`]));
+  const blockForIfd = new Map((mappedExif?.ifds ?? []).map((ifd) => [ifd.name, `tiff:IFD:${ifd.offset}`]));
+  const directoryBlock = new Map((mappedExif?.ifds ?? []).map((ifd) => [ifd.id ?? `${ifd.name}@${ifd.offset}`, `tiff:IFD:${ifd.offset}`]));
+  if (mappedExif?.topology !== undefined) {
+    for (const relation of mappedExif.topology.relations) {
+      const source = directoryBlock.get(relation.fromDirectoryId);
+      const target = directoryBlock.get(relation.toDirectoryId);
+      if (source === undefined || target === undefined) continue;
+      const block = blocks.find((candidate) => candidate.id === source);
+      if (block === undefined) continue;
+      const relationships = block.relationships === undefined ? [] : [...block.relationships];
+      relationships.push({ type: relation.type, sourceBlockId: source, targetBlockId: target, ...(relation.tag === undefined ? {} : { tag: relation.tag }) });
+      const related = block.relatedBlockIds === undefined ? [] : [...block.relatedBlockIds];
+      if (!related.includes(target)) related.push(target);
+      const index = blocks.indexOf(block);
+      blocks[index] = { ...block, relatedBlockIds: related, relationships };
+    }
+  }
   for (const field of sourceFields) {
     const family = field.tag === 700 ? "XMP" : field.tag === 33723 ? "IPTC" : field.tag === 34675 ? "ICC" : null;
     if (family === null || field.source?.entryOffset === null || field.source?.entryOffset === undefined) continue;
@@ -139,7 +192,8 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, sel
       warningCodes: [],
     });
   }
-  const fields = parsed.fields.map((field) => {
+  const fields = parsed.fields.map((sourceField) => {
+    const field = mapFieldOffsets(sourceField, offsetMap);
     const blockId = blockForIfd.get(field.ifd);
     return blockId === undefined || field.source === undefined ? field : { ...field, source: { ...field.source, blockId } };
   });

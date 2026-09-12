@@ -109,6 +109,29 @@ export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOp
     }
   }
   const gaps: string[] = [];
+  const semantic = result.iptcSemantic ?? result.iptc?.semantic;
+  if (semantic !== undefined) {
+    for (const field of semantic.fields) {
+      if (field.candidates.length === 0 || field.sensitivity === "none") continue;
+      findings.push({ target: field.id, sensitivity: field.sensitivity, message: `${field.name} has ${field.candidates.length} IPTC/XMP semantic candidate${field.candidates.length === 1 ? "" : "s"}; all candidates are retained for review.`, reasonCode: "SENSITIVE_METADATA_PRESENT" });
+      addReasonCode("SENSITIVE_METADATA_PRESENT");
+    }
+    if (!semantic.complete) {
+      gaps.push("IPTC semantic inspection was incomplete; unknown or invalid IPTC/XMP values remain conservatively classified.");
+      addCoverageReason("PARSER_ERROR", "IPTC semantic inspection reported diagnostics.");
+      worsenCoverage("partial");
+    }
+    if (semantic.unknown.length > 0) {
+      for (const candidate of semantic.unknown) {
+        const target = candidate.source.kind === "xmp"
+          ? `unknown-xmp:${candidate.source.namespaceUri ?? "unresolved"}:${candidate.source.localName ?? candidate.source.fieldId}`
+          : `unknown-iim:${candidate.source.record ?? "?"}:${candidate.source.dataset ?? "?"}`;
+        findings.push({ target, sensitivity: "high", message: "Unknown IPTC/XMP semantic data is retained and treated as potentially sensitive.", reasonCode: candidate.source.kind === "xmp" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT" });
+      }
+      gaps.push(`${semantic.unknown.length} unknown IPTC-IIM/XMP semantic value${semantic.unknown.length === 1 ? "" : "s"} remain retained and conservatively classified.`);
+      addReasonCode(result.xmp === null ? "SENSITIVE_METADATA_PRESENT" : "RAW_XMP");
+    }
+  }
   const opaqueBlocks: PrivacyOpaqueBlock[] = [];
   const thumbnails: string[] = [];
   let trailingBytes = 0;

@@ -40,6 +40,8 @@ function transportSummary(samples) {
     readRequests: metricSummary(samples, "readRequests"),
     bytesRead: metricSummary(samples, "bytesRead"),
     sourceBytes: metricSummary(samples, "sourceBytes"),
+    actualBytesRead: metricSummary(samples, "bytesRead"),
+    sourceInputBytes: metricSummary(samples, "sourceBytes"),
     cacheHits: metricSummary(samples, "cacheHits"),
     coalescedReads: metricSummary(samples, "coalescedReads"),
   };

@@ -370,6 +370,49 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
             const tiff = payload.subarray(EXIF_IDENTIFIER.length);
             const thumbnail = extractExifThumbnail(tiff, parsed.exif, limits);
             exif = thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
+            // Keep the physical APP1 block as the compatibility source for
+            // existing fields, while exposing each non-root TIFF directory as
+            // an additive block with stable topology provenance.
+            const directoryBlocks = new Map<string, string>();
+            const littleEndian = tiff[0] === 0x49 && tiff[1] === 0x49;
+            const bigTiff = tiff[2] === (littleEndian ? 0x2b : 0x00) && tiff[3] === (littleEndian ? 0x00 : 0x2b);
+            const entryBytes = bigTiff ? 20 : 12;
+            const prefixBytes = bigTiff ? 8 : 2;
+            const nextBytes = bigTiff ? 8 : 4;
+            for (const ifd of parsed.exif.ifds) {
+              const id = ifd.id ?? `${ifd.name}@${ifd.offset}`;
+              if (ifd.name === "IFD0") {
+                directoryBlocks.set(id, block.id);
+                continue;
+              }
+              const directoryBlockId = `${block.id}:directory:${id}`;
+              directoryBlocks.set(id, directoryBlockId);
+              const tableLength = prefixBytes + ifd.entryCount * entryBytes + nextBytes;
+              blocks.push({
+                id: directoryBlockId,
+                family: "EXIF",
+                container: `APP1 Exif ${ifd.name} directory`,
+                status: "decoded",
+                offset: dataStart + ifd.offset,
+                length: Number.isSafeInteger(tableLength) ? tableLength : null,
+                associatedImage: ifd.associatedImage ?? (ifd.kind === "thumbnail" ? "thumbnail" : "preview"),
+                sensitivity: "moderate",
+                warningCodes: [],
+                directoryId: id,
+                ...(ifd.kind === undefined ? {} : { role: ifd.kind }),
+                parentBlockId: block.id,
+              });
+            }
+            const topologyRelations = parsed.exif.topology?.relations ?? [];
+            const rootRelationships = topologyRelations.map((relation) => {
+              const sourceBlockId = directoryBlocks.get(relation.fromDirectoryId) ?? block.id;
+              const targetBlockId = directoryBlocks.get(relation.toDirectoryId) ?? block.id;
+              return { type: relation.type, sourceBlockId, targetBlockId, ...(relation.tag === undefined ? {} : { tag: relation.tag }) };
+            });
+            if (rootRelationships.length > 0) {
+              const rootIndex = blocks.indexOf(block);
+              blocks[rootIndex] = { ...block, relationships: rootRelationships, relatedBlockIds: [...new Set(rootRelationships.map(({ targetBlockId }) => targetBlockId))] };
+            }
             normalizedFields.push(...parsed.fields.map((field) => ({
               ...field,
               source: field.source === undefined

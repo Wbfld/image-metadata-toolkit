@@ -1,7 +1,10 @@
 import { detectFormat } from "./detect-format.js";
 import { materializeInput, materializeJpegHeader, materializeMetadata } from "./input.js";
 import { parseJpeg } from "./parsers/jpeg.js";
+import { deriveXmpPacketProvenance } from "./metadata/xmp.js";
 import { resolveMetadataRegistry } from "./registry.js";
+import { deriveExifComposites } from "./normalize/composites.js";
+import { attachIptcSemantic } from "./normalize/iptc.js";
 import { completeMetadataResult } from "./result.js";
 import { resolveSelection } from "./selection.js";
 import { DEFAULT_LIMITS, resolveLimits } from "./security/limits.js";
@@ -24,7 +27,21 @@ export async function parseJpegMetadata(input: MetadataInput, options: ParseOpti
   if (detectFormat(bytes).format !== "jpeg") throw new MetadataError("UNSUPPORTED_FORMAT", "parseJpegMetadata() requires a recognized JPEG input.");
   const headerOnly = options.scope === "jpeg-header" || options.scope === "metadata";
   const result = parseJpeg(bytes, limits, { selection, headerOnly, registry: resolveMetadataRegistry(options.registry), ...(materialization.mapOffset === undefined ? {} : { offsetMap: materialization.mapOffset }), ...(materialization.jpegView === undefined ? {} : { byteView: materialization.jpegView }), ...(options.signal === undefined ? {} : { signal: options.signal }) });
-  const selected = { ...result, warnings: [...materialization.warnings, ...result.warnings] };
+  const parserResult = attachIptcSemantic({
+    ...result,
+    ...(result.xmp === null ? {} : { xmp: { ...result.xmp, packetProvenance: deriveXmpPacketProvenance(result.xmp.packets, result.blocks ?? []) } }),
+    warnings: [...materialization.warnings, ...result.warnings],
+  }, limits) as typeof result;
+  const selected = parserResult.exif === null
+    ? parserResult
+    : (() => {
+      const derived = deriveExifComposites(parserResult.exif.fields, parserResult.dimensions, options.normalization ?? "lenient");
+      return {
+        ...parserResult,
+        composites: derived.composites,
+        warnings: [...parserResult.warnings, ...derived.warnings].slice(0, limits.maxWarnings),
+      };
+    })();
   return completeMetadataResult(
     selected,
     materialization.partial ? "partial" : "full",

@@ -538,6 +538,7 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
           }
         }
       } else if ((wantsGroup(selection, "PNGText") || wantsGroup(selection, "XMP")) && TEXT_CHUNK_TYPES.has(type as PngTextChunkType)) {
+        const blockIndex = blocks.length;
         blocks.push({ id: `png:${type}:${cursor}`, family: "PNGText", container: `${type} chunk`, status: "decoded", offset: cursor, length: next - cursor, associatedImage: null, sensitivity: "moderate", warningCodes: [] });
         if (length > limits.maxSegmentBytes || metadataBytes > limits.maxMetadataBytes) {
           // The bounded warning above is sufficient; avoid decoding this chunk.
@@ -560,7 +561,11 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
             });
           } else if (parsed.entry !== null) {
             if (wantsGroup(selection, "PNGText")) pngText.push(parsed.entry);
-            if (wantsGroup(selection, "XMP") && parsed.xmp !== null) xmpPackets.push(parsed.xmp);
+            if (wantsGroup(selection, "XMP") && parsed.xmp !== null) {
+              const block = blocks[blockIndex];
+              if (block !== undefined) blocks[blockIndex] = { ...block, family: "XMP", container: `${type} XMP chunk` };
+              xmpPackets.push(parsed.xmp);
+            }
           }
         }
       } else if (type === "IEND") {

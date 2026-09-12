@@ -36,6 +36,7 @@ fixtures, or local credentials.
 Run the release gate from the clean checkout:
 
 ```sh
+npm run baseline
 npm run check
 npm run test:fuzz
 npm run test:deno
@@ -43,8 +44,10 @@ npm run test:browser
 npm run benchmark -- --output artifacts/release-benchmark.json
 ```
 
-Review the benchmark's semantic gates before discussing performance. Do not
-copy timing or superiority claims into the README automatically.
+Review the checked-in baseline's stable contract and the benchmark's semantic
+gates before discussing performance. Timing claims must name the benchmark
+report filename and the recorded environment; do not copy timing or
+superiority claims into the README automatically.
 
 ## Version and publication
 

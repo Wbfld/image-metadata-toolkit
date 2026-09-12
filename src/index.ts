@@ -17,8 +17,8 @@ import { materializeInput, materializeJpegHeader, materializeMetadata } from "./
 import { throwIfAborted } from "./security/abort.js";
 import { DEFAULT_LIMITS, resolveLimits } from "./security/limits.js";
 import { resolveSelection, wantsGroup, type ResolvedSelection } from "./selection.js";
-import { parseStructuredXmp } from "./metadata/xmp.js";
-import type { StructuredXmpOptions, StructuredXmpPacket } from "./metadata/xmp.js";
+import { deriveXmpPacketProvenance, mergeStructuredXmp, parseStructuredXmpDetailed } from "./metadata/xmp.js";
+import type { StructuredXmpOptions, StructuredXmpPacket, XmpDiagnostic, XmpMergedDocument } from "./metadata/xmp.js";
 import {
   MetadataError,
   type MetadataInput,
@@ -27,6 +27,7 @@ import {
   type MetadataResult,
   type ParsedMetadataResult,
   type MetadataWarning,
+  type ExifCompositeSet,
   type ParseOptions,
   type ParseManyOptions,
   type PrivacyAuditOptions,
@@ -37,15 +38,30 @@ import {
   type SanitizationResult,
   type SanitizeOptions,
   type SecurityLimits,
+  type XmpPacketProvenance,
+  type IptcSemanticData,
+  type IptcSemanticSelectionPolicy,
 } from "./types.js";
 import { resolveMetadataRegistry } from "./registry.js";
+import { deriveExifComposites } from "./normalize/composites.js";
+import { attachIptcSemantic, deriveIptcSemantic } from "./normalize/iptc.js";
+import { deriveImageDetails, getImageDetails } from "./details.js";
+import { fromJsonSafe, queryIccTags, queryImageDetails, queryIptcSemantic, queryMetadata, queryStructuredXmp, toExifReaderCompatible, toExifrCompatible, toFamilyGroups, toFlatObject, toJsonSafe, toJsonSafeResult, toLosslessFamilyGroups } from "./adapters.js";
 
-export { detectFormat, DEFAULT_LIMITS, getCapabilities, getCaptureTime, getGps, getMetadataSummary, getOrientation, getRotation, getThumbnail, MetadataError };
+export { detectFormat, DEFAULT_LIMITS, getCapabilities, getCaptureTime, getGps, getMetadataSummary, getOrientation, getRotation, getThumbnail, getImageDetails, fromJsonSafe, queryIccTags, queryImageDetails, queryIptcSemantic, queryMetadata, queryStructuredXmp, toExifReaderCompatible, toExifrCompatible, toFamilyGroups, toFlatObject, toJsonSafe, toJsonSafeResult, toLosslessFamilyGroups, MetadataError };
+export type { AdapterBudgetOptions, CanonicalFamilyGroups, ExifReaderDuplicatePolicy, ExifReaderMigrationOptions, FamilyGroupOptions, FlatCollisionPolicy, FlatObjectOptions, IccTagQuery, ImageDetailQuery, IptcSemanticQuery, JsonSafeOptions, MetadataQuery, MigrationOptions, XmpPropertyQuery } from "./adapters.js";
+export { deriveExifComposites } from "./normalize/composites.js";
+export { attachIptcSemantic, deriveIptcSemantic } from "./normalize/iptc.js";
+export { IPTC_IIM_DATASETS } from "./metadata/iptc.js";
+export { IPTC_TECHREFERENCE_PREVIOUS_PROPERTIES, IPTC_TECHREFERENCE_PROPERTIES, IPTC_TECHREFERENCE_SOURCE, IPTC_TECHREFERENCE_STRUCTURES, IPTC_TECHREFERENCE_VERSION_DELTA } from "./generated/iptc-pmd.js";
+export { mergeStructuredXmp, parseStructuredXmp, parseStructuredXmpBytes, parseStructuredXmpBytesDetailed, parseStructuredXmpDetailed, parseStructuredXmpDocuments, parseStructuredXmpWithDecoder, parseStructuredXmpWithDecoderDetailed, parseStructuredXmpBytesWithDecoder, parseStructuredXmpBytesWithDecoderDetailed, validateStructuredXmpPacket } from "./metadata/xmp.js";
+export type { StructuredXmpDecoder, StructuredXmpOptions, StructuredXmpPacket, StructuredXmpParseResult, XmpAliasDefinition, XmpArrayValue, XmpConflict, XmpDescription, XmpDiagnostic, XmpDiagnosticCode, XmpLiteralValue, XmpMergedDocument, XmpNamespaceBinding, XmpProperty, XmpPropertyCandidate, XmpPropertyValue, XmpQualifiedName, XmpQualifier, XmpRdfDocument, XmpResourceValue, XmpValue } from "./metadata/xmp.js";
 export { createByteSource } from "./io/byte-source.js";
 export type { ByteSource, ByteSourceOptions } from "./io/byte-source.js";
 export type { FormatCapabilities, MetadataCapability, MetadataReadScope } from "./capabilities.js";
 export type { MetadataSummary, MetadataConflict, CameraSummary, LensSummary, ExposureSummary, CaptureSummary, LocationSummary } from "./summary.js";
 export type { CaptureTimeSummary, ExifOrientation, GpsSummary, OrientationSummary, RotationSummary } from "./convenience.js";
+export type { CaptureTimeValue, CompositeCandidate, CompositeConflict, CompositeKind, CompositePayload, CompositeUncertainty, Equivalence35mmValue, ExifComposite, ExifCompositeSet, ExposureValueValue, FieldOfViewValue, GpsTimeValue, NormalizationMode, OrientationValue, PrimaryDisplayDimensionsValue } from "./types.js";
 export type { PrivacyAuditResult, PrivacyFinding, PrivacyOpaqueBlock } from "./privacy/audit.js";
 export { createMetadataRegistry, DEFAULT_METADATA_REGISTRY, METADATA_REGISTRY_SIZE, resolveMetadataRegistry } from "./registry.js";
 export type { MetadataCountConstraint, MetadataRegistry, MetadataRegistryField, MetadataRegistryFieldInput, MetadataRegistrySource } from "./registry.js";
@@ -68,12 +84,17 @@ export interface StructuredXmpDocument {
   readonly sourceIndex: number;
   /** The bounded structured representation, or null when that packet is not safe XML/RDF. */
   readonly value: StructuredXmpPacket | null;
+  /** Exact embedded/Extended-XMP source evidence when the container exposed it. */
+  readonly provenance?: XmpPacketProvenance;
+  readonly diagnostics: readonly XmpDiagnostic[];
 }
 
 export interface StructuredXmpResult {
   readonly documents: readonly StructuredXmpDocument[];
   /** True only when every stored packet decoded as bounded structured XMP. */
   readonly complete: boolean;
+  /** Explicit merge result; `preserve-all` retains every packet candidate. */
+  readonly merged?: XmpMergedDocument;
 }
 
 export interface StructuredXmpReadOptions {
@@ -81,6 +102,7 @@ export interface StructuredXmpReadOptions {
   readonly parse?: DirectReadOptions;
   /** Bounds for structured XML/RDF decoding. */
   readonly decode?: StructuredXmpOptions;
+  readonly mergePolicy?: "preserve-all" | "first" | "last";
 }
 
 const PRESET_SELECTIONS: Readonly<Record<Exclude<MetadataPreset, "all">, MetadataSelection>> = {
@@ -154,6 +176,11 @@ function applySelection(result: ParsedMetadataResult, selection: ResolvedSelecti
     ...(wantsGroup(selection, "JFIF") ? {} : { jfif: null }),
     ...(wantsGroup(selection, "PNGText") ? {} : { pngText: [] }),
   };
+}
+
+function enrichXmpProvenance(result: ParsedMetadataResult): ParsedMetadataResult {
+  if (result.xmp === null || result.xmp.packets.length === 0) return result;
+  return { ...result, xmp: { ...result.xmp, packetProvenance: deriveXmpPacketProvenance(result.xmp.packets, result.blocks ?? []) } };
 }
 
 function appearsTruncated(bytes: Uint8Array): boolean {
@@ -244,7 +271,7 @@ export async function parseMetadata(input: MetadataInput, options: ParseOptions 
     result = await parsePng(bytes, limits, selection, options.signal, registry);
   } else if (detection.format === "tiff") {
     const { parseTiffMetadata } = await import("./parsers/tiff.js");
-    result = parseTiffMetadata(bytes, limits, selection, true, options.signal, registry);
+    result = parseTiffMetadata(bytes, limits, selection, true, options.signal, registry, materialization.mapOffset);
   } else if (detection.format === "webp") {
     const { parseWebp } = await import("./parsers/webp.js");
     result = parseWebp(bytes, limits, selection, options.signal, registry);
@@ -260,7 +287,21 @@ export async function parseMetadata(input: MetadataInput, options: ParseOptions 
   }
   else result = unsupportedResult(bytes, limits);
   throwIfAborted(options.signal);
-  const selected = applySelection({ ...result, warnings: [...materialization.warnings, ...result.warnings] }, selection);
+  const parserResult: ParsedMetadataResult = enrichXmpProvenance({ ...result, warnings: [...materialization.warnings, ...result.warnings] });
+  const rawExifFields = parserResult.exif?.fields ?? [];
+  const withComposites = rawExifFields.length === 0
+    ? parserResult
+    : (() => {
+      const derived = deriveExifComposites(rawExifFields, parserResult.dimensions, options.normalization ?? "lenient");
+      return {
+        ...parserResult,
+        composites: derived.composites,
+        warnings: [...parserResult.warnings, ...derived.warnings].slice(0, limits.maxWarnings),
+      };
+    })();
+  const selectedBase = attachIptcSemantic(applySelection(withComposites, selection), limits) as ParsedMetadataResult;
+  const includeDetails = wantsGroup(selection, "Dimensions");
+  const selected = { ...selectedBase, details: deriveImageDetails(selectedBase, includeDetails ? bytes : undefined, includeDetails ? limits : undefined, includeDetails ? materialization.mapOffset : undefined) };
   return completeMetadataResult(
     selected,
     partial ? "partial" : "full",
@@ -329,19 +370,74 @@ export async function readMetadataSummary(input: MetadataInput, options: DirectR
   return getMetadataSummary(await parseMetadata(input, helperOptions(options, { groups: ["EXIF"], tags: SUMMARY_TAGS })));
 }
 
+/** Return all bounded typed EXIF interpretations, including source candidates and conflicts. */
+export function getExifComposites(result: MetadataResult): ExifCompositeSet | null {
+  if (result.composites !== undefined) return result.composites;
+  const rawFields = result.exif?.fields ?? [];
+  if (rawFields.length === 0) return null;
+  return deriveExifComposites(rawFields, result.dimensions, "lenient").composites;
+}
+
+/** Return the additive IPTC Photo Metadata semantic view, retaining every IIM
+ * and URI-aware XMP candidate. */
+export function getIptcSemantic(result: MetadataResult, options: { readonly policy?: IptcSemanticSelectionPolicy } = {}): IptcSemanticData | null {
+  if (result.iptcSemantic !== undefined && (options.policy === undefined || result.iptcSemantic.selectionPolicy === options.policy)) return result.iptcSemantic;
+  if (result.iptc === null && result.xmp === null) return null;
+  return deriveIptcSemantic(result.iptc, result.xmp, result.blocks, resolveLimits(), options);
+}
+
+/** Read IPTC-IIM and XMP IPTC Photo Metadata semantics from an image. */
+export async function readIptcSemantic(input: MetadataInput, options: DirectReadOptions & { readonly policy?: IptcSemanticSelectionPolicy } = {}): Promise<IptcSemanticData | null> {
+  const result = await parseMetadata(input, { ...options, select: { groups: ["IPTC", "XMP"] } });
+  return options.policy === undefined ? getIptcSemantic(result) : getIptcSemantic(result, { policy: options.policy });
+}
+
+/** Read all EXIF fields required to derive the typed composite interpretation set. */
+export async function readExifComposites(input: MetadataInput, options: DirectReadOptions = {}): Promise<ExifCompositeSet | null> {
+  const result = await parseMetadata(input, helperOptions(options, { groups: ["Dimensions", "EXIF"] }));
+  return getExifComposites(result);
+}
+
 /** Decode every retained XMP packet while preserving packet-level failure information. */
-export function getStructuredXmp(result: MetadataResult, options: StructuredXmpOptions = {}): StructuredXmpResult {
-  const documents = (result.xmp?.packets ?? []).map((packet, sourceIndex) => ({
-    sourceIndex,
-    value: parseStructuredXmp(packet, options),
-  }));
-  return { documents, complete: documents.every((document) => document.value !== null) };
+export function getStructuredXmp(result: MetadataResult, options: StructuredXmpOptions & { readonly mergePolicy?: "preserve-all" | "first" | "last" } = {}): StructuredXmpResult {
+  const packets = result.xmp?.packets ?? [];
+  const packetLimit = options.maxPackets ?? 64;
+  const documents = packets.slice(0, packetLimit).map((packet, sourceIndex) => {
+    const parsed = parseStructuredXmpDetailed(packet, options);
+    return {
+      sourceIndex,
+      value: parsed.value,
+      diagnostics: parsed.diagnostics,
+      ...(result.xmp?.packetProvenance?.[sourceIndex] === undefined ? {} : { provenance: result.xmp.packetProvenance[sourceIndex] }),
+    };
+  });
+  if (packets.length > packetLimit) documents.push({ sourceIndex: packetLimit, value: null, diagnostics: [{ code: "LIMIT_EXCEEDED", message: `XMP packet count exceeds ${packetLimit}.`, severity: "error" }] });
+  const merged = mergeStructuredXmp(documents.map((document) => ({ value: document.value, packetIndex: document.sourceIndex, sourceId: document.provenance?.id ?? null, source: document.provenance ?? null })), options.mergePolicy ?? "preserve-all");
+  return { documents, complete: documents.every((document) => document.value !== null), merged };
 }
 
 /** Read XMP from an image and decode its retained packets into bounded RDF values. */
 export async function readStructuredXmp(input: MetadataInput, options: StructuredXmpReadOptions = {}): Promise<StructuredXmpResult> {
   const result = await parseMetadata(input, helperOptions(options.parse ?? {}, { groups: ["XMP"] }));
-  return getStructuredXmp(result, options.decode);
+  const limits = resolveLimits(options.parse?.limits);
+  const decode: StructuredXmpOptions = {
+    maxInputBytes: Math.min(limits.maxStringBytes, limits.maxMetadataBytes),
+    maxElements: limits.maxXmpNodes,
+    maxProperties: limits.maxXmpProperties,
+    maxDepth: limits.maxXmpDepth,
+    maxAttributes: limits.maxXmpAttributes,
+    maxNamespaces: limits.maxXmpNamespaces,
+    maxTextBytes: limits.maxXmpTextBytes,
+    maxArrayItems: limits.maxXmpArrayItems,
+    maxQualifiers: limits.maxXmpQualifiers,
+    maxOutputBytes: limits.maxXmpOutputBytes,
+    maxPackets: limits.maxXmpPackets,
+    ...options.decode,
+  };
+  const decoded = getStructuredXmp(result, decode);
+  if (options.mergePolicy === undefined || decoded.merged === undefined || options.mergePolicy === "preserve-all") return decoded;
+  const merged = mergeStructuredXmp(decoded.documents.map((document) => ({ value: document.value, packetIndex: document.sourceIndex, sourceId: document.provenance?.id ?? null, source: document.provenance ?? null })), options.mergePolicy);
+  return { ...decoded, merged };
 }
 
 /** Read validated decimal GPS coordinates directly from image input. */

@@ -8,7 +8,7 @@ parseMetadata(input: MetadataInput, options?: ParseOptions): Promise<MetadataRes
 
 Parses an `ArrayBuffer`, `ArrayBufferView`, `Blob`, or browser `File` entirely
 locally. It returns a stable result with `format`, `mimeType`, `dimensions`,
-normalized `fields`, raw `exif`, `xmp`, `iptc`, `icc`, `jfif`, `pngText`, and
+normalized `fields`, typed EXIF `composites`, raw `exif`, `xmp`, `iptc`, `icc`, `jfif`, `pngText`, and
 bounded `warnings`. `result.completeness` explicitly records whether the full
 requested inspection completed without error warnings. `ParseOptions.signal`
 supports cancellation before work, between Blob range reads, during PNG
@@ -46,10 +46,11 @@ Set `scope: "jpeg-header"` for a latency-sensitive JPEG preview. With a `Blob`
 or `File`, the reader uses `slice()` and stops immediately after the
 start-of-scan header, leaving entropy-coded image data unread. The result has
 `completeness.scope: "partial"` and records the intentional scope reason.
-Set `scope: "metadata"` for JPEG, PNG, WebP, classic TIFF, HEIF, and AVIF `Blob`/`File` inputs
+Set `scope: "metadata"` for JPEG, PNG, WebP, classic TIFF/BigTIFF, HEIF, and AVIF `Blob`/`File` inputs
 to read metadata ranges while skipping image payload data. PNG/WebP scan chunk
 headers; JPEG follows marker lengths and fetches selected APP/SOF ranges;
-TIFF follows bounded IFD and value offsets and compacts only the requested
+TIFF/BigTIFF follows bounded directory and value offsets (including SubIFDs and
+directory chains) and compacts only the requested
 metadata for the existing parser. `completeness.bytesRead` plus
 `completeness.inputBytes` report the range-read evidence. HEIF and AVIF copy
 bounded `ftyp`/`meta` structures and resolve only selected direct metadata
@@ -143,6 +144,28 @@ complete raw result for advanced callers. It includes timezone-aware date
 companions when explicitly stored, modern sensitivity values, lens
 specification, owner/serial identifiers, and decoded UserComment text.
 
+## `getExifComposites(result)` / `readExifComposites(input, options?)`
+
+These helpers return typed EXIF interpretations for capture time, GPS time,
+field of view, exposure value, 35mm equivalence, image orientation, and primary
+display dimensions. Every composite includes source field IDs, all candidates,
+derivation, uncertainty, conflicts, and diagnostics. `ParseOptions.normalization`
+defaults to `"lenient"`; `"strict"` withholds values whose required sources are
+invalid or conflicting and emits error diagnostics. Raw EXIF fields remain
+available in both modes.
+
+EXIF/TIFF topology is available through `result.exif.topology` and the
+compatibility `result.exif.ifds` list. Directories expose stable identities,
+source offsets, kind, parent/next links, associated-image roles, and shared
+offset state. `topology.relations` preserves pointer, SubIFD, chained-next,
+shared-offset, and cycle relationships. Fields retain `directoryId` and
+`source.directoryId`, so equal tags in multiple previews or SubIFDs are never
+flattened. EXIF directory blocks expose the same links through
+`MetadataBlock.directoryId`, `role`, and `relationships`; strip/tile pixel
+offsets are not traversed. `result.exif.associatedImages` contains bounded
+offset/length references for thumbnail and preview JPEG payloads without
+decoding those payloads.
+
 ## Convenience helpers
 
 The root entry point also exports task-oriented helpers for common application
@@ -170,9 +193,12 @@ Direct input variants avoid a full application-level parse for common tasks:
 - `readRotation(input, options?)`
 - `readThumbnail(input, options?)`
 - `readCaptureTime(input, options?)`
+- `readExifComposites(input, options?)`
 - `readTags(input, tags, options?)`
 - `readMetadataSummary(input, options?)`
 - `readStructuredXmp(input, options?)`
+- `getIptcSemantic(result, options?)`
+- `readIptcSemantic(input, options?)`
 - `readPreset(input, preset, options?)`, where `preset` is `essential`,
   `camera`, `location`, `privacy`, or `all`.
 
@@ -180,8 +206,32 @@ Direct input variants avoid a full application-level parse for common tasks:
 their selections. `indexMetadataFields(result)` exposes `byId`, `byName`, and
 `allByName` maps for repeat lookup without flattening duplicate metadata.
 `getStructuredXmp(result, options?)` and `readStructuredXmp(input, options?)`
-decode retained XMP packets into bounded RDF property maps while retaining a
-document entry for every packet that could not be decoded safely.
+decode retained XMP packets into a bounded namespace-aware RDF model while
+retaining a document entry, diagnostics, and packet/block provenance for every
+packet that could not be decoded safely. `document.value.rdf` preserves ordered
+property occurrences, Bag/Seq/Alt arrays, language alternatives, typed and
+lexical literals, resources, blank nodes, qualifiers, aliases, and source
+offsets. `document.value.properties` remains the alpha-era lossy compatibility
+map. `document.provenance` identifies embedded or Extended-XMP sources.
+`document.value` is never merged implicitly. Use `mergeStructuredXmp()` with
+`preserve-all`, `first`, or `last`; preserve-all is the default and exposes all
+candidates and conflicts. The merge input can carry caller-supplied sidecar
+provenance, but core parsing never reads sidecar files.
+
+`getIptcSemantic()` and `readIptcSemantic()` expose the additive IPTC Photo
+Metadata Standard 2025.1 view. It is generated from the pinned official
+TechReference and maps IPTC-IIM plus URI/local-name XMP properties from IPTC
+Core/Extension, Dublin Core, Photoshop, PLUS, and XMP Rights. Each field keeps
+all candidates, source packet/block and IIM occurrence provenance, raw and
+lexical values, validation state, and conflicts. The default `preserve-all`
+policy does not apply IIM-versus-XMP precedence; callers may explicitly choose
+`first` or `last` for a convenience value. Unknown or invalid values remain
+inspectable and diagnostics are retained.
+`IPTC_IIM_DATASETS` is the immutable catalog of all recognised IIM transport,
+application, preview, and object-data datasets, including format, cardinality,
+repeatability, min/max byte bounds, version, and sensitivity metadata.
+`IPTC_TECHREFERENCE_VERSION_DELTA` records the fields added in 2025.1 (the four
+AI prompt/system properties) and any fields removed relative to 2023.1.
 
 ## `auditPrivacy(input, options?)`
 
@@ -209,6 +259,14 @@ Oversized top-level input rejects with `MetadataError` code `LIMIT_EXCEEDED`.
 PNG `iTXt` text is decoded as UTF-8. PNG selective EXIF redaction uses the same
 bounded TIFF-directory validation as JPEG surgery and regenerates changed CRCs.
 Unknown redaction targets are reported as warnings and do not change bytes.
+IPTC semantic processing additionally bounds `maxIptcDatasets`,
+`maxIptcCandidates`, `maxIptcStructureDepth`, and `maxIptcOutputBytes`.
+Image/container details additionally bound retained candidates with
+`maxImageDetailCandidates` (4,096), animation frames with
+`maxImageDetailFrames` (4,096), and auxiliary/thumbnail relationships with
+`maxImageDetailRelationships` (4,096). These are cumulative output limits;
+truncated results retain diagnostics rather than allocating from hostile
+header counts.
 
 ## Focused entry points
 
@@ -220,14 +278,25 @@ PNG, and WebP redaction without importing metadata readers.
 same task-oriented summary helpers as the root entry point. Its
 `parseMetadata` export is an alias for `parseJpegMetadata` and rejects
 non-JPEG inputs with `UNSUPPORTED_FORMAT`.
-`browser-image-metadata/xmp` provides bounded structured RDF XMP decoding.
-It exports string and UTF-8 byte decoders plus `parseStructuredXmpWithDecoder`
-and its byte variant for applications that supply an XML decoder. The adapter
-receives the same UTF-8, DTD/entity, and output-property limits; supplied
-decoders must not resolve external resources.
+`browser-image-metadata/xmp` provides bounded structured RDF XMP decoding
+against ISO 16684-1:2019, Adobe XMP Specification Parts 2 (February 2022) and
+3 (January 2020), W3C Namespaces in XML 1.0 (Third Edition), and the RDF 1.1
+XML Syntax and Concepts recommendations.
+It exports string and UTF-8 byte decoders, detailed diagnostic results,
+`mergeStructuredXmp()`, and `parseStructuredXmpWithDecoder()` for applications
+that supply an XML decoder. The adapter is validated against the same canonical
+RDF model and receives the same UTF-8, DTD/entity, depth, node, attribute,
+namespace, text, property, array, qualifier, and output limits; supplied
+decoders must not resolve external resources. Bounds are also available as
+`maxXmpNodes`, `maxXmpAttributes`, `maxXmpNamespaces`, `maxXmpDepth`,
+`maxXmpTextBytes`, `maxXmpProperties`, `maxXmpArrayItems`,
+`maxXmpQualifiers`, `maxXmpPackets`, and `maxXmpOutputBytes` in
+`SecurityLimits`.
 `browser-image-metadata/xmp/rgrove` is a separate optional-peer adapter around
 `@rgrove/parse-xml`; it first validates a bounded packet with that parser and
-then returns the same RDF-oriented result shape.
+then returns the same RDF-oriented result shape. Existing
+`StructuredXmpPacket.namespaces` and `.properties` consumers remain valid;
+the lossless model is additive through `.rdf`/`.model`.
 
 EXIF results expose a bounded `exif.thumbnail` when the referenced thumbnail
 range is safe and within limits. HEIF and AVIF results keep stored dimensions
@@ -245,3 +314,49 @@ and no runtime dependencies. It never performs network I/O.
 
 See [`README.md`](./README.md) for field semantics, format limitations, and
 complete runnable examples.
+
+## ICC, image details, and output adapters
+
+Complete ICC profiles expose bounded decoded standard tag payloads through
+`result.icc.decodedTags`; each value retains its profile-relative range and
+status, while unknown payloads remain range-only. Supported payloads include
+ASCII/legacy descriptions, MLUC records, XYZ arrays, sampled and parametric
+curves, matrices, measurements, viewing conditions, colorants, signatures, and
+LUT8/LUT16/A-to-B/B-to-A structure headers. Exact shared ranges are accepted;
+partial overlaps are malformed. ICC parsing does not apply colour transforms.
+`result.details` is an additive, provenance-preserving common image-detail
+view. It retains candidates from every validated JPEG SOF, PNG IHDR/APNG,
+WebP frame/canvas, GIF descriptor, TIFF directory, or HEIF/AVIF item-property
+source. Candidates carry source text, original block/offset provenance,
+validation state, and a derivation explanation; conflicting candidates remain
+visible in `conflicts` and are never silently selected. `primaryImageCandidates`
+and `relationshipCandidates` retain image-item relationships while
+`primaryImageId` is populated only when the primary is unambiguous. Empty
+arrays mean that a fact was not proven (not that it is false). `support` is a
+per-format matrix with `supported`, `conditional`, and `unsupported` states.
+The bounded header reader never decodes pixels or entropy-coded payloads.
+
+`toFlatObject()`, `toFamilyGroups()`, `queryMetadata()`, `queryStructuredXmp()`, `toJsonSafe()`, and
+`fromJsonSafe()`
+provide deterministic output without silently losing duplicate fields. Flat
+output preserves duplicates by default; `first` and `last` are explicit lossy
+policies. `toLosslessFamilyGroups()` and `toJsonSafeResult()` retain all
+canonical S03-S08 families, including RDF qualifiers, IPTC candidates, ICC
+decoded values, image-detail conflicts, and block provenance. The JSON-safe
+adapter uses tagged encodings for binary, exact rationals (including a zero
+denominator), non-finite numbers, BigInt, and unsafe integer64 values and is
+bounded by `maxAdapterItems` and `maxAdapterOutputBytes`.
+`toExifrCompatible()` and `toExifReaderCompatible()` are documented lossy
+migration helpers with explicit caller-selectable duplicate policies;
+`MIGRATION.md` contains the conversion/loss matrix. `queryMetadata()` supports
+stable field, family, directory, block, tag, and source-offset identities;
+`queryImageDetails()`, `queryIptcSemantic()`, and `queryIccTags()` cover the
+other canonical families. `queryStructuredXmp()` filters the RDF property
+sequence by namespace URI/local name/prefix and an explicit source-order
+occurrence, so namespace rebinding cannot change identity.
+`browser-image-metadata/browser-thumbnail` exports
+`createThumbnailObjectUrl()` and requires callers to invoke its idempotent
+`revoke()` method; failed host URL creation fails closed without leaking an
+object URL. The same adapter functions are available from the opt-in
+`browser-image-metadata/adapters` ESM/CommonJS entry when an application does
+not need the parser entry point.

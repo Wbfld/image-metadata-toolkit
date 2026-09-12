@@ -27,10 +27,62 @@ jobs:
       - run: npm run test:corpus
         env:
           EXTERNAL_FIXTURE_ROOT: external-fixtures/exif-py/tests/resources
+          EXTERNAL_CORPUS_COMMIT: a69bf74770caf6b333221658f5092ed69f99faac
+          EXTERNAL_CORPUS_OUTPUT_DIR: artifacts/external-corpus
       - name: Upload differential report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: external-corpus-differential-report
           path: artifacts/external-corpus/
+          if-no-files-found: error
+
+  iptc-reference-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Download hash-pinned IPTC reference images to runner-local storage
+        run: |
+          mkdir -p "$RUNNER_TEMP/iptc-reference-images"
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/iptc-reference-images/IPTC-PhotometadataRef-Std2025.1.jpg" https://iptc.org/std/photometadata/examples/IPTC-PhotometadataRef-Std2025.1.jpg
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/iptc-reference-images/IPTC-PhotometadataRef-Std2023.1.jpg" https://iptc.org/std/photometadata/examples/IPTC-PhotometadataRef-Std2023.1.jpg
+      - run: npm run iptc:reference
+        env:
+          IPTC_REFERENCE_CORPUS_DIR: ${{ runner.temp }}/iptc-reference-images
+          IPTC_REFERENCE_REPORT_DIR: artifacts/iptc-reference
+      - name: Upload IPTC conformance reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iptc-reference-conformance-reports
+          path: artifacts/iptc-reference/
+          if-no-files-found: error
+
+  icc-semantic-reference:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run icc:reference
+        env:
+          ICC_REFERENCE_CORPUS_DIR: /System/Library/ColorSync/Profiles
+          ICC_REFERENCE_CORPUS_OUTPUT_DIR: artifacts/icc-reference
+      - name: Upload ICC semantic differential reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: icc-semantic-differential-reports
+          path: artifacts/icc-reference/
           if-no-files-found: error

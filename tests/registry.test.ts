@@ -3,8 +3,8 @@ import { createMetadataRegistry, DEFAULT_METADATA_REGISTRY, METADATA_REGISTRY_SI
 import { readFile } from "node:fs/promises";
 
 describe("generated metadata registry", () => {
-  it("contains the migrated 138 definitions and immutable provenance", () => {
-    expect(METADATA_REGISTRY_SIZE).toBe(138);
+  it("contains the complete Exif 3.1 definitions and immutable provenance", () => {
+    expect(METADATA_REGISTRY_SIZE).toBe(165);
     expect(DEFAULT_METADATA_REGISTRY.get("IFD0", 0x010f)?.name).toBe("Make");
     expect(DEFAULT_METADATA_REGISTRY.get("GPSIFD", 0x0002)?.sensitivity).toBe("high");
     expect(DEFAULT_METADATA_REGISTRY.sources[0]?.standard).toContain("Exif");

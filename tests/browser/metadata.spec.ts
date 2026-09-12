@@ -80,3 +80,18 @@ test("uses the module-worker client and honors an aborted request", async ({ pag
 
   expect(result).toEqual({ format: "jpeg", width: 2, abortCode: "ABORTED" });
 });
+
+test("creates and idempotently revokes browser thumbnail object URLs", async ({ page }) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const modulePath = "/dist/browser-thumbnail.js";
+    const { createThumbnailObjectUrl } = await import(modulePath);
+    const handle = createThumbnailObjectUrl({ exif: { fields: [], thumbnail: { data: new Uint8Array([0xff, 0xd8, 0xff]), mimeType: "image/jpeg" } } });
+    if (handle === null) return { created: false, revoked: false };
+    const url = handle.url;
+    handle.revoke();
+    handle.revoke();
+    return { created: url.startsWith("blob:"), revoked: true };
+  });
+  expect(result).toEqual({ created: true, revoked: true });
+});

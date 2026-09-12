@@ -75,7 +75,7 @@ type RegistryInput =
   | { readonly fields: readonly MetadataRegistryFieldInput[]; readonly sources?: readonly MetadataRegistrySource[] };
 
 const DEFAULT_TYPES: readonly ExifDataType[] = Object.freeze([
-  "BYTE", "ASCII", "SHORT", "LONG", "RATIONAL", "SBYTE", "UNDEFINED", "SSHORT",
+  "BYTE", "ASCII", "UTF-8", "SHORT", "LONG", "RATIONAL", "SBYTE", "UNDEFINED", "SSHORT",
   "SLONG", "SRATIONAL", "FLOAT", "DOUBLE", "IFD", "LONG8", "SLONG8", "IFD8",
 ]);
 const DEFAULT_COUNT: MetadataCountConstraint = Object.freeze({ min: 1, max: null });

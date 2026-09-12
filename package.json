@@ -46,6 +46,20 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./adapters": {
+      "browser": {
+        "types": "./dist/adapters.d.ts",
+        "default": "./dist/adapters.js"
+      },
+      "import": {
+        "types": "./dist/adapters.d.ts",
+        "default": "./dist/adapters.js"
+      },
+      "require": {
+        "types": "./dist/adapters.d.cts",
+        "default": "./dist/adapters.cjs"
+      }
+    },
     "./detect": {
       "browser": {
         "types": "./dist/detect.d.ts",
@@ -114,6 +128,20 @@
       "require": {
         "types": "./dist/redact.d.cts",
         "default": "./dist/redact.cjs"
+      }
+    },
+    "./browser-thumbnail": {
+      "browser": {
+        "types": "./dist/browser-thumbnail.d.ts",
+        "default": "./dist/browser-thumbnail.js"
+      },
+      "import": {
+        "types": "./dist/browser-thumbnail.d.ts",
+        "default": "./dist/browser-thumbnail.js"
+      },
+      "require": {
+        "types": "./dist/browser-thumbnail.d.cts",
+        "default": "./dist/browser-thumbnail.cjs"
       }
     },
     "./xmp": {
@@ -187,7 +215,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage --reporter=default --reporter=json --outputFile.json=coverage/test-results.json",
     "test:fuzz": "vitest run tests/fuzz.test.ts --testTimeout=15000",
     "test:browser": "npm run build && playwright test",
     "test:deno": "deno check src/index.ts && npm run build && deno test --no-check --allow-read tests/deno-smoke.ts",
@@ -197,13 +225,17 @@
     "capabilities:check": "node scripts/generate-capabilities.mjs --check",
     "registry:generate": "node scripts/generate-registry.mjs",
     "registry:check": "node scripts/generate-registry.mjs --check",
+    "iptc:generate": "node scripts/generate-iptc-semantic.mjs",
+    "iptc:check": "node scripts/generate-iptc-semantic.mjs --check",
+    "icc:reference": "node scripts/icc-reference-corpus.mjs",
+    "iptc:reference": "npm run build && node scripts/iptc-reference-corpus.mjs",
     "release:check": "node scripts/release-check.mjs",
-    "baseline": "npm run test:coverage && npm run build && node scripts/baseline.mjs",
-    "baseline:verify": "npm run test:coverage && npm run build && node scripts/baseline.mjs --verify baselines/2.0.0-alpha.3.json",
+    "baseline": "node scripts/baseline.mjs --output baselines/2.0.0-alpha.3.json",
+    "baseline:verify": "node scripts/baseline.mjs --verify baselines/2.0.0-alpha.3.json",
     "examples": "npm run build && node examples/node.mjs tests/fixtures/jpeg-exif-little-endian.jpg && node examples/built-api-smoke.mjs && node examples/worker-smoke.mjs",
     "package:smoke": "node scripts/package-smoke.mjs",
     "publint": "publint",
-    "check": "npm run capabilities:check && npm run registry:check && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run publint && npm run package:smoke && npm run examples",
+    "check": "npm run capabilities:check && npm run registry:check && npm run iptc:check && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run baseline:verify && npm run publint && npm run package:smoke && npm run examples",
     "prepublishOnly": "npm run check"
   },
   "devDependencies": {

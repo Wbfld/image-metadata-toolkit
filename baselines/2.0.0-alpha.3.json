@@ -1,21 +1,5201 @@
 {
-  "schemaVersion": 1,
-  "package": {
-    "name": "browser-image-metadata",
-    "version": "2.0.0-alpha.3"
+  "schemaVersion": 2,
+  "baseline": {
+    "kind": "release",
+    "packageVersion": "2.0.0-alpha.3"
   },
-  "competitors": {
-    "exifreader": "4.45.0",
-    "exifr": "7.1.3"
+  "stable": {
+    "package": {
+      "name": "browser-image-metadata",
+      "version": "2.0.0-alpha.3"
+    },
+    "competitors": {
+      "exifreader": "4.45.0",
+      "exifr": "7.1.3"
+    },
+    "fixtures": [
+      {
+        "path": "tests/fixtures/avif-idat-item-metadata.avif",
+        "bytes": 834,
+        "sha256": "0ec4bd1d69f2e837d9b1509621465b71f9ee0d50936bc16aedb8ff544cfa8102"
+      },
+      {
+        "path": "tests/fixtures/heif-item-metadata.heic",
+        "bytes": 830,
+        "sha256": "45827c242151888ad23d4dcf493d53e8a161ad0d968e207db1de2afc4cb8efa5"
+      },
+      {
+        "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+        "bytes": 1332,
+        "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+      },
+      {
+        "path": "tests/fixtures/libavif-paris-icc-exif-xmp.avif",
+        "bytes": 21132,
+        "sha256": "961bc38b61e60b7651fa20efa24269ae2f35e4958822a81c908c9bbf9b3f66e1"
+      },
+      {
+        "path": "tests/fixtures/png-metadata.png",
+        "bytes": 985,
+        "sha256": "5811509f52bb9ca60ca7d077e8b5dac9720794b5f2a7882ae349a6899f329506"
+      },
+      {
+        "path": "tests/fixtures/sips-heic-exif-xmp.heic",
+        "bytes": 3950,
+        "sha256": "9e45b6a90e6f76783b6b7c2561f7e6ebe60c288d5ebe181a42bdc1551f2aa5ca"
+      },
+      {
+        "path": "tests/fixtures/tiff-metadata.tif",
+        "bytes": 262,
+        "sha256": "a27c42137f0443afd9dcbedc635b4529f60d7b9e84b360d7dc14a5003c7a2875"
+      },
+      {
+        "path": "tests/fixtures/webp-metadata.webp",
+        "bytes": 804,
+        "sha256": "0bdc0894e5b76fabacb7bbad5f590b1ec58b796f8a96db1076cb5e066edbae71"
+      }
+    ],
+    "tests": {
+      "files": 23,
+      "total": 329,
+      "passed": 329,
+      "failed": 0,
+      "skipped": 0
+    },
+    "coverage": {
+      "lines": {
+        "total": 12017,
+        "covered": 10922,
+        "skipped": 0,
+        "pct": 90.88
+      },
+      "statements": {
+        "total": 12017,
+        "covered": 10922,
+        "skipped": 0,
+        "pct": 90.88
+      },
+      "functions": {
+        "total": 672,
+        "covered": 649,
+        "skipped": 0,
+        "pct": 96.57
+      },
+      "branches": {
+        "total": 7334,
+        "covered": 5550,
+        "skipped": 0,
+        "pct": 75.67
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": 100
+      }
+    },
+    "tarball": {
+      "file": "browser-image-metadata-2.0.0-alpha.3.tgz",
+      "bytes": 2950383,
+      "sha256": "a799925261c3aca98ac9cd48579cc77cdc616929f54e897c639256f897c4efb2"
+    },
+    "exportEntries": [
+      {
+        "export": ".",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/index.js",
+        "bytes": 1904,
+        "gzipBytes": 716
+      },
+      {
+        "export": ".",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/index.d.ts",
+        "bytes": 700038,
+        "gzipBytes": 44656
+      },
+      {
+        "export": ".",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/index.js",
+        "bytes": 1904,
+        "gzipBytes": 716
+      },
+      {
+        "export": ".",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/index.d.ts",
+        "bytes": 700038,
+        "gzipBytes": 44656
+      },
+      {
+        "export": ".",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/index.cjs",
+        "bytes": 1121583,
+        "gzipBytes": 168446
+      },
+      {
+        "export": ".",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/index.d.cts",
+        "bytes": 700047,
+        "gzipBytes": 44657
+      },
+      {
+        "export": "./adapters",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/adapters.js",
+        "bytes": 369,
+        "gzipBytes": 239
+      },
+      {
+        "export": "./adapters",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/adapters.d.ts",
+        "bytes": 6783,
+        "gzipBytes": 1914
+      },
+      {
+        "export": "./adapters",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/adapters.js",
+        "bytes": 369,
+        "gzipBytes": 239
+      },
+      {
+        "export": "./adapters",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/adapters.d.ts",
+        "bytes": 6783,
+        "gzipBytes": 1914
+      },
+      {
+        "export": "./adapters",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/adapters.cjs",
+        "bytes": 20980,
+        "gzipBytes": 4813
+      },
+      {
+        "export": "./adapters",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/adapters.d.cts",
+        "bytes": 6786,
+        "gzipBytes": 1915
+      },
+      {
+        "export": "./browser-thumbnail",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/browser-thumbnail.js",
+        "bytes": 1326,
+        "gzipBytes": 547
+      },
+      {
+        "export": "./browser-thumbnail",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/browser-thumbnail.d.ts",
+        "bytes": 629,
+        "gzipBytes": 361
+      },
+      {
+        "export": "./browser-thumbnail",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/browser-thumbnail.js",
+        "bytes": 1326,
+        "gzipBytes": 547
+      },
+      {
+        "export": "./browser-thumbnail",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/browser-thumbnail.d.ts",
+        "bytes": 629,
+        "gzipBytes": 361
+      },
+      {
+        "export": "./browser-thumbnail",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/browser-thumbnail.cjs",
+        "bytes": 1502,
+        "gzipBytes": 573
+      },
+      {
+        "export": "./browser-thumbnail",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/browser-thumbnail.d.cts",
+        "bytes": 630,
+        "gzipBytes": 362
+      },
+      {
+        "export": "./detect",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/detect.js",
+        "bytes": 121,
+        "gzipBytes": 103
+      },
+      {
+        "export": "./detect",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/detect.d.ts",
+        "bytes": 329,
+        "gzipBytes": 215
+      },
+      {
+        "export": "./detect",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/detect.js",
+        "bytes": 121,
+        "gzipBytes": 103
+      },
+      {
+        "export": "./detect",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/detect.d.ts",
+        "bytes": 329,
+        "gzipBytes": 215
+      },
+      {
+        "export": "./detect",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/detect.cjs",
+        "bytes": 4221,
+        "gzipBytes": 1293
+      },
+      {
+        "export": "./detect",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/detect.d.cts",
+        "bytes": 331,
+        "gzipBytes": 215
+      },
+      {
+        "export": "./fetch",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/fetch.js",
+        "bytes": 2882,
+        "gzipBytes": 1084
+      },
+      {
+        "export": "./fetch",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/fetch.d.ts",
+        "bytes": 849,
+        "gzipBytes": 480
+      },
+      {
+        "export": "./fetch",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/fetch.js",
+        "bytes": 2882,
+        "gzipBytes": 1084
+      },
+      {
+        "export": "./fetch",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/fetch.d.ts",
+        "bytes": 849,
+        "gzipBytes": 480
+      },
+      {
+        "export": "./fetch",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/fetch.cjs",
+        "bytes": 912152,
+        "gzipBytes": 139226
+      },
+      {
+        "export": "./fetch",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/fetch.d.cts",
+        "bytes": 850,
+        "gzipBytes": 480
+      },
+      {
+        "export": "./jpeg",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/jpeg.js",
+        "bytes": 536,
+        "gzipBytes": 254
+      },
+      {
+        "export": "./jpeg",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/jpeg.d.ts",
+        "bytes": 423,
+        "gzipBytes": 262
+      },
+      {
+        "export": "./jpeg",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/jpeg.js",
+        "bytes": 536,
+        "gzipBytes": 254
+      },
+      {
+        "export": "./jpeg",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/jpeg.d.ts",
+        "bytes": 423,
+        "gzipBytes": 262
+      },
+      {
+        "export": "./jpeg",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/jpeg.cjs",
+        "bytes": 727682,
+        "gzipBytes": 106528
+      },
+      {
+        "export": "./jpeg",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/jpeg.d.cts",
+        "bytes": 425,
+        "gzipBytes": 264
+      },
+      {
+        "export": "./mini",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/mini.js",
+        "bytes": 703,
+        "gzipBytes": 323
+      },
+      {
+        "export": "./mini",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/mini.d.ts",
+        "bytes": 510,
+        "gzipBytes": 274
+      },
+      {
+        "export": "./mini",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/mini.js",
+        "bytes": 703,
+        "gzipBytes": 323
+      },
+      {
+        "export": "./mini",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/mini.d.ts",
+        "bytes": 510,
+        "gzipBytes": 274
+      },
+      {
+        "export": "./mini",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/mini.cjs",
+        "bytes": 736020,
+        "gzipBytes": 108316
+      },
+      {
+        "export": "./mini",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/mini.d.cts",
+        "bytes": 514,
+        "gzipBytes": 275
+      },
+      {
+        "export": "./redact",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/redact.js",
+        "bytes": 791,
+        "gzipBytes": 369
+      },
+      {
+        "export": "./redact",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/redact.d.ts",
+        "bytes": 359,
+        "gzipBytes": 217
+      },
+      {
+        "export": "./redact",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/redact.js",
+        "bytes": 791,
+        "gzipBytes": 369
+      },
+      {
+        "export": "./redact",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/redact.d.ts",
+        "bytes": 359,
+        "gzipBytes": 217
+      },
+      {
+        "export": "./redact",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/redact.cjs",
+        "bytes": 198742,
+        "gzipBytes": 30361
+      },
+      {
+        "export": "./redact",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/redact.d.cts",
+        "bytes": 360,
+        "gzipBytes": 217
+      },
+      {
+        "export": "./worker",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/worker.js",
+        "bytes": 6574,
+        "gzipBytes": 1974
+      },
+      {
+        "export": "./worker",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/worker.d.ts",
+        "bytes": 1817,
+        "gzipBytes": 786
+      },
+      {
+        "export": "./worker",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/worker.js",
+        "bytes": 6574,
+        "gzipBytes": 1974
+      },
+      {
+        "export": "./worker",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/worker.d.ts",
+        "bytes": 1817,
+        "gzipBytes": 786
+      },
+      {
+        "export": "./worker",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/worker.cjs",
+        "bytes": 975114,
+        "gzipBytes": 151814
+      },
+      {
+        "export": "./worker",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/worker.d.cts",
+        "bytes": 1818,
+        "gzipBytes": 786
+      },
+      {
+        "export": "./xmp",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/xmp.js",
+        "bytes": 462,
+        "gzipBytes": 193
+      },
+      {
+        "export": "./xmp",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/xmp.d.ts",
+        "bytes": 7304,
+        "gzipBytes": 1533
+      },
+      {
+        "export": "./xmp",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/xmp.cjs",
+        "bytes": 37884,
+        "gzipBytes": 8090
+      },
+      {
+        "export": "./xmp",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/xmp.d.cts",
+        "bytes": 7305,
+        "gzipBytes": 1534
+      },
+      {
+        "export": "./xmp/rgrove",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/xmp-rgrove.js",
+        "bytes": 1349,
+        "gzipBytes": 504
+      },
+      {
+        "export": "./xmp/rgrove",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/xmp-rgrove.d.ts",
+        "bytes": 903,
+        "gzipBytes": 403
+      },
+      {
+        "export": "./xmp/rgrove",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/xmp-rgrove.cjs",
+        "bytes": 30435,
+        "gzipBytes": 6781
+      },
+      {
+        "export": "./xmp/rgrove",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/xmp-rgrove.d.cts",
+        "bytes": 906,
+        "gzipBytes": 403
+      }
+    ],
+    "distFiles": [
+      {
+        "file": "dist/adapters.cjs",
+        "bytes": 20980
+      },
+      {
+        "file": "dist/adapters.cjs.map",
+        "bytes": 50935
+      },
+      {
+        "file": "dist/adapters.d.cts",
+        "bytes": 6786
+      },
+      {
+        "file": "dist/adapters.d.ts",
+        "bytes": 6783
+      },
+      {
+        "file": "dist/adapters.js",
+        "bytes": 369
+      },
+      {
+        "file": "dist/adapters.js.map",
+        "bytes": 72
+      },
+      {
+        "file": "dist/audit-EQGDSHVY.js",
+        "bytes": 9693
+      },
+      {
+        "file": "dist/audit-EQGDSHVY.js.map",
+        "bytes": 20329
+      },
+      {
+        "file": "dist/browser-thumbnail.cjs",
+        "bytes": 1502
+      },
+      {
+        "file": "dist/browser-thumbnail.cjs.map",
+        "bytes": 9997
+      },
+      {
+        "file": "dist/browser-thumbnail.d.cts",
+        "bytes": 630
+      },
+      {
+        "file": "dist/browser-thumbnail.d.ts",
+        "bytes": 629
+      },
+      {
+        "file": "dist/browser-thumbnail.js",
+        "bytes": 1326
+      },
+      {
+        "file": "dist/browser-thumbnail.js.map",
+        "bytes": 3370
+      },
+      {
+        "file": "dist/chunk-24QGH26J.js",
+        "bytes": 76491
+      },
+      {
+        "file": "dist/chunk-24QGH26J.js.map",
+        "bytes": 173705
+      },
+      {
+        "file": "dist/chunk-2FZTFI3T.js",
+        "bytes": 1503
+      },
+      {
+        "file": "dist/chunk-2FZTFI3T.js.map",
+        "bytes": 41246
+      },
+      {
+        "file": "dist/chunk-2XZA7URF.js",
+        "bytes": 7775
+      },
+      {
+        "file": "dist/chunk-2XZA7URF.js.map",
+        "bytes": 21483
+      },
+      {
+        "file": "dist/chunk-4PRZMO6Z.js",
+        "bytes": 40201
+      },
+      {
+        "file": "dist/chunk-4PRZMO6Z.js.map",
+        "bytes": 90129
+      },
+      {
+        "file": "dist/chunk-BO33KVJI.js",
+        "bytes": 50250
+      },
+      {
+        "file": "dist/chunk-BO33KVJI.js.map",
+        "bytes": 113925
+      },
+      {
+        "file": "dist/chunk-EAT6X4MD.js",
+        "bytes": 4208
+      },
+      {
+        "file": "dist/chunk-EAT6X4MD.js.map",
+        "bytes": 10752
+      },
+      {
+        "file": "dist/chunk-FNWS5EXM.js",
+        "bytes": 5287
+      },
+      {
+        "file": "dist/chunk-FNWS5EXM.js.map",
+        "bytes": 10685
+      },
+      {
+        "file": "dist/chunk-HAZTUPAO.js",
+        "bytes": 60698
+      },
+      {
+        "file": "dist/chunk-HAZTUPAO.js.map",
+        "bytes": 139966
+      },
+      {
+        "file": "dist/chunk-I3MTDIOY.js",
+        "bytes": 972
+      },
+      {
+        "file": "dist/chunk-I3MTDIOY.js.map",
+        "bytes": 2060
+      },
+      {
+        "file": "dist/chunk-JDVGNLU4.js",
+        "bytes": 15535
+      },
+      {
+        "file": "dist/chunk-JDVGNLU4.js.map",
+        "bytes": 40344
+      },
+      {
+        "file": "dist/chunk-K2IT4NH3.js",
+        "bytes": 25105
+      },
+      {
+        "file": "dist/chunk-K2IT4NH3.js.map",
+        "bytes": 52360
+      },
+      {
+        "file": "dist/chunk-K46XXHBW.js",
+        "bytes": 3143
+      },
+      {
+        "file": "dist/chunk-K46XXHBW.js.map",
+        "bytes": 6000
+      },
+      {
+        "file": "dist/chunk-MY5EJ4DN.js",
+        "bytes": 28553
+      },
+      {
+        "file": "dist/chunk-MY5EJ4DN.js.map",
+        "bytes": 65783
+      },
+      {
+        "file": "dist/chunk-SJIRTLCW.js",
+        "bytes": 58494
+      },
+      {
+        "file": "dist/chunk-SJIRTLCW.js.map",
+        "bytes": 127523
+      },
+      {
+        "file": "dist/chunk-VEATKPKC.js",
+        "bytes": 77185
+      },
+      {
+        "file": "dist/chunk-VEATKPKC.js.map",
+        "bytes": 180257
+      },
+      {
+        "file": "dist/chunk-WE26ORTR.js",
+        "bytes": 87304
+      },
+      {
+        "file": "dist/chunk-WE26ORTR.js.map",
+        "bytes": 185074
+      },
+      {
+        "file": "dist/chunk-XTHU3UA2.js",
+        "bytes": 449051
+      },
+      {
+        "file": "dist/chunk-XTHU3UA2.js.map",
+        "bytes": 789339
+      },
+      {
+        "file": "dist/chunk-ZMP3GSHD.js",
+        "bytes": 599
+      },
+      {
+        "file": "dist/chunk-ZMP3GSHD.js.map",
+        "bytes": 1775
+      },
+      {
+        "file": "dist/composites-CMpIhBfN.d.cts",
+        "bytes": 4999
+      },
+      {
+        "file": "dist/composites-DF7MT-c5.d.ts",
+        "bytes": 4998
+      },
+      {
+        "file": "dist/detect.cjs",
+        "bytes": 4221
+      },
+      {
+        "file": "dist/detect.cjs.map",
+        "bytes": 10747
+      },
+      {
+        "file": "dist/detect.d.cts",
+        "bytes": 331
+      },
+      {
+        "file": "dist/detect.d.ts",
+        "bytes": 329
+      },
+      {
+        "file": "dist/detect.js",
+        "bytes": 121
+      },
+      {
+        "file": "dist/detect.js.map",
+        "bytes": 70
+      },
+      {
+        "file": "dist/fetch.cjs",
+        "bytes": 912152
+      },
+      {
+        "file": "dist/fetch.cjs.map",
+        "bytes": 2032894
+      },
+      {
+        "file": "dist/fetch.d.cts",
+        "bytes": 850
+      },
+      {
+        "file": "dist/fetch.d.ts",
+        "bytes": 849
+      },
+      {
+        "file": "dist/fetch.js",
+        "bytes": 2882
+      },
+      {
+        "file": "dist/fetch.js.map",
+        "bytes": 5881
+      },
+      {
+        "file": "dist/gif-EHGQ22VJ.js",
+        "bytes": 9939
+      },
+      {
+        "file": "dist/gif-EHGQ22VJ.js.map",
+        "bytes": 21285
+      },
+      {
+        "file": "dist/heif-I23OVZVU.js",
+        "bytes": 52741
+      },
+      {
+        "file": "dist/heif-I23OVZVU.js.map",
+        "bytes": 117336
+      },
+      {
+        "file": "dist/index.cjs",
+        "bytes": 1121583
+      },
+      {
+        "file": "dist/index.cjs.map",
+        "bytes": 2329309
+      },
+      {
+        "file": "dist/index.d.cts",
+        "bytes": 700047
+      },
+      {
+        "file": "dist/index.d.ts",
+        "bytes": 700038
+      },
+      {
+        "file": "dist/index.js",
+        "bytes": 1904
+      },
+      {
+        "file": "dist/index.js.map",
+        "bytes": 69
+      },
+      {
+        "file": "dist/jpeg-AOAGY5LI.js",
+        "bytes": 372
+      },
+      {
+        "file": "dist/jpeg-AOAGY5LI.js.map",
+        "bytes": 77
+      },
+      {
+        "file": "dist/jpeg.cjs",
+        "bytes": 727682
+      },
+      {
+        "file": "dist/jpeg.cjs.map",
+        "bytes": 1634457
+      },
+      {
+        "file": "dist/jpeg.d.cts",
+        "bytes": 425
+      },
+      {
+        "file": "dist/jpeg.d.ts",
+        "bytes": 423
+      },
+      {
+        "file": "dist/jpeg.js",
+        "bytes": 536
+      },
+      {
+        "file": "dist/jpeg.js.map",
+        "bytes": 68
+      },
+      {
+        "file": "dist/jxl-Q4YEC6JV.js",
+        "bytes": 6394
+      },
+      {
+        "file": "dist/jxl-Q4YEC6JV.js.map",
+        "bytes": 14143
+      },
+      {
+        "file": "dist/limits-BJuU0y8H.d.ts",
+        "bytes": 368
+      },
+      {
+        "file": "dist/limits-BuvtDCY5.d.cts",
+        "bytes": 369
+      },
+      {
+        "file": "dist/mini.cjs",
+        "bytes": 736020
+      },
+      {
+        "file": "dist/mini.cjs.map",
+        "bytes": 1656663
+      },
+      {
+        "file": "dist/mini.d.cts",
+        "bytes": 514
+      },
+      {
+        "file": "dist/mini.d.ts",
+        "bytes": 510
+      },
+      {
+        "file": "dist/mini.js",
+        "bytes": 703
+      },
+      {
+        "file": "dist/mini.js.map",
+        "bytes": 68
+      },
+      {
+        "file": "dist/png-C5OV4MCI.js",
+        "bytes": 23090
+      },
+      {
+        "file": "dist/png-C5OV4MCI.js.map",
+        "bytes": 49588
+      },
+      {
+        "file": "dist/redact-JDCJPTDU.js",
+        "bytes": 228
+      },
+      {
+        "file": "dist/redact-JDCJPTDU.js.map",
+        "bytes": 79
+      },
+      {
+        "file": "dist/redact.cjs",
+        "bytes": 198742
+      },
+      {
+        "file": "dist/redact.cjs.map",
+        "bytes": 763250
+      },
+      {
+        "file": "dist/redact.d.cts",
+        "bytes": 360
+      },
+      {
+        "file": "dist/redact.d.ts",
+        "bytes": 359
+      },
+      {
+        "file": "dist/redact.js",
+        "bytes": 791
+      },
+      {
+        "file": "dist/redact.js.map",
+        "bytes": 1331
+      },
+      {
+        "file": "dist/tiff-M2RRKNVP.js",
+        "bytes": 10855
+      },
+      {
+        "file": "dist/tiff-M2RRKNVP.js.map",
+        "bytes": 24500
+      },
+      {
+        "file": "dist/types-DQ8yGfau.d.cts",
+        "bytes": 42681
+      },
+      {
+        "file": "dist/types-DQ8yGfau.d.ts",
+        "bytes": 42681
+      },
+      {
+        "file": "dist/webp-Y3DFJEQI.js",
+        "bytes": 10699
+      },
+      {
+        "file": "dist/webp-Y3DFJEQI.js.map",
+        "bytes": 23627
+      },
+      {
+        "file": "dist/worker.cjs",
+        "bytes": 975114
+      },
+      {
+        "file": "dist/worker.cjs.map",
+        "bytes": 2166648
+      },
+      {
+        "file": "dist/worker.d.cts",
+        "bytes": 1818
+      },
+      {
+        "file": "dist/worker.d.ts",
+        "bytes": 1817
+      },
+      {
+        "file": "dist/worker.js",
+        "bytes": 6574
+      },
+      {
+        "file": "dist/worker.js.map",
+        "bytes": 15983
+      },
+      {
+        "file": "dist/xmp-rgrove.cjs",
+        "bytes": 30435
+      },
+      {
+        "file": "dist/xmp-rgrove.cjs.map",
+        "bytes": 82300
+      },
+      {
+        "file": "dist/xmp-rgrove.d.cts",
+        "bytes": 906
+      },
+      {
+        "file": "dist/xmp-rgrove.d.ts",
+        "bytes": 903
+      },
+      {
+        "file": "dist/xmp-rgrove.js",
+        "bytes": 1349
+      },
+      {
+        "file": "dist/xmp-rgrove.js.map",
+        "bytes": 3120
+      },
+      {
+        "file": "dist/xmp.cjs",
+        "bytes": 37884
+      },
+      {
+        "file": "dist/xmp.cjs.map",
+        "bytes": 87061
+      },
+      {
+        "file": "dist/xmp.d.cts",
+        "bytes": 7305
+      },
+      {
+        "file": "dist/xmp.d.ts",
+        "bytes": 7304
+      },
+      {
+        "file": "dist/xmp.js",
+        "bytes": 462
+      },
+      {
+        "file": "dist/xmp.js.map",
+        "bytes": 67
+      }
+    ],
+    "benchmarks": {
+      "schemaVersion": 3,
+      "package": {
+        "name": "browser-image-metadata",
+        "version": "2.0.0-alpha.3"
+      },
+      "competitors": {
+        "toolkit": "2.0.0-alpha.3",
+        "exifreader": "4.45.0",
+        "exifr": "7.1.3"
+      },
+      "scenarios": [
+        {
+          "name": "detection",
+          "contract": "supported-format",
+          "operation": "detection",
+          "fixture": {
+            "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+            "bytes": 1332,
+            "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+          },
+          "semantic": {
+            "passed": true,
+            "failures": []
+          },
+          "readers": [
+            {
+              "reader": "toolkit",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifreader",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifr",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "orientation",
+          "contract": "orientation",
+          "operation": "orientation",
+          "fixture": {
+            "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+            "bytes": 1332,
+            "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+          },
+          "semantic": {
+            "passed": true,
+            "failures": []
+          },
+          "readers": [
+            {
+              "reader": "toolkit",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifreader",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifr",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "gps",
+          "contract": "gps",
+          "operation": "gps",
+          "fixture": {
+            "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+            "bytes": 1332,
+            "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+          },
+          "semantic": {
+            "passed": true,
+            "failures": []
+          },
+          "readers": [
+            {
+              "reader": "toolkit",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifreader",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifr",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "camera-date",
+          "contract": "camera-date",
+          "operation": "camera-date",
+          "fixture": {
+            "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+            "bytes": 1332,
+            "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+          },
+          "semantic": {
+            "passed": true,
+            "failures": []
+          },
+          "readers": [
+            {
+              "reader": "toolkit",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifreader",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifr",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "all-common-exif",
+          "contract": "common-exif",
+          "operation": "common-exif",
+          "fixture": {
+            "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+            "bytes": 1332,
+            "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+          },
+          "semantic": {
+            "passed": true,
+            "failures": []
+          },
+          "readers": [
+            {
+              "reader": "toolkit",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifreader",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifr",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "all-documented-metadata",
+          "contract": "documented-metadata",
+          "operation": "documented-metadata",
+          "fixture": {
+            "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+            "bytes": 1332,
+            "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+          },
+          "semantic": {
+            "passed": true,
+            "failures": []
+          },
+          "readers": [
+            {
+              "reader": "toolkit",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifreader",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifr",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "remote-range-simulation",
+          "contract": "common-exif",
+          "operation": "remote-range",
+          "fixture": {
+            "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+            "bytes": 1332,
+            "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+          },
+          "semantic": {
+            "passed": true,
+            "failures": []
+          },
+          "readers": [
+            {
+              "reader": "toolkit",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "instrumented-range",
+                  "readRequests": {
+                    "min": 39,
+                    "median": 39,
+                    "p95": 39
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 645,
+                    "median": 645,
+                    "p95": 645
+                  },
+                  "cacheHits": {
+                    "min": 7,
+                    "median": 7,
+                    "p95": 7
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "instrumented-range",
+                  "readRequests": {
+                    "min": 39,
+                    "median": 39,
+                    "p95": 39
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 645,
+                    "median": 645,
+                    "p95": 645
+                  },
+                  "cacheHits": {
+                    "min": 7,
+                    "median": 7,
+                    "p95": 7
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifreader",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            },
+            {
+              "reader": "exifr",
+              "accepted": true,
+              "timingRejected": false,
+              "cold": {
+                "runs": 3,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
   },
-  "fixtures": [
-    { "file": "avif-idat-item-metadata.avif", "bytes": 834, "sha256": "0ec4bd1d69f2e837d9b1509621465b71f9ee0d50936bc16aedb8ff544cfa8102" },
-    { "file": "heif-item-metadata.heic", "bytes": 830, "sha256": "45827c242151888ad23d4dcf493d53e8a161ad0d968e207db1de2afc4cb8efa5" },
-    { "file": "jpeg-exif-little-endian.jpg", "bytes": 1332, "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e" },
-    { "file": "libavif-paris-icc-exif-xmp.avif", "bytes": 21132, "sha256": "961bc38b61e60b7651fa20efa24269ae2f35e4958822a81c908c9bbf9b3f66e1" },
-    { "file": "png-metadata.png", "bytes": 985, "sha256": "5811509f52bb9ca60ca7d077e8b5dac9720794b5f2a7882ae349a6899f329506" },
-    { "file": "sips-heic-exif-xmp.heic", "bytes": 3950, "sha256": "9e45b6a90e6f76783b6b7c2561f7e6ebe60c288d5ebe181a42bdc1551f2aa5ca" },
-    { "file": "tiff-metadata.tif", "bytes": 262, "sha256": "a27c42137f0443afd9dcbedc635b4529f60d7b9e84b360d7dc14a5003c7a2875" },
-    { "file": "webp-metadata.webp", "bytes": 804, "sha256": "0bdc0894e5b76fabacb7bbad5f590b1ec58b796f8a96db1076cb5e066edbae71" }
-  ]
+  "environment": {
+    "observedAt": "2026-09-12T19:27:26.474Z",
+    "git": {
+      "commit": "6724e8b8a080534542f636f89523b1016f847950",
+      "dirty": true
+    },
+    "runtime": {
+      "node": "v23.7.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "runtime": "darwin-arm64"
+    },
+    "benchmarks": {
+      "generatedAt": "2026-09-12T19:27:22.897Z",
+      "environment": {
+        "node": "v23.7.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "runtime": "darwin-arm64"
+      },
+      "methodology": {
+        "percentile": "nearest-rank via floor((n - 1) * ratio) on sorted samples",
+        "sampleCount": {
+          "warm": 25,
+          "cold": 3
+        },
+        "cold": "Fresh child process; process launch and fixture I/O excluded; dynamic reader imports included.",
+        "warm": "Already imported reader modules; fixture I/O excluded; input construction and parsing included.",
+        "semanticGate": "Timing is recorded only when every reader matches the scenario's canonical output contract.",
+        "transport": "Toolkit remote-range uses an instrumented Blob adapter; competitors are measured with a full-input baseline."
+      },
+      "scenarios": [
+        {
+          "name": "detection",
+          "measurements": {
+            "toolkit": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 23.314,
+                  "median": 23.407,
+                  "p95": 23.407
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "supported": true
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.005,
+                  "median": 0.007,
+                  "p95": 0.046
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "supported": true
+                }
+              }
+            },
+            "exifreader": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 22.927,
+                  "median": 23.015,
+                  "p95": 23.015
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "supported": true
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.078,
+                  "median": 0.101,
+                  "p95": 0.321
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "supported": true
+                }
+              }
+            },
+            "exifr": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 17.876,
+                  "median": 17.891,
+                  "p95": 17.891
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "supported": true
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.057,
+                  "median": 0.065,
+                  "p95": 0.274
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "supported": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "orientation",
+          "measurements": {
+            "toolkit": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 36.132,
+                  "median": 36.166,
+                  "p95": 36.166
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "value": 6
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.167,
+                  "median": 0.228,
+                  "p95": 1.125
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "value": 6
+                }
+              }
+            },
+            "exifreader": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 22.049,
+                  "median": 22.937,
+                  "p95": 22.937
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "value": 6
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.059,
+                  "median": 0.072,
+                  "p95": 0.157
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "value": 6
+                }
+              }
+            },
+            "exifr": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 16.548,
+                  "median": 16.613,
+                  "p95": 16.613
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "value": 6
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.012,
+                  "median": 0.015,
+                  "p95": 0.038
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "value": 6
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "gps",
+          "measurements": {
+            "toolkit": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 35.792,
+                  "median": 35.926,
+                  "p95": 35.926
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "GPSLatitude": 51.5,
+                  "GPSLongitude": -0.116666667,
+                  "GPSAltitude": 35
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.131,
+                  "median": 0.152,
+                  "p95": 0.256
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "GPSLatitude": 51.5,
+                  "GPSLongitude": -0.116666667,
+                  "GPSAltitude": 35
+                }
+              }
+            },
+            "exifreader": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 23.079,
+                  "median": 23.131,
+                  "p95": 23.131
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "GPSLatitude": 51.5,
+                  "GPSLongitude": -0.116666667,
+                  "GPSAltitude": 35
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.05,
+                  "median": 0.052,
+                  "p95": 0.132
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "GPSLatitude": 51.5,
+                  "GPSLongitude": -0.116666667,
+                  "GPSAltitude": 35
+                }
+              }
+            },
+            "exifr": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 18.087,
+                  "median": 19.727,
+                  "p95": 19.727
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "GPSLatitude": 51.5,
+                  "GPSLongitude": -0.116666667,
+                  "GPSAltitude": 35
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.051,
+                  "median": 0.053,
+                  "p95": 0.076
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "GPSLatitude": 51.5,
+                  "GPSLongitude": -0.116666667,
+                  "GPSAltitude": 35
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "camera-date",
+          "measurements": {
+            "toolkit": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 35.911,
+                  "median": 35.923,
+                  "p95": 35.923
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "DateTimeOriginal": "2026-09-07"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.124,
+                  "median": 0.151,
+                  "p95": 0.277
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "DateTimeOriginal": "2026-09-07"
+                }
+              }
+            },
+            "exifreader": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 22.156,
+                  "median": 22.366,
+                  "p95": 22.366
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "DateTimeOriginal": "2026-09-07"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.049,
+                  "median": 0.051,
+                  "p95": 0.064
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "DateTimeOriginal": "2026-09-07"
+                }
+              }
+            },
+            "exifr": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 18.25,
+                  "median": 20.442,
+                  "p95": 20.442
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "DateTimeOriginal": "2026-09-07"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.042,
+                  "median": 0.047,
+                  "p95": 0.081
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "DateTimeOriginal": "2026-09-07"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "all-common-exif",
+          "measurements": {
+            "toolkit": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 39.277,
+                  "median": 39.411,
+                  "p95": 39.411
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.232,
+                  "median": 0.294,
+                  "p95": 0.439
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              }
+            },
+            "exifreader": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 23.579,
+                  "median": 23.827,
+                  "p95": 23.827
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.05,
+                  "median": 0.055,
+                  "p95": 0.089
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              }
+            },
+            "exifr": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 18.11,
+                  "median": 18.938,
+                  "p95": 18.938
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.045,
+                  "median": 0.047,
+                  "p95": 0.064
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "all-documented-metadata",
+          "measurements": {
+            "toolkit": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 40.394,
+                  "median": 40.581,
+                  "p95": 40.581
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "fields": {
+                    "Make": "OpenAI Camera",
+                    "Model": "Fixture One",
+                    "Orientation": 6,
+                    "DateTimeOriginal": "2026-09-07",
+                    "ExposureTime": 0.008,
+                    "FNumber": 2.8,
+                    "ISOSpeedRatings": 400,
+                    "FocalLength": 50,
+                    "Software": "browser-image-metadata fixture",
+                    "Artist": "Fixture Artist",
+                    "Copyright": "Public Domain",
+                    "GPSLatitude": 51.5,
+                    "GPSLongitude": -0.116666667,
+                    "GPSAltitude": 35,
+                    "GPSLatitudeRef": "N",
+                    "GPSLongitudeRef": "W"
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.241,
+                  "median": 0.313,
+                  "p95": 0.591
+                },
+                "transport": {
+                  "mode": "memory",
+                  "readRequests": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "bytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "fields": {
+                    "Make": "OpenAI Camera",
+                    "Model": "Fixture One",
+                    "Orientation": 6,
+                    "DateTimeOriginal": "2026-09-07",
+                    "ExposureTime": 0.008,
+                    "FNumber": 2.8,
+                    "ISOSpeedRatings": 400,
+                    "FocalLength": 50,
+                    "Software": "browser-image-metadata fixture",
+                    "Artist": "Fixture Artist",
+                    "Copyright": "Public Domain",
+                    "GPSLatitude": 51.5,
+                    "GPSLongitude": -0.116666667,
+                    "GPSAltitude": 35,
+                    "GPSLatitudeRef": "N",
+                    "GPSLongitudeRef": "W"
+                  }
+                }
+              }
+            },
+            "exifreader": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 22.32,
+                  "median": 23.39,
+                  "p95": 23.39
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "fields": {
+                    "Make": "OpenAI Camera",
+                    "Model": "Fixture One",
+                    "Orientation": 6,
+                    "DateTimeOriginal": "2026-09-07",
+                    "ExposureTime": 0.008,
+                    "FNumber": 2.8,
+                    "ISOSpeedRatings": 400,
+                    "FocalLength": 50,
+                    "Software": "browser-image-metadata fixture",
+                    "Artist": "Fixture Artist",
+                    "Copyright": "Public Domain",
+                    "GPSLatitude": 51.5,
+                    "GPSLongitude": -0.116666667,
+                    "GPSAltitude": 35,
+                    "GPSLatitudeRef": "N",
+                    "GPSLongitudeRef": "W"
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.049,
+                  "median": 0.053,
+                  "p95": 0.071
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "fields": {
+                    "Make": "OpenAI Camera",
+                    "Model": "Fixture One",
+                    "Orientation": 6,
+                    "DateTimeOriginal": "2026-09-07",
+                    "ExposureTime": 0.008,
+                    "FNumber": 2.8,
+                    "ISOSpeedRatings": 400,
+                    "FocalLength": 50,
+                    "Software": "browser-image-metadata fixture",
+                    "Artist": "Fixture Artist",
+                    "Copyright": "Public Domain",
+                    "GPSLatitude": 51.5,
+                    "GPSLongitude": -0.116666667,
+                    "GPSAltitude": 35,
+                    "GPSLatitudeRef": "N",
+                    "GPSLongitudeRef": "W"
+                  }
+                }
+              }
+            },
+            "exifr": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 18.415,
+                  "median": 18.594,
+                  "p95": 18.594
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "fields": {
+                    "Make": "OpenAI Camera",
+                    "Model": "Fixture One",
+                    "Orientation": 6,
+                    "DateTimeOriginal": "2026-09-07",
+                    "ExposureTime": 0.008,
+                    "FNumber": 2.8,
+                    "ISOSpeedRatings": 400,
+                    "FocalLength": 50,
+                    "Software": "browser-image-metadata fixture",
+                    "Artist": "Fixture Artist",
+                    "Copyright": "Public Domain",
+                    "GPSLatitude": 51.5,
+                    "GPSLongitude": -0.116666667,
+                    "GPSAltitude": 35,
+                    "GPSLatitudeRef": "N",
+                    "GPSLongitudeRef": "W"
+                  }
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.047,
+                  "median": 0.051,
+                  "p95": 0.07
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "fields": {
+                    "Make": "OpenAI Camera",
+                    "Model": "Fixture One",
+                    "Orientation": 6,
+                    "DateTimeOriginal": "2026-09-07",
+                    "ExposureTime": 0.008,
+                    "FNumber": 2.8,
+                    "ISOSpeedRatings": 400,
+                    "FocalLength": 50,
+                    "Software": "browser-image-metadata fixture",
+                    "Artist": "Fixture Artist",
+                    "Copyright": "Public Domain",
+                    "GPSLatitude": 51.5,
+                    "GPSLongitude": -0.116666667,
+                    "GPSAltitude": 35,
+                    "GPSLatitudeRef": "N",
+                    "GPSLongitudeRef": "W"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "remote-range-simulation",
+          "measurements": {
+            "toolkit": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 40.854,
+                  "median": 41.101,
+                  "p95": 41.101
+                },
+                "transport": {
+                  "mode": "instrumented-range",
+                  "readRequests": {
+                    "min": 39,
+                    "median": 39,
+                    "p95": 39
+                  },
+                  "bytesRead": {
+                    "min": 645,
+                    "median": 645,
+                    "p95": 645
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 645,
+                    "median": 645,
+                    "p95": 645
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 7,
+                    "median": 7,
+                    "p95": 7
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.34,
+                  "median": 0.485,
+                  "p95": 0.758
+                },
+                "transport": {
+                  "mode": "instrumented-range",
+                  "readRequests": {
+                    "min": 39,
+                    "median": 39,
+                    "p95": 39
+                  },
+                  "bytesRead": {
+                    "min": 645,
+                    "median": 645,
+                    "p95": 645
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 645,
+                    "median": 645,
+                    "p95": 645
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 7,
+                    "median": 7,
+                    "p95": 7
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              }
+            },
+            "exifreader": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 23.006,
+                  "median": 23.028,
+                  "p95": 23.028
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.045,
+                  "median": 0.051,
+                  "p95": 0.068
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              }
+            },
+            "exifr": {
+              "accepted": true,
+              "cold": {
+                "runs": 3,
+                "milliseconds": {
+                  "min": 18.479,
+                  "median": 18.565,
+                  "p95": 18.565
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              },
+              "warm": {
+                "runs": 25,
+                "milliseconds": {
+                  "min": 0.043,
+                  "median": 0.047,
+                  "p95": 0.065
+                },
+                "transport": {
+                  "mode": "full-input",
+                  "readRequests": {
+                    "min": 1,
+                    "median": 1,
+                    "p95": 1
+                  },
+                  "bytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "actualBytesRead": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "sourceInputBytes": {
+                    "min": 1332,
+                    "median": 1332,
+                    "p95": 1332
+                  },
+                  "cacheHits": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  },
+                  "coalescedReads": {
+                    "min": 0,
+                    "median": 0,
+                    "p95": 0
+                  }
+                },
+                "output": {
+                  "Make": "OpenAI Camera",
+                  "Model": "Fixture One",
+                  "Orientation": 6,
+                  "DateTimeOriginal": "2026-09-07",
+                  "ExposureTime": 0.008,
+                  "FNumber": 2.8,
+                  "ISOSpeedRatings": 400,
+                  "FocalLength": 50,
+                  "Software": "browser-image-metadata fixture",
+                  "Artist": "Fixture Artist",
+                  "Copyright": "Public Domain"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
 }

@@ -1,0 +1,3273 @@
+{
+  "schema": "browser-image-metadata.external-evidence.v1",
+  "generatedAt": "2026-09-12T19:29:38.322Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "reference": {
+    "tool": "ExifTool via exiftool-vendored",
+    "package": "33.5.0",
+    "version": "13.42",
+    "mode": "group-qualified numeric (-G1 -n)"
+  },
+  "corpus": {
+    "source": "ianare/exif-py",
+    "pinnedCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+    "commit": "a69bf74770caf6b333221658f5092ed69f99faac",
+    "commitVerified": true,
+    "fixtureCount": 108,
+    "examinedCount": 108,
+    "totalBytes": 52427283,
+    "supportedExtensions": [
+      ".heic",
+      ".heif",
+      ".jpeg",
+      ".jpg",
+      ".tif",
+      ".tiff"
+    ],
+    "fixtureRoot": "external-fixture-root-not-published",
+    "hashes": "sha256"
+  },
+  "registry": {
+    "schema": "browser-image-metadata.external-registry.v1",
+    "version": 1,
+    "sha256": "3ad6c7db827e6086175d713c57bec7fe67885501aebbc4f00036c6ca75c54f23",
+    "fieldCount": 180,
+    "blockCount": 5
+  },
+  "allowlist": {
+    "schema": "browser-image-metadata.external-allowlist.v1",
+    "version": 1,
+    "sha256": "bc0d4cda193d4652b32625d3a78e379e90f2607fe933357865cab17617ecb82d",
+    "entries": 0
+  },
+  "normalization": {
+    "id": "browser-image-metadata.external-normalization.v1",
+    "description": "Compare JSON-safe values exactly first, then apply only the documented scalar, rational, date, whitespace, byte-string, and ExifTool-display normalizations.",
+    "rules": [
+      "Exact JSON-safe equality is checked before normalization.",
+      "Numbers use an absolute tolerance of 1e-8 and a relative tolerance of 1e-7.",
+      "Rational strings and rational objects are compared by numeric value.",
+      "NUL-terminated and printable byte strings are trimmed and decoded as UTF-8 where valid.",
+      "Whitespace is collapsed in strings; EXIF YYYY:MM:DD dates are compared as ISO-like dates without inferring a timezone.",
+      "ExifTool date objects use their rawValue; binary-data placeholders are accepted as normalized matches for bounded opaque payloads.",
+      "The EXIF UserComment ASCII encoding prefix is removed before printable byte-string comparison.",
+      "GPS degree/minute/second arrays may be compared with their absolute decimal-degree value; no sign is inferred without its reference tag."
+    ],
+    "sha256": "0f99109001719299942c36258464fcefe153b6815ad8f5c7258d05c123636974"
+  },
+  "thresholds": {
+    "maxMissingLocalRate": 0.05,
+    "maxMismatched": 0,
+    "maxFixtureErrors": 0
+  },
+  "gate": {
+    "passed": true,
+    "failures": [],
+    "minimumFixtures": 100,
+    "thresholds": {
+      "maxMissingLocalRate": 0.05,
+      "maxMismatched": 0,
+      "maxFixtureErrors": 0
+    },
+    "observed": {
+      "fixtureCount": 108,
+      "fixtureErrors": 0,
+      "referencePresent": 3434,
+      "missingLocal": 28,
+      "mismatched": 0
+    },
+    "missingLocalRate": 0.008153756552125802,
+    "maxMissingLocalRate": 0.05,
+    "mismatched": 0
+  },
+  "summary": {
+    "totals": {
+      "found": 3768,
+      "matched": 2158,
+      "normalizedMatch": 1248,
+      "mismatched": 0,
+      "missingLocal": 28,
+      "missingReference": 362
+    },
+    "byField": [
+      {
+        "field": "block:EXIF",
+        "key": "block:EXIF",
+        "family": "EXIF",
+        "found": 96,
+        "matched": 96,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 2,
+        "missingReference": 0
+      },
+      {
+        "field": "block:ICC",
+        "key": "block:ICC",
+        "family": "ICC",
+        "found": 27,
+        "matched": 27,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "block:IPTC",
+        "key": "block:IPTC",
+        "family": "IPTC",
+        "found": 11,
+        "matched": 9,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 2
+      },
+      {
+        "field": "block:JFIF",
+        "key": "block:JFIF",
+        "family": "JFIF",
+        "found": 56,
+        "matched": 56,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "block:XMP",
+        "key": "block:XMP",
+        "family": "XMP",
+        "found": 36,
+        "matched": 36,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 2,
+        "missingReference": 0
+      },
+      {
+        "field": "DIMENSIONS:height",
+        "key": "height",
+        "family": "DIMENSIONS",
+        "found": 108,
+        "matched": 100,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 8
+      },
+      {
+        "field": "DIMENSIONS:width",
+        "key": "width",
+        "family": "DIMENSIONS",
+        "found": 108,
+        "matched": 100,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 8
+      },
+      {
+        "field": "EXIF:Acceleration",
+        "key": "Acceleration",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ApertureValue",
+        "key": "ApertureValue",
+        "family": "EXIF",
+        "found": 32,
+        "matched": 0,
+        "normalizedMatch": 32,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Artist",
+        "key": "Artist",
+        "family": "EXIF",
+        "found": 11,
+        "matched": 7,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 4
+      },
+      {
+        "field": "EXIF:BitsPerSample",
+        "key": "BitsPerSample",
+        "family": "EXIF",
+        "found": 11,
+        "matched": 0,
+        "normalizedMatch": 11,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:BodySerialNumber",
+        "key": "BodySerialNumber",
+        "family": "EXIF",
+        "found": 2,
+        "matched": 1,
+        "normalizedMatch": 1,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:BrightnessValue",
+        "key": "BrightnessValue",
+        "family": "EXIF",
+        "found": 14,
+        "matched": 0,
+        "normalizedMatch": 14,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:CameraElevationAngle",
+        "key": "CameraElevationAngle",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:CameraFirmware",
+        "key": "CameraFirmware",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:CameraOwnerName",
+        "key": "CameraOwnerName",
+        "family": "EXIF",
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 2
+      },
+      {
+        "field": "EXIF:CFAPattern",
+        "key": "CFAPattern",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 0,
+        "normalizedMatch": 3,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ChromaticAberrationCorrection",
+        "key": "ChromaticAberrationCorrection",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ColorSpace",
+        "key": "ColorSpace",
+        "family": "EXIF",
+        "found": 64,
+        "matched": 64,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ComponentsConfiguration",
+        "key": "ComponentsConfiguration",
+        "family": "EXIF",
+        "found": 56,
+        "matched": 0,
+        "normalizedMatch": 56,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:CompositeImage",
+        "key": "CompositeImage",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 1,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:CompressedBitsPerPixel",
+        "key": "CompressedBitsPerPixel",
+        "family": "EXIF",
+        "found": 34,
+        "matched": 0,
+        "normalizedMatch": 33,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 1
+      },
+      {
+        "field": "EXIF:Compression",
+        "key": "Compression",
+        "family": "EXIF",
+        "found": 66,
+        "matched": 66,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Contrast",
+        "key": "Contrast",
+        "family": "EXIF",
+        "found": 23,
+        "matched": 23,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Copyright",
+        "key": "Copyright",
+        "family": "EXIF",
+        "found": 18,
+        "matched": 9,
+        "normalizedMatch": 9,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:CustomRendered",
+        "key": "CustomRendered",
+        "family": "EXIF",
+        "found": 35,
+        "matched": 35,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 3,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:DateTime",
+        "key": "DateTime",
+        "family": "EXIF",
+        "found": 67,
+        "matched": 0,
+        "normalizedMatch": 67,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:DateTimeDigitized",
+        "key": "DateTimeDigitized",
+        "family": "EXIF",
+        "found": 57,
+        "matched": 0,
+        "normalizedMatch": 57,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:DateTimeOriginal",
+        "key": "DateTimeOriginal",
+        "family": "EXIF",
+        "found": 62,
+        "matched": 0,
+        "normalizedMatch": 62,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:DevelopmentType",
+        "key": "DevelopmentType",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:DevelopmentTypeDescription",
+        "key": "DevelopmentTypeDescription",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:DeviceSettingDescription",
+        "key": "DeviceSettingDescription",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:DigitalZoomRatio",
+        "key": "DigitalZoomRatio",
+        "family": "EXIF",
+        "found": 33,
+        "matched": 0,
+        "normalizedMatch": 32,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 1
+      },
+      {
+        "field": "EXIF:DistortionCorrection",
+        "key": "DistortionCorrection",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ExifIFDPointer",
+        "key": "ExifIFDPointer",
+        "family": "EXIF",
+        "found": 86,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 86
+      },
+      {
+        "field": "EXIF:ExifVersion",
+        "key": "ExifVersion",
+        "family": "EXIF",
+        "found": 61,
+        "matched": 1,
+        "normalizedMatch": 60,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ExposureBiasValue",
+        "key": "ExposureBiasValue",
+        "family": "EXIF",
+        "found": 58,
+        "matched": 0,
+        "normalizedMatch": 58,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ExposureIndex",
+        "key": "ExposureIndex",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 0,
+        "normalizedMatch": 3,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ExposureMode",
+        "key": "ExposureMode",
+        "family": "EXIF",
+        "found": 40,
+        "matched": 40,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 2,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ExposureProgram",
+        "key": "ExposureProgram",
+        "family": "EXIF",
+        "found": 48,
+        "matched": 48,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ExposureTime",
+        "key": "ExposureTime",
+        "family": "EXIF",
+        "found": 59,
+        "matched": 0,
+        "normalizedMatch": 59,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FileSource",
+        "key": "FileSource",
+        "family": "EXIF",
+        "found": 45,
+        "matched": 0,
+        "normalizedMatch": 45,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Flash",
+        "key": "Flash",
+        "family": "EXIF",
+        "found": 65,
+        "matched": 65,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FlashEnergy",
+        "key": "FlashEnergy",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FlashpixVersion",
+        "key": "FlashpixVersion",
+        "family": "EXIF",
+        "found": 57,
+        "matched": 1,
+        "normalizedMatch": 56,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FNumber",
+        "key": "FNumber",
+        "family": "EXIF",
+        "found": 62,
+        "matched": 0,
+        "normalizedMatch": 62,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FocalLength",
+        "key": "FocalLength",
+        "family": "EXIF",
+        "found": 62,
+        "matched": 0,
+        "normalizedMatch": 62,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FocalLengthIn35mmFilm",
+        "key": "FocalLengthIn35mmFilm",
+        "family": "EXIF",
+        "found": 26,
+        "matched": 26,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FocalPlaneResolutionUnit",
+        "key": "FocalPlaneResolutionUnit",
+        "family": "EXIF",
+        "found": 16,
+        "matched": 16,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FocalPlaneXResolution",
+        "key": "FocalPlaneXResolution",
+        "family": "EXIF",
+        "found": 16,
+        "matched": 0,
+        "normalizedMatch": 16,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:FocalPlaneYResolution",
+        "key": "FocalPlaneYResolution",
+        "family": "EXIF",
+        "found": 16,
+        "matched": 0,
+        "normalizedMatch": 16,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GainControl",
+        "key": "GainControl",
+        "family": "EXIF",
+        "found": 21,
+        "matched": 21,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Gamma",
+        "key": "Gamma",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSAltitude",
+        "key": "GPSAltitude",
+        "family": "EXIF",
+        "found": 7,
+        "matched": 0,
+        "normalizedMatch": 7,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSAltitudeRef",
+        "key": "GPSAltitudeRef",
+        "family": "EXIF",
+        "found": 15,
+        "matched": 15,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSAreaInformation",
+        "key": "GPSAreaInformation",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDateStamp",
+        "key": "GPSDateStamp",
+        "family": "EXIF",
+        "found": 15,
+        "matched": 0,
+        "normalizedMatch": 15,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDestBearing",
+        "key": "GPSDestBearing",
+        "family": "EXIF",
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 2,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDestBearingRef",
+        "key": "GPSDestBearingRef",
+        "family": "EXIF",
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDestDistance",
+        "key": "GPSDestDistance",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDestDistanceRef",
+        "key": "GPSDestDistanceRef",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDestLatitude",
+        "key": "GPSDestLatitude",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 1,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDestLatitudeRef",
+        "key": "GPSDestLatitudeRef",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 1,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDestLongitude",
+        "key": "GPSDestLongitude",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDestLongitudeRef",
+        "key": "GPSDestLongitudeRef",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDifferential",
+        "key": "GPSDifferential",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSDOP",
+        "key": "GPSDOP",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 0,
+        "normalizedMatch": 1,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSHPositioningError",
+        "key": "GPSHPositioningError",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSImgDirection",
+        "key": "GPSImgDirection",
+        "family": "EXIF",
+        "found": 7,
+        "matched": 0,
+        "normalizedMatch": 7,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSImgDirectionRef",
+        "key": "GPSImgDirectionRef",
+        "family": "EXIF",
+        "found": 16,
+        "matched": 16,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSInfoIFDPointer",
+        "key": "GPSInfoIFDPointer",
+        "family": "EXIF",
+        "found": 26,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 26
+      },
+      {
+        "field": "EXIF:GPSLatitude",
+        "key": "GPSLatitude",
+        "family": "EXIF",
+        "found": 20,
+        "matched": 19,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 1
+      },
+      {
+        "field": "EXIF:GPSLatitudeRef",
+        "key": "GPSLatitudeRef",
+        "family": "EXIF",
+        "found": 20,
+        "matched": 20,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSLongitude",
+        "key": "GPSLongitude",
+        "family": "EXIF",
+        "found": 20,
+        "matched": 19,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 1
+      },
+      {
+        "field": "EXIF:GPSLongitudeRef",
+        "key": "GPSLongitudeRef",
+        "family": "EXIF",
+        "found": 20,
+        "matched": 20,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSMapDatum",
+        "key": "GPSMapDatum",
+        "family": "EXIF",
+        "found": 10,
+        "matched": 10,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSMeasureMode",
+        "key": "GPSMeasureMode",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSProcessingMethod",
+        "key": "GPSProcessingMethod",
+        "family": "EXIF",
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSSatellites",
+        "key": "GPSSatellites",
+        "family": "EXIF",
+        "found": 9,
+        "matched": 9,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSSpeed",
+        "key": "GPSSpeed",
+        "family": "EXIF",
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 4,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSSpeedRef",
+        "key": "GPSSpeedRef",
+        "family": "EXIF",
+        "found": 4,
+        "matched": 4,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSStatus",
+        "key": "GPSStatus",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSTimeStamp",
+        "key": "GPSTimeStamp",
+        "family": "EXIF",
+        "found": 15,
+        "matched": 0,
+        "normalizedMatch": 15,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSTrack",
+        "key": "GPSTrack",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSTrackRef",
+        "key": "GPSTrackRef",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:GPSVersionID",
+        "key": "GPSVersionID",
+        "family": "EXIF",
+        "found": 8,
+        "matched": 0,
+        "normalizedMatch": 8,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Humidity",
+        "key": "Humidity",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ImageDescription",
+        "key": "ImageDescription",
+        "family": "EXIF",
+        "found": 31,
+        "matched": 31,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ImageEditingSoftware",
+        "key": "ImageEditingSoftware",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ImageEditor",
+        "key": "ImageEditor",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ImageLength",
+        "key": "ImageLength",
+        "family": "EXIF",
+        "found": 14,
+        "matched": 14,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ImageTitle",
+        "key": "ImageTitle",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ImageUniqueID",
+        "key": "ImageUniqueID",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 3,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ImageWidth",
+        "key": "ImageWidth",
+        "family": "EXIF",
+        "found": 14,
+        "matched": 14,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:InteroperabilityIFDPointer",
+        "key": "InteroperabilityIFDPointer",
+        "family": "EXIF",
+        "found": 47,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 47
+      },
+      {
+        "field": "EXIF:InteroperabilityIndex",
+        "key": "InteroperabilityIndex",
+        "family": "EXIF",
+        "found": 47,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 47
+      },
+      {
+        "field": "EXIF:InteroperabilityVersion",
+        "key": "InteroperabilityVersion",
+        "family": "EXIF",
+        "found": 47,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 47
+      },
+      {
+        "field": "EXIF:ISOSpeed",
+        "key": "ISOSpeed",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 1,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ISOSpeedLatitudeyyy",
+        "key": "ISOSpeedLatitudeyyy",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ISOSpeedLatitudezzz",
+        "key": "ISOSpeedLatitudezzz",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ISOSpeedRatings",
+        "key": "ISOSpeedRatings",
+        "family": "EXIF",
+        "found": 50,
+        "matched": 50,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:JPEGInterchangeFormat",
+        "key": "JPEGInterchangeFormat",
+        "family": "EXIF",
+        "found": 59,
+        "matched": 59,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:JPEGInterchangeFormatLength",
+        "key": "JPEGInterchangeFormatLength",
+        "family": "EXIF",
+        "found": 59,
+        "matched": 59,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:LearningOptOutIn",
+        "key": "LearningOptOutIn",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:LensMake",
+        "key": "LensMake",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 3,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:LensModel",
+        "key": "LensModel",
+        "family": "EXIF",
+        "found": 6,
+        "matched": 6,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:LensSerialNumber",
+        "key": "LensSerialNumber",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:LensSpecification",
+        "key": "LensSpecification",
+        "family": "EXIF",
+        "found": 6,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 6
+      },
+      {
+        "field": "EXIF:LightSource",
+        "key": "LightSource",
+        "family": "EXIF",
+        "found": 36,
+        "matched": 36,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Make",
+        "key": "Make",
+        "family": "EXIF",
+        "found": 63,
+        "matched": 54,
+        "normalizedMatch": 9,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:MakerNote",
+        "key": "MakerNote",
+        "family": "EXIF",
+        "found": 46,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 46
+      },
+      {
+        "field": "EXIF:MaxApertureValue",
+        "key": "MaxApertureValue",
+        "family": "EXIF",
+        "found": 51,
+        "matched": 0,
+        "normalizedMatch": 51,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:MetadataEditingSoftware",
+        "key": "MetadataEditingSoftware",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:MeteringMode",
+        "key": "MeteringMode",
+        "family": "EXIF",
+        "found": 61,
+        "matched": 61,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Model",
+        "key": "Model",
+        "family": "EXIF",
+        "found": 63,
+        "matched": 53,
+        "normalizedMatch": 10,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:NoiseReduction",
+        "key": "NoiseReduction",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:OECF",
+        "key": "OECF",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:OffsetTime",
+        "key": "OffsetTime",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 3,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:OffsetTimeDigitized",
+        "key": "OffsetTimeDigitized",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 3,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:OffsetTimeOriginal",
+        "key": "OffsetTimeOriginal",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 3,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Orientation",
+        "key": "Orientation",
+        "family": "EXIF",
+        "found": 88,
+        "matched": 88,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Photographer",
+        "key": "Photographer",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:PhotometricInterpretation",
+        "key": "PhotometricInterpretation",
+        "family": "EXIF",
+        "found": 11,
+        "matched": 11,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:PixelXDimension",
+        "key": "PixelXDimension",
+        "family": "EXIF",
+        "found": 78,
+        "matched": 77,
+        "normalizedMatch": 1,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:PixelYDimension",
+        "key": "PixelYDimension",
+        "family": "EXIF",
+        "found": 78,
+        "matched": 77,
+        "normalizedMatch": 1,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:PlanarConfiguration",
+        "key": "PlanarConfiguration",
+        "family": "EXIF",
+        "found": 8,
+        "matched": 8,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Pressure",
+        "key": "Pressure",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:PrimaryChromaticities",
+        "key": "PrimaryChromaticities",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 0,
+        "normalizedMatch": 1,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:RAWDevelopingSoftware",
+        "key": "RAWDevelopingSoftware",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:RecommendedExposureIndex",
+        "key": "RecommendedExposureIndex",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 1,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ReferenceBlackWhite",
+        "key": "ReferenceBlackWhite",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 0,
+        "normalizedMatch": 1,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:RelatedImageFileFormat",
+        "key": "RelatedImageFileFormat",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:RelatedImageLength",
+        "key": "RelatedImageLength",
+        "family": "EXIF",
+        "found": 8,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 8
+      },
+      {
+        "field": "EXIF:RelatedImageWidth",
+        "key": "RelatedImageWidth",
+        "family": "EXIF",
+        "found": 8,
+        "matched": 8,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:RelatedSoundFile",
+        "key": "RelatedSoundFile",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 3,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ResolutionUnit",
+        "key": "ResolutionUnit",
+        "family": "EXIF",
+        "found": 84,
+        "matched": 84,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:RowsPerStrip",
+        "key": "RowsPerStrip",
+        "family": "EXIF",
+        "found": 10,
+        "matched": 10,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SamplesPerPixel",
+        "key": "SamplesPerPixel",
+        "family": "EXIF",
+        "found": 11,
+        "matched": 11,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Saturation",
+        "key": "Saturation",
+        "family": "EXIF",
+        "found": 24,
+        "matched": 24,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SceneCaptureType",
+        "key": "SceneCaptureType",
+        "family": "EXIF",
+        "found": 39,
+        "matched": 39,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 2,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SceneType",
+        "key": "SceneType",
+        "family": "EXIF",
+        "found": 34,
+        "matched": 0,
+        "normalizedMatch": 34,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SensingMethod",
+        "key": "SensingMethod",
+        "family": "EXIF",
+        "found": 26,
+        "matched": 26,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SensitivityType",
+        "key": "SensitivityType",
+        "family": "EXIF",
+        "found": 4,
+        "matched": 4,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ShadingCorrection",
+        "key": "ShadingCorrection",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Sharpness",
+        "key": "Sharpness",
+        "family": "EXIF",
+        "found": 26,
+        "matched": 26,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:ShutterSpeedValue",
+        "key": "ShutterSpeedValue",
+        "family": "EXIF",
+        "found": 30,
+        "matched": 0,
+        "normalizedMatch": 30,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Software",
+        "key": "Software",
+        "family": "EXIF",
+        "found": 57,
+        "matched": 51,
+        "normalizedMatch": 6,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SourceExposureTimesOfCompositeImage",
+        "key": "SourceExposureTimesOfCompositeImage",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SourceImageNumberOfCompositeImage",
+        "key": "SourceImageNumberOfCompositeImage",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SpatialFrequencyResponse",
+        "key": "SpatialFrequencyResponse",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SpectralSensitivity",
+        "key": "SpectralSensitivity",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:StandardOutputSensitivity",
+        "key": "StandardOutputSensitivity",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:StripByteCounts",
+        "key": "StripByteCounts",
+        "family": "EXIF",
+        "found": 10,
+        "matched": 5,
+        "normalizedMatch": 5,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:StripOffsets",
+        "key": "StripOffsets",
+        "family": "EXIF",
+        "found": 10,
+        "matched": 5,
+        "normalizedMatch": 5,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SubjectArea",
+        "key": "SubjectArea",
+        "family": "EXIF",
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 4,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SubjectDistance",
+        "key": "SubjectDistance",
+        "family": "EXIF",
+        "found": 3,
+        "matched": 0,
+        "normalizedMatch": 2,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 1
+      },
+      {
+        "field": "EXIF:SubjectDistanceRange",
+        "key": "SubjectDistanceRange",
+        "family": "EXIF",
+        "found": 17,
+        "matched": 17,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SubjectLocation",
+        "key": "SubjectLocation",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SubSecTime",
+        "key": "SubSecTime",
+        "family": "EXIF",
+        "found": 8,
+        "matched": 2,
+        "normalizedMatch": 6,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SubSecTimeDigitized",
+        "key": "SubSecTimeDigitized",
+        "family": "EXIF",
+        "found": 9,
+        "matched": 4,
+        "normalizedMatch": 5,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:SubSecTimeOriginal",
+        "key": "SubSecTimeOriginal",
+        "family": "EXIF",
+        "found": 9,
+        "matched": 4,
+        "normalizedMatch": 5,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:Temperature",
+        "key": "Temperature",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:TransferFunction",
+        "key": "TransferFunction",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:UserComment",
+        "key": "UserComment",
+        "family": "EXIF",
+        "found": 30,
+        "matched": 0,
+        "normalizedMatch": 13,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 17
+      },
+      {
+        "field": "EXIF:WaterDepth",
+        "key": "WaterDepth",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:WhiteBalance",
+        "key": "WhiteBalance",
+        "family": "EXIF",
+        "found": 45,
+        "matched": 45,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 2,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:WhitePoint",
+        "key": "WhitePoint",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 0,
+        "normalizedMatch": 1,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:XResolution",
+        "key": "XResolution",
+        "family": "EXIF",
+        "found": 85,
+        "matched": 1,
+        "normalizedMatch": 84,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:YCbCrCoefficients",
+        "key": "YCbCrCoefficients",
+        "family": "EXIF",
+        "found": 1,
+        "matched": 0,
+        "normalizedMatch": 1,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:YCbCrPositioning",
+        "key": "YCbCrPositioning",
+        "family": "EXIF",
+        "found": 59,
+        "matched": 59,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:YCbCrSubSampling",
+        "key": "YCbCrSubSampling",
+        "family": "EXIF",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "EXIF:YResolution",
+        "key": "YResolution",
+        "family": "EXIF",
+        "found": 85,
+        "matched": 1,
+        "normalizedMatch": 84,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      },
+      {
+        "field": "IPTC:Byline",
+        "key": "Byline",
+        "family": "IPTC",
+        "found": 3,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 3
+      },
+      {
+        "field": "IPTC:Caption",
+        "key": "Caption",
+        "family": "IPTC",
+        "found": 5,
+        "matched": 5,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "IPTC:City",
+        "key": "City",
+        "family": "IPTC",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "IPTC:CopyrightNotice",
+        "key": "CopyrightNotice",
+        "family": "IPTC",
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "IPTC:CountryCode",
+        "key": "CountryCode",
+        "family": "IPTC",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "IPTC:DateCreated",
+        "key": "DateCreated",
+        "family": "IPTC",
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 2,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "IPTC:Headline",
+        "key": "Headline",
+        "family": "IPTC",
+        "found": 0,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "IPTC:Keywords",
+        "key": "Keywords",
+        "family": "IPTC",
+        "found": 3,
+        "matched": 3,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "IPTC:ObjectName",
+        "key": "ObjectName",
+        "family": "IPTC",
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "XMP:XMP-dc:Creator",
+        "key": "XMP-dc:Creator",
+        "family": "XMP",
+        "found": 6,
+        "matched": 6,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "XMP:XMP-dc:Description",
+        "key": "XMP-dc:Description",
+        "family": "XMP",
+        "found": 5,
+        "matched": 5,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "XMP:XMP-dc:Title",
+        "key": "XMP-dc:Title",
+        "family": "XMP",
+        "found": 5,
+        "matched": 5,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0
+      },
+      {
+        "field": "XMP:XMP-xmp:CreateDate",
+        "key": "XMP-xmp:CreateDate",
+        "family": "XMP",
+        "found": 14,
+        "matched": 0,
+        "normalizedMatch": 14,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0
+      }
+    ],
+    "byProducer": [
+      {
+        "producer": "Apple",
+        "found": 177,
+        "matched": 96,
+        "normalizedMatch": 70,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 11
+      },
+      {
+        "producer": "Canon",
+        "found": 580,
+        "matched": 289,
+        "normalizedMatch": 217,
+        "mismatched": 0,
+        "missingLocal": 6,
+        "missingReference": 74
+      },
+      {
+        "producer": "Caplio",
+        "found": 39,
+        "matched": 21,
+        "normalizedMatch": 14,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 4
+      },
+      {
+        "producer": "CASIO COMPUTER CO.,LTD",
+        "found": 50,
+        "matched": 27,
+        "normalizedMatch": 17,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 6
+      },
+      {
+        "producer": "CASIO COMPUTER CO.,LTD.",
+        "found": 49,
+        "matched": 26,
+        "normalizedMatch": 18,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 5
+      },
+      {
+        "producer": "Eastman Kodak Company",
+        "found": 39,
+        "matched": 21,
+        "normalizedMatch": 14,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 4
+      },
+      {
+        "producer": "EASTMAN KODAK COMPANY",
+        "found": 101,
+        "matched": 51,
+        "normalizedMatch": 40,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 10
+      },
+      {
+        "producer": "FUJIFILM",
+        "found": 240,
+        "matched": 110,
+        "normalizedMatch": 107,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 23
+      },
+      {
+        "producer": "HMD Global",
+        "found": 62,
+        "matched": 42,
+        "normalizedMatch": 16,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 4
+      },
+      {
+        "producer": "Jolla",
+        "found": 26,
+        "matched": 13,
+        "normalizedMatch": 12,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 1
+      },
+      {
+        "producer": "KONICA MINOLTA",
+        "found": 54,
+        "matched": 31,
+        "normalizedMatch": 17,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 6
+      },
+      {
+        "producer": "NIKON",
+        "found": 685,
+        "matched": 414,
+        "normalizedMatch": 205,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 66
+      },
+      {
+        "producer": "NIKON CORPORATION",
+        "found": 235,
+        "matched": 139,
+        "normalizedMatch": 82,
+        "mismatched": 0,
+        "missingLocal": 2,
+        "missingReference": 14
+      },
+      {
+        "producer": "OLYMPUS CORPORATION",
+        "found": 53,
+        "matched": 29,
+        "normalizedMatch": 19,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 5
+      },
+      {
+        "producer": "OLYMPUS IMAGING CORP.",
+        "found": 102,
+        "matched": 53,
+        "normalizedMatch": 36,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 13
+      },
+      {
+        "producer": "OLYMPUS OPTICAL CO.,LTD",
+        "found": 43,
+        "matched": 21,
+        "normalizedMatch": 16,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 6
+      },
+      {
+        "producer": "Panasonic",
+        "found": 53,
+        "matched": 31,
+        "normalizedMatch": 17,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 5
+      },
+      {
+        "producer": "PENTAX Corporation",
+        "found": 37,
+        "matched": 22,
+        "normalizedMatch": 14,
+        "mismatched": 0,
+        "missingLocal": 8,
+        "missingReference": 1
+      },
+      {
+        "producer": "Polyphony Digital Inc.",
+        "found": 36,
+        "matched": 19,
+        "normalizedMatch": 11,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 6
+      },
+      {
+        "producer": "RICOH",
+        "found": 38,
+        "matched": 15,
+        "normalizedMatch": 17,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 6
+      },
+      {
+        "producer": "samsung",
+        "found": 30,
+        "matched": 20,
+        "normalizedMatch": 7,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 3
+      },
+      {
+        "producer": "Samsung Techwin",
+        "found": 56,
+        "matched": 31,
+        "normalizedMatch": 20,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 5
+      },
+      {
+        "producer": "SANYO Electric Co.,Ltd.",
+        "found": 78,
+        "matched": 38,
+        "normalizedMatch": 32,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 8
+      },
+      {
+        "producer": "SONY",
+        "found": 239,
+        "matched": 135,
+        "normalizedMatch": 81,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 23
+      },
+      {
+        "producer": "unknown",
+        "found": 574,
+        "matched": 419,
+        "normalizedMatch": 111,
+        "mismatched": 0,
+        "missingLocal": 11,
+        "missingReference": 44
+      },
+      {
+        "producer": "WWL",
+        "found": 41,
+        "matched": 19,
+        "normalizedMatch": 18,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 4
+      },
+      {
+        "producer": "Xiaomi",
+        "found": 51,
+        "matched": 26,
+        "normalizedMatch": 20,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 5
+      }
+    ],
+    "byFormat": [
+      {
+        "format": "heif",
+        "found": 113,
+        "matched": 68,
+        "normalizedMatch": 38,
+        "mismatched": 0,
+        "missingLocal": 11,
+        "missingReference": 7
+      },
+      {
+        "format": "jpeg",
+        "found": 3527,
+        "matched": 2002,
+        "normalizedMatch": 1186,
+        "mismatched": 0,
+        "missingLocal": 17,
+        "missingReference": 339
+      },
+      {
+        "format": "tiff",
+        "found": 128,
+        "matched": 88,
+        "normalizedMatch": 24,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 16
+      }
+    ]
+  },
+  "fixtures": [
+    {
+      "fixture": "heic/heic_hdlr_box.jpg",
+      "bytes": 101897,
+      "sha256": "f576d9c6b7c3d9531a4bc10e9fa34ecdcebdf6773a907c4892fa680b8557a279",
+      "format": "heif",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "heic/mobile/HMD_Nokia_8.3_5G.heif",
+      "bytes": 3019841,
+      "sha256": "c2820b3e4e0368c6f031b28b62945658a97446895cb446dfc37acdcf7109e0f5",
+      "format": "heif",
+      "producer": "unknown",
+      "warningCount": 1
+    },
+    {
+      "fixture": "heic/mobile/HMD_Nokia_8.3_5G_hdr.heif",
+      "bytes": 865787,
+      "sha256": "17fccf795b0e2b749b9f5667ffcea31e665cb6964fb104b001684c60a14acb4d",
+      "format": "heif",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "heic/mobile/iphone_13_pro_max.heic",
+      "bytes": 2182707,
+      "sha256": "e760c80eed310e4f27c092d5487693ca8e104e7cc01d25ba4828deb28f679676",
+      "format": "heif",
+      "producer": "Apple",
+      "warningCount": 0
+    },
+    {
+      "fixture": "heic/samplefilehub.heif",
+      "bytes": 29208,
+      "sha256": "f86ec0d3a6c82e31657bb1886e1ec95579329fa98d8be511ac1e8497c778e07f",
+      "format": "heif",
+      "producer": "unknown",
+      "warningCount": 3
+    },
+    {
+      "fixture": "heic/spring_1440x960.heic",
+      "bytes": 51899,
+      "sha256": "2b81d5e490f310ef0779ab022ee0f700f6babdb5914b1e659df9912a1a71aa52",
+      "format": "heif",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/Canon_40D.jpg",
+      "bytes": 7958,
+      "sha256": "6bfdabd4fc33d112283c147acccc574e770bbe6fbdbc3d4da968ba7b606ecc2f",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Canon_40D_photoshop_import.jpg",
+      "bytes": 9686,
+      "sha256": "40a7aa2cc28d8544b31408e6d54c568e6b749a8faf239c7a6234b315e953b9d5",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Canon_DIGITAL_IXUS_400.jpg",
+      "bytes": 9198,
+      "sha256": "23c1ec51c075d6864862412d07b9d0f07e84237af68972c1d1293e4c28f73e4f",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/Canon_PowerShot_S40.jpg",
+      "bytes": 32764,
+      "sha256": "8a9d04b92d0de5836c59ede8ae421235488e4031e893e07b1fe7e4b78f6a9901",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/Fujifilm_FinePix6900ZOOM.jpg",
+      "bytes": 4278,
+      "sha256": "40afc753b4e83d72cfa1080ae7a10310e0fcbb9e4f6ebdf32c7b2f1553c83fe3",
+      "format": "jpeg",
+      "producer": "FUJIFILM",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/Fujifilm_FinePix_E500.jpg",
+      "bytes": 2241,
+      "sha256": "ffbee7b07bf267dc0fb52817f8866df647758f7d48ac93e7a73d1914fb4c74da",
+      "format": "jpeg",
+      "producer": "FUJIFILM",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/Kodak_CX7530.jpg",
+      "bytes": 5958,
+      "sha256": "ac759931999a215ef78469a82bdfc382ccba96eb8d039ec9e81e53a9a419d35e",
+      "format": "jpeg",
+      "producer": "EASTMAN KODAK COMPANY",
+      "warningCount": 13
+    },
+    {
+      "fixture": "jpg/Konica_Minolta_DiMAGE_Z3.jpg",
+      "bytes": 36971,
+      "sha256": "b1b914f47528384e6252fa7caabb489f123b88c81ebd62ecb8eacdf64c46fd5e",
+      "format": "jpeg",
+      "producer": "KONICA MINOLTA",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/Nikon_COOLPIX_P1.jpg",
+      "bytes": 7068,
+      "sha256": "896b47424dc1c87154a50b40394ae887a0b0d7d830f38a9d969295995f27ef43",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/Nikon_D70.jpg",
+      "bytes": 14034,
+      "sha256": "8e2a627b96ca71c20129161f46bda3d338407da99bd11b1055adb27af27d7ef5",
+      "format": "jpeg",
+      "producer": "NIKON CORPORATION",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Olympus_C8080WZ.jpg",
+      "bytes": 3224,
+      "sha256": "3495de26279d8d1e442177ba43cef855438e3b321481b9ee2ff513decb13ed9c",
+      "format": "jpeg",
+      "producer": "OLYMPUS CORPORATION",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/PaintTool_sample.jpg",
+      "bytes": 5738,
+      "sha256": "45e3aa44357a4b05d78b3fc51d0732be0ddf5a544b732b0134778b146380291a",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Panasonic_DMC-FZ30.jpg",
+      "bytes": 10769,
+      "sha256": "c092a4ade7ae7b63ac13d50c3dc9da51ce2fb465caf7d1b6193d4c53f59e8ad8",
+      "format": "jpeg",
+      "producer": "Panasonic",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/Pentax_K10D.jpg",
+      "bytes": 12077,
+      "sha256": "146601c9d406410abdaa832508ee4ccddbc7ad54530e81d57962c1b7728e2e6d",
+      "format": "jpeg",
+      "producer": "PENTAX Corporation",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Reconyx_HC500_Hyperfire.jpg",
+      "bytes": 425890,
+      "sha256": "d7ba6bc532a225c955411cb96c733a45ee39403fa973312bded7732e6f8e4b3c",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Ricoh_Caplio_RR330.jpg",
+      "bytes": 3662,
+      "sha256": "e920d750c491f3088eeb0f31fb4659164755af11e4bbbe269430f32c3ae10928",
+      "format": "jpeg",
+      "producer": "Caplio",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Samsung_Digimax_i50_MP3.jpg",
+      "bytes": 45286,
+      "sha256": "e61da5ee8d7ba1726bd0a887216ed5ae7ca38c97fcf7aac11b808e1c269e1722",
+      "format": "jpeg",
+      "producer": "Samsung Techwin",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Sony_DSLR-A200.jpg",
+      "bytes": 632566,
+      "sha256": "a21730078d69b6300c87db44a6912979b1812dd8e6f7b131e6c4709d940423ed",
+      "format": "jpeg",
+      "producer": "SONY",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Sony_HDR-HC3.jpg",
+      "bytes": 3565,
+      "sha256": "4f707d9b40d423a5246748bc1e05b66c4b87e30863f7a51ce18904a7ec43a39e",
+      "format": "jpeg",
+      "producer": "SONY",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/Sony_alpha_a58.JPG",
+      "bytes": 24871,
+      "sha256": "227f97c068d3fe038901b238580bac6440a6f172667b317fa85712388d73d9f7",
+      "format": "jpeg",
+      "producer": "SONY",
+      "warningCount": 9
+    },
+    {
+      "fixture": "jpg/WWL_Polaroid_ION230.jpg",
+      "bytes": 3998,
+      "sha256": "27532bdce8a2ad2afc1e392f4d24105867eec0b1ba126b01b3e398100daab664",
+      "format": "jpeg",
+      "producer": "WWL",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/corrupted.jpg",
+      "bytes": 1960703,
+      "sha256": "dcc801f45d7607d82661d08c4c6b188bdbf3129b55f7612830a6dc3fea573023",
+      "format": "jpeg",
+      "producer": "OLYMPUS IMAGING CORP.",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/exif-org/canon-ixus.jpg",
+      "bytes": 128037,
+      "sha256": "b2d085bdb261cb2c56d8ba10d79175e38c0acd0d429afe19a4610eddee3b06fe",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/exif-org/fujifilm-dx10.jpg",
+      "bytes": 133074,
+      "sha256": "7d6f8f7450f12bd768384a9cae66a9cc0f626cea023431614d967f34150def0d",
+      "format": "jpeg",
+      "producer": "FUJIFILM",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/exif-org/fujifilm-finepix40i.jpg",
+      "bytes": 43183,
+      "sha256": "722fa6b893b01d5970d9b0761df6ee97bcee28fcd5b8e78d761738058c6b7822",
+      "format": "jpeg",
+      "producer": "FUJIFILM",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/exif-org/fujifilm-mx1700.jpg",
+      "bytes": 100227,
+      "sha256": "f45a5d2c1c5f3ae55254239c02b569c01dd3926a64e08d4a141ce4dbff637856",
+      "format": "jpeg",
+      "producer": "FUJIFILM",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/exif-org/kodak-dc210.jpg",
+      "bytes": 79837,
+      "sha256": "6da5cfdcbd2d462220da5ac1c4e0df32c61f078efe92c777036cf629fe791ad5",
+      "format": "jpeg",
+      "producer": "Eastman Kodak Company",
+      "warningCount": 6
+    },
+    {
+      "fixture": "jpg/exif-org/kodak-dc240.jpg",
+      "bytes": 81901,
+      "sha256": "6dcac4b77b55a9f5e5c0486c1f28b8b2eb65b292d3c43499cdde47ef11d367a4",
+      "format": "jpeg",
+      "producer": "EASTMAN KODAK COMPANY",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/exif-org/nikon-e950.jpg",
+      "bytes": 164151,
+      "sha256": "7920518dec63a63074ca8e1861b61f69be687b3dd0caa3eb65cdaac4c4f43fd0",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/exif-org/olympus-c960.jpg",
+      "bytes": 87599,
+      "sha256": "325671969a8059d2ad0036e2db8476262592add0ca5174c260fa03e9e455809d",
+      "format": "jpeg",
+      "producer": "OLYMPUS OPTICAL CO.,LTD",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/exif-org/olympus-d320l.jpg",
+      "bytes": 61264,
+      "sha256": "6a41599dc31c73e8a9c896e2669ecfb2b03a74be04fac0dd9371ed457e50a762",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/exif-org/ricoh-rdc5300.jpg",
+      "bytes": 87626,
+      "sha256": "16182006e2f82e60f11e0bad3964cac539bba4e58d14a3152bfe5aeb1907ab19",
+      "format": "jpeg",
+      "producer": "RICOH",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/exif-org/sanyo-vpcg250.jpg",
+      "bytes": 62096,
+      "sha256": "4723c892d4d3c200074f3a8a437b0d3e62e631e140b68e2386a54c45f0da2566",
+      "format": "jpeg",
+      "producer": "SANYO Electric Co.,Ltd.",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/exif-org/sanyo-vpcsx550.jpg",
+      "bytes": 102448,
+      "sha256": "74401cc6e0b6bdb03b7d3a1c99a0ba3b4dd5b3ac9b7728a38f6fb3607f3360ea",
+      "format": "jpeg",
+      "producer": "SANYO Electric Co.,Ltd.",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/exif-org/sony-cybershot.jpg",
+      "bytes": 63643,
+      "sha256": "0e69b12f261907dc9fcfb89082a6a61948db849d836673017a7e972d49184404",
+      "format": "jpeg",
+      "producer": "SONY",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/exif-org/sony-d700.jpg",
+      "bytes": 79446,
+      "sha256": "8ff0028190b36a6c4af79989b248dd5e949d289d32c5f0e005be2db45d363c98",
+      "format": "jpeg",
+      "producer": "SONY",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/exif-org/sony-powershota5.jpg",
+      "bytes": 58405,
+      "sha256": "608c6c0a57205c42ca4169b5574823ed1c05e4e636a038cda64b6ef18ae5d274",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/gps/DSCN0010.jpg",
+      "bytes": 161713,
+      "sha256": "17307b1207eb6487d7908e9d154890b46e3d2e0192369cfd3f4c33d5a5af4035",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/gps/DSCN0012.jpg",
+      "bytes": 159137,
+      "sha256": "84d60184ac4098b7967e2ef6dae6b03fc0d98b24624d2b57412dbcd7cb864680",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/gps/DSCN0021.jpg",
+      "bytes": 157382,
+      "sha256": "441daaea545eb8bdb1434817fc36be0baa8992a4c9ad4b089726033bfc4bc963",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/gps/DSCN0025.jpg",
+      "bytes": 150301,
+      "sha256": "9437619d5ab1afe7740d546effe76ffe52548af68b9be72cef259d0cd1f9c90b",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/gps/DSCN0027.jpg",
+      "bytes": 157723,
+      "sha256": "0a7864e5fa07cc118f3df1e38f31e5181350c30010e8115c536c7a8a664c9f13",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/gps/DSCN0029.jpg",
+      "bytes": 150085,
+      "sha256": "941b9c7bfe35e0a3775f013e613748f55d1152736a74bd51e34f1b66bd646697",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/gps/DSCN0038.jpg",
+      "bytes": 157569,
+      "sha256": "84792ae83e6ec83a5d909be82f68e51aeea67fdd6a7019993fdac4be4f6e6a72",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/gps/DSCN0040.jpg",
+      "bytes": 152893,
+      "sha256": "14f6453d145c69c96e77c7e901cdbf58f7984c09fe4ab65ca8914c5d0d37e956",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/gps/DSCN0042.jpg",
+      "bytes": 156695,
+      "sha256": "03837b2881d4cc7e5e03191b301f082088f999e4aa59e4489193874c93c31579",
+      "format": "jpeg",
+      "producer": "NIKON",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/hdr/canon_hdr_NO.jpg",
+      "bytes": 784371,
+      "sha256": "fa2127ebab1b3930c998ab262795044262f41dda7eaf0f7a21a773cff48c8696",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 6
+    },
+    {
+      "fixture": "jpg/hdr/canon_hdr_YES.jpg",
+      "bytes": 722875,
+      "sha256": "30603e14619140acaea51bee6fecab4a72956d1aa570e20f5b9b3d9271b8bdf4",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 6
+    },
+    {
+      "fixture": "jpg/hdr/iphone_hdr_NO.jpg",
+      "bytes": 1957448,
+      "sha256": "eb81d33a9b1d1bea5d133483f918c2cc927161c0dda44c9fedfa4da87c8b1cc3",
+      "format": "jpeg",
+      "producer": "Apple",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/hdr/iphone_hdr_YES.jpg",
+      "bytes": 1976579,
+      "sha256": "5125870f6f4a94a2329bc9f53482680772d3277399aed71c2f0636cb07870533",
+      "format": "jpeg",
+      "producer": "Apple",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/invalid/image00971.jpg",
+      "bytes": 164210,
+      "sha256": "4793aef30d2d042f15723bf22fa8c5b9932c6b5e97bc090e7a82c0845b2a47db",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/invalid/image01088.jpg",
+      "bytes": 87107,
+      "sha256": "99366772dd3e323d52bf6667b2955c8a2859f0ba9d88d96c2c0a0ade16d96d9e",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/invalid/image01137.jpg",
+      "bytes": 26898,
+      "sha256": "d28160c63cbb4c9a9709e917b1bf0208d6240d1d3e22b28ec23abb08f957c52c",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/invalid/image01551.jpg",
+      "bytes": 15994,
+      "sha256": "ef8e654304d58238af70f4ba8f52b095c8d801ebba0dfb6b089b53d835c36c5a",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/invalid/image01713.jpg",
+      "bytes": 17412,
+      "sha256": "5281b682dc913fee5a3b7d172bfb8c8068a1bcc3138c3d29f98db34bc807798c",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/invalid/image01980.jpg",
+      "bytes": 17857,
+      "sha256": "0eda850fefce6ae4c148815bfb20962309b75e542de421845615ccef7a962f00",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/invalid/image02206.jpg",
+      "bytes": 14574,
+      "sha256": "527ae341310acbdeedf60d1087a23081ed279e3e6ecdd7e4b82d586acfbc0735",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/long_description.jpg",
+      "bytes": 7585,
+      "sha256": "1a6e4a1b7fab604027cbb52b6cde75f6966c8b9a2eb3ea0fba5e1bf59605a339",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/mobile/HMD_Nokia_8.3_5G.jpg",
+      "bytes": 2190194,
+      "sha256": "9be023624ccd5846beeb5b02d9b571251ef5bd8ed820389a430d114029f58eda",
+      "format": "jpeg",
+      "producer": "HMD Global",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/mobile/HMD_Nokia_8.3_5G_hdr.jpg",
+      "bytes": 5168013,
+      "sha256": "b150f64e631b0df0f70cdbb88ddcbb73c5536fcb840ace8d0e71f8d58d997bc1",
+      "format": "jpeg",
+      "producer": "HMD Global",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/mobile/jolla.jpg",
+      "bytes": 811904,
+      "sha256": "ee6bc1200cf8b1b26f5b60d8294d9617e8099f6dfdd7a4757a424f332360f5e3",
+      "format": "jpeg",
+      "producer": "Jolla",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/landscape_1.jpg",
+      "bytes": 139435,
+      "sha256": "87ea27ba9f24cb133251850a7ebd11427ba5e4be0a3a8534a58b00041b2db06d",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/landscape_2.jpg",
+      "bytes": 137359,
+      "sha256": "47aa72c02bd24b17db58cd8e25a57dd97f54abc9461fc1fb8bf2d8889d8494a5",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/landscape_3.jpg",
+      "bytes": 140965,
+      "sha256": "533f2e6d35a62e9bc144dbb3921a9b2105cf2498eaafb10812f197e6108bd758",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/landscape_4.jpg",
+      "bytes": 140588,
+      "sha256": "552568f6965f76c94fced5cd3286775fcc7746fbc796f7a7ab8e7c8d533b666c",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/landscape_5.jpg",
+      "bytes": 137611,
+      "sha256": "592f903706fe4b215a08adbd0ed8b62d28aad4e6532ee13777f4aa12787f54a7",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/landscape_6.jpg",
+      "bytes": 137628,
+      "sha256": "a05082c57819232106a0612f57268efab011f7a2a477483b878a2b4509cd8e59",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/landscape_7.jpg",
+      "bytes": 140645,
+      "sha256": "e5273d4ea5fddcaf27fefc7ea4162c2b3c77ad056e2d8d65a5d61787b5b15db4",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/landscape_8.jpg",
+      "bytes": 141286,
+      "sha256": "5b5c9979cbf6077e97894488be20c849b5eb008fe685c0cb75060c4ab6812ce0",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/portrait_1.jpg",
+      "bytes": 129059,
+      "sha256": "31b06a687d094aabaab611bbdb83b37bee044d7411087e24120169a8a7d5a511",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/portrait_2.jpg",
+      "bytes": 136072,
+      "sha256": "f0b06c75694f6d97e17121dae0697832dea0daf0cd81e4d0e8107cbe8a7e299f",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/portrait_3.jpg",
+      "bytes": 135813,
+      "sha256": "ca9fb9a159320e6209d53a579b04be323095797b8bfc8ab5110ec8c38ecf9818",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/portrait_4.jpg",
+      "bytes": 131520,
+      "sha256": "50fc16ad1174fc6eddd002ecd8baa310132c56fd8f732096889e105d718fac1a",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/portrait_5.jpg",
+      "bytes": 133715,
+      "sha256": "dfbdfaf8a72e4fde8686c08df6cfe332864635affd0a9fb6e06cb106094b302e",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/portrait_6.jpg",
+      "bytes": 136257,
+      "sha256": "323ce0d7140be76cbe6511e268766241dfe74eddf34b73f27f4637e552c8d824",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/portrait_7.jpg",
+      "bytes": 135366,
+      "sha256": "792794408dc57227adb341a75a5766e36904a7ec0e640d6cca2d8b14fe25c141",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/orientation/portrait_8.jpg",
+      "bytes": 132543,
+      "sha256": "2691666c64b68d563f50226c2df921c9edee827abf402e922be4be2e992fb061",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/tests/11-tests.jpg",
+      "bytes": 236569,
+      "sha256": "2a41ccc348800707d7c19ce0e3457f5d4295486f29bf0a73f8cbe4bcf272136e",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/tests/22-canon_tags.jpg",
+      "bytes": 448492,
+      "sha256": "494458d1d90e7d2b7c1aefe362cbf167ecdca1f3477f0bd2c801503a1d537b14",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/tests/28-hex_value.jpg",
+      "bytes": 1350507,
+      "sha256": "2a08dd2931cb224f9b4864a4699cdd5093ed334faf68c9d2ef1e832855b219ae",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/tests/30-type_error.jpg",
+      "bytes": 300825,
+      "sha256": "f2c156654b78e8a1f84a4d60932a15e76d3e106c7e51bd968fe2f5eda4d33f4d",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 4
+    },
+    {
+      "fixture": "jpg/tests/32-lens_data.jpeg",
+      "bytes": 36731,
+      "sha256": "f0096a6d5c24dbe270525f7dc575e26ea28df63824055e7ad3253e2cf0d1dab0",
+      "format": "jpeg",
+      "producer": "NIKON CORPORATION",
+      "warningCount": 3
+    },
+    {
+      "fixture": "jpg/tests/33-type_error.jpg",
+      "bytes": 178028,
+      "sha256": "16713b68edda8862069993045bfdba03f1c63c5f05857955f5a98c2c82ca5598",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 5
+    },
+    {
+      "fixture": "jpg/tests/35-empty.jpg",
+      "bytes": 1010466,
+      "sha256": "44f1819124a7f7dba6552f629372649441f8ab24e4e7f4c1ebe5091d582220c8",
+      "format": "jpeg",
+      "producer": "CASIO COMPUTER CO.,LTD",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/tests/36-memory_error.jpg",
+      "bytes": 865978,
+      "sha256": "3b0d73976a304eb0fe99048b066e19e6006b35cb620737af4c8915acedf98b16",
+      "format": "jpeg",
+      "producer": "CASIO COMPUTER CO.,LTD.",
+      "warningCount": 1
+    },
+    {
+      "fixture": "jpg/tests/42_IndexError.jpg",
+      "bytes": 2913134,
+      "sha256": "d64e7c04839af125647d5a7500eb3b3e1b5c1ef81698a60e8b48b272f9ca5090",
+      "format": "jpeg",
+      "producer": "OLYMPUS IMAGING CORP.",
+      "warningCount": 3
+    },
+    {
+      "fixture": "jpg/tests/45-gps_ifd.jpg",
+      "bytes": 230349,
+      "sha256": "0a986ea141d5f8f8b7588d6217e9a2d12140a76ec36cb0a022710c3e9fdfc921",
+      "format": "jpeg",
+      "producer": "Polyphony Digital Inc.",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/tests/46_UnicodeEncodeError.jpg",
+      "bytes": 10514729,
+      "sha256": "3cf5ec5d6337fb31c90aa081654137c8e936b828809a2f3a91d2406188220090",
+      "format": "jpeg",
+      "producer": "Canon",
+      "warningCount": 7
+    },
+    {
+      "fixture": "jpg/tests/67-0_length_string.jpg",
+      "bytes": 162716,
+      "sha256": "d45980d197658e88f7a4452b379fc3e9b2feb37f1b271ad7e5ce8560da8c2b10",
+      "format": "jpeg",
+      "producer": "samsung",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/tests/87_OSError.jpg",
+      "bytes": 889829,
+      "sha256": "1f2b247e1ab6c26a41f670a7653404eda7eb198e923d71cafea04a0a934380e6",
+      "format": "jpeg",
+      "producer": "NIKON CORPORATION",
+      "warningCount": 2
+    },
+    {
+      "fixture": "jpg/tests/Xiaomi_Mi_9T_KeyError.jpg",
+      "bytes": 4137722,
+      "sha256": "cf0be8f4b96d3792e27ff54b4efddb20a5b063ed54925c501d32977fb5c2aba7",
+      "format": "jpeg",
+      "producer": "Xiaomi",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/tests/nikon_D3100_TypeError.jpg",
+      "bytes": 22150,
+      "sha256": "cd2de0459c0bdf5fada567b7beb5937a0bbfd3964d1122889bd8211f443a4267",
+      "format": "jpeg",
+      "producer": "NIKON CORPORATION",
+      "warningCount": 9
+    },
+    {
+      "fixture": "jpg/xmp/BlueSquare.jpg",
+      "bytes": 24205,
+      "sha256": "1e1cdf92904b5da35302c2655e5f7a2ea68d6bf8d9b3922225e3f2a17ba3bb6b",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "jpg/xmp/no_exif.jpg",
+      "bytes": 182252,
+      "sha256": "8e8c4a3233e1293fbe46933bdf38c85fdbcd070b8f5daa4f8b4342371d1d9673",
+      "format": "jpeg",
+      "producer": "unknown",
+      "warningCount": 0
+    },
+    {
+      "fixture": "tiff/Arbitro.tiff",
+      "bytes": 6925,
+      "sha256": "26f4b11c45ad3e56a530d03967ff4627892b3264183b85fefba194ff1fe3e08e",
+      "format": "tiff",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "tiff/BSG1.tiff",
+      "bytes": 288538,
+      "sha256": "f6e07811917470456d85bbe0d2c00f11fe57ea212afc33432e4457dfca6bd2a5",
+      "format": "tiff",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "tiff/Crémieux11.tiff",
+      "bytes": 10944,
+      "sha256": "bda84c06634c1dd5f79c324829c485ee39dd24bf6d91e7fd81986cd0520eea18",
+      "format": "tiff",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "tiff/DudleyLeavittUtah.tiff",
+      "bytes": 91504,
+      "sha256": "eabf6e832781b0c0130b8e0cb2533877ed11118bb08b7cdfe8939afe9997acc6",
+      "format": "tiff",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "tiff/Jobagent.tiff",
+      "bytes": 13068,
+      "sha256": "8038925348ca9606995c95438d50630982069063b7c428b126a3282a01f246cd",
+      "format": "tiff",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "tiff/Picoawards.tiff",
+      "bytes": 15512,
+      "sha256": "50dda7bf3c42e6c3979e25d6fec05d01e424274c8f28c4c9a911966d4faeb33e",
+      "format": "tiff",
+      "producer": "unknown",
+      "warningCount": 1
+    },
+    {
+      "fixture": "tiff/Rudless.tiff",
+      "bytes": 74954,
+      "sha256": "be28b5a40ad84fbeb9a2fa8fb34fe16cd22560ff7d0cf70cfad3da8183d02b21",
+      "format": "tiff",
+      "producer": "unknown",
+      "warningCount": 2
+    },
+    {
+      "fixture": "tiff/Tless0.tiff",
+      "bytes": 21994,
+      "sha256": "32f6aab90dc2d284a83040debe379e01333107b83a98c1aa2e6dabf56790b48a",
+      "format": "tiff",
+      "producer": "unknown",
+      "warningCount": 2
+    }
+  ]
+}

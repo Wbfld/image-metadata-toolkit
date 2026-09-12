@@ -1,0 +1,51 @@
+{
+  "schema": "browser-image-metadata/icc-reference-corpus@1",
+  "standard": "ICC.1:2022",
+  "source": {
+    "implementationUnderTest": "browser-image-metadata standards-based ICC.1:2022 decoder",
+    "oracle": "ExifTool 13.42 via exiftool-vendored 33.5.0",
+    "oracleLicense": "ExifTool: Perl Artistic License or GPL-1.0-or-later; exiftool-vendored.js: MIT",
+    "oracleProvenance": [
+      "https://exiftool.org/",
+      "https://github.com/photostructure/exiftool-vendored.js"
+    ],
+    "redistribution": "not redistributed; locally available system profiles only",
+    "retrieved": "2026-09-12",
+    "runner": "scripts/icc-reference-corpus.mjs",
+    "normalization": {
+      "localizedStrings": "one decoded ICC text/MLUC record only; multi-record values are non-comparable",
+      "fixedPoint": "XYZ and fixed-point values rounded to five decimal places",
+      "signatures": "four-character ICC padding trimmed; known labels mapped to signatures",
+      "curves": "TRC byte lengths compared; opaque oracle curves are explicitly non-comparable for form/gamma/samples",
+      "arrays": "parser array order preserved; no first/last selection"
+    }
+  },
+  "run": {
+    "date": "2026-09-12",
+    "corpusDirectory": "/System/Library/ColorSync/Profiles",
+    "profiles": 14,
+    "found": 263,
+    "comparable": 201,
+    "matched": 201,
+    "normalizedMatches": 201,
+    "mismatched": 0,
+    "nonComparable": 68,
+    "allProfilesComplete": true
+  },
+  "profiles": [
+    { "file": "ACESCG Linear.icc", "sha256": "49110baa1ffb2abaf4eac27ba83cd9e79e2d49f62b5ba94f406365a83ae9a827" },
+    { "file": "AdobeRGB1998.icc", "sha256": "304f569a83c1e5eddaddac54e99ed03339333db013738bb499ab64f049887e28" },
+    { "file": "DCI(P3) RGB.icc", "sha256": "736431a84f4b3a74913af17316f0ff5f98db2cdd4738e6d67e9d6831428791d2" },
+    { "file": "Display P3.icc", "sha256": "20789fdbea9835251a4f0796c8bf45cbd964896044886540da21ffc7457af0ab" },
+    { "file": "Generic CMYK Profile.icc", "sha256": "0c8a584b288a306eac9e1d3f1e68bc1b64331c717ceb051420e6257f17b3509a" },
+    { "file": "Generic Gray Gamma 2.2 Profile.icc", "sha256": "73d504558e7d03ef4ff2676ba62c7553ee5bd856b45da2d330e33e012ad61fb3" },
+    { "file": "Generic Gray Profile.icc", "sha256": "0ef4da994a2b833d54af2d4ecbb2c6654b7198ad9e6bd80ed86d684e54fd37d3" },
+    { "file": "Generic Lab Profile.icc", "sha256": "42831b7c1a5fb25d738bd5c09c67343363f897f63053f808f2b3315fc4ef8215" },
+    { "file": "Generic RGB Profile.icc", "sha256": "49429d4dd70f439f6fa47a298e5ffbd280375d2cbd18708b1e05a34aafe5d219" },
+    { "file": "Generic XYZ Profile.icc", "sha256": "358fecec016b7c44d0e2af5e608c7c3f4aef834c2beb8fce6859e724a1b8a39e" },
+    { "file": "ITU-2020.icc", "sha256": "fbeb93829179232121e0ef0ce9ec92e2d8844b86d319b98d7915143f294a6cd0" },
+    { "file": "ITU-709.icc", "sha256": "ac17db72f76f7ae4feb3681076ae0395d53ba22cea12ff346984a2f414d7c379" },
+    { "file": "ROMM RGB.icc", "sha256": "8004970ea74ffd17a2c5cee9468aece4080b75687147011226763c7dca2ee879" },
+    { "file": "sRGB Profile.icc", "sha256": "2b3aa1645779a9e634744faf9b01e9102b0c9b88fd6deced7934df86b949af7e" }
+  ]
+}

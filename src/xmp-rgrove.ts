@@ -1,5 +1,5 @@
 import { parseXml } from "@rgrove/parse-xml";
-import { parseStructuredXmp, parseStructuredXmpBytes } from "./metadata/xmp.js";
+import { parseStructuredXmpBytes, parseStructuredXmpDetailed } from "./metadata/xmp.js";
 import type { StructuredXmpOptions, StructuredXmpPacket } from "./metadata/xmp.js";
 
 function isSafePacket(packet: string, maxInputBytes: number): boolean {
@@ -10,19 +10,21 @@ function isSafePacket(packet: string, maxInputBytes: number): boolean {
 
 /**
  * Validate an XMP packet with the optional standards-focused `@rgrove/parse-xml`
- * parser, then return the package's bounded RDF-oriented property map. This
+ * parser, then return the package's bounded namespace-aware RDF/XMP model. This
  * entry point is separate so the core reader and default XMP entry point have
  * no runtime dependency on the optional peer.
  */
 export function parseStructuredXmpWithRgrove(packet: string, options: StructuredXmpOptions = {}): StructuredXmpPacket | null {
   const maxInputBytes = options.maxInputBytes ?? 1024 * 1024;
   if (!isSafePacket(packet, maxInputBytes)) return null;
+  const canonical = parseStructuredXmpDetailed(packet, options).value;
+  if (canonical === null) return null;
   try {
     parseXml(packet);
   } catch {
     return null;
   }
-  return parseStructuredXmp(packet, options);
+  return canonical;
 }
 
 /** Validate UTF-8 XMP bytes with the optional `@rgrove/parse-xml` adapter. */

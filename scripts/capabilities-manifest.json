@@ -10,11 +10,19 @@
     { "key": "losslessRemoval", "label": "Lossless removal" },
     { "key": "strictSanitization", "label": "Strict sanitization" }
   ],
+  "outputAdapters": {
+    "lossless": ["toJsonSafeResult", "toLosslessFamilyGroups", "queryMetadata", "queryStructuredXmp", "queryImageDetails", "queryIptcSemantic", "queryIccTags"],
+    "migration": ["toFlatObject", "toFamilyGroups", "toExifReaderCompatible", "toExifrCompatible"],
+    "browser": "browser-image-metadata/browser-thumbnail",
+    "duplicateDefault": "preserve",
+    "maxAdapterItems": 8192,
+    "maxAdapterOutputBytes": 4194304
+  },
   "formats": [
     {
       "format": "JPEG",
       "code": "jpeg",
-      "read": "Dimensions, EXIF, XMP, IPTC-IIM, ICC header and tag directory, JFIF",
+      "read": "Dimensions and image details, EXIF, XMP, IPTC-IIM, decoded common ICC tags, JFIF",
       "selectiveDecode": "EXIF tags and metadata groups",
       "jpegHeaderBlobRead": "Yes",
       "metadataBlobFileRead": "Yes",
@@ -31,7 +39,7 @@
     {
       "format": "PNG",
       "code": "png",
-      "read": "Dimensions, EXIF, XMP, ICC header, text chunks",
+      "read": "Dimensions and image details, EXIF, XMP, decoded common ICC tags, text chunks",
       "selectiveDecode": "EXIF and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes",
@@ -48,10 +56,10 @@
     {
       "format": "TIFF / BigTIFF",
       "code": "tiff",
-      "read": "Dimensions, EXIF, XMP, IPTC-IIM, ICC header",
+      "read": "Dimensions and image details, EXIF, XMP, IPTC-IIM, decoded common ICC tags",
       "selectiveDecode": "EXIF tags and metadata groups",
       "jpegHeaderBlobRead": "No",
-      "metadataBlobFileRead": "Yes (classic TIFF only)",
+      "metadataBlobFileRead": "Yes (classic TIFF and BigTIFF)",
       "losslessRemoval": "No",
       "strictSanitization": "No",
       "positiveFixture": "tiff-metadata.tif",
@@ -65,7 +73,7 @@
     {
       "format": "WebP",
       "code": "webp",
-      "read": "Dimensions, EXIF, XMP, ICC header",
+      "read": "Dimensions and image details, EXIF, XMP, decoded common ICC tags",
       "selectiveDecode": "EXIF and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes",
@@ -82,7 +90,7 @@
     {
       "format": "GIF",
       "code": "gif",
-      "read": "Dimensions, comments, animation loop data, XMP application extensions",
+      "read": "Dimensions and image details, comments, animation loop data, XMP application extensions",
       "selectiveDecode": "XMP only",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "No",
@@ -116,7 +124,7 @@
     {
       "format": "HEIF",
       "code": "heif",
-      "read": "Primary dimensions, EXIF, XMP, ICC header, transforms, nclx",
+      "read": "Primary dimensions and image details, EXIF, XMP, decoded common ICC tags, transforms, nclx",
       "selectiveDecode": "EXIF tags and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes",
@@ -133,7 +141,7 @@
     {
       "format": "AVIF",
       "code": "avif",
-      "read": "Primary dimensions, EXIF, XMP, ICC header, transforms, nclx",
+      "read": "Primary dimensions and image details, EXIF, XMP, decoded common ICC tags, transforms, nclx",
       "selectiveDecode": "EXIF tags and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes",
@@ -152,6 +160,7 @@
     "Detection is signature recognition only; it is not a claim that every metadata family is supported.",
     "Partial Blob/File scopes report completeness.scope, bytesRead, inputBytes, and coverage reasons.",
     "Unsupported and malformed structures remain visible through capabilities, coverage, warnings, and explicit redaction outcomes.",
-    "The public npm brand and import name are browser-image-metadata; image-metadata-toolkit is the repository slug only."
+    "The public npm brand and import name are browser-image-metadata; image-metadata-toolkit is the repository slug only.",
+    "IPTC Photo Metadata 2025.1 semantics are additive through iptcSemantic/readIptcSemantic; all IIM and URI-aware XMP candidates and conflicts remain available, while unknown XMP remains conservatively classified."
   ]
 }

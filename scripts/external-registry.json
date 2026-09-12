@@ -995,6 +995,141 @@
       ]
     },
     {
+      "name": "ImageTitle",
+      "family": "EXIF",
+      "references": ["ImageTitle"]
+    },
+    {
+      "name": "Photographer",
+      "family": "EXIF",
+      "references": ["Photographer"]
+    },
+    {
+      "name": "ImageEditor",
+      "family": "EXIF",
+      "references": ["ImageEditor"]
+    },
+    {
+      "name": "CameraFirmware",
+      "family": "EXIF",
+      "references": ["CameraFirmware"]
+    },
+    {
+      "name": "RAWDevelopingSoftware",
+      "family": "EXIF",
+      "references": ["RAWDevelopingSoftware"]
+    },
+    {
+      "name": "ImageEditingSoftware",
+      "family": "EXIF",
+      "references": ["ImageEditingSoftware"]
+    },
+    {
+      "name": "MetadataEditingSoftware",
+      "family": "EXIF",
+      "references": ["MetadataEditingSoftware"]
+    },
+    {
+      "name": "OECF",
+      "family": "EXIF",
+      "references": ["OECF"]
+    },
+    {
+      "name": "SubjectArea",
+      "family": "EXIF",
+      "references": ["SubjectArea"]
+    },
+    {
+      "name": "SpatialFrequencyResponse",
+      "family": "EXIF",
+      "references": ["SpatialFrequencyResponse"]
+    },
+    {
+      "name": "Temperature",
+      "family": "EXIF",
+      "references": ["Temperature"]
+    },
+    {
+      "name": "Humidity",
+      "family": "EXIF",
+      "references": ["Humidity"]
+    },
+    {
+      "name": "Pressure",
+      "family": "EXIF",
+      "references": ["Pressure"]
+    },
+    {
+      "name": "WaterDepth",
+      "family": "EXIF",
+      "references": ["WaterDepth"]
+    },
+    {
+      "name": "Acceleration",
+      "family": "EXIF",
+      "references": ["Acceleration"]
+    },
+    {
+      "name": "CameraElevationAngle",
+      "family": "EXIF",
+      "references": ["CameraElevationAngle"]
+    },
+    {
+      "name": "Gamma",
+      "family": "EXIF",
+      "references": ["Gamma"]
+    },
+    {
+      "name": "LearningOptOutIn",
+      "family": "EXIF",
+      "references": ["LearningOptOutIn"]
+    },
+    {
+      "name": "DevelopmentType",
+      "family": "EXIF",
+      "references": ["DevelopmentType"]
+    },
+    {
+      "name": "DevelopmentTypeDescription",
+      "family": "EXIF",
+      "references": ["DevelopmentTypeDescription"]
+    },
+    {
+      "name": "DistortionCorrection",
+      "family": "EXIF",
+      "references": ["DistortionCorrection"]
+    },
+    {
+      "name": "ChromaticAberrationCorrection",
+      "family": "EXIF",
+      "references": ["ChromaticAberrationCorrection"]
+    },
+    {
+      "name": "ShadingCorrection",
+      "family": "EXIF",
+      "references": ["ShadingCorrection"]
+    },
+    {
+      "name": "NoiseReduction",
+      "family": "EXIF",
+      "references": ["NoiseReduction"]
+    },
+    {
+      "name": "CompositeImage",
+      "family": "EXIF",
+      "references": ["CompositeImage"]
+    },
+    {
+      "name": "SourceImageNumberOfCompositeImage",
+      "family": "EXIF",
+      "references": ["SourceImageNumberOfCompositeImage"]
+    },
+    {
+      "name": "SourceExposureTimesOfCompositeImage",
+      "family": "EXIF",
+      "references": ["SourceExposureTimesOfCompositeImage"]
+    },
+    {
       "name": "XMP-dc:Title",
       "family": "XMP",
       "references": [

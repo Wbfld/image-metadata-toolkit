@@ -2,6 +2,17 @@
 
 ## 2.0.0-alpha.3 — unreleased
 
+- completed S09 output adapters: bounded deterministic field/family/detail/IPTC/
+  ICC queries, lossless canonical-family and JSON-safe result views, explicit
+  duplicate and migration policies, reversible binary/rational/64-bit tags,
+  conversion/loss documentation, and a failure-safe idempotent browser
+  thumbnail object-URL lifecycle; the core parser remains dependency-free and
+  no second synchronous parser was introduced;
+
+- added the S06 IPTC Photo Metadata 2025.1 generated vocabulary and additive
+  semantic model, including URI-aware XMP mappings, complete recognized IIM
+  definitions, lossless candidates/conflicts, provenance, validation,
+  fail-closed privacy classifications, and bounded semantic processing;
 - added bounded `ByteSource` adapters for byte views and Blob/File ranges with
   overlap coalescing, an LRU cache, aborts, read budgets, and telemetry;
 - preserved original JPEG source offsets and provenance when metadata-scoped
@@ -22,6 +33,11 @@
   policy reason codes; strict sanitization now rejects unclassified metadata;
 - added root-level structured-XMP helpers that preserve one result per original
   packet, including bounded decode failures.
+- completed the S08 common image/container-details model with bounded,
+  provenance-preserving candidates for JPEG, PNG/APNG, WebP, GIF, TIFF/
+  BigTIFF, HEIF/AVIF, and honest conditional JPEG XL coverage; conflicting
+  dimensions, transforms, alpha states, animation declarations, and image
+  relationships remain visible instead of being silently selected.
 - added bounded BigTIFF parsing for both byte orders, including 64-bit IFD
   pointers, safe legacy EXIF decoding, and exact out-of-range integer values.
 - added GIF dimensions, comments, animation loop/frame metadata, and bounded
@@ -30,6 +46,16 @@
   raw-codestream inspection limits.
 - added validated ICC profile-tag directory entries, including signatures,
   byte ranges, and invalid-range status without exposing unbounded profile data.
+- completed bounded ICC common-payload decoding from ICC.1:2022, including
+  legacy `desc`/MLUC text, XYZ and colorant structures, sampled/parametric
+  curves, measurement/viewing conditions, signatures, LUT headers, exact
+  shared-range handling, partial-overlap rejection, standards-correct
+  measurement illuminant codes, and an opt-in hash-pinned semantic differential
+  corpus runner using ExifTool as an output oracle.
+- added a bounded, namespace-aware RDF/XMP model with ordered arrays,
+  language alternatives, typed and nested resources, qualifiers, aliases,
+  packet/block provenance, explicit merge conflict policies, and safe parser
+  adapter validation across all supported XMP-bearing containers.
 
 ## 2.0.0-alpha.2
 
@@ -133,6 +159,8 @@ Initial public release:
 - normalized EXIF fields with raw values, descriptions, sensitivity, and
   validation warnings;
 - XMP, IPTC-IIM, JFIF, PNG text, and bounded ICC header inspection;
+- bounded common ICC payload decoding, provenance-preserving image details,
+  deterministic output/query adapters, and a browser thumbnail URL lifecycle;
 - lossless JPEG metadata removal and selected PNG metadata-chunk removal;
 - ESM, CommonJS, browser, Web Worker, Node.js, and Deno-compatible APIs;
 - no runtime dependencies and no network access from the parser;

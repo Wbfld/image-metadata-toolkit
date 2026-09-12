@@ -105,6 +105,7 @@ function webpChunk(type: string, data: Uint8Array): Uint8Array {
 
 function selectedPngChunk(type: string, selection: ResolvedSelection): boolean {
   if (type === "IHDR" || type === "IEND") return true;
+  if (type === "acTL" || type === "fcTL") return wantsGroup(selection, "Dimensions");
   if (type === "eXIf") return wantsGroup(selection, "EXIF");
   if (type === "iCCP") return wantsGroup(selection, "ICC");
   if (type === "tEXt" || type === "zTXt" || type === "iTXt") return wantsGroup(selection, "PNGText") || wantsGroup(selection, "XMP");
@@ -112,6 +113,7 @@ function selectedPngChunk(type: string, selection: ResolvedSelection): boolean {
 }
 
 function selectedWebpChunk(type: string, selection: ResolvedSelection): boolean {
+  if (type === "ANIM" || type === "ANMF") return wantsGroup(selection, "Dimensions");
   if (type === "EXIF") return wantsGroup(selection, "EXIF");
   if (type === "XMP ") return wantsGroup(selection, "XMP");
   if (type === "ICCP") return wantsGroup(selection, "ICC");

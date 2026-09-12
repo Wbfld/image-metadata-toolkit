@@ -4,7 +4,7 @@ Parse, explain, validate, and privacy-redact image metadata locally in browsers,
 
 The package has no runtime dependencies. It accepts `ArrayBuffer`, any `ArrayBufferView` (including Node.js `Buffer`), `Blob`, and browser `File` inputs.
 
-> **Current scope:** JPEG, PNG, TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, AVIF, IPTC-IIM, and bounded ICC header and tag-directory inspection are implemented. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. HEIF/AVIF safely inspect direct EXIF/XMP boxes, standard `iinf`/`iloc` metadata items stored in-file or in their own `idat`, `cdsc` primary-image associations, and primary-item `colr` ICC or `nclx` colour data. Arbitrary metadata writing and HEIF/AVIF rewriting are not exposed.
+> **Current scope:** JPEG, PNG, TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, AVIF, IPTC-IIM, typed common ICC payloads, and bounded image/container details are implemented. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. HEIF/AVIF safely inspect direct EXIF/XMP boxes, standard `iinf`/`iloc` metadata items stored in-file or in their own `idat`, `cdsc` primary-image associations, and primary-item `colr` ICC or `nclx` colour data. Arbitrary metadata writing and HEIF/AVIF rewriting are not exposed.
 
 > **Support boundaries:** Container detection is signature recognition, not a promise of full metadata support. Blob/File preview and metadata scopes are intentionally partial and report `completeness` and `coverage`; malformed, opaque, and unsupported structures remain visible through warnings and explicit outcomes. TIFF/WebP/HEIF/AVIF writing, MakerNote interpretation, image-sequence semantics, and arbitrary metadata editing are unsupported—check [the generated capability matrix](./CAPABILITIES.md) before relying on a format or operation.
 
@@ -76,9 +76,15 @@ offers a concise starting point for application views. Use
 `indexMetadataFields(result)` when repeated field lookup is needed while
 preserving duplicates under `allByName`.
 
-Use `readStructuredXmp(file)` when an application needs bounded RDF properties
-from retained XMP packets. It keeps packet-level failures visible instead of
-discarding malformed or unsafe XML.
+Use `readStructuredXmp(file)` when an application needs a bounded, lossless
+RDF/XMP view of retained packets. The result preserves namespace URIs,
+qualified names, ordered duplicate properties, Bag/Seq/Alt arrays, language
+alternatives, typed and lexical values, nested resources, qualifiers, aliases,
+and embedded/Extended-XMP packet provenance. Packet candidates are never
+silently merged; call `mergeStructuredXmp()` when an explicit conflict policy
+is desired. The old `namespaces`/`properties` map remains available as a
+documented compatibility view, while `.rdf` is the round-trip-ready model.
+Malformed or unsafe XML stays visible through per-document diagnostics.
 
 Advanced integrations can use `createByteSource(input)` for validated seekable
 ranges over byte views or Blob/File inputs. Overlapping reads are coalesced,
@@ -122,10 +128,11 @@ TIFF, HEIF, and AVIF readers. Unrequested decoded metadata is skipped; TIFF,
 HEIF, and AVIF follow bounded directory or box structures while they inspect
 metadata.
 
-For JPEG, PNG, WebP, classic TIFF, HEIF, and AVIF `Blob` or `File` inputs, use
+For JPEG, PNG, WebP, classic TIFF/BigTIFF, HEIF, and AVIF `Blob` or `File` inputs, use
 `scope: "metadata"` to skip image payload ranges and read only selected
 metadata. JPEG follows marker lengths and reads selected APP/SOF segments;
-PNG/WebP traverse chunk headers; TIFF follows bounded IFD/value offsets. The
+PNG/WebP traverse chunk headers; TIFF/BigTIFF follows bounded directory and
+value offsets, including SubIFDs and chained directories. The
 result records `completeness.bytesRead` and
 `completeness.inputBytes`. HEIF and AVIF reconstruct bounded `meta` boxes and
 read only selected metadata item extents; malformed or unsupported layouts
@@ -144,6 +151,7 @@ The result always has this stable top-level shape:
   mimeType,
   dimensions,
   fields,  // normalized common fields
+  composites, // typed EXIF interpretations with provenance and conflicts
   exif,    // every safely decoded EXIF entry, including unknown tags
   xmp,
   iptc,
@@ -174,6 +182,24 @@ Every normalized field includes:
 ```
 
 `raw` preserves the decoded source value. TIFF `RATIONAL` and `SRATIONAL` values remain exact `{ numerator, denominator }` pairs rather than being silently rounded. `value` carries validated or interpreted semantics, while `display` is a human-readable explanation. PNG `tEXt`, `zTXt`, and `iTXt` entries are available in `pngText`; XMP `iTXt` packets are also exposed through `xmp`.
+
+## EXIF interpretations and composites
+
+When EXIF is present, `result.composites` contains typed `captureTime`, `gpsTime`,
+`fieldOfView`, `exposureValue`, `equivalence35mm`, `orientation`, and
+`primaryDisplayDimensions` values. Each composite records every source field ID,
+candidate, derivation, uncertainty, conflict, and diagnostic; raw EXIF fields are
+never replaced. `getExifComposites(result)` and `readExifComposites(input)` expose
+the same model directly.
+
+Normalization is lenient by default for compatibility: a usable candidate can be
+returned with `partial` or `ambiguous` uncertainty while invalid inputs remain
+raw and warnings are emitted. Pass `{ normalization: "strict" }` to withhold a
+composite whenever a required input is invalid or conflicting; strict diagnostics
+are errors and therefore make `result.completeness.complete` false. No timezone is
+inferred for offset-free EXIF capture times, and field-of-view derivation requires
+focal length, focal-plane resolutions, a legal resolution unit, and primary pixel
+dimensions.
 
 ## Remove private metadata without recompressing pixels
 
@@ -218,9 +244,42 @@ GPS degrees/minutes/seconds and hemisphere references are validated together. Al
 
 Unknown EXIF tags are retained in `result.exif.fields` with their numeric tag, TIFF type, count, exact raw value, and a generated name.
 
+`result.exif.topology` is the complete bounded TIFF directory graph. It retains
+stable directory identities, source offsets, parent/pointer/next relationships,
+shared offsets, cycles, and associated-image roles for primary, thumbnail, and
+preview directories. The legacy `result.exif.ifds` summaries remain available;
+fields additionally carry `directoryId` and `source.directoryId`, so duplicate
+tags from distinct SubIFDs remain distinguishable. Directory-level block
+provenance exposes the same relationships. Strip and tile offsets are treated
+as encoded pixel payloads and are never followed as metadata directories.
+`result.exif.associatedImages` provides bounded thumbnail/preview offset and
+length references without decoding their image payloads.
+
 Photoshop APP13 IPTC-IIM datasets are exposed as `result.iptc.fields` and in `result.fields` with stable `IPTC:record:dataset` identifiers. Repeated datasets such as `Keywords` are preserved as separate entries. The declared IPTC coded character set is honored for UTF-8 (`ESC % G`); each field retains exact raw bytes, and unsupported encodings remain raw with warnings. Urgency, dates, times, and country codes are validated.
 
-Complete JPEG APP2, PNG iCCP, and WebP ICCP profiles expose bounded header fields through `result.icc.fields` and `result.fields` (profile size, version, device class, color space, PCS, and rendering intent). `result.icc.tags` exposes each bounded tag-directory signature and range without decoding tag payloads or color transforms.
+S06 adds `result.iptcSemantic`, `getIptcSemantic(result)`, and
+`readIptcSemantic(input)`. This additive view is generated from the official
+IPTC Photo Metadata Standard 2025.1 TechReference and covers IPTC Core and
+Extension, Dublin Core, Photoshop, PLUS, and XMP Rights. It maps by namespace
+URI and local name, retaining ordered arrays, language alternatives, nested
+resources, qualifiers, lexical values, unknown values, all duplicate/conflicting
+IIM and XMP candidates, packet/block/offset provenance, and validation state.
+The default `preserve-all` policy does not choose IIM over XMP; callers can
+request an explicit `first` or `last` convenience value while candidates remain
+authoritative. Privacy auditing classifies populated semantic fields
+conservatively and continues to report `RAW_XMP` for retained packets.
+The official 2025.1 and 2023.1 reference-image URLs, editions, retrieval dates,
+licenses, SHA-256 values, expected property identities, and normalized semantic
+evidence hashes are recorded in `data/iptc/reference-images.json`. Use
+`IPTC_REFERENCE_CORPUS_DIR=/path/to/images npm run iptc:reference` after
+downloading both official images outside the repository. The command fails for
+a missing directory, either missing image, a hash mismatch, or a partial run;
+it writes redistribution-safe JSON and Markdown conformance reports (no image
+bytes) to `reports/`, or to `IPTC_REFERENCE_REPORT_DIR` when set.
+
+Complete JPEG APP2, PNG iCCP, WebP ICCP, TIFF/BigTIFF, and HEIF/AVIF ICC profiles expose bounded header fields through `result.icc.fields` and typed common payloads through `result.icc.decodedTags` (text, MLUC, XYZ, curves, matrices, measurements, colorants, signatures, and LUT structure). Unknown payloads remain bounded profile-relative ranges; no color transform is applied.
+
+The S07 ICC interoperability gate is `ICC_REFERENCE_CORPUS_DIR=/path/to/hash-pinned-profiles ICC_REFERENCE_CORPUS_OUTPUT_DIR=reports npm run icc:reference`. It requires the complete corpus listed in `data/icc/reference-corpus.json`, runs the standards-based decoder before pinned ExifTool 13.42 output, compares header and decoded ICC semantics where both tools expose them, records explicit non-comparable curve/array values, and fails on missing, partial, or mismatching evidence. The checked redistribution-safe evidence is in `reports/icc-reference-report.json` and `reports/icc-reference-report.md`; profile files are never written to the repository.
 
 ## Format status
 
@@ -326,6 +385,9 @@ can import `browser-image-metadata/xmp/rgrove` for standards-focused XML
 validation before the same bounded RDF mapping. `browser-image-metadata/worker` exports
 `createMetadataWorkerClient()` and `installMetadataWorker()` for module-worker
 integration with request IDs, transferable buffers, bounded queues, and cleanup.
+`browser-image-metadata/adapters` provides the dependency-free output/query
+helpers without requiring callers to import the parser entry point, while the
+root exports remain compatible.
 
 ## Security limits
 
@@ -347,8 +409,16 @@ All offsets and lengths are checked before reads or slices. PNG IDAT image data 
 | PNG chunks | 4,096 |
 | PNG decompressed text | 8 MiB |
 | Cumulative decoded metadata | 16 MiB |
+| ICC decoded tag payloads | 1,024 |
+| ICC localized strings/curve elements | 16,384 |
+| ICC retained decoded output | 4 MiB |
+| Image-detail candidates | 4,096 |
+| Image-detail animation frames | 4,096 |
+| Image-detail relationships | 4,096 |
+| Adapter output items | 8,192 |
+| Adapter output bytes | 4 MiB |
 
-Callers can tighten any limit. `maxDecompressedBytes` limits one compressed chunk, while `maxDecompressedMetadataBytes` limits decoded output across PNG text and compressed ICC chunks:
+Callers can tighten any limit. `maxDecompressedBytes` limits one compressed chunk, while `maxDecompressedMetadataBytes` limits decoded output across PNG text and compressed ICC chunks. `maxAdapterItems` and `maxAdapterOutputBytes` bound deterministic queries and JSON-safe/adaptor retention; truncation is represented explicitly. Image details are header-only: pixel, strip, tile, IDAT, entropy-coded, and item payload bytes are not fetched or decoded solely to populate `result.details`:
 
 ```ts
 const result = await parseMetadata(bytes, {
@@ -383,8 +453,8 @@ The [capability matrix](./CAPABILITIES.md) and [migration guide](./MIGRATION.md)
 
 ## Known limitations
 
-- JPEG, PNG, classic TIFF, WebP, HEIF, and AVIF metadata are parsed in this release; IPTC and ICC remain container-scoped inspections, and JPEG, PNG, plus WebP metadata chunks can be redacted.
-- XMP remains available as its original UTF-8 packet by default. The optional `browser-image-metadata/xmp` entry point decodes bounded RDF properties with no DTD or entity support, or applies an application's supplied decoder behind the same packet and output bounds. ICC inspection is limited to the profile header and does not interpret color transforms or tag payloads.
+- JPEG, PNG, classic TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, and AVIF metadata are parsed in this release. ICC common payloads and image/container details are additive, bounded inspections; JPEG, PNG, plus WebP metadata chunks can be redacted.
+- XMP remains available as its original UTF-8 packet by default. The optional `browser-image-metadata/xmp` entry point decodes bounded RDF properties with no DTD or entity support, or applies an application's supplied decoder behind the same packet and output bounds. ICC inspection decodes common bounded payload types and exposes unknown payloads as ranges; it never applies color transforms.
 - MakerNote interpretation, image sequences, and complete HEIF/AVIF item-property semantics are not implemented. JPEG extended XMP is reassembled when referenced by a standard XMP packet. HEIF/AVIF inspection uses bounded primary-item `pitm`/`ipma` associations for `ispe` dimensions, `irot`/`imir` transforms, `colr` `prof`/`rICC` profiles, and `nclx` parameters. It follows `cdsc` references from metadata items to the primary image when selecting Exif and MIME RDF/XML metadata; without such references it preserves the legacy all-recognized-item behavior. It resolves bounded metadata through `iinf`/`iloc` construction method 0 (this file) or method 1 (the same `meta` box's `idat`), or direct metadata boxes. TIFF/WebP/HEIF/AVIF writing remains unsupported.
 - EXIF date strings do not imply a timezone unless a separate offset tag exists. `getMetadataSummary()` combines valid offset/subsecond companions while retaining that uncertainty when no offset is stored.
 - Redaction removes metadata; arbitrary metadata editing and pixel-orientation transforms are outside the first-release API.

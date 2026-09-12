@@ -40,11 +40,13 @@ parsing. Each report records the percentile method, sample counts, Node version,
 operating system, CPU architecture, package versions, fixture SHA-256 hashes,
 and min/median/p95 timing values.
 
-Transport data is measured independently of timing. The remote-range scenario
-records actual range requests, bytes fetched, cache hits, and coalesced reads
-from an instrumented Blob adapter. ExifReader and exifr receive the same bytes
-through a full-input baseline, so their one request and full byte count are
-visible rather than silently omitted.
+Transport data is measured independently of timing. Every transport record
+separately names `sourceInputBytes` (the fixture size) and `actualBytesRead`
+(bytes consumed by the reader), alongside actual range requests, cache hits,
+and coalesced reads. The remote-range scenario records these values from an
+instrumented Blob adapter. ExifReader and exifr receive the same bytes through
+a full-input baseline, so their one request and full byte count are visible
+rather than silently omitted.
 
 The benchmark implementation is split across
 [`scripts/benchmark.mjs`](./scripts/benchmark.mjs),
@@ -56,19 +58,27 @@ The scenario and transport contracts are regression-tested in
 
 ## Release baseline
 
-Before a release, capture the test/coverage/build baseline and review the
-resulting JSON:
+Before a release, capture the complete test/coverage/build/benchmark baseline
+and review the resulting JSON:
 
 ```sh
-npm run baseline -- --output baselines/2.0.0-alpha.3.json
+npm run baseline
 npm run baseline:verify
 ```
 
-The baseline command emits runtime and git state for traceability, package
-version, fixture hashes, installed competitor versions, test totals, coverage,
-tarball size, and export-entry sizes. The checked-in baseline pins the
-package/fixture/competitor contract, so verification deliberately fails if any
-of those change; update it only after reviewing that change.
+The release command emits a schema-validated JSON baseline with a deterministic
+stable contract for package identity, fixture hashes, pinned competitor
+versions, test totals, reproducible line/statement/function coverage counters,
+tarball identity, every public export target,
+the complete built distribution inventory, and benchmark transport evidence.
+The complete coverage summary, including branch counters, remains in the report;
+the V8 branch map is validated but excluded from stable identity because its
+worker merge can vary for unchanged TypeScript sources. It also records
+explicitly labelled environment observations, including git state, runtime, and
+separate cold/warm measurements. `npm run check` verifies
+the checked-in stable contract after its normal coverage and build steps; it
+does not invoke those steps recursively. Update the checked-in baseline only
+after reviewing the complete release report.
 
 Browser byte-read, cancellation, and module-worker behavior are covered
 separately by `npm run test:browser`. Deno ESM runtime compatibility is covered

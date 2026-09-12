@@ -1,8 +1,28 @@
 import { createHash } from "node:crypto";
-import { TextDecoder } from "node:util";
+import { TextDecoder, TextEncoder } from "node:util";
 
-export const REPORT_SCHEMA = "browser-image-metadata.external-report.v1";
+export const REPORT_SCHEMA = "browser-image-metadata.external-report.v2";
 export const METRIC_KEYS = ["found", "matched", "normalizedMatch", "mismatched", "missingLocal", "missingReference"];
+export const NORMALIZATION_POLICY = Object.freeze({
+  id: "browser-image-metadata.external-normalization.v1",
+  description: "Compare JSON-safe values exactly first, then apply only the documented scalar, rational, date, whitespace, byte-string, and ExifTool-display normalizations.",
+  rules: [
+    "Exact JSON-safe equality is checked before normalization.",
+    "Numbers use an absolute tolerance of 1e-8 and a relative tolerance of 1e-7.",
+    "Rational strings and rational objects are compared by numeric value.",
+    "NUL-terminated and printable byte strings are trimmed and decoded as UTF-8 where valid.",
+    "Whitespace is collapsed in strings; EXIF YYYY:MM:DD dates are compared as ISO-like dates without inferring a timezone.",
+    "ExifTool date objects use their rawValue; binary-data placeholders are accepted as normalized matches for bounded opaque payloads.",
+    "The EXIF UserComment ASCII encoding prefix is removed before printable byte-string comparison.",
+    "GPS degree/minute/second arrays may be compared with their absolute decimal-degree value; no sign is inferred without its reference tag.",
+  ],
+});
+
+const ALLOWED_STATUSES = new Set(["mismatched", "missing-local", "missing-reference", "*"]);
+
+function isSemver(value) {
+  return typeof value === "string" && /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.test(value);
+}
 
 export function validateRegistry(registry) {
   if (registry?.schema !== "browser-image-metadata.external-registry.v1" || !Number.isSafeInteger(registry.version) || registry.version < 1 || !Array.isArray(registry.fields) || !Array.isArray(registry.blocks)) throw new Error("External registry schema is invalid.");
@@ -24,7 +44,26 @@ export function validateAllowlist(allowlist) {
   for (const entry of allowlist.entries) {
     const issueUrl = entry.issueUrl ?? entry.issue;
     const expiryVersion = entry.expiryVersion ?? entry.expires;
-    if (typeof entry.key !== "string" || typeof entry.status !== "string" || typeof entry.producer !== "string" || typeof entry.fixture !== "string" || typeof issueUrl !== "string" || !/^https?:\/\//.test(issueUrl) || typeof expiryVersion !== "string" || !/^\d+\.\d+\.\d+$/.test(expiryVersion)) throw new Error("Every external allowlist entry requires key, status, scope, issue URL, and semver expiry.");
+    const scope = entry.scope;
+    let parsedIssue;
+    try {
+      parsedIssue = new URL(issueUrl);
+    } catch {
+      parsedIssue = null;
+    }
+    if (
+      typeof entry.key !== "string" || entry.key.length === 0
+      || !ALLOWED_STATUSES.has(entry.status)
+      || typeof entry.producer !== "string" || entry.producer.length === 0
+      || typeof entry.fixture !== "string" || entry.fixture.length === 0
+      || typeof entry.reason !== "string" || entry.reason.trim().length === 0
+      || parsedIssue === null || !["http:", "https:"].includes(parsedIssue.protocol) || parsedIssue.hostname.length === 0 || parsedIssue.pathname === "/"
+      || !isSemver(expiryVersion)
+      || scope === null || typeof scope !== "object"
+      || scope.key !== entry.key || scope.status !== entry.status
+      || scope.producer !== entry.producer || scope.fixture !== entry.fixture
+      || typeof scope.format !== "string" || scope.format.length === 0
+    ) throw new Error("Every external allowlist entry requires a reason, explicit field/status/producer/format/fixture scope, issue URL, and semver expiry.");
   }
   return allowlist;
 }
@@ -48,6 +87,8 @@ function jsonSafe(value) {
 
 function normalizedValue(value) {
   if (value instanceof Uint8Array) {
+    const asciiUserCommentPrefix = [0x41, 0x53, 0x43, 0x49, 0x49, 0x00, 0x00, 0x00];
+    if (asciiUserCommentPrefix.every((byte, index) => value[index] === byte)) return normalizedValue(value.subarray(asciiUserCommentPrefix.length));
     const withoutNul = [...value].filter((byte, index, bytes) => byte !== 0 || index < bytes.findLastIndex((candidate) => candidate !== 0));
     if (withoutNul.length > 0 && withoutNul.every((byte) => byte >= 0x20 && byte <= 0x7e)) return normalizedValue(String.fromCharCode(...withoutNul).trim());
     return normalizedValue([...value]);
@@ -96,6 +137,14 @@ function stable(value) {
   return JSON.stringify(jsonSafe(value));
 }
 
+export function canonicalJson(value) {
+  return stable(value);
+}
+
+export function sha256Json(value) {
+  return sha256(new TextEncoder().encode(canonicalJson(value)));
+}
+
 function normalizedStable(value) {
   return JSON.stringify(normalizedValue(value));
 }
@@ -127,15 +176,23 @@ function uniqueValues(values) {
   });
 }
 
+function isExifIfd(ifd) {
+  return /^(?:IFD\d*|ExifIFD|GPSIFD|InteropIFD|SubIFD)/i.test(ifd ?? "");
+}
+
+function fieldsForFamily(result, family) {
+  if (family === "EXIF") return result.exif?.fields ?? result.fields.filter((field) => isExifIfd(field.ifd));
+  if (family === "IPTC") return result.iptc?.fields ?? result.fields.filter((field) => field.ifd === "IPTC");
+  return result.fields.filter((field) => field.ifd === family);
+}
+
 function fieldValues(result, name, family) {
   if (family === "DIMENSIONS") {
     if (result.dimensions === null) return [];
     return name === "width" ? [result.dimensions.width] : name === "height" ? [result.dimensions.height] : [];
   }
-  const decoded = family === "EXIF"
-    ? result.exif?.fields ?? []
-    : result.fields.filter((field) => field.ifd === family);
-  const normalized = result.fields.filter((field) => field.name === name && field.ifd !== "ICC");
+  const decoded = fieldsForFamily(result, family);
+  const normalized = decoded.filter((field) => field.name === name);
   const fields = [...decoded.filter((field) => field.name === name), ...normalized];
   const values = fields.flatMap((field) => [field.value, field.raw]);
   if (family === "IPTC" && fields.length > 1) values.unshift(uniqueValues(fields.map((field) => field.value)));
@@ -292,6 +349,7 @@ function compareEntry(result, external, entry) {
   const status = compareValues(locals, reference);
   return {
     key: entry.name,
+    fieldId: `${entry.family}:${entry.name}`,
     family: entry.family,
     status,
     local: locals.length > 0 ? jsonSafe(locals[0]) : null,
@@ -305,7 +363,7 @@ function compareBlock(result, external, entry) {
   const local = result.blocks.some((block) => block.family === entry.family);
   const reference = externalHasFamily(external, entry);
   const status = local === reference ? (local ? "matched" : "not-observed") : local ? "missing-reference" : "missing-local";
-  return { key: `block:${entry.family}`, family: entry.family, status, local, reference, metrics: metricFor(status) };
+  return { key: `block:${entry.family}`, fieldId: `block:${entry.family}`, family: entry.family, status, local, reference, metrics: metricFor(status) };
 }
 
 export function sha256(bytes) {
@@ -323,6 +381,7 @@ export function compareFixture({ relativePath, hash, bytes, result, external, re
   rows.push(...registry.blocks.map((entry) => compareBlock(result, external, entry)));
   return {
     fixture: relativePath,
+    bytes: bytes.length,
     sha256: hash ?? sha256(bytes),
     format: result.format,
     producer: producerFor(result, external),
@@ -337,21 +396,44 @@ function addMetrics(target, metrics) {
 }
 
 export function summarize(fixtures) {
-  const byTag = new Map();
+  const byField = new Map();
+  const byProducerField = new Map();
   const byProducer = new Map();
+  const byFormatField = new Map();
+  const byFormat = new Map();
   for (const fixture of fixtures) {
     for (const row of fixture.rows) {
-      const tagKey = row.key;
-      if (!byTag.has(tagKey)) byTag.set(tagKey, { key: tagKey, family: row.family, ...emptyMetrics() });
-      addMetrics(byTag.get(tagKey), row.metrics);
-      const producerKey = `${fixture.producer}\u0000${tagKey}`;
-      if (!byProducer.has(producerKey)) byProducer.set(producerKey, { producer: fixture.producer, key: tagKey, family: row.family, ...emptyMetrics() });
-      addMetrics(byProducer.get(producerKey), row.metrics);
+      const fieldId = row.fieldId ?? `${row.family}:${row.key}`;
+      if (!byField.has(fieldId)) byField.set(fieldId, { field: fieldId, key: row.key, family: row.family, ...emptyMetrics() });
+      addMetrics(byField.get(fieldId), row.metrics);
+      const producerKey = `${fixture.producer}\u0000${fieldId}`;
+      if (!byProducerField.has(producerKey)) byProducerField.set(producerKey, { producer: fixture.producer, field: fieldId, key: row.key, family: row.family, ...emptyMetrics() });
+      addMetrics(byProducerField.get(producerKey), row.metrics);
+      if (!byProducer.has(fixture.producer)) byProducer.set(fixture.producer, { producer: fixture.producer, ...emptyMetrics() });
+      addMetrics(byProducer.get(fixture.producer), row.metrics);
+      const format = fixture.format ?? "error";
+      const formatFieldKey = `${format}\u0000${fieldId}`;
+      if (!byFormatField.has(formatFieldKey)) byFormatField.set(formatFieldKey, { format, field: fieldId, key: row.key, family: row.family, ...emptyMetrics() });
+      addMetrics(byFormatField.get(formatFieldKey), row.metrics);
+      if (!byFormat.has(format)) byFormat.set(format, { format, ...emptyMetrics() });
+      addMetrics(byFormat.get(format), row.metrics);
     }
   }
   const totals = emptyMetrics();
-  for (const item of byTag.values()) addMetrics(totals, item);
-  return { totals, byTag: [...byTag.values()].sort((a, b) => a.key.localeCompare(b.key)), byProducer: [...byProducer.values()].sort((a, b) => a.producer.localeCompare(b.producer) || a.key.localeCompare(b.key)) };
+  for (const item of byField.values()) addMetrics(totals, item);
+  const fields = [...byField.values()].sort((a, b) => a.field.localeCompare(b.field));
+  return {
+    totals,
+    byField: fields,
+    // Retain the old report property as a compatibility alias. Its entries
+    // are now family-qualified through `field`, so same-named fields cannot
+    // be merged across metadata groups.
+    byTag: fields,
+    byProducer: [...byProducer.values()].sort((a, b) => a.producer.localeCompare(b.producer)),
+    byProducerField: [...byProducerField.values()].sort((a, b) => a.producer.localeCompare(b.producer) || a.field.localeCompare(b.field)),
+    byFormat: [...byFormat.values()].sort((a, b) => a.format.localeCompare(b.format)),
+    byFormatField: [...byFormatField.values()].sort((a, b) => a.format.localeCompare(b.format) || a.field.localeCompare(b.field)),
+  };
 }
 
 function semverAtLeast(version, minimum) {
@@ -372,39 +454,74 @@ function semverAtLeast(version, minimum) {
 function matchesAllowlist(row, fixture, allowlist, currentVersion) {
   return allowlist.entries.some((entry) =>
     (currentVersion === undefined || !semverAtLeast(currentVersion, entry.expiryVersion ?? entry.expires))
-    &&
-    (entry.key === "*" || entry.key === row.key)
+    && (entry.key === "*" || entry.key === row.key || entry.key === row.fieldId)
     && (entry.status === "*" || entry.status === row.status)
     && (entry.producer === "*" || entry.producer === fixture.producer)
-    && (entry.fixture === "*" || entry.fixture === fixture.fixture));
+    && (entry.fixture === "*" || entry.fixture === fixture.fixture)
+    && entry.scope?.format !== undefined
+    && (entry.scope.format === "*" || entry.scope.format === fixture.format)
+  );
 }
 
-export function evaluateGate({ fixtures, minimumFixtures = 100, maxMissingLocalRate = 0.05, allowlist = { entries: [] }, currentVersion }) {
+export function evaluateGate({ fixtures, minimumFixtures = 100, maxMissingLocalRate = 0.05, maxMismatched = 0, allowlist = { entries: [] }, currentVersion }) {
   const failures = [];
   let referencePresent = 0;
   let missingLocal = 0;
+  let mismatched = 0;
+  let fixtureErrors = 0;
   if (fixtures.length < minimumFixtures) failures.push(`Expected at least ${minimumFixtures} fixtures, found ${fixtures.length}.`);
   for (const fixture of fixtures) {
-    if (fixture.error !== undefined) failures.push(`${fixture.fixture}: ${fixture.error}`);
+    if (fixture.error !== undefined) {
+      fixtureErrors += 1;
+      failures.push(`${fixture.fixture}: ${fixture.error}`);
+    }
     for (const row of fixture.rows) {
-      if (row.status === "mismatched" && !matchesAllowlist(row, fixture, allowlist, currentVersion)) failures.push(`${fixture.fixture}: ${row.key} mismatched.`);
+      if (row.status === "mismatched" && !matchesAllowlist(row, fixture, allowlist, currentVersion)) mismatched += 1;
       if (["matched", "normalized-match", "mismatched", "missing-local"].includes(row.status)) referencePresent += 1;
       if (row.status === "missing-local" && !matchesAllowlist(row, fixture, allowlist, currentVersion)) missingLocal += 1;
     }
   }
   const missingRate = referencePresent === 0 ? 0 : missingLocal / referencePresent;
+  if (mismatched > maxMismatched) failures.push(`Mismatched count ${mismatched} exceeds ${maxMismatched} threshold.`);
   if (missingRate > maxMissingLocalRate) failures.push(`Missing-local rate ${(missingRate * 100).toFixed(2)}% exceeds ${(maxMissingLocalRate * 100).toFixed(2)}% threshold.`);
-  return { passed: failures.length === 0, failures, missingLocalRate: missingRate, maxMissingLocalRate, minimumFixtures };
+  return {
+    passed: failures.length === 0,
+    failures,
+    minimumFixtures,
+    thresholds: { maxMissingLocalRate, maxMismatched, maxFixtureErrors: 0 },
+    observed: { fixtureCount: fixtures.length, fixtureErrors, referencePresent, missingLocal, mismatched },
+    missingLocalRate: missingRate,
+    maxMissingLocalRate,
+    mismatched,
+  };
 }
 
 export function renderMarkdown(report) {
+  const corpus = report.corpus ?? {};
+  const reference = report.reference ?? {};
+  const registry = report.registry ?? {};
+  const allowlist = report.allowlist ?? {};
+  const normalization = report.normalization ?? {};
+  const thresholds = report.gate.thresholds ?? { maxMissingLocalRate: report.gate.maxMissingLocalRate, maxMismatched: 0 };
+  const byField = report.summary.byField ?? report.summary.byTag ?? [];
+  const byProducer = report.summary.byProducer ?? [];
+  const byProducerField = report.summary.byProducerField ?? [];
+  const byFormat = report.summary.byFormat ?? [];
   const lines = [
     "# External corpus differential report",
     "",
     `- Schema: \`${report.schema}\``,
-    `- Fixtures: ${report.corpus.fixtureCount} (minimum ${report.gate.minimumFixtures})`,
+    `- Fixtures examined: ${corpus.fixtureCount ?? 0} (minimum ${report.gate.minimumFixtures})`,
+    `- Corpus: ${corpus.source ?? "unknown"} @ \`${corpus.commit ?? corpus.pinnedCommit ?? "unknown"}\``,
+    `- Total fixture bytes: ${corpus.totalBytes ?? "unknown"}`,
+    `- Package: ${report.package?.name ?? "unknown"} ${report.package?.version ?? "unknown"}`,
+    `- Reference: ${reference.tool ?? "unknown"}; package ${reference.package ?? "unknown"}; ExifTool ${reference.version ?? "unknown"}`,
+    `- Registry: ${registry.version ?? "unknown"} / \`${registry.sha256 ?? "unknown"}\``,
+    `- Allowlist: ${allowlist.version ?? "unknown"} entries, \`${allowlist.sha256 ?? "unknown"}\``,
+    `- Normalization: ${normalization.id ?? "unknown"} / \`${normalization.sha256 ?? "unknown"}\``,
     `- Gate: **${report.gate.passed ? "PASS" : "FAIL"}**`,
-    `- Missing-local rate: ${(report.gate.missingLocalRate * 100).toFixed(2)}% (maximum ${(report.gate.maxMissingLocalRate * 100).toFixed(2)}%)`,
+    `- Missing-local rate: ${(report.gate.missingLocalRate * 100).toFixed(2)}% (maximum ${(thresholds.maxMissingLocalRate * 100).toFixed(2)}%)`,
+    `- Mismatches: ${report.gate.observed?.mismatched ?? report.gate.mismatched ?? 0} (maximum ${thresholds.maxMismatched ?? 0})`,
     "",
     "## Totals",
     "",
@@ -412,23 +529,35 @@ export function renderMarkdown(report) {
     "| ---: | ---: | ---: | ---: | ---: | ---: |",
     `| ${report.summary.totals.found} | ${report.summary.totals.matched} | ${report.summary.totals.normalizedMatch} | ${report.summary.totals.mismatched} | ${report.summary.totals.missingLocal} | ${report.summary.totals.missingReference} |`,
     "",
-    "## Per-tag results",
+    "## Per-field results",
     "",
-    "| tag | family | found | matched | normalized | mismatched | missing local | missing reference |",
+    "| field | family | found | matched | normalized | mismatched | missing local | missing reference |",
     "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ...report.summary.byTag.map((item) => `| ${item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
+    ...byField.map((item) => `| ${item.field ?? item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
     "",
     "## Per-producer results",
     "",
-    "| producer | tag | family | found | matched | normalized | mismatched | missing local | missing reference |",
+    "| producer | found | matched | normalized | mismatched | missing local | missing reference |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byProducer.map((item) => `| ${item.producer} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
+    "",
+    "## Per-producer field results",
+    "",
+    "| producer | field | family | found | matched | normalized | mismatched | missing local | missing reference |",
     "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ...report.summary.byProducer.map((item) => `| ${item.producer} | ${item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
+    ...byProducerField.map((item) => `| ${item.producer} | ${item.field ?? item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
+    "",
+    "## Per-format totals",
+    "",
+    "| format | found | matched | normalized | mismatched | missing local | missing reference |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byFormat.map((item) => `| ${item.format} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
     "",
     "## Fixture hashes",
     "",
-    "| fixture | SHA-256 | format | producer |",
-    "| --- | --- | --- | --- |",
-    ...report.fixtures.map((fixture) => `| ${fixture.fixture} | \`${fixture.sha256}\` | ${fixture.format ?? "error"} | ${fixture.producer ?? "unknown"} |`),
+    "| fixture | bytes | SHA-256 | format | producer |",
+    "| --- | ---: | --- | --- | --- |",
+    ...report.fixtures.map((fixture) => `| ${fixture.fixture} | ${fixture.bytes ?? "unknown"} | \`${fixture.sha256}\` | ${fixture.format ?? "error"} | ${fixture.producer ?? "unknown"} |`),
   ];
   if (report.gate.failures.length > 0) lines.push("", "## Gate failures", "", ...report.gate.failures.map((failure) => `- ${failure}`));
   return `${lines.join("\n")}\n`;

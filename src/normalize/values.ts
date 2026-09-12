@@ -11,6 +11,7 @@ import type {
   Sensitivity,
 } from "../types.js";
 import {
+  describeEnum,
   describeFlash,
   describeOrientation,
   getTagDefinition,
@@ -123,12 +124,15 @@ export function displayExifValue(
   tag: number,
   raw: MetadataValue,
   value: MetadataValue,
+  definition = getTagDefinition(ifd, tag),
 ): string {
   if (ifd === "IFD0" && tag === 0x0112 && typeof raw === "number") {
     return describeOrientation(raw);
   }
   if (isFlashValue(value)) return describeFlash(value);
   if (isApexValue(value)) return displayApex(value);
+  const enumDescription = describeEnum(raw, definition);
+  if (enumDescription !== null) return enumDescription;
   if (isRational(raw)) return formatExactRational(raw);
   if (isRationalArray(raw)) return raw.map(formatExactRational).join(", ");
   if (raw instanceof Uint8Array) return displayBytes(raw);
@@ -181,6 +185,14 @@ export function normalizeExifFields(rawFields: readonly MetadataField[], registr
   normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa433, "LensMake", "low");
   normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa434, "LensModel", "low");
   normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa435, "LensSerialNumber", "high");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa40e, "DevelopmentTypeDescription", "low");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa436, "ImageTitle", "low");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa437, "Photographer", "moderate");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa438, "ImageEditor", "moderate");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa439, "CameraFirmware", "moderate");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa43a, "RAWDevelopingSoftware", "moderate");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa43b, "ImageEditingSoftware", "moderate");
+  normalizeString(byLocation, fields, warnings, "ExifIFD", 0xa43c, "MetadataEditingSoftware", "moderate");
   normalizeUserComment(byLocation, fields, warnings);
 
   const remapped = fields.map((field) => {
@@ -341,9 +353,9 @@ function normalizeString(
 ): void {
   const source = findSource(index, warnings, ifd, tag);
   if (source === undefined) return;
-  if (source.type === "ASCII" && source.value === null) return;
-  if (source.type !== "ASCII" || typeof source.value !== "string") {
-    warnings.push(validationWarning("INVALID_VALUE", `${name} must be an ASCII value.`, ifd, tag));
+  if ((source.type === "ASCII" || source.type === "UTF-8") && source.value === null) return;
+  if ((source.type !== "ASCII" && source.type !== "UTF-8") || typeof source.value !== "string") {
+    warnings.push(validationWarning("INVALID_VALUE", `${name} must be an ASCII or UTF-8 value.`, ifd, tag));
     return;
   }
 

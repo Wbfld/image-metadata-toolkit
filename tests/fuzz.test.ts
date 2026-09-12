@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { parseMetadata, redactMetadata } from "../src/index.js";
 
 const MAX_INPUT_BYTES = 64 * 1024;
+const FUZZ_SEED = 20260912;
 
 describe("malformed input properties", () => {
   it("keeps random inputs bounded and returns a stable public result", async () => {
@@ -20,7 +21,7 @@ describe("malformed input properties", () => {
         expect(redacted.data.byteLength).toBeLessThanOrEqual(input.byteLength);
         expect(redacted.warnings.length).toBeLessThanOrEqual(8);
       }),
-      { numRuns: 250, interruptAfterTimeLimit: 10_000 },
+      { numRuns: 250, interruptAfterTimeLimit: 10_000, seed: FUZZ_SEED },
     );
   });
 
@@ -48,7 +49,7 @@ describe("malformed input properties", () => {
           expect(result.warnings.length).toBeLessThanOrEqual(8);
         },
       ),
-      { numRuns: 250, interruptAfterTimeLimit: 10_000 },
+      { numRuns: 250, interruptAfterTimeLimit: 10_000, seed: FUZZ_SEED },
     );
   });
 });
