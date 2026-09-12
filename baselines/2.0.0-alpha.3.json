@@ -56,36 +56,36 @@
       }
     ],
     "tests": {
-      "files": 23,
-      "total": 329,
-      "passed": 329,
+      "files": 25,
+      "total": 349,
+      "passed": 349,
       "failed": 0,
       "skipped": 0
     },
     "coverage": {
       "lines": {
-        "total": 12017,
-        "covered": 10922,
+        "total": 12849,
+        "covered": 11599,
         "skipped": 0,
-        "pct": 90.88
+        "pct": 90.27
       },
       "statements": {
-        "total": 12017,
-        "covered": 10922,
+        "total": 12849,
+        "covered": 11599,
         "skipped": 0,
-        "pct": 90.88
+        "pct": 90.27
       },
       "functions": {
-        "total": 672,
-        "covered": 649,
+        "total": 753,
+        "covered": 722,
         "skipped": 0,
-        "pct": 96.57
+        "pct": 95.88
       },
       "branches": {
-        "total": 7334,
-        "covered": 5550,
+        "total": 7718,
+        "covered": 5831,
         "skipped": 0,
-        "pct": 75.67
+        "pct": 75.55
       },
       "branchesTrue": {
         "total": 0,
@@ -96,8 +96,8 @@
     },
     "tarball": {
       "file": "browser-image-metadata-2.0.0-alpha.3.tgz",
-      "bytes": 2950383,
-      "sha256": "a799925261c3aca98ac9cd48579cc77cdc616929f54e897c639256f897c4efb2"
+      "bytes": 3863073,
+      "sha256": "9c43f57d093633b92f9471ed354a7a71e1421a04499838f8549198599687da2d"
     },
     "exportEntries": [
       {
@@ -107,8 +107,8 @@
           "default"
         ],
         "target": "./dist/index.js",
-        "bytes": 1904,
-        "gzipBytes": 716
+        "bytes": 1934,
+        "gzipBytes": 730
       },
       {
         "export": ".",
@@ -117,8 +117,8 @@
           "types"
         ],
         "target": "./dist/index.d.ts",
-        "bytes": 700038,
-        "gzipBytes": 44656
+        "bytes": 700089,
+        "gzipBytes": 44679
       },
       {
         "export": ".",
@@ -127,8 +127,8 @@
           "default"
         ],
         "target": "./dist/index.js",
-        "bytes": 1904,
-        "gzipBytes": 716
+        "bytes": 1934,
+        "gzipBytes": 730
       },
       {
         "export": ".",
@@ -137,8 +137,8 @@
           "types"
         ],
         "target": "./dist/index.d.ts",
-        "bytes": 700038,
-        "gzipBytes": 44656
+        "bytes": 700089,
+        "gzipBytes": 44679
       },
       {
         "export": ".",
@@ -157,8 +157,8 @@
           "types"
         ],
         "target": "./dist/index.d.cts",
-        "bytes": 700047,
-        "gzipBytes": 44657
+        "bytes": 700098,
+        "gzipBytes": 44678
       },
       {
         "export": "./adapters",
@@ -178,7 +178,7 @@
         ],
         "target": "./dist/adapters.d.ts",
         "bytes": 6783,
-        "gzipBytes": 1914
+        "gzipBytes": 1915
       },
       {
         "export": "./adapters",
@@ -198,7 +198,7 @@
         ],
         "target": "./dist/adapters.d.ts",
         "bytes": 6783,
-        "gzipBytes": 1914
+        "gzipBytes": 1915
       },
       {
         "export": "./adapters",
@@ -218,7 +218,7 @@
         ],
         "target": "./dist/adapters.d.cts",
         "bytes": 6786,
-        "gzipBytes": 1915
+        "gzipBytes": 1916
       },
       {
         "export": "./browser-thumbnail",
@@ -298,7 +298,7 @@
         ],
         "target": "./dist/detect.d.ts",
         "bytes": 329,
-        "gzipBytes": 215
+        "gzipBytes": 216
       },
       {
         "export": "./detect",
@@ -318,7 +318,7 @@
         ],
         "target": "./dist/detect.d.ts",
         "bytes": 329,
-        "gzipBytes": 215
+        "gzipBytes": 216
       },
       {
         "export": "./detect",
@@ -338,7 +338,7 @@
         ],
         "target": "./dist/detect.d.cts",
         "bytes": 331,
-        "gzipBytes": 215
+        "gzipBytes": 216
       },
       {
         "export": "./fetch",
@@ -347,8 +347,8 @@
           "default"
         ],
         "target": "./dist/fetch.js",
-        "bytes": 2882,
-        "gzipBytes": 1084
+        "bytes": 2920,
+        "gzipBytes": 1093
       },
       {
         "export": "./fetch",
@@ -358,7 +358,7 @@
         ],
         "target": "./dist/fetch.d.ts",
         "bytes": 849,
-        "gzipBytes": 480
+        "gzipBytes": 481
       },
       {
         "export": "./fetch",
@@ -367,8 +367,8 @@
           "default"
         ],
         "target": "./dist/fetch.js",
-        "bytes": 2882,
-        "gzipBytes": 1084
+        "bytes": 2920,
+        "gzipBytes": 1093
       },
       {
         "export": "./fetch",
@@ -378,7 +378,7 @@
         ],
         "target": "./dist/fetch.d.ts",
         "bytes": 849,
-        "gzipBytes": 480
+        "gzipBytes": 481
       },
       {
         "export": "./fetch",
@@ -398,7 +398,67 @@
         ],
         "target": "./dist/fetch.d.cts",
         "bytes": 850,
-        "gzipBytes": 480
+        "gzipBytes": 482
+      },
+      {
+        "export": "./http",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/http.js",
+        "bytes": 26576,
+        "gzipBytes": 5830
+      },
+      {
+        "export": "./http",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/http.d.ts",
+        "bytes": 1738,
+        "gzipBytes": 825
+      },
+      {
+        "export": "./http",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/http.js",
+        "bytes": 26576,
+        "gzipBytes": 5830
+      },
+      {
+        "export": "./http",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/http.d.ts",
+        "bytes": 1738,
+        "gzipBytes": 825
+      },
+      {
+        "export": "./http",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/http.cjs",
+        "bytes": 935838,
+        "gzipBytes": 143740
+      },
+      {
+        "export": "./http",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/http.d.cts",
+        "bytes": 1740,
+        "gzipBytes": 826
       },
       {
         "export": "./jpeg",
@@ -407,8 +467,8 @@
           "default"
         ],
         "target": "./dist/jpeg.js",
-        "bytes": 536,
-        "gzipBytes": 254
+        "bytes": 566,
+        "gzipBytes": 259
       },
       {
         "export": "./jpeg",
@@ -418,7 +478,7 @@
         ],
         "target": "./dist/jpeg.d.ts",
         "bytes": 423,
-        "gzipBytes": 262
+        "gzipBytes": 263
       },
       {
         "export": "./jpeg",
@@ -427,8 +487,8 @@
           "default"
         ],
         "target": "./dist/jpeg.js",
-        "bytes": 536,
-        "gzipBytes": 254
+        "bytes": 566,
+        "gzipBytes": 259
       },
       {
         "export": "./jpeg",
@@ -438,7 +498,7 @@
         ],
         "target": "./dist/jpeg.d.ts",
         "bytes": 423,
-        "gzipBytes": 262
+        "gzipBytes": 263
       },
       {
         "export": "./jpeg",
@@ -467,8 +527,8 @@
           "default"
         ],
         "target": "./dist/mini.js",
-        "bytes": 703,
-        "gzipBytes": 323
+        "bytes": 733,
+        "gzipBytes": 332
       },
       {
         "export": "./mini",
@@ -487,8 +547,8 @@
           "default"
         ],
         "target": "./dist/mini.js",
-        "bytes": 703,
-        "gzipBytes": 323
+        "bytes": 733,
+        "gzipBytes": 332
       },
       {
         "export": "./mini",
@@ -518,7 +578,67 @@
         ],
         "target": "./dist/mini.d.cts",
         "bytes": 514,
-        "gzipBytes": 275
+        "gzipBytes": 274
+      },
+      {
+        "export": "./node",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/node-browser.js",
+        "bytes": 588,
+        "gzipBytes": 306
+      },
+      {
+        "export": "./node",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/node-browser.d.ts",
+        "bytes": 598,
+        "gzipBytes": 284
+      },
+      {
+        "export": "./node",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/node.js",
+        "bytes": 11450,
+        "gzipBytes": 2911
+      },
+      {
+        "export": "./node",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/node.d.ts",
+        "bytes": 2182,
+        "gzipBytes": 883
+      },
+      {
+        "export": "./node",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/node.cjs",
+        "bytes": 920797,
+        "gzipBytes": 141006
+      },
+      {
+        "export": "./node",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/node.d.cts",
+        "bytes": 2184,
+        "gzipBytes": 884
       },
       {
         "export": "./redact",
@@ -527,8 +647,8 @@
           "default"
         ],
         "target": "./dist/redact.js",
-        "bytes": 791,
-        "gzipBytes": 369
+        "bytes": 821,
+        "gzipBytes": 376
       },
       {
         "export": "./redact",
@@ -538,7 +658,7 @@
         ],
         "target": "./dist/redact.d.ts",
         "bytes": 359,
-        "gzipBytes": 217
+        "gzipBytes": 218
       },
       {
         "export": "./redact",
@@ -547,8 +667,8 @@
           "default"
         ],
         "target": "./dist/redact.js",
-        "bytes": 791,
-        "gzipBytes": 369
+        "bytes": 821,
+        "gzipBytes": 376
       },
       {
         "export": "./redact",
@@ -558,7 +678,7 @@
         ],
         "target": "./dist/redact.d.ts",
         "bytes": 359,
-        "gzipBytes": 217
+        "gzipBytes": 218
       },
       {
         "export": "./redact",
@@ -578,7 +698,7 @@
         ],
         "target": "./dist/redact.d.cts",
         "bytes": 360,
-        "gzipBytes": 217
+        "gzipBytes": 218
       },
       {
         "export": "./worker",
@@ -587,8 +707,8 @@
           "default"
         ],
         "target": "./dist/worker.js",
-        "bytes": 6574,
-        "gzipBytes": 1974
+        "bytes": 6612,
+        "gzipBytes": 1982
       },
       {
         "export": "./worker",
@@ -607,8 +727,8 @@
           "default"
         ],
         "target": "./dist/worker.js",
-        "bytes": 6574,
-        "gzipBytes": 1974
+        "bytes": 6612,
+        "gzipBytes": 1982
       },
       {
         "export": "./worker",
@@ -638,7 +758,7 @@
         ],
         "target": "./dist/worker.d.cts",
         "bytes": 1818,
-        "gzipBytes": 786
+        "gzipBytes": 787
       },
       {
         "export": "./xmp",
@@ -658,7 +778,7 @@
         ],
         "target": "./dist/xmp.d.ts",
         "bytes": 7304,
-        "gzipBytes": 1533
+        "gzipBytes": 1535
       },
       {
         "export": "./xmp",
@@ -678,7 +798,7 @@
         ],
         "target": "./dist/xmp.d.cts",
         "bytes": 7305,
-        "gzipBytes": 1534
+        "gzipBytes": 1535
       },
       {
         "export": "./xmp/rgrove",
@@ -718,7 +838,7 @@
         ],
         "target": "./dist/xmp-rgrove.d.cts",
         "bytes": 906,
-        "gzipBytes": 403
+        "gzipBytes": 404
       }
     ],
     "distFiles": [
@@ -747,12 +867,12 @@
         "bytes": 72
       },
       {
-        "file": "dist/audit-EQGDSHVY.js",
-        "bytes": 9693
+        "file": "dist/audit-RJLQQZWY.js",
+        "bytes": 9723
       },
       {
-        "file": "dist/audit-EQGDSHVY.js.map",
-        "bytes": 20329
+        "file": "dist/audit-RJLQQZWY.js.map",
+        "bytes": 20330
       },
       {
         "file": "dist/browser-thumbnail.cjs",
@@ -787,14 +907,6 @@
         "bytes": 173705
       },
       {
-        "file": "dist/chunk-2FZTFI3T.js",
-        "bytes": 1503
-      },
-      {
-        "file": "dist/chunk-2FZTFI3T.js.map",
-        "bytes": 41246
-      },
-      {
         "file": "dist/chunk-2XZA7URF.js",
         "bytes": 7775
       },
@@ -809,6 +921,22 @@
       {
         "file": "dist/chunk-4PRZMO6Z.js.map",
         "bytes": 90129
+      },
+      {
+        "file": "dist/chunk-7GVUGKRL.js",
+        "bytes": 3181
+      },
+      {
+        "file": "dist/chunk-7GVUGKRL.js.map",
+        "bytes": 6001
+      },
+      {
+        "file": "dist/chunk-AOOSFMWR.js",
+        "bytes": 291
+      },
+      {
+        "file": "dist/chunk-AOOSFMWR.js.map",
+        "bytes": 39692
       },
       {
         "file": "dist/chunk-BO33KVJI.js",
@@ -835,12 +963,12 @@
         "bytes": 10685
       },
       {
-        "file": "dist/chunk-HAZTUPAO.js",
-        "bytes": 60698
+        "file": "dist/chunk-H42EMQWB.js",
+        "bytes": 25105
       },
       {
-        "file": "dist/chunk-HAZTUPAO.js.map",
-        "bytes": 139966
+        "file": "dist/chunk-H42EMQWB.js.map",
+        "bytes": 52360
       },
       {
         "file": "dist/chunk-I3MTDIOY.js",
@@ -859,20 +987,12 @@
         "bytes": 40344
       },
       {
-        "file": "dist/chunk-K2IT4NH3.js",
-        "bytes": 25105
+        "file": "dist/chunk-JJCTAOPH.js",
+        "bytes": 1362
       },
       {
-        "file": "dist/chunk-K2IT4NH3.js.map",
-        "bytes": 52360
-      },
-      {
-        "file": "dist/chunk-K46XXHBW.js",
-        "bytes": 3143
-      },
-      {
-        "file": "dist/chunk-K46XXHBW.js.map",
-        "bytes": 6000
+        "file": "dist/chunk-JJCTAOPH.js.map",
+        "bytes": 3115
       },
       {
         "file": "dist/chunk-MY5EJ4DN.js",
@@ -883,20 +1003,12 @@
         "bytes": 65783
       },
       {
-        "file": "dist/chunk-SJIRTLCW.js",
-        "bytes": 58494
+        "file": "dist/chunk-QQJOOSCJ.js",
+        "bytes": 60736
       },
       {
-        "file": "dist/chunk-SJIRTLCW.js.map",
-        "bytes": 127523
-      },
-      {
-        "file": "dist/chunk-VEATKPKC.js",
-        "bytes": 77185
-      },
-      {
-        "file": "dist/chunk-VEATKPKC.js.map",
-        "bytes": 180257
+        "file": "dist/chunk-QQJOOSCJ.js.map",
+        "bytes": 139967
       },
       {
         "file": "dist/chunk-WE26ORTR.js",
@@ -915,6 +1027,22 @@
         "bytes": 789339
       },
       {
+        "file": "dist/chunk-Y5MTMPWE.js",
+        "bytes": 58494
+      },
+      {
+        "file": "dist/chunk-Y5MTMPWE.js.map",
+        "bytes": 127523
+      },
+      {
+        "file": "dist/chunk-YJO2JPZ2.js",
+        "bytes": 77223
+      },
+      {
+        "file": "dist/chunk-YJO2JPZ2.js.map",
+        "bytes": 180258
+      },
+      {
         "file": "dist/chunk-ZMP3GSHD.js",
         "bytes": 599
       },
@@ -923,12 +1051,12 @@
         "bytes": 1775
       },
       {
-        "file": "dist/composites-CMpIhBfN.d.cts",
-        "bytes": 4999
+        "file": "dist/composites-Bo_qR8ar.d.ts",
+        "bytes": 4998
       },
       {
-        "file": "dist/composites-DF7MT-c5.d.ts",
-        "bytes": 4998
+        "file": "dist/composites-C5Xe-xFm.d.cts",
+        "bytes": 4999
       },
       {
         "file": "dist/detect.cjs",
@@ -960,7 +1088,7 @@
       },
       {
         "file": "dist/fetch.cjs.map",
-        "bytes": 2032894
+        "bytes": 2034361
       },
       {
         "file": "dist/fetch.d.cts",
@@ -972,27 +1100,51 @@
       },
       {
         "file": "dist/fetch.js",
-        "bytes": 2882
+        "bytes": 2920
       },
       {
         "file": "dist/fetch.js.map",
-        "bytes": 5881
+        "bytes": 5882
       },
       {
-        "file": "dist/gif-EHGQ22VJ.js",
-        "bytes": 9939
+        "file": "dist/gif-CDXUS7XD.js",
+        "bytes": 9969
       },
       {
-        "file": "dist/gif-EHGQ22VJ.js.map",
-        "bytes": 21285
+        "file": "dist/gif-CDXUS7XD.js.map",
+        "bytes": 21286
       },
       {
-        "file": "dist/heif-I23OVZVU.js",
-        "bytes": 52741
+        "file": "dist/heif-WKUCXPWL.js",
+        "bytes": 52771
       },
       {
-        "file": "dist/heif-I23OVZVU.js.map",
-        "bytes": 117336
+        "file": "dist/heif-WKUCXPWL.js.map",
+        "bytes": 117337
+      },
+      {
+        "file": "dist/http.cjs",
+        "bytes": 935838
+      },
+      {
+        "file": "dist/http.cjs.map",
+        "bytes": 2085721
+      },
+      {
+        "file": "dist/http.d.cts",
+        "bytes": 1740
+      },
+      {
+        "file": "dist/http.d.ts",
+        "bytes": 1738
+      },
+      {
+        "file": "dist/http.js",
+        "bytes": 26576
+      },
+      {
+        "file": "dist/http.js.map",
+        "bytes": 57231
       },
       {
         "file": "dist/index.cjs",
@@ -1000,30 +1152,30 @@
       },
       {
         "file": "dist/index.cjs.map",
-        "bytes": 2329309
+        "bytes": 2330776
       },
       {
         "file": "dist/index.d.cts",
-        "bytes": 700047
+        "bytes": 700098
       },
       {
         "file": "dist/index.d.ts",
-        "bytes": 700038
+        "bytes": 700089
       },
       {
         "file": "dist/index.js",
-        "bytes": 1904
+        "bytes": 1934
       },
       {
         "file": "dist/index.js.map",
         "bytes": 69
       },
       {
-        "file": "dist/jpeg-AOAGY5LI.js",
-        "bytes": 372
+        "file": "dist/jpeg-P7UGS2OL.js",
+        "bytes": 402
       },
       {
-        "file": "dist/jpeg-AOAGY5LI.js.map",
+        "file": "dist/jpeg-P7UGS2OL.js.map",
         "bytes": 77
       },
       {
@@ -1032,7 +1184,7 @@
       },
       {
         "file": "dist/jpeg.cjs.map",
-        "bytes": 1634457
+        "bytes": 1635924
       },
       {
         "file": "dist/jpeg.d.cts",
@@ -1044,26 +1196,26 @@
       },
       {
         "file": "dist/jpeg.js",
-        "bytes": 536
+        "bytes": 566
       },
       {
         "file": "dist/jpeg.js.map",
         "bytes": 68
       },
       {
-        "file": "dist/jxl-Q4YEC6JV.js",
-        "bytes": 6394
+        "file": "dist/jxl-RY3QITPS.js",
+        "bytes": 6424
       },
       {
-        "file": "dist/jxl-Q4YEC6JV.js.map",
-        "bytes": 14143
+        "file": "dist/jxl-RY3QITPS.js.map",
+        "bytes": 14144
       },
       {
-        "file": "dist/limits-BJuU0y8H.d.ts",
+        "file": "dist/limits-CezIkX9d.d.ts",
         "bytes": 368
       },
       {
-        "file": "dist/limits-BuvtDCY5.d.cts",
+        "file": "dist/limits-DVag2lhO.d.cts",
         "bytes": 369
       },
       {
@@ -1072,7 +1224,7 @@
       },
       {
         "file": "dist/mini.cjs.map",
-        "bytes": 1656663
+        "bytes": 1658130
       },
       {
         "file": "dist/mini.d.cts",
@@ -1084,19 +1236,67 @@
       },
       {
         "file": "dist/mini.js",
-        "bytes": 703
+        "bytes": 733
       },
       {
         "file": "dist/mini.js.map",
         "bytes": 68
       },
       {
-        "file": "dist/png-C5OV4MCI.js",
-        "bytes": 23090
+        "file": "dist/node-browser.cjs",
+        "bytes": 800
       },
       {
-        "file": "dist/png-C5OV4MCI.js.map",
-        "bytes": 49588
+        "file": "dist/node-browser.cjs.map",
+        "bytes": 40953
+      },
+      {
+        "file": "dist/node-browser.d.cts",
+        "bytes": 601
+      },
+      {
+        "file": "dist/node-browser.d.ts",
+        "bytes": 598
+      },
+      {
+        "file": "dist/node-browser.js",
+        "bytes": 588
+      },
+      {
+        "file": "dist/node-browser.js.map",
+        "bytes": 1347
+      },
+      {
+        "file": "dist/node.cjs",
+        "bytes": 920797
+      },
+      {
+        "file": "dist/node.cjs.map",
+        "bytes": 2054879
+      },
+      {
+        "file": "dist/node.d.cts",
+        "bytes": 2184
+      },
+      {
+        "file": "dist/node.d.ts",
+        "bytes": 2182
+      },
+      {
+        "file": "dist/node.js",
+        "bytes": 11450
+      },
+      {
+        "file": "dist/node.js.map",
+        "bytes": 26262
+      },
+      {
+        "file": "dist/png-ZLC54QK2.js",
+        "bytes": 23120
+      },
+      {
+        "file": "dist/png-ZLC54QK2.js.map",
+        "bytes": 49589
       },
       {
         "file": "dist/redact-JDCJPTDU.js",
@@ -1112,7 +1312,7 @@
       },
       {
         "file": "dist/redact.cjs.map",
-        "bytes": 763250
+        "bytes": 764717
       },
       {
         "file": "dist/redact.d.cts",
@@ -1124,35 +1324,35 @@
       },
       {
         "file": "dist/redact.js",
-        "bytes": 791
+        "bytes": 821
       },
       {
         "file": "dist/redact.js.map",
-        "bytes": 1331
+        "bytes": 1332
       },
       {
-        "file": "dist/tiff-M2RRKNVP.js",
-        "bytes": 10855
+        "file": "dist/tiff-2PSJDZKV.js",
+        "bytes": 10885
       },
       {
-        "file": "dist/tiff-M2RRKNVP.js.map",
-        "bytes": 24500
+        "file": "dist/tiff-2PSJDZKV.js.map",
+        "bytes": 24501
       },
       {
-        "file": "dist/types-DQ8yGfau.d.cts",
-        "bytes": 42681
+        "file": "dist/types-CRY00-ko.d.cts",
+        "bytes": 44164
       },
       {
-        "file": "dist/types-DQ8yGfau.d.ts",
-        "bytes": 42681
+        "file": "dist/types-CRY00-ko.d.ts",
+        "bytes": 44164
       },
       {
-        "file": "dist/webp-Y3DFJEQI.js",
-        "bytes": 10699
+        "file": "dist/webp-FB4NC7MR.js",
+        "bytes": 10729
       },
       {
-        "file": "dist/webp-Y3DFJEQI.js.map",
-        "bytes": 23627
+        "file": "dist/webp-FB4NC7MR.js.map",
+        "bytes": 23628
       },
       {
         "file": "dist/worker.cjs",
@@ -1160,7 +1360,7 @@
       },
       {
         "file": "dist/worker.cjs.map",
-        "bytes": 2166648
+        "bytes": 2168115
       },
       {
         "file": "dist/worker.d.cts",
@@ -1172,11 +1372,11 @@
       },
       {
         "file": "dist/worker.js",
-        "bytes": 6574
+        "bytes": 6612
       },
       {
         "file": "dist/worker.js.map",
-        "bytes": 15983
+        "bytes": 15984
       },
       {
         "file": "dist/xmp-rgrove.cjs",
@@ -2762,9 +2962,9 @@
     }
   },
   "environment": {
-    "observedAt": "2026-09-12T19:27:26.474Z",
+    "observedAt": "2026-09-12T20:50:32.498Z",
     "git": {
-      "commit": "6724e8b8a080534542f636f89523b1016f847950",
+      "commit": "ee8ea823e4a4002cb603f4398a6cc2c064fa0bec",
       "dirty": true
     },
     "runtime": {
@@ -2774,7 +2974,7 @@
       "runtime": "darwin-arm64"
     },
     "benchmarks": {
-      "generatedAt": "2026-09-12T19:27:22.897Z",
+      "generatedAt": "2026-09-12T20:50:27.761Z",
       "environment": {
         "node": "v23.7.0",
         "platform": "darwin",
@@ -2801,9 +3001,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 23.314,
-                  "median": 23.407,
-                  "p95": 23.407
+                  "min": 24.263,
+                  "median": 24.448,
+                  "p95": 24.448
                 },
                 "transport": {
                   "mode": "memory",
@@ -2851,8 +3051,8 @@
                 "runs": 25,
                 "milliseconds": {
                   "min": 0.005,
-                  "median": 0.007,
-                  "p95": 0.046
+                  "median": 0.008,
+                  "p95": 0.068
                 },
                 "transport": {
                   "mode": "memory",
@@ -2902,9 +3102,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 22.927,
-                  "median": 23.015,
-                  "p95": 23.015
+                  "min": 22.716,
+                  "median": 22.989,
+                  "p95": 22.989
                 },
                 "transport": {
                   "mode": "full-input",
@@ -2951,9 +3151,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.078,
-                  "median": 0.101,
-                  "p95": 0.321
+                  "min": 0.081,
+                  "median": 0.108,
+                  "p95": 0.35
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3003,9 +3203,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 17.876,
-                  "median": 17.891,
-                  "p95": 17.891
+                  "min": 17.978,
+                  "median": 20.272,
+                  "p95": 20.272
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3052,9 +3252,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.057,
-                  "median": 0.065,
-                  "p95": 0.274
+                  "min": 0.058,
+                  "median": 0.066,
+                  "p95": 0.261
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3109,9 +3309,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 36.132,
-                  "median": 36.166,
-                  "p95": 36.166
+                  "min": 37.124,
+                  "median": 37.162,
+                  "p95": 37.162
                 },
                 "transport": {
                   "mode": "memory",
@@ -3158,9 +3358,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.167,
-                  "median": 0.228,
-                  "p95": 1.125
+                  "min": 0.17,
+                  "median": 0.227,
+                  "p95": 1.149
                 },
                 "transport": {
                   "mode": "memory",
@@ -3210,9 +3410,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 22.049,
-                  "median": 22.937,
-                  "p95": 22.937
+                  "min": 23.105,
+                  "median": 23.479,
+                  "p95": 23.479
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3260,8 +3460,8 @@
                 "runs": 25,
                 "milliseconds": {
                   "min": 0.059,
-                  "median": 0.072,
-                  "p95": 0.157
+                  "median": 0.074,
+                  "p95": 0.2
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3311,9 +3511,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 16.548,
-                  "median": 16.613,
-                  "p95": 16.613
+                  "min": 16.945,
+                  "median": 18.891,
+                  "p95": 18.891
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3360,9 +3560,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.012,
-                  "median": 0.015,
-                  "p95": 0.038
+                  "min": 0.015,
+                  "median": 0.018,
+                  "p95": 0.048
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3417,9 +3617,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 35.792,
-                  "median": 35.926,
-                  "p95": 35.926
+                  "min": 36.972,
+                  "median": 37.682,
+                  "p95": 37.682
                 },
                 "transport": {
                   "mode": "memory",
@@ -3468,9 +3668,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.131,
-                  "median": 0.152,
-                  "p95": 0.256
+                  "min": 0.137,
+                  "median": 0.156,
+                  "p95": 0.268
                 },
                 "transport": {
                   "mode": "memory",
@@ -3522,9 +3722,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 23.079,
-                  "median": 23.131,
-                  "p95": 23.131
+                  "min": 23.149,
+                  "median": 23.223,
+                  "p95": 23.223
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3573,9 +3773,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.05,
-                  "median": 0.052,
-                  "p95": 0.132
+                  "min": 0.051,
+                  "median": 0.055,
+                  "p95": 0.139
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3627,9 +3827,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.087,
-                  "median": 19.727,
-                  "p95": 19.727
+                  "min": 17.861,
+                  "median": 18.211,
+                  "p95": 18.211
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3679,8 +3879,8 @@
                 "runs": 25,
                 "milliseconds": {
                   "min": 0.051,
-                  "median": 0.053,
-                  "p95": 0.076
+                  "median": 0.054,
+                  "p95": 0.07
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3737,9 +3937,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 35.911,
-                  "median": 35.923,
-                  "p95": 35.923
+                  "min": 36.371,
+                  "median": 36.573,
+                  "p95": 36.573
                 },
                 "transport": {
                   "mode": "memory",
@@ -3788,9 +3988,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.124,
-                  "median": 0.151,
-                  "p95": 0.277
+                  "min": 0.136,
+                  "median": 0.16,
+                  "p95": 0.295
                 },
                 "transport": {
                   "mode": "memory",
@@ -3842,9 +4042,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 22.156,
-                  "median": 22.366,
-                  "p95": 22.366
+                  "min": 22.358,
+                  "median": 23.237,
+                  "p95": 23.237
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3893,7 +4093,7 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.049,
+                  "min": 0.048,
                   "median": 0.051,
                   "p95": 0.064
                 },
@@ -3947,9 +4147,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.25,
-                  "median": 20.442,
-                  "p95": 20.442
+                  "min": 18.119,
+                  "median": 18.183,
+                  "p95": 18.183
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3998,9 +4198,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.042,
-                  "median": 0.047,
-                  "p95": 0.081
+                  "min": 0.043,
+                  "median": 0.048,
+                  "p95": 0.08
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4057,9 +4257,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 39.277,
-                  "median": 39.411,
-                  "p95": 39.411
+                  "min": 39.015,
+                  "median": 39.209,
+                  "p95": 39.209
                 },
                 "transport": {
                   "mode": "memory",
@@ -4116,9 +4316,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.232,
-                  "median": 0.294,
-                  "p95": 0.439
+                  "min": 0.248,
+                  "median": 0.308,
+                  "p95": 0.442
                 },
                 "transport": {
                   "mode": "memory",
@@ -4178,9 +4378,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 23.579,
-                  "median": 23.827,
-                  "p95": 23.827
+                  "min": 23.251,
+                  "median": 23.851,
+                  "p95": 23.851
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4237,7 +4437,7 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.05,
+                  "min": 0.049,
                   "median": 0.055,
                   "p95": 0.089
                 },
@@ -4299,9 +4499,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.11,
-                  "median": 18.938,
-                  "p95": 18.938
+                  "min": 18.457,
+                  "median": 18.569,
+                  "p95": 18.569
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4358,9 +4558,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.045,
-                  "median": 0.047,
-                  "p95": 0.064
+                  "min": 0.046,
+                  "median": 0.051,
+                  "p95": 0.1
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4425,9 +4625,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 40.394,
-                  "median": 40.581,
-                  "p95": 40.581
+                  "min": 40.702,
+                  "median": 40.793,
+                  "p95": 40.793
                 },
                 "transport": {
                   "mode": "memory",
@@ -4491,9 +4691,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.241,
+                  "min": 0.255,
                   "median": 0.313,
-                  "p95": 0.591
+                  "p95": 0.57
                 },
                 "transport": {
                   "mode": "memory",
@@ -4560,9 +4760,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 22.32,
-                  "median": 23.39,
-                  "p95": 23.39
+                  "min": 23.021,
+                  "median": 23.374,
+                  "p95": 23.374
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4628,7 +4828,7 @@
                 "milliseconds": {
                   "min": 0.049,
                   "median": 0.053,
-                  "p95": 0.071
+                  "p95": 0.073
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4695,9 +4895,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.415,
-                  "median": 18.594,
-                  "p95": 18.594
+                  "min": 18.327,
+                  "median": 18.651,
+                  "p95": 18.651
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4761,9 +4961,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.047,
-                  "median": 0.051,
-                  "p95": 0.07
+                  "min": 0.048,
+                  "median": 0.05,
+                  "p95": 0.065
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4835,9 +5035,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 40.854,
-                  "median": 41.101,
-                  "p95": 41.101
+                  "min": 41.579,
+                  "median": 41.842,
+                  "p95": 41.842
                 },
                 "transport": {
                   "mode": "instrumented-range",
@@ -4894,9 +5094,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.34,
-                  "median": 0.485,
-                  "p95": 0.758
+                  "min": 0.338,
+                  "median": 0.473,
+                  "p95": 0.674
                 },
                 "transport": {
                   "mode": "instrumented-range",
@@ -4956,9 +5156,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 23.006,
-                  "median": 23.028,
-                  "p95": 23.028
+                  "min": 22.589,
+                  "median": 23.625,
+                  "p95": 23.625
                 },
                 "transport": {
                   "mode": "full-input",
@@ -5015,9 +5215,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.045,
-                  "median": 0.051,
-                  "p95": 0.068
+                  "min": 0.048,
+                  "median": 0.055,
+                  "p95": 0.168
                 },
                 "transport": {
                   "mode": "full-input",
@@ -5077,9 +5277,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.479,
-                  "median": 18.565,
-                  "p95": 18.565
+                  "min": 18.403,
+                  "median": 18.453,
+                  "p95": 18.453
                 },
                 "transport": {
                   "mode": "full-input",
@@ -5136,9 +5336,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.043,
+                  "min": 0.044,
                   "median": 0.047,
-                  "p95": 0.065
+                  "p95": 0.063
                 },
                 "transport": {
                   "mode": "full-input",

@@ -90,6 +90,58 @@ non-successful HTTP responses, and passes downloaded bytes to the local
 parser. Supply `options.fetch` for custom runtimes or tests. The root entry
 point never fetches URLs.
 
+## `browser-image-metadata/http`
+
+```ts
+fetchMetadata(input: RequestInfo | URL, options?: HttpMetadataOptions): Promise<MetadataResult>
+```
+
+The explicit HTTP entry point probes `Range: bytes=0-0`, validates the
+identity-encoded `206` response, `Content-Range`, total size, validators, and
+final response URL, then supplies later ranges to the existing bounded JPEG,
+TIFF, and HEIF/AVIF readers. Its default scope is `metadata`; use
+`scope: "jpeg-header"` for a JPEG preview or `scope: "full"` when a complete
+response is intentional. `result.telemetry.http` reports network request
+counts, response/decoded bytes, cache hits, range support, requested/final URL,
+redirect details, validator, fallback reason, and transport completeness.
+
+Range reads require an ETag or Last-Modified validator by default. A server
+that ignores ranges, compresses a range response, omits a validator, or
+returns an invalid range fails closed. Set `allowFullResponseFallback: true`
+to permit a complete response bounded by `maxFullResponseBytes` and the
+normal `maxInputBytes` limit. The fallback reason remains observable. No
+credentials, CORS mode, redirect mode, or other caller `RequestInit` policy is
+added or hidden; `init` is forwarded with only the adapter-managed Range and
+If-Range headers.
+
+## `browser-image-metadata/node`
+
+```ts
+parseMetadata(input: NodeMetadataInput, options?: NodeParseOptions): Promise<MetadataResult>
+```
+
+This Node-only entry accepts a filesystem path (`string` or `URL`), a
+structurally compatible `fs/promises` `FileHandle`, a `SeekableFileSource`,
+and a binary `AsyncIterable` such as a Node `Readable`. Existing byte views,
+`Blob`, and `File` inputs are passed through to the local parser; paths are
+never accepted by the root/browser entry point.
+
+`SeekableFileSource` exposes a safe `size` and asynchronous half-open
+`read(start, end, signal?)` method. Its ranges are adapted to the existing
+`ByteSource` and container planners, so `scope: "metadata"` can avoid image
+payload ranges for formats that support metadata-scoped reads. The adapter
+closes paths it opens and closes supplied file handles and sources by default
+on success, parse failure, and abort. Set `closeSource: false` only when the
+caller owns a supplied source's lifecycle; a path opened by the adapter is
+always closed.
+
+Non-seekable streams are spooled into bounded memory before the local parser
+runs. `limits.maxInputBytes` bounds retained bytes and `maxStreamChunks`
+(defaulting to `limits.maxReadRequests`) bounds accepted chunks. A stream
+therefore cannot provide true range efficiency, even when `scope: "metadata"`
+is requested. Stream values must be `ArrayBuffer` or `ArrayBufferView` binary
+chunks; text chunks are rejected.
+
 ## `redactMetadata(input, options)`
 
 ```ts

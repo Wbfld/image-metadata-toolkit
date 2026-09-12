@@ -51,6 +51,16 @@ try {
     "package/dist/fetch.cjs",
     "package/dist/fetch.d.ts",
     "package/dist/fetch.d.cts",
+    "package/dist/http.js",
+    "package/dist/http.cjs",
+    "package/dist/http.d.ts",
+    "package/dist/http.d.cts",
+    "package/dist/node.js",
+    "package/dist/node.cjs",
+    "package/dist/node.d.ts",
+    "package/dist/node.d.cts",
+    "package/dist/node-browser.js",
+    "package/dist/node-browser.d.ts",
     "package/dist/jpeg.js",
     "package/dist/jpeg.cjs",
     "package/dist/mini.js",
@@ -92,6 +102,7 @@ try {
     'import { detectFormat, getCapabilities, parseMetadata, readGps, readTags } from "browser-image-metadata";',
     'import { detectFormat as detectOnly } from "browser-image-metadata/detect";',
     'import { fetchMetadata } from "browser-image-metadata/fetch";',
+    'import { fetchMetadata as fetchHttpMetadata } from "browser-image-metadata/http";',
     'import { parseJpegMetadata } from "browser-image-metadata/jpeg";',
     'import { parseMetadata as parseMiniMetadata } from "browser-image-metadata/mini";',
     'import { redactMetadata as redactFocused } from "browser-image-metadata/redact";',
@@ -102,6 +113,7 @@ try {
     'assert.deepEqual(getCapabilities("jpeg").readScopes, ["full", "jpeg-header", "metadata"]);',
     'assert.equal(detectOnly(bytes).format, "jpeg");',
     'assert.equal((await fetchMetadata("https://example.invalid/photo.jpg", { fetch: () => Promise.resolve(new Response(bytes)) })).format, "jpeg");',
+    'assert.equal(typeof fetchHttpMetadata, "function");',
     'assert.equal(parseStructuredXmp(`<x:xmpmeta xmlns:x="x"/>`)?.properties !== undefined, true);',
     'assert.equal(JSON.stringify(toJsonSafe({ value: 1 })), "{\\"value\\":1}");',
     'assert.equal((await parseMetadata(bytes)).dimensions?.width, 2);',
@@ -112,18 +124,37 @@ try {
     'assert.equal((await parseMiniMetadata(bytes)).format, "jpeg");',
     'assert.equal((await redactFocused(bytes, { remove: ["EXIF"] })).format, "jpeg");',
   ].join("\n"));
+  await writeFile(join(consumer, "node-esm-smoke.mjs"), [
+    'import assert from "node:assert/strict";',
+    'import { writeFile } from "node:fs/promises";',
+    'import { parseMetadata } from "browser-image-metadata/node";',
+    `const bytes = Uint8Array.from(${fixtureLiteral});`,
+    'await writeFile("node-fixture.jpg", bytes);',
+    'assert.equal((await parseMetadata("node-fixture.jpg", { scope: "metadata" })).format, "jpeg");',
+  ].join("\n"));
+  await writeFile(join(consumer, "node-browser-smoke.mjs"), [
+    'import assert from "node:assert/strict";',
+    'import { parseMetadata } from "browser-image-metadata/node";',
+    'await assert.rejects(parseMetadata(new Uint8Array()), { code: "UNSUPPORTED_FORMAT" });',
+  ].join("\n"));
   await writeFile(join(consumer, "cjs-smoke.cjs"), [
     'const assert = require("node:assert/strict");',
     'const { detectFormat, parseMetadata } = require("browser-image-metadata");',
     'const { detectFormat: detectOnly } = require("browser-image-metadata/detect");',
+    'const { parseMetadata: parseNodeMetadata } = require("browser-image-metadata/node");',
     'const { toJsonSafe } = require("browser-image-metadata/adapters");',
     `const bytes = Uint8Array.from(${fixtureLiteral});`,
     'assert.equal(detectFormat(bytes).format, "jpeg");',
     'assert.equal(detectOnly(bytes).format, "jpeg");',
     'assert.equal(JSON.stringify(toJsonSafe({ value: 1 })), "{\\"value\\":1}");',
-    '(async () => assert.equal((await parseMetadata(bytes)).dimensions?.height, 2))().catch((error) => { throw error; });',
+    '(async () => {',
+    '  assert.equal((await parseNodeMetadata(bytes)).format, "jpeg");',
+    '  assert.equal((await parseMetadata(bytes)).dimensions?.height, 2);',
+    '})().catch((error) => { throw error; });',
   ].join("\n"));
   await run(process.execPath, ["esm-smoke.mjs"], consumer);
+  await run(process.execPath, ["node-esm-smoke.mjs"], consumer);
+  await run(process.execPath, ["--conditions=browser", "node-browser-smoke.mjs"], consumer);
   await run(process.execPath, ["--conditions=browser", "esm-smoke.mjs"], consumer);
   await run(process.execPath, ["cjs-smoke.cjs"], consumer);
   process.stdout.write(`Tarball smoke passed: ${basename(tarball)}\n`);

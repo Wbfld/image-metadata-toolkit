@@ -112,6 +112,28 @@ import { fetchMetadata } from "browser-image-metadata/fetch";
 const result = await fetchMetadata("/images/photo.jpg", { limits: { maxInputBytes: 20 * 1024 * 1024 } });
 ```
 
+For true remote range reads, use the separate HTTP entry point. It probes a
+single byte, validates `Content-Range`, total size, identity encoding, a
+strong ETag or Last-Modified validator, and the final URL before the existing
+bounded JPEG/TIFF/HEIF readers request metadata ranges:
+
+```ts
+import { fetchMetadata } from "browser-image-metadata/http";
+
+const result = await fetchMetadata("https://images.example/photo.heic", {
+  select: { groups: ["Dimensions", "EXIF", "XMP"] },
+  allowedOrigins: ["https://images.example"],
+  init: { credentials: "omit", redirect: "follow", mode: "cors" },
+});
+console.log(result.telemetry?.http);
+```
+
+The HTTP adapter never adds credentials or changes CORS, redirect, or cache
+policy supplied through `init`. A server that ignores ranges, compresses a
+range response, changes its validator, or omits a validator fails closed.
+Set `allowFullResponseFallback: true` only when a bounded full response is
+acceptable; `maxFullResponseBytes` can tighten that fallback independently.
+
 For a fast JPEG preview, request only header metadata. `Blob` and `File`
 inputs are read with `slice()` only through the start-of-scan header; the result
 records its intentionally partial scope.
@@ -281,6 +303,12 @@ Complete JPEG APP2, PNG iCCP, WebP ICCP, TIFF/BigTIFF, and HEIF/AVIF ICC profile
 
 The S07 ICC interoperability gate is `ICC_REFERENCE_CORPUS_DIR=/path/to/hash-pinned-profiles ICC_REFERENCE_CORPUS_OUTPUT_DIR=reports npm run icc:reference`. It requires the complete corpus listed in `data/icc/reference-corpus.json`, runs the standards-based decoder before pinned ExifTool 13.42 output, compares header and decoded ICC semantics where both tools expose them, records explicit non-comparable curve/array values, and fails on missing, partial, or mismatching evidence. The checked redistribution-safe evidence is in `reports/icc-reference-report.json` and `reports/icc-reference-report.md`; profile files are never written to the repository.
 
+The `/http` entry point is the only network-capable metadata API. It keeps
+network policy explicit, validates byte-range responses and resource
+validators, uses bounded fallback only when requested, and attaches transport
+evidence under `result.telemetry.http`. The core entry point and all other
+browser exports remain local-only.
+
 ## Format status
 
 The [generated capability matrix](./CAPABILITIES.md) is the source of truth for
@@ -325,10 +353,34 @@ const bytes = await readFile("photo.jpg");
 console.log(await parseMetadata(bytes));
 ```
 
+The Node-only entry point accepts a path, an `fs/promises` `FileHandle`, or a
+seekable source with `size` and an asynchronous half-open `read(start, end)`
+method. Use `scope: "metadata"` to let the existing bounded container planners
+read only metadata ranges from a seekable file. Paths and file handles opened
+by the adapter are closed on success, parse failure, and abort; supplied
+seekable sources and handles are also closed by default. Set
+`closeSource: false` only when the caller owns that source's lifecycle.
+
+```ts
+import { parseMetadata } from "browser-image-metadata/node";
+
+const result = await parseMetadata("photo.heic", {
+  scope: "metadata",
+  select: { groups: ["Dimensions", "EXIF", "XMP"] },
+});
+```
+
+Non-seekable Node streams and async iterables are accepted as binary inputs,
+but are spooled completely into memory under `limits.maxInputBytes` before
+parsing. They cannot provide true range efficiency; use a path, `FileHandle`,
+or seekable source when avoiding intervening image payload bytes matters.
+`maxStreamChunks` bounds the number of accepted stream chunks.
+
 CommonJS is also supported:
 
 ```js
 const { parseMetadata } = require("browser-image-metadata");
+const { parseMetadata: parseNodeMetadata } = require("browser-image-metadata/node");
 ```
 
 Run the checked Node example with:

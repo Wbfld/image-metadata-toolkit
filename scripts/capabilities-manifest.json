@@ -159,6 +159,8 @@
   "notes": [
     "Detection is signature recognition only; it is not a claim that every metadata family is supported.",
     "Partial Blob/File scopes report completeness.scope, bytesRead, inputBytes, and coverage reasons.",
+    "The browser-image-metadata/http entry point performs explicit HTTP range metadata reads. It validates Content-Range, identity encoding, total size, validators, redirects, and caller-selected origins; it fails closed unless allowFullResponseFallback permits a bounded full response. result.telemetry.http records request, response, decoded-byte, cache, fallback, redirect, validator, and completeness evidence.",
+    "The browser-image-metadata/node entry is Node-only: paths, FileHandles, and seekable file sources use the existing bounded range planners, while non-seekable binary streams are fully spooled under maxInputBytes and cannot provide true range efficiency. File descriptors and owned sources close by default on success, failure, and abort; closeSource:false makes external ownership explicit.",
     "Unsupported and malformed structures remain visible through capabilities, coverage, warnings, and explicit redaction outcomes.",
     "The public npm brand and import name are browser-image-metadata; image-metadata-toolkit is the repository slug only.",
     "IPTC Photo Metadata 2025.1 semantics are additive through iptcSemantic/readIptcSemantic; all IIM and URI-aware XMP candidates and conflicts remain available, while unknown XMP remains conservatively classified."

@@ -743,7 +743,44 @@ export interface ReadTelemetry {
   readonly cacheHits: number;
   readonly coalescedReads: number;
   readonly cacheBytes: number;
+  /** Transport evidence attached by the explicit HTTP entry point. */
+  readonly http?: HttpReadTelemetry;
 }
+
+/**
+ * Bounded transport evidence for an HTTP-backed metadata read. Both byte
+ * counters describe bytes consumed from Fetch response bodies; the decoded
+ * counter is the post-fetch representation made available to the local source
+ * and is kept separate so runtimes can report transport decoding accurately.
+ */
+export interface HttpReadTelemetry {
+  readonly requestCount: number;
+  readonly rangeRequestCount: number;
+  readonly fullResponseRequestCount: number;
+  readonly responseBytes: number;
+  readonly decodedBytes: number;
+  readonly cacheHits: number;
+  readonly coalescedReads: number;
+  readonly fallbackReason: HttpFallbackReason | null;
+  /** `range` means validated byte ranges; `full` means one complete response; `fallback` means policy-authorized full response after range failure. */
+  readonly mode: "range" | "full" | "fallback";
+  readonly rangeSupported: boolean;
+  readonly complete: boolean;
+  readonly totalBytes: number;
+  readonly validator: string | null;
+  readonly requestedUrl: string;
+  readonly redirected: boolean;
+  readonly finalUrl: string;
+  readonly warnings: readonly string[];
+}
+
+export type HttpFallbackReason =
+  | "range-ignored"
+  | "compressed-response"
+  | "invalid-range-response"
+  | "missing-validator"
+  | "range-status"
+  | "full-response-limit";
 
 /** Describes how much of an input was inspected and whether a range scope was used. */
 export interface ParseCompleteness {

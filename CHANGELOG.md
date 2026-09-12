@@ -15,6 +15,15 @@
   fail-closed privacy classifications, and bounded semantic processing;
 - added bounded `ByteSource` adapters for byte views and Blob/File ranges with
   overlap coalescing, an LRU cache, aborts, read budgets, and telemetry;
+- added the explicit `browser-image-metadata/http` range entry point with
+  validated 206 negotiation, Content-Range and validator checks, redirect and
+  caller-policy transparency, bounded full-response fallback, and transport
+  telemetry for request, response, decoded-byte, cache, and completeness
+  evidence;
+- added the explicit Node-only `browser-image-metadata/node` entry point for
+  paths, FileHandles, seekable file sources, and bounded non-seekable stream
+  spooling, with default source ownership cleanup on success, failure, and
+  abort;
 - preserved original JPEG source offsets and provenance when metadata-scoped
   reads fetch only selected marker ranges;
 - replaced the external corpus smoke check with a registry-driven differential

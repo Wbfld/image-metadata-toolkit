@@ -72,7 +72,7 @@ function render(manifestText) {
     "",
     "The public input type is `ArrayBuffer`, any `ArrayBufferView`, `Blob`, or `File`. The core parser does not fetch URLs, paths, or network resources. The separate `browser-image-metadata/fetch` entry point provides opt-in, input-bounded response streaming for browser and compatible runtime fetch implementations.",
     "",
-    "The published package includes ESM, CommonJS, source maps, declarations, focused detection/fetch/JPEG/redaction/XMP/worker entry points, and a dependency-free core. Node.js 22 or newer is covered in CI; browser, worker, Node, and Deno usage examples are included.",
+    "The published package includes ESM, CommonJS, source maps, declarations, focused detection/fetch/http/node/JPEG/redaction/XMP/worker entry points, and a dependency-free core. Node.js 22 or newer is covered in CI; browser, worker, Node, and Deno usage examples are included.",
     "",
     "## Explicit limitations",
     "",

@@ -1,6 +1,6 @@
 import { defineConfig } from "tsup";
 
-const entry = ["src/index.ts", "src/adapters.ts", "src/detect.ts", "src/fetch.ts", "src/jpeg.ts", "src/mini.ts", "src/redact.ts", "src/xmp.ts", "src/xmp-rgrove.ts", "src/worker.ts", "src/browser-thumbnail.ts"];
+const entry = ["src/index.ts", "src/adapters.ts", "src/detect.ts", "src/fetch.ts", "src/http.ts", "src/jpeg.ts", "src/mini.ts", "src/node.ts", "src/node-browser.ts", "src/redact.ts", "src/xmp.ts", "src/xmp-rgrove.ts", "src/worker.ts", "src/browser-thumbnail.ts"];
 const shared = {
   entry,
   sourcemap: true,

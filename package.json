@@ -88,6 +88,34 @@
         "default": "./dist/fetch.cjs"
       }
     },
+    "./http": {
+      "browser": {
+        "types": "./dist/http.d.ts",
+        "default": "./dist/http.js"
+      },
+      "import": {
+        "types": "./dist/http.d.ts",
+        "default": "./dist/http.js"
+      },
+      "require": {
+        "types": "./dist/http.d.cts",
+        "default": "./dist/http.cjs"
+      }
+    },
+    "./node": {
+      "browser": {
+        "types": "./dist/node-browser.d.ts",
+        "default": "./dist/node-browser.js"
+      },
+      "import": {
+        "types": "./dist/node.d.ts",
+        "default": "./dist/node.js"
+      },
+      "require": {
+        "types": "./dist/node.d.cts",
+        "default": "./dist/node.cjs"
+      }
+    },
     "./jpeg": {
       "browser": {
         "types": "./dist/jpeg.d.ts",
