@@ -2,115 +2,1147 @@
   "schema": "browser-image-metadata.external-registry.v1",
   "version": 1,
   "fields": [
-    { "name": "ImageWidth", "family": "EXIF", "references": ["ImageWidth"] },
-    { "name": "ImageLength", "family": "EXIF", "references": ["ImageHeight", "ImageLength"] },
-    { "name": "BitsPerSample", "family": "EXIF", "references": ["BitsPerSample"] },
-    { "name": "Compression", "family": "EXIF", "references": ["Compression"] },
-    { "name": "PhotometricInterpretation", "family": "EXIF", "references": ["PhotometricInterpretation"] },
-    { "name": "ImageDescription", "family": "EXIF", "references": ["ImageDescription"] },
-    { "name": "Make", "family": "EXIF", "references": ["Make"] },
-    { "name": "Model", "family": "EXIF", "references": ["Model"] },
-    { "name": "Orientation", "family": "EXIF", "references": ["Orientation"] },
-    { "name": "SamplesPerPixel", "family": "EXIF", "references": ["SamplesPerPixel"] },
-    { "name": "XResolution", "family": "EXIF", "references": ["XResolution"] },
-    { "name": "YResolution", "family": "EXIF", "references": ["YResolution"] },
-    { "name": "PlanarConfiguration", "family": "EXIF", "references": ["PlanarConfiguration"] },
-    { "name": "ResolutionUnit", "family": "EXIF", "references": ["ResolutionUnit"] },
-    { "name": "Software", "family": "EXIF", "references": ["Software"] },
-    { "name": "DateTime", "family": "EXIF", "references": ["ModifyDate", "DateTime"] },
-    { "name": "Artist", "family": "EXIF", "references": ["Artist"] },
-    { "name": "Copyright", "family": "EXIF", "references": ["Copyright", "CopyrightNotice"] },
-    { "name": "ExifVersion", "family": "EXIF", "references": ["ExifVersion"] },
-    { "name": "DateTimeOriginal", "family": "EXIF", "references": ["DateTimeOriginal"] },
-    { "name": "DateTimeDigitized", "family": "EXIF", "references": ["CreateDate", "DateTimeDigitized"] },
-    { "name": "OffsetTime", "family": "EXIF", "references": ["OffsetTime"] },
-    { "name": "OffsetTimeOriginal", "family": "EXIF", "references": ["OffsetTimeOriginal"] },
-    { "name": "OffsetTimeDigitized", "family": "EXIF", "references": ["OffsetTimeDigitized"] },
-    { "name": "ComponentsConfiguration", "family": "EXIF", "references": ["ComponentsConfiguration"] },
-    { "name": "CompressedBitsPerPixel", "family": "EXIF", "references": ["CompressedBitsPerPixel"] },
-    { "name": "ShutterSpeedValue", "family": "EXIF", "references": ["ShutterSpeedValue"] },
-    { "name": "ApertureValue", "family": "EXIF", "references": ["ApertureValue"] },
-    { "name": "BrightnessValue", "family": "EXIF", "references": ["BrightnessValue"] },
-    { "name": "ExposureBiasValue", "family": "EXIF", "references": ["ExposureCompensation", "ExposureBiasValue"] },
-    { "name": "MaxApertureValue", "family": "EXIF", "references": ["MaxApertureValue"] },
-    { "name": "SubjectDistance", "family": "EXIF", "references": ["SubjectDistance"] },
-    { "name": "ExposureTime", "family": "EXIF", "references": ["ExposureTime"] },
-    { "name": "FNumber", "family": "EXIF", "references": ["FNumber"] },
-    { "name": "ExposureProgram", "family": "EXIF", "references": ["ExposureProgram"] },
-    { "name": "SpectralSensitivity", "family": "EXIF", "references": ["SpectralSensitivity"] },
-    { "name": "ISOSpeedRatings", "family": "EXIF", "references": ["ISO", "ISOSpeedRatings"] },
-    { "name": "SensitivityType", "family": "EXIF", "references": ["SensitivityType"] },
-    { "name": "StandardOutputSensitivity", "family": "EXIF", "references": ["StandardOutputSensitivity"] },
-    { "name": "RecommendedExposureIndex", "family": "EXIF", "references": ["RecommendedExposureIndex"] },
-    { "name": "ISOSpeed", "family": "EXIF", "references": ["ISOSpeed"] },
-    { "name": "MeteringMode", "family": "EXIF", "references": ["MeteringMode"] },
-    { "name": "LightSource", "family": "EXIF", "references": ["LightSource"] },
-    { "name": "Flash", "family": "EXIF", "references": ["Flash"] },
-    { "name": "FocalLength", "family": "EXIF", "references": ["FocalLength"] },
-    { "name": "UserComment", "family": "EXIF", "references": ["UserComment"] },
-    { "name": "ColorSpace", "family": "EXIF", "references": ["ColorSpace"] },
-    { "name": "PixelXDimension", "family": "EXIF", "references": ["ExifImageWidth", "PixelXDimension"] },
-    { "name": "PixelYDimension", "family": "EXIF", "references": ["ExifImageHeight", "PixelYDimension"] },
-    { "name": "FileSource", "family": "EXIF", "references": ["FileSource"] },
-    { "name": "SceneType", "family": "EXIF", "references": ["SceneType"] },
-    { "name": "ExposureMode", "family": "EXIF", "references": ["ExposureMode"] },
-    { "name": "WhiteBalance", "family": "EXIF", "references": ["WhiteBalance"] },
-    { "name": "DigitalZoomRatio", "family": "EXIF", "references": ["DigitalZoomRatio"] },
-    { "name": "FocalLengthIn35mmFilm", "family": "EXIF", "references": ["FocalLengthIn35mmFormat", "FocalLengthIn35mmFilm"] },
-    { "name": "SceneCaptureType", "family": "EXIF", "references": ["SceneCaptureType"] },
-    { "name": "GainControl", "family": "EXIF", "references": ["GainControl"] },
-    { "name": "Contrast", "family": "EXIF", "references": ["Contrast"] },
-    { "name": "Saturation", "family": "EXIF", "references": ["Saturation"] },
-    { "name": "Sharpness", "family": "EXIF", "references": ["Sharpness"] },
-    { "name": "ImageUniqueID", "family": "EXIF", "references": ["ImageUniqueID"] },
-    { "name": "CameraOwnerName", "family": "EXIF", "references": ["CameraOwnerName"] },
-    { "name": "BodySerialNumber", "family": "EXIF", "references": ["SerialNumber", "BodySerialNumber"] },
-    { "name": "LensSpecification", "family": "EXIF", "references": ["LensSpecification"] },
-    { "name": "LensMake", "family": "EXIF", "references": ["LensMake"] },
-    { "name": "LensModel", "family": "EXIF", "references": ["LensModel"] },
-    { "name": "LensSerialNumber", "family": "EXIF", "references": ["LensSerialNumber"] },
-    { "name": "GPSLatitudeRef", "family": "EXIF", "references": ["GPSLatitudeRef"] },
-    { "name": "GPSLatitude", "family": "EXIF", "references": ["GPSLatitude"] },
-    { "name": "GPSLongitudeRef", "family": "EXIF", "references": ["GPSLongitudeRef"] },
-    { "name": "GPSLongitude", "family": "EXIF", "references": ["GPSLongitude"] },
-    { "name": "GPSAltitudeRef", "family": "EXIF", "references": ["GPSAltitudeRef"] },
-    { "name": "GPSAltitude", "family": "EXIF", "references": ["GPSAltitude"] },
-    { "name": "GPSTimeStamp", "family": "EXIF", "references": ["GPSTimeStamp"] },
-    { "name": "GPSSatellites", "family": "EXIF", "references": ["GPSSatellites"] },
-    { "name": "GPSStatus", "family": "EXIF", "references": ["GPSStatus"] },
-    { "name": "GPSMeasureMode", "family": "EXIF", "references": ["GPSMeasureMode"] },
-    { "name": "GPSDOP", "family": "EXIF", "references": ["GPSDOP"] },
-    { "name": "GPSSpeedRef", "family": "EXIF", "references": ["GPSSpeedRef"] },
-    { "name": "GPSSpeed", "family": "EXIF", "references": ["GPSSpeed"] },
-    { "name": "GPSTrackRef", "family": "EXIF", "references": ["GPSTrackRef"] },
-    { "name": "GPSTrack", "family": "EXIF", "references": ["GPSTrack"] },
-    { "name": "GPSImgDirectionRef", "family": "EXIF", "references": ["GPSImgDirectionRef"] },
-    { "name": "GPSImgDirection", "family": "EXIF", "references": ["GPSImgDirection"] },
-    { "name": "GPSMapDatum", "family": "EXIF", "references": ["GPSMapDatum"] },
-    { "name": "GPSDateStamp", "family": "EXIF", "references": ["GPSDateStamp"] },
-    { "name": "GPSDifferential", "family": "EXIF", "references": ["GPSDifferential"] },
-    { "name": "GPSHPositioningError", "family": "EXIF", "references": ["GPSHPositioningError"] },
-    { "name": "JPEGInterchangeFormat", "family": "EXIF", "references": ["ThumbnailOffset", "JPEGInterchangeFormat"] },
-    { "name": "JPEGInterchangeFormatLength", "family": "EXIF", "references": ["ThumbnailLength", "JPEGInterchangeFormatLength"] },
-    { "name": "XMP-dc:Title", "family": "XMP", "references": ["XMP-dc:Title", "Title"] },
-    { "name": "XMP-dc:Description", "family": "XMP", "references": ["XMP-dc:Description", "Description"] },
-    { "name": "XMP-dc:Creator", "family": "XMP", "references": ["XMP-dc:Creator", "Creator"] },
-    { "name": "XMP-xmp:CreateDate", "family": "XMP", "references": ["XMP-xmp:CreateDate", "CreateDate"] },
-    { "name": "ObjectName", "family": "IPTC", "references": ["IPTC:ObjectName", "ObjectName"] },
-    { "name": "Keywords", "family": "IPTC", "references": ["IPTC:Keywords", "Keywords"] },
-    { "name": "DateCreated", "family": "IPTC", "references": ["IPTC:DateCreated", "DateCreated"] },
-    { "name": "Byline", "family": "IPTC", "references": ["IPTC:Byline", "Byline"] },
-    { "name": "City", "family": "IPTC", "references": ["IPTC:City", "City"] },
-    { "name": "CountryCode", "family": "IPTC", "references": ["IPTC:CountryCode", "CountryCode"] },
-    { "name": "Headline", "family": "IPTC", "references": ["IPTC:Headline", "Headline"] },
-    { "name": "Caption", "family": "IPTC", "references": ["IPTC:Caption-Abstract", "Caption"] },
-    { "name": "CopyrightNotice", "family": "IPTC", "references": ["IPTC:CopyrightNotice", "CopyrightNotice"] }
+    {
+      "name": "width",
+      "family": "DIMENSIONS",
+      "references": [
+        "File:ImageWidth"
+      ]
+    },
+    {
+      "name": "height",
+      "family": "DIMENSIONS",
+      "references": [
+        "File:ImageHeight"
+      ]
+    },
+    {
+      "name": "ImageWidth",
+      "family": "EXIF",
+      "references": [
+        "ImageWidth"
+      ]
+    },
+    {
+      "name": "ImageLength",
+      "family": "EXIF",
+      "references": [
+        "ImageHeight",
+        "ImageLength"
+      ]
+    },
+    {
+      "name": "BitsPerSample",
+      "family": "EXIF",
+      "references": [
+        "BitsPerSample"
+      ]
+    },
+    {
+      "name": "Compression",
+      "family": "EXIF",
+      "references": [
+        "Compression"
+      ]
+    },
+    {
+      "name": "PhotometricInterpretation",
+      "family": "EXIF",
+      "references": [
+        "PhotometricInterpretation"
+      ]
+    },
+    {
+      "name": "ImageDescription",
+      "family": "EXIF",
+      "references": [
+        "ImageDescription"
+      ]
+    },
+    {
+      "name": "Make",
+      "family": "EXIF",
+      "references": [
+        "Make"
+      ]
+    },
+    {
+      "name": "Model",
+      "family": "EXIF",
+      "references": [
+        "Model"
+      ]
+    },
+    {
+      "name": "StripOffsets",
+      "family": "EXIF",
+      "references": [
+        "StripOffsets"
+      ]
+    },
+    {
+      "name": "Orientation",
+      "family": "EXIF",
+      "references": [
+        "Orientation"
+      ]
+    },
+    {
+      "name": "SamplesPerPixel",
+      "family": "EXIF",
+      "references": [
+        "SamplesPerPixel"
+      ]
+    },
+    {
+      "name": "RowsPerStrip",
+      "family": "EXIF",
+      "references": [
+        "RowsPerStrip"
+      ]
+    },
+    {
+      "name": "StripByteCounts",
+      "family": "EXIF",
+      "references": [
+        "StripByteCounts"
+      ]
+    },
+    {
+      "name": "XResolution",
+      "family": "EXIF",
+      "references": [
+        "XResolution"
+      ]
+    },
+    {
+      "name": "YResolution",
+      "family": "EXIF",
+      "references": [
+        "YResolution"
+      ]
+    },
+    {
+      "name": "PlanarConfiguration",
+      "family": "EXIF",
+      "references": [
+        "PlanarConfiguration"
+      ]
+    },
+    {
+      "name": "ResolutionUnit",
+      "family": "EXIF",
+      "references": [
+        "ResolutionUnit"
+      ]
+    },
+    {
+      "name": "TransferFunction",
+      "family": "EXIF",
+      "references": [
+        "TransferFunction"
+      ]
+    },
+    {
+      "name": "Software",
+      "family": "EXIF",
+      "references": [
+        "Software"
+      ]
+    },
+    {
+      "name": "DateTime",
+      "family": "EXIF",
+      "references": [
+        "ModifyDate",
+        "DateTime"
+      ]
+    },
+    {
+      "name": "Artist",
+      "family": "EXIF",
+      "references": [
+        "Artist"
+      ]
+    },
+    {
+      "name": "WhitePoint",
+      "family": "EXIF",
+      "references": [
+        "WhitePoint"
+      ]
+    },
+    {
+      "name": "PrimaryChromaticities",
+      "family": "EXIF",
+      "references": [
+        "PrimaryChromaticities"
+      ]
+    },
+    {
+      "name": "JPEGInterchangeFormat",
+      "family": "EXIF",
+      "references": [
+        "ThumbnailOffset",
+        "JPEGInterchangeFormat"
+      ]
+    },
+    {
+      "name": "JPEGInterchangeFormatLength",
+      "family": "EXIF",
+      "references": [
+        "ThumbnailLength",
+        "JPEGInterchangeFormatLength"
+      ]
+    },
+    {
+      "name": "YCbCrCoefficients",
+      "family": "EXIF",
+      "references": [
+        "YCbCrCoefficients"
+      ]
+    },
+    {
+      "name": "YCbCrSubSampling",
+      "family": "EXIF",
+      "references": [
+        "YCbCrSubSampling"
+      ]
+    },
+    {
+      "name": "YCbCrPositioning",
+      "family": "EXIF",
+      "references": [
+        "YCbCrPositioning"
+      ]
+    },
+    {
+      "name": "ReferenceBlackWhite",
+      "family": "EXIF",
+      "references": [
+        "ReferenceBlackWhite"
+      ]
+    },
+    {
+      "name": "Copyright",
+      "family": "EXIF",
+      "references": [
+        "Copyright",
+        "CopyrightNotice"
+      ]
+    },
+    {
+      "name": "ExifIFDPointer",
+      "family": "EXIF",
+      "references": [
+        "ExifIFDPointer"
+      ]
+    },
+    {
+      "name": "GPSInfoIFDPointer",
+      "family": "EXIF",
+      "references": [
+        "GPSInfoIFDPointer"
+      ]
+    },
+    {
+      "name": "ExposureTime",
+      "family": "EXIF",
+      "references": [
+        "ExposureTime"
+      ]
+    },
+    {
+      "name": "FNumber",
+      "family": "EXIF",
+      "references": [
+        "FNumber"
+      ]
+    },
+    {
+      "name": "ExposureProgram",
+      "family": "EXIF",
+      "references": [
+        "ExposureProgram"
+      ]
+    },
+    {
+      "name": "SpectralSensitivity",
+      "family": "EXIF",
+      "references": [
+        "SpectralSensitivity"
+      ]
+    },
+    {
+      "name": "ISOSpeedRatings",
+      "family": "EXIF",
+      "references": [
+        "ISO",
+        "ISOSpeedRatings"
+      ]
+    },
+    {
+      "name": "SensitivityType",
+      "family": "EXIF",
+      "references": [
+        "SensitivityType"
+      ]
+    },
+    {
+      "name": "StandardOutputSensitivity",
+      "family": "EXIF",
+      "references": [
+        "StandardOutputSensitivity"
+      ]
+    },
+    {
+      "name": "RecommendedExposureIndex",
+      "family": "EXIF",
+      "references": [
+        "RecommendedExposureIndex"
+      ]
+    },
+    {
+      "name": "ISOSpeed",
+      "family": "EXIF",
+      "references": [
+        "ISOSpeed"
+      ]
+    },
+    {
+      "name": "ISOSpeedLatitudeyyy",
+      "family": "EXIF",
+      "references": [
+        "ISOSpeedLatitudeyyy"
+      ]
+    },
+    {
+      "name": "ISOSpeedLatitudezzz",
+      "family": "EXIF",
+      "references": [
+        "ISOSpeedLatitudezzz"
+      ]
+    },
+    {
+      "name": "ExifVersion",
+      "family": "EXIF",
+      "references": [
+        "ExifVersion"
+      ]
+    },
+    {
+      "name": "DateTimeOriginal",
+      "family": "EXIF",
+      "references": [
+        "DateTimeOriginal"
+      ]
+    },
+    {
+      "name": "DateTimeDigitized",
+      "family": "EXIF",
+      "references": [
+        "CreateDate",
+        "DateTimeDigitized"
+      ]
+    },
+    {
+      "name": "OffsetTime",
+      "family": "EXIF",
+      "references": [
+        "OffsetTime"
+      ]
+    },
+    {
+      "name": "OffsetTimeOriginal",
+      "family": "EXIF",
+      "references": [
+        "OffsetTimeOriginal"
+      ]
+    },
+    {
+      "name": "OffsetTimeDigitized",
+      "family": "EXIF",
+      "references": [
+        "OffsetTimeDigitized"
+      ]
+    },
+    {
+      "name": "ComponentsConfiguration",
+      "family": "EXIF",
+      "references": [
+        "ComponentsConfiguration"
+      ]
+    },
+    {
+      "name": "CompressedBitsPerPixel",
+      "family": "EXIF",
+      "references": [
+        "CompressedBitsPerPixel"
+      ]
+    },
+    {
+      "name": "ShutterSpeedValue",
+      "family": "EXIF",
+      "references": [
+        "ShutterSpeedValue"
+      ]
+    },
+    {
+      "name": "ApertureValue",
+      "family": "EXIF",
+      "references": [
+        "ApertureValue"
+      ]
+    },
+    {
+      "name": "BrightnessValue",
+      "family": "EXIF",
+      "references": [
+        "BrightnessValue"
+      ]
+    },
+    {
+      "name": "ExposureBiasValue",
+      "family": "EXIF",
+      "references": [
+        "ExposureCompensation",
+        "ExposureBiasValue"
+      ]
+    },
+    {
+      "name": "MaxApertureValue",
+      "family": "EXIF",
+      "references": [
+        "MaxApertureValue"
+      ]
+    },
+    {
+      "name": "SubjectDistance",
+      "family": "EXIF",
+      "references": [
+        "SubjectDistance"
+      ]
+    },
+    {
+      "name": "MeteringMode",
+      "family": "EXIF",
+      "references": [
+        "MeteringMode"
+      ]
+    },
+    {
+      "name": "LightSource",
+      "family": "EXIF",
+      "references": [
+        "LightSource"
+      ]
+    },
+    {
+      "name": "Flash",
+      "family": "EXIF",
+      "references": [
+        "Flash"
+      ]
+    },
+    {
+      "name": "FocalLength",
+      "family": "EXIF",
+      "references": [
+        "FocalLength"
+      ]
+    },
+    {
+      "name": "MakerNote",
+      "family": "EXIF",
+      "references": [
+        "MakerNote"
+      ]
+    },
+    {
+      "name": "UserComment",
+      "family": "EXIF",
+      "references": [
+        "UserComment"
+      ]
+    },
+    {
+      "name": "SubSecTime",
+      "family": "EXIF",
+      "references": [
+        "SubSecTime"
+      ]
+    },
+    {
+      "name": "SubSecTimeOriginal",
+      "family": "EXIF",
+      "references": [
+        "SubSecTimeOriginal"
+      ]
+    },
+    {
+      "name": "SubSecTimeDigitized",
+      "family": "EXIF",
+      "references": [
+        "SubSecTimeDigitized"
+      ]
+    },
+    {
+      "name": "FlashpixVersion",
+      "family": "EXIF",
+      "references": [
+        "FlashpixVersion"
+      ]
+    },
+    {
+      "name": "ColorSpace",
+      "family": "EXIF",
+      "references": [
+        "ColorSpace"
+      ]
+    },
+    {
+      "name": "PixelXDimension",
+      "family": "EXIF",
+      "references": [
+        "ExifImageWidth",
+        "PixelXDimension"
+      ]
+    },
+    {
+      "name": "PixelYDimension",
+      "family": "EXIF",
+      "references": [
+        "ExifImageHeight",
+        "PixelYDimension"
+      ]
+    },
+    {
+      "name": "RelatedSoundFile",
+      "family": "EXIF",
+      "references": [
+        "RelatedSoundFile"
+      ]
+    },
+    {
+      "name": "InteroperabilityIFDPointer",
+      "family": "EXIF",
+      "references": [
+        "InteroperabilityIFDPointer"
+      ]
+    },
+    {
+      "name": "FlashEnergy",
+      "family": "EXIF",
+      "references": [
+        "FlashEnergy"
+      ]
+    },
+    {
+      "name": "FocalPlaneXResolution",
+      "family": "EXIF",
+      "references": [
+        "FocalPlaneXResolution"
+      ]
+    },
+    {
+      "name": "FocalPlaneYResolution",
+      "family": "EXIF",
+      "references": [
+        "FocalPlaneYResolution"
+      ]
+    },
+    {
+      "name": "FocalPlaneResolutionUnit",
+      "family": "EXIF",
+      "references": [
+        "FocalPlaneResolutionUnit"
+      ]
+    },
+    {
+      "name": "SubjectLocation",
+      "family": "EXIF",
+      "references": [
+        "SubjectLocation"
+      ]
+    },
+    {
+      "name": "ExposureIndex",
+      "family": "EXIF",
+      "references": [
+        "ExposureIndex"
+      ]
+    },
+    {
+      "name": "SensingMethod",
+      "family": "EXIF",
+      "references": [
+        "SensingMethod"
+      ]
+    },
+    {
+      "name": "FileSource",
+      "family": "EXIF",
+      "references": [
+        "FileSource"
+      ]
+    },
+    {
+      "name": "SceneType",
+      "family": "EXIF",
+      "references": [
+        "SceneType"
+      ]
+    },
+    {
+      "name": "CFAPattern",
+      "family": "EXIF",
+      "references": [
+        "CFAPattern"
+      ]
+    },
+    {
+      "name": "CustomRendered",
+      "family": "EXIF",
+      "references": [
+        "CustomRendered"
+      ]
+    },
+    {
+      "name": "ExposureMode",
+      "family": "EXIF",
+      "references": [
+        "ExposureMode"
+      ]
+    },
+    {
+      "name": "WhiteBalance",
+      "family": "EXIF",
+      "references": [
+        "WhiteBalance"
+      ]
+    },
+    {
+      "name": "DigitalZoomRatio",
+      "family": "EXIF",
+      "references": [
+        "DigitalZoomRatio"
+      ]
+    },
+    {
+      "name": "FocalLengthIn35mmFilm",
+      "family": "EXIF",
+      "references": [
+        "FocalLengthIn35mmFormat",
+        "FocalLengthIn35mmFilm"
+      ]
+    },
+    {
+      "name": "SceneCaptureType",
+      "family": "EXIF",
+      "references": [
+        "SceneCaptureType"
+      ]
+    },
+    {
+      "name": "GainControl",
+      "family": "EXIF",
+      "references": [
+        "GainControl"
+      ]
+    },
+    {
+      "name": "Contrast",
+      "family": "EXIF",
+      "references": [
+        "Contrast"
+      ]
+    },
+    {
+      "name": "Saturation",
+      "family": "EXIF",
+      "references": [
+        "Saturation"
+      ]
+    },
+    {
+      "name": "Sharpness",
+      "family": "EXIF",
+      "references": [
+        "Sharpness"
+      ]
+    },
+    {
+      "name": "DeviceSettingDescription",
+      "family": "EXIF",
+      "references": [
+        "DeviceSettingDescription"
+      ]
+    },
+    {
+      "name": "SubjectDistanceRange",
+      "family": "EXIF",
+      "references": [
+        "SubjectDistanceRange"
+      ]
+    },
+    {
+      "name": "ImageUniqueID",
+      "family": "EXIF",
+      "references": [
+        "ImageUniqueID"
+      ]
+    },
+    {
+      "name": "CameraOwnerName",
+      "family": "EXIF",
+      "references": [
+        "CameraOwnerName"
+      ]
+    },
+    {
+      "name": "BodySerialNumber",
+      "family": "EXIF",
+      "references": [
+        "SerialNumber",
+        "BodySerialNumber"
+      ]
+    },
+    {
+      "name": "LensSpecification",
+      "family": "EXIF",
+      "references": [
+        "LensSpecification"
+      ]
+    },
+    {
+      "name": "LensMake",
+      "family": "EXIF",
+      "references": [
+        "LensMake"
+      ]
+    },
+    {
+      "name": "LensModel",
+      "family": "EXIF",
+      "references": [
+        "LensModel"
+      ]
+    },
+    {
+      "name": "LensSerialNumber",
+      "family": "EXIF",
+      "references": [
+        "LensSerialNumber"
+      ]
+    },
+    {
+      "name": "GPSVersionID",
+      "family": "EXIF",
+      "references": [
+        "GPSVersionID"
+      ]
+    },
+    {
+      "name": "GPSLatitudeRef",
+      "family": "EXIF",
+      "references": [
+        "GPSLatitudeRef"
+      ]
+    },
+    {
+      "name": "GPSLatitude",
+      "family": "EXIF",
+      "references": [
+        "GPSLatitude"
+      ]
+    },
+    {
+      "name": "GPSLongitudeRef",
+      "family": "EXIF",
+      "references": [
+        "GPSLongitudeRef"
+      ]
+    },
+    {
+      "name": "GPSLongitude",
+      "family": "EXIF",
+      "references": [
+        "GPSLongitude"
+      ]
+    },
+    {
+      "name": "GPSAltitudeRef",
+      "family": "EXIF",
+      "references": [
+        "GPSAltitudeRef"
+      ]
+    },
+    {
+      "name": "GPSAltitude",
+      "family": "EXIF",
+      "references": [
+        "GPSAltitude"
+      ]
+    },
+    {
+      "name": "GPSTimeStamp",
+      "family": "EXIF",
+      "references": [
+        "GPSTimeStamp"
+      ]
+    },
+    {
+      "name": "GPSSatellites",
+      "family": "EXIF",
+      "references": [
+        "GPSSatellites"
+      ]
+    },
+    {
+      "name": "GPSStatus",
+      "family": "EXIF",
+      "references": [
+        "GPSStatus"
+      ]
+    },
+    {
+      "name": "GPSMeasureMode",
+      "family": "EXIF",
+      "references": [
+        "GPSMeasureMode"
+      ]
+    },
+    {
+      "name": "GPSDOP",
+      "family": "EXIF",
+      "references": [
+        "GPSDOP"
+      ]
+    },
+    {
+      "name": "GPSSpeedRef",
+      "family": "EXIF",
+      "references": [
+        "GPSSpeedRef"
+      ]
+    },
+    {
+      "name": "GPSSpeed",
+      "family": "EXIF",
+      "references": [
+        "GPSSpeed"
+      ]
+    },
+    {
+      "name": "GPSTrackRef",
+      "family": "EXIF",
+      "references": [
+        "GPSTrackRef"
+      ]
+    },
+    {
+      "name": "GPSTrack",
+      "family": "EXIF",
+      "references": [
+        "GPSTrack"
+      ]
+    },
+    {
+      "name": "GPSImgDirectionRef",
+      "family": "EXIF",
+      "references": [
+        "GPSImgDirectionRef"
+      ]
+    },
+    {
+      "name": "GPSImgDirection",
+      "family": "EXIF",
+      "references": [
+        "GPSImgDirection"
+      ]
+    },
+    {
+      "name": "GPSMapDatum",
+      "family": "EXIF",
+      "references": [
+        "GPSMapDatum"
+      ]
+    },
+    {
+      "name": "GPSDestLatitudeRef",
+      "family": "EXIF",
+      "references": [
+        "GPSDestLatitudeRef"
+      ]
+    },
+    {
+      "name": "GPSDestLatitude",
+      "family": "EXIF",
+      "references": [
+        "GPSDestLatitude"
+      ]
+    },
+    {
+      "name": "GPSDestLongitudeRef",
+      "family": "EXIF",
+      "references": [
+        "GPSDestLongitudeRef"
+      ]
+    },
+    {
+      "name": "GPSDestLongitude",
+      "family": "EXIF",
+      "references": [
+        "GPSDestLongitude"
+      ]
+    },
+    {
+      "name": "GPSDestBearingRef",
+      "family": "EXIF",
+      "references": [
+        "GPSDestBearingRef"
+      ]
+    },
+    {
+      "name": "GPSDestBearing",
+      "family": "EXIF",
+      "references": [
+        "GPSDestBearing"
+      ]
+    },
+    {
+      "name": "GPSDestDistanceRef",
+      "family": "EXIF",
+      "references": [
+        "GPSDestDistanceRef"
+      ]
+    },
+    {
+      "name": "GPSDestDistance",
+      "family": "EXIF",
+      "references": [
+        "GPSDestDistance"
+      ]
+    },
+    {
+      "name": "GPSProcessingMethod",
+      "family": "EXIF",
+      "references": [
+        "GPSProcessingMethod"
+      ]
+    },
+    {
+      "name": "GPSAreaInformation",
+      "family": "EXIF",
+      "references": [
+        "GPSAreaInformation"
+      ]
+    },
+    {
+      "name": "GPSDateStamp",
+      "family": "EXIF",
+      "references": [
+        "GPSDateStamp"
+      ]
+    },
+    {
+      "name": "GPSDifferential",
+      "family": "EXIF",
+      "references": [
+        "GPSDifferential"
+      ]
+    },
+    {
+      "name": "GPSHPositioningError",
+      "family": "EXIF",
+      "references": [
+        "GPSHPositioningError"
+      ]
+    },
+    {
+      "name": "InteroperabilityIndex",
+      "family": "EXIF",
+      "references": [
+        "InteroperabilityIndex"
+      ]
+    },
+    {
+      "name": "InteroperabilityVersion",
+      "family": "EXIF",
+      "references": [
+        "InteroperabilityVersion"
+      ]
+    },
+    {
+      "name": "RelatedImageFileFormat",
+      "family": "EXIF",
+      "references": [
+        "RelatedImageFileFormat"
+      ]
+    },
+    {
+      "name": "RelatedImageWidth",
+      "family": "EXIF",
+      "references": [
+        "RelatedImageWidth"
+      ]
+    },
+    {
+      "name": "RelatedImageLength",
+      "family": "EXIF",
+      "references": [
+        "RelatedImageLength"
+      ]
+    },
+    {
+      "name": "XMP-dc:Title",
+      "family": "XMP",
+      "references": [
+        "XMP-dc:Title",
+        "Title"
+      ]
+    },
+    {
+      "name": "XMP-dc:Description",
+      "family": "XMP",
+      "references": [
+        "XMP-dc:Description",
+        "Description"
+      ]
+    },
+    {
+      "name": "XMP-dc:Creator",
+      "family": "XMP",
+      "references": [
+        "XMP-dc:Creator",
+        "Creator"
+      ]
+    },
+    {
+      "name": "XMP-xmp:CreateDate",
+      "family": "XMP",
+      "references": [
+        "XMP-xmp:CreateDate",
+        "CreateDate"
+      ]
+    },
+    {
+      "name": "ObjectName",
+      "family": "IPTC",
+      "references": [
+        "IPTC:ObjectName",
+        "ObjectName"
+      ]
+    },
+    {
+      "name": "Keywords",
+      "family": "IPTC",
+      "references": [
+        "IPTC:Keywords",
+        "Keywords"
+      ]
+    },
+    {
+      "name": "DateCreated",
+      "family": "IPTC",
+      "references": [
+        "IPTC:DateCreated",
+        "DateCreated"
+      ]
+    },
+    {
+      "name": "Byline",
+      "family": "IPTC",
+      "references": [
+        "IPTC:Byline",
+        "Byline"
+      ]
+    },
+    {
+      "name": "City",
+      "family": "IPTC",
+      "references": [
+        "IPTC:City",
+        "City"
+      ]
+    },
+    {
+      "name": "CountryCode",
+      "family": "IPTC",
+      "references": [
+        "IPTC:CountryCode",
+        "CountryCode"
+      ]
+    },
+    {
+      "name": "Headline",
+      "family": "IPTC",
+      "references": [
+        "IPTC:Headline",
+        "Headline"
+      ]
+    },
+    {
+      "name": "Caption",
+      "family": "IPTC",
+      "references": [
+        "IPTC:Caption-Abstract",
+        "Caption"
+      ]
+    },
+    {
+      "name": "CopyrightNotice",
+      "family": "IPTC",
+      "references": [
+        "IPTC:CopyrightNotice",
+        "CopyrightNotice"
+      ]
+    }
   ],
   "blocks": [
-    { "family": "EXIF", "references": ["Make", "Model", "Orientation", "ImageWidth", "ImageHeight", "ImageLength"] },
-    { "family": "XMP", "references": ["XMP-dc:Title", "XMP-dc:Description", "XMP-dc:Creator", "XMP-xmp:CreateDate"] },
-    { "family": "IPTC", "references": ["IPTC:ObjectName", "IPTC:Keywords", "IPTC:Caption-Abstract", "IPTC:Byline"] },
-    { "family": "ICC", "references": ["ProfileDescription", "ProfileCopyright", "ColorSpaceData", "ProfileClass"] },
-    { "family": "JFIF", "references": ["JFIFVersion", "XResolution", "YResolution"] }
+    {
+      "family": "EXIF",
+      "references": [
+        "Make",
+        "Model",
+        "Orientation",
+        "ImageWidth",
+        "ImageHeight",
+        "ImageLength"
+      ]
+    },
+    {
+      "family": "XMP",
+      "references": [
+        "XMP-dc:Title",
+        "XMP-dc:Description",
+        "XMP-dc:Creator",
+        "XMP-xmp:CreateDate"
+      ]
+    },
+    {
+      "family": "IPTC",
+      "references": [
+        "IPTC:ObjectName",
+        "IPTC:Keywords",
+        "IPTC:Caption-Abstract",
+        "IPTC:Byline"
+      ]
+    },
+    {
+      "family": "ICC",
+      "references": [
+        "ProfileDescription",
+        "ProfileCopyright",
+        "ColorSpaceData",
+        "ProfileClass"
+      ]
+    },
+    {
+      "family": "JFIF",
+      "references": [
+        "JFIFVersion"
+      ]
+    }
   ]
 }

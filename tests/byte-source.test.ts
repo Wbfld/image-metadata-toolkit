@@ -13,6 +13,23 @@ describe("ByteSource", () => {
     expect(source.telemetry().coalescedReads).toBeGreaterThan(0);
     expect(await source.read(1, 3)).toEqual(Uint8Array.from([1, 2]));
     expect(source.telemetry().cacheHits).toBeGreaterThan(0);
+    expect(await source.read(4, 6)).toEqual(Uint8Array.from([4, 5]));
+    expect(await source.read(3, 6)).toEqual(Uint8Array.from([3, 4, 5]));
+    expect(source.telemetry().bytesRead).toBe(6);
+  });
+
+  it("does not merge disjoint queued ranges through unread bytes", async () => {
+    const source = createByteSource(Uint8Array.from([0, 1, 2, 3, 4, 5]), resolveLimits({ maxReadCacheBytes: 32 }));
+    const [left, right] = await Promise.all([source.read(0, 1), source.read(5, 6)]);
+    expect([...left, ...right]).toEqual([0, 5]);
+    expect(source.telemetry()).toMatchObject({ readRequests: 2, bytesRead: 2, coalescedReads: 0 });
+  });
+
+  it("composes partially overlapping reads from cached and missing ranges", async () => {
+    const source = createByteSource(Uint8Array.from([0, 1, 2, 3, 4, 5]), resolveLimits({ maxReadCacheBytes: 32 }));
+    expect(await source.read(0, 3)).toEqual(Uint8Array.from([0, 1, 2]));
+    expect(await source.read(2, 5)).toEqual(Uint8Array.from([2, 3, 4]));
+    expect(source.telemetry()).toMatchObject({ readRequests: 2, bytesRead: 5 });
   });
 
   it("supports Blob/File ranges and enforces request and cumulative byte limits", async () => {

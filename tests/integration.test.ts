@@ -553,10 +553,12 @@ describe("public parsing API", () => {
     expect(metadata.exif?.fields.map(({ name }) => name)).toEqual(["Make"]);
     expect(metadata.dimensions).toEqual({ width: 2, height: 2 });
     expect(metadata.completeness).toMatchObject({ scope: "partial", inputBytes: padded.length });
+    expect(metadata.coverage).toMatchObject({ requested: "complete", wholeFile: "partial" });
     expect(metadata.completeness.bytesRead).toBeLessThan(padded.length);
     expect(metadataReads.some(([start, end]) => end - start < padded.length && start > 0)).toBe(true);
     const metadataExifBlock = metadata.blocks.find(({ family }) => family === "EXIF");
-    expect(metadataExifBlock?.offset).toBeGreaterThan(0);
+    expect(metadataExifBlock?.offset).toBe(2);
+    expect(metadata.fields.find(({ name }) => name === "Make")?.source?.entryOffset).toBe(22);
     expect(metadata.fields.find(({ name }) => name === "Make")?.source?.blockId).toBe(metadataExifBlock?.id);
     expect(metadata.telemetry?.readRequests).toBeGreaterThan(0);
 
@@ -580,6 +582,21 @@ describe("public parsing API", () => {
     expect(opaqueResult.exif?.fields.map(({ name }) => name)).toEqual(["Make"]);
     expect(opaqueResult.completeness.bytesRead).toBeLessThan(opaqueJpeg.length);
     expect(opaqueReads.some(([start, end]) => start <= scanMarker && end >= scanMarker + opaqueSegment.length)).toBe(false);
+
+    const largeXmp = jpegXmpSegment(`<x:xmpmeta xmlns:x="adobe:ns:meta/">${"x".repeat(59_000)}</x:xmpmeta>`);
+    const xmpJpeg = insertBytes(fixture, scanMarker, largeXmp);
+    const xmpReads: Array<readonly [number, number]> = [];
+    const xmpBlob = {
+      size: xmpJpeg.length,
+      arrayBuffer: () => Promise.resolve(xmpJpeg.buffer.slice(0)),
+      slice: (start = 0, end = xmpJpeg.length) => {
+        xmpReads.push([start, end]);
+        return new Blob([Uint8Array.from(xmpJpeg.subarray(start, end)).buffer]);
+      },
+    } as unknown as Blob;
+    const exifOnly = await parseMetadata(xmpBlob, { scope: "metadata", select: { groups: ["EXIF"], tags: ["Make"] } });
+    expect(exifOnly.blocks).toContainEqual(expect.objectContaining({ family: "XMP", status: "skipped", offset: scanMarker }));
+    expect(xmpReads.some(([start, end]) => start <= scanMarker && end >= scanMarker + largeXmp.length)).toBe(false);
 
     const limited = await parseMetadata(new Blob([fixture]), { scope: "metadata", select: { groups: ["EXIF"] }, limits: { maxSegmentBytes: 1 } });
     expect(limited.warnings).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));

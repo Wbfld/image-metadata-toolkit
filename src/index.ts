@@ -238,7 +238,7 @@ export async function parseMetadata(input: MetadataInput, options: ParseOptions 
   const headerOnly = (options.scope === "jpeg-header" || options.scope === "metadata") && detection.format === "jpeg";
   if (detection.format === "jpeg") {
     const { parseJpeg } = await import("./parsers/jpeg.js");
-    result = parseJpeg(bytes, limits, { selection, headerOnly, registry, ...(materialization.mapOffset === undefined ? {} : { offsetMap: materialization.mapOffset }), ...(options.signal === undefined ? {} : { signal: options.signal }) });
+    result = parseJpeg(bytes, limits, { selection, headerOnly, registry, ...(materialization.mapOffset === undefined ? {} : { offsetMap: materialization.mapOffset }), ...(materialization.jpegView === undefined ? {} : { byteView: materialization.jpegView }), ...(options.signal === undefined ? {} : { signal: options.signal }) });
   } else if (detection.format === "png") {
     const { parsePng } = await import("./parsers/png.js");
     result = await parsePng(bytes, limits, selection, options.signal, registry);

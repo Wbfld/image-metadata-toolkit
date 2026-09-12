@@ -57,6 +57,17 @@ function mergeRange(reads: readonly PendingRead[]): { readonly start: number; re
   };
 }
 
+function concatenate(parts: readonly Uint8Array[]): Uint8Array {
+  const length = parts.reduce((total, part) => total + part.byteLength, 0);
+  const output = new Uint8Array(length);
+  let offset = 0;
+  for (const part of parts) {
+    output.set(part, offset);
+    offset += part.byteLength;
+  }
+  return output;
+}
+
 /**
  * Create a bounded, seekable source over bytes or a Blob/File. Reads are
  * validated before I/O, overlapping calls queued in the same turn are merged,
@@ -137,22 +148,31 @@ export function createByteSource(
   const flush = async (): Promise<void> => {
     flushScheduled = false;
     if (pending.length === 0) return;
-    const batch = pending.splice(0, pending.length);
-    const range = mergeRange(batch);
-    if (batch.length > 1) coalescedReads += batch.length - 1;
-    try {
-      throwIfAborted(signal);
-      if (readRequests >= limits.maxReadRequests) throw new MetadataError("LIMIT_EXCEEDED", `ByteSource read request limit of ${limits.maxReadRequests} was exceeded.`);
-      if (range.end - range.start > limits.maxReadBytes - bytesRead) throw new MetadataError("LIMIT_EXCEEDED", `ByteSource cumulative read limit of ${limits.maxReadBytes} bytes was exceeded.`);
-      readRequests += 1;
-      const data = await readUnderlying(range.start, range.end);
-      throwIfAborted(signal);
-      if (data.byteLength !== range.end - range.start) throw new MetadataError("INVALID_VALUE", "ByteSource adapter returned an unexpected range length.");
-      bytesRead += data.byteLength;
-      store(range.start, range.end, data);
-      for (const request of batch) request.resolve(data.subarray(request.start - range.start, request.end - range.start).slice());
-    } catch (error) {
-      for (const request of batch) request.reject(error);
+    const queued = pending.splice(0, pending.length).sort((left, right) => left.start - right.start || left.end - right.end);
+    const batches: PendingRead[][] = [];
+    for (const request of queued) {
+      const batch = batches.at(-1);
+      const range = batch === undefined ? undefined : mergeRange(batch);
+      if (batch === undefined || range === undefined || request.start > range.end) batches.push([request]);
+      else batch.push(request);
+    }
+    for (const batch of batches) {
+      const range = mergeRange(batch);
+      if (batch.length > 1) coalescedReads += batch.length - 1;
+      try {
+        throwIfAborted(signal);
+        if (readRequests >= limits.maxReadRequests) throw new MetadataError("LIMIT_EXCEEDED", `ByteSource read request limit of ${limits.maxReadRequests} was exceeded.`);
+        if (range.end - range.start > limits.maxReadBytes - bytesRead) throw new MetadataError("LIMIT_EXCEEDED", `ByteSource cumulative read limit of ${limits.maxReadBytes} bytes was exceeded.`);
+        readRequests += 1;
+        const data = await readUnderlying(range.start, range.end);
+        throwIfAborted(signal);
+        if (data.byteLength !== range.end - range.start) throw new MetadataError("INVALID_VALUE", "ByteSource adapter returned an unexpected range length.");
+        bytesRead += data.byteLength;
+        store(range.start, range.end, data);
+        for (const request of batch) request.resolve(data.subarray(request.start - range.start, request.end - range.start).slice());
+      } catch (error) {
+        for (const request of batch) request.reject(error);
+      }
     }
   };
 
@@ -162,6 +182,16 @@ export function createByteSource(
     if (start === end) return new Uint8Array();
     const cached = findCached(start, end);
     if (cached !== null) return cached;
+    const overlap = [...cache].reverse().find((entry) => entry.start < end && entry.end > start);
+    if (overlap !== undefined) {
+      const overlapStart = Math.max(start, overlap.start);
+      const overlapEnd = Math.min(end, overlap.end);
+      const data = touch(overlap);
+      const middle = data.subarray(overlapStart - overlap.start, overlapEnd - overlap.start).slice();
+      const before = overlapStart === start ? new Uint8Array() : await read(start, overlapStart);
+      const after = overlapEnd === end ? new Uint8Array() : await read(overlapEnd, end);
+      return concatenate([before, middle, after]);
+    }
     return new Promise<Uint8Array>((resolve, reject) => {
       pending.push({ start, end, resolve, reject });
       if (!flushScheduled) {

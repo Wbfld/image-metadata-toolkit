@@ -15,7 +15,8 @@ fixtures, or local credentials.
    ```
 
    The preflight rejects tracked or untracked changes, stale generated
-   `CAPABILITIES.md`, package/docs brand drift, and old package-version snippets.
+   `CAPABILITIES.md`, the generated metadata registry, package/docs brand drift,
+   and old package-version snippets.
 
 2. Confirm `package.json` has the intended version, the package name remains
    `browser-image-metadata`, and the lockfile is current:
@@ -23,6 +24,7 @@ fixtures, or local credentials.
    ```sh
    npm ci
    npm run capabilities:check
+   npm run registry:check
    ```
 
 3. Review the generated capability matrix and its evidence map. Every

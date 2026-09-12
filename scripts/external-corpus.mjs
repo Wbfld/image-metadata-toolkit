@@ -50,7 +50,12 @@ try {
     try {
       bytes = await readFile(path);
       const hash = sha256(bytes);
-      const [external, result] = await Promise.all([exiftool.read(path), parseMetadata(bytes)]);
+      // Group-qualified, numeric output prevents similarly named File, EXIF, XMP,
+      // IPTC, and maker-note tags from being compared across metadata families.
+      const [external, result] = await Promise.all([
+        exiftool.read(path, { readArgs: ["-G1", "-n"] }),
+        parseMetadata(bytes),
+      ]);
       const reference = Array.isArray(external) ? external[0] ?? {} : external;
       fixtures.push(compareFixture({ relativePath, hash, bytes, result, external: reference, registry }));
     } catch (error) {
@@ -62,12 +67,12 @@ try {
 }
 
 const summary = summarize(fixtures);
-const gate = evaluateGate({ fixtures, summary, minimumFixtures, maxMissingLocalRate, allowlist });
+const gate = evaluateGate({ fixtures, summary, minimumFixtures, maxMissingLocalRate, allowlist, currentVersion: packageJson.version });
 const report = {
   schema: REPORT_SCHEMA,
   generatedAt: new Date().toISOString(),
   package: { name: packageJson.name, version: packageJson.version },
-  reference: { tool: "ExifTool via exiftool-vendored", package: packageJson.devDependencies?.["exiftool-vendored"] ?? "unknown" },
+  reference: { tool: "ExifTool via exiftool-vendored", package: packageJson.devDependencies?.["exiftool-vendored"] ?? "unknown", mode: "group-qualified numeric (-G1 -n)" },
   corpus: { fixtureCount: paths.length, supportedExtensions: [...supportedExtensions].sort(), fixtureRoot: "external-fixture-root-not-published", hashes: "sha256" },
   registry: { schema: registry.schema, version: registry.version, fieldCount: registry.fields.length, blockCount: registry.blocks.length },
   allowlist: { schema: allowlist.schema, version: allowlist.version, entries: allowlist.entries.length },

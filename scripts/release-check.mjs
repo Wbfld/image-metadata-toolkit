@@ -27,11 +27,12 @@ assert.match(readme, new RegExp(`from ["']${brand.replace(/[.*+?^${}()|[\]\\]/g,
 assert.ok(readme.indexOf("> **Support boundaries:**") >= 0 && readme.indexOf("> **Support boundaries:**") < 1000, "README must expose unsupported and partial behavior above the fold.");
 assert.doesNotMatch(readme, /2\.0\.0-alpha\.2/, "README examples must not reference an older unreleased package version.");
 
-for (const document of ["API.md", "CAPABILITIES.md", "MIGRATION.md", "CONTRIBUTING.md", "PUBLISHING.md", "BENCHMARKS.md", "EXTERNAL_CORPORA.md"]) {
+for (const document of ["API.md", "CAPABILITIES.md", "METADATA_REGISTRY.md", "MIGRATION.md", "CONTRIBUTING.md", "PUBLISHING.md", "BENCHMARKS.md", "EXTERNAL_CORPORA.md"]) {
   assert.match(await text(document), new RegExp(brand), `${document} must use the public package brand.`);
 }
 
 await execFile(process.execPath, ["scripts/generate-capabilities.mjs", "--check"], { cwd: root });
+await execFile(process.execPath, ["scripts/generate-registry.mjs", "--check"], { cwd: root });
 const status = await gitStatus();
 assert.equal(status, "", `Release must start from a clean tracked and untracked tree.\n${status}`);
 console.log(`Release preflight passed for ${brand} ${packageJson.version}.`);

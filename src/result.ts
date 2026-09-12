@@ -29,9 +29,12 @@ function deriveCoverage(
       : states.includes("partial") || scope === "partial" ? "partial"
         : states.includes("skipped-by-selection") ? "skipped-by-selection"
           : parserReasons.includes("UNSUPPORTED_FORMAT") ? "unsupported" : "complete";
+  const inspectedStates = states.filter((state) => state !== "skipped-by-selection");
   const requested = result.format === "unknown" || parserReasons.includes("UNSUPPORTED_FORMAT") ? "unsupported"
-    : parserReasons.length > 0 ? "malformed"
-      : scope === "partial" ? "partial" : "complete";
+    : parserReasons.length > 0 || inspectedStates.includes("malformed") ? "malformed"
+      : inspectedStates.includes("opaque") ? "opaque"
+        : inspectedStates.includes("partial") ? "partial"
+          : "complete";
   return { requested, wholeFile, reasons, unclassifiedBlockIds: blocks.filter((block) => blockCoverage(block.status) !== "complete").map((block) => block.id) };
 }
 

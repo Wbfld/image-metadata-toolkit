@@ -23,6 +23,8 @@ normalized-match, mismatched, missing-local, or missing-reference, both overall
 and per producer. Missing local values are counted rather than skipped; the
 default gate fails above a 5% missing-local rate
 (`EXTERNAL_CORPUS_MAX_MISSING_LOCAL_RATE` can tighten or relax this explicitly).
+ExifTool is queried in group-qualified numeric mode (`-G1 -n`) so same-named
+File, EXIF, XMP, IPTC, and maker-note values cannot create false matches.
 
 Each run writes `external-corpus-report.json` and
 `external-corpus-report.md` under `EXTERNAL_CORPUS_OUTPUT_DIR` (default
@@ -31,4 +33,5 @@ SHA-256 hashes, never image bytes. The reviewed exception schema is
 [`scripts/external-allowlist.json`](./scripts/external-allowlist.json); every
 entry must include `issueUrl` and `expiryVersion` (semver). The comparator and gate are
 tested independently, including a deliberately missing decoder field that must
-fail the gate.
+fail the gate. Exceptions stop applying when the package reaches their expiry
+version (prereleases remain below the matching stable version).

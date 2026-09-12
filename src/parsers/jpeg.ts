@@ -18,6 +18,7 @@ import { WarningCollector } from "../security/warnings.js";
 import { throwIfAborted } from "../security/abort.js";
 import { wantsGroup, type ResolvedSelection } from "../selection.js";
 import type { MetadataRegistry } from "../registry.js";
+import type { JpegByteView } from "../io/jpeg-byte-view.js";
 
 const EXIF_IDENTIFIER = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00] as const;
 const JFIF_IDENTIFIER = [0x4a, 0x46, 0x49, 0x46, 0x00] as const;
@@ -58,18 +59,18 @@ function readDimensions(payload: Uint8Array): ImageDimensions | null {
   return width > 0 && height > 0 ? { width, height } : null;
 }
 
-function findMarkerAfterScan(bytes: Uint8Array, from: number, signal?: AbortSignal): number | null {
+function findMarkerAfterScan(bytes: JpegByteView, from: number, signal?: AbortSignal): number | null {
   let cursor = from;
   while (cursor < bytes.length) {
     throwIfAborted(signal);
-    if (bytes[cursor] !== 0xff) {
+    if (bytes.byteAt(cursor) !== 0xff) {
       cursor += 1;
       continue;
     }
     const markerStart = cursor;
-    while (cursor < bytes.length && bytes[cursor] === 0xff) cursor += 1;
+    while (cursor < bytes.length && bytes.byteAt(cursor) === 0xff) cursor += 1;
     if (cursor >= bytes.length) return null;
-    const marker = bytes[cursor] ?? 0;
+    const marker = bytes.byteAt(cursor) ?? 0;
     if (marker === 0x00 || isRestartMarker(marker)) {
       cursor += 1;
       continue;
@@ -85,12 +86,20 @@ export interface JpegParseOptions {
   readonly headerOnly?: boolean;
   /** Remap offsets from a compact range view to the original source file. */
   readonly offsetMap?: (offset: number) => number;
+  /** Sparse source-coordinate view for metadata-scoped Blob/File parsing. */
+  readonly byteView?: JpegByteView;
   readonly signal?: AbortSignal;
   readonly registry?: MetadataRegistry;
 }
 
 export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: JpegParseOptions = {}): ParsedMetadataResult {
   throwIfAborted(options.signal);
+  const source: JpegByteView = options.byteView ?? {
+    length: bytes.length,
+    byteAt: (offset) => bytes[offset],
+    subarray: (start, end) => bytes.subarray(start, end),
+    isMaterialized: () => true,
+  };
   const warnings = new WarningCollector(limits);
   const normalizedFields: MetadataField[] = [];
   const blocks: MetadataBlock[] = [];
@@ -110,7 +119,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
   let reachedEnd = false;
   let inEntropyData = false;
 
-  if (bytes.length < 2 || bytes[0] !== 0xff || bytes[1] !== 0xd8) {
+  if (source.length < 2 || source.byteAt(0) !== 0xff || source.byteAt(1) !== 0xd8) {
     warning(warnings, limits, {
       code: "MALFORMED_JPEG",
       message: "The input does not begin with a JPEG start-of-image marker.",
@@ -118,11 +127,11 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
       offset: 0,
     });
   } else {
-    while (cursor < bytes.length) {
+    while (cursor < source.length) {
       throwIfAborted(options.signal);
       let markerCameFromEntropyData = false;
       if (inEntropyData) {
-        const nextMarker = findMarkerAfterScan(bytes, cursor, options.signal);
+        const nextMarker = findMarkerAfterScan(source, cursor, options.signal);
         if (nextMarker === null) {
           warning(warnings, limits, {
             code: "TRUNCATED_DATA",
@@ -148,7 +157,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
       segmentCount += 1;
 
       const markerStart = cursor;
-      if (bytes[cursor] !== 0xff) {
+      if (source.byteAt(cursor) !== 0xff) {
         warning(warnings, limits, {
           code: "MALFORMED_JPEG",
           message: "Expected a JPEG marker before scan data.",
@@ -157,8 +166,8 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
         });
         break;
       }
-      while (cursor < bytes.length && bytes[cursor] === 0xff) cursor += 1;
-      if (cursor >= bytes.length) {
+      while (cursor < source.length && source.byteAt(cursor) === 0xff) cursor += 1;
+      if (cursor >= source.length) {
         warning(warnings, limits, {
           code: "TRUNCATED_DATA",
           message: "JPEG ends in an incomplete marker.",
@@ -168,7 +177,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
         break;
       }
 
-      const marker = bytes[cursor] ?? 0;
+      const marker = source.byteAt(cursor) ?? 0;
       cursor += 1;
       if (marker === 0x00) {
         warning(warnings, limits, {
@@ -202,7 +211,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
         break;
       }
       if (marker === 0x01) continue;
-      if (cursor + 2 > bytes.length) {
+      if (cursor + 2 > source.length) {
         warning(warnings, limits, {
           code: "TRUNCATED_DATA",
           message: "JPEG segment length is truncated.",
@@ -212,7 +221,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
         break;
       }
 
-      const declaredLength = ((bytes[cursor] ?? 0) << 8) | (bytes[cursor + 1] ?? 0);
+      const declaredLength = ((source.byteAt(cursor) ?? 0) << 8) | (source.byteAt(cursor + 1) ?? 0);
       if (declaredLength < 2) {
         warning(warnings, limits, {
           code: "MALFORMED_JPEG",
@@ -223,7 +232,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
         break;
       }
       const segmentEnd = cursor + declaredLength;
-      if (!Number.isSafeInteger(segmentEnd) || segmentEnd > bytes.length) {
+      if (!Number.isSafeInteger(segmentEnd) || segmentEnd > source.length) {
         warning(warnings, limits, {
           code: "TRUNCATED_DATA",
           message: "JPEG segment extends beyond the input.",
@@ -235,14 +244,15 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
       }
 
       const dataStart = cursor + 2;
-      const payload = bytes.subarray(dataStart, segmentEnd);
-      if (payload.length > limits.maxSegmentBytes) {
+      const payload = source.subarray(dataStart, segmentEnd);
+      const payloadLength = segmentEnd - dataStart;
+      if (source.isMaterialized(dataStart, segmentEnd) && payloadLength > limits.maxSegmentBytes) {
         warning(warnings, limits, {
           code: "LIMIT_EXCEEDED",
           message: `JPEG segment payload exceeds the configured limit of ${limits.maxSegmentBytes} bytes.`,
           severity: "error",
           offset: dataStart,
-          length: payload.length,
+          length: payloadLength,
         });
         break;
       }
@@ -298,14 +308,14 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
 
       const isMetadataSegment = marker >= 0xe0 && marker <= 0xef;
       if (isMetadataSegment) {
-        metadataBytes += payload.length;
+        metadataBytes += payloadLength;
         if (metadataBytes > limits.maxMetadataBytes) {
           warning(warnings, limits, {
             code: "LIMIT_EXCEEDED",
             message: "Total JPEG metadata exceeds the configured byte limit; this segment was skipped.",
             severity: "warning",
             offset: dataStart,
-            length: payload.length,
+            length: payloadLength,
           });
           cursor = segmentEnd;
           continue;
@@ -433,7 +443,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
     }
   }
 
-  if (!reachedScan && bytes.length > 2 && !warnings.some(({ severity }) => severity === "error")) {
+  if (!reachedScan && source.length > 2 && !warnings.some(({ severity }) => severity === "error")) {
     warning(warnings, limits, {
       code: "MALFORMED_JPEG",
       message: "JPEG contains no start-of-scan segment.",

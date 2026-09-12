@@ -8,6 +8,7 @@ import { materializeJpegMetadata } from "./jpeg-range.js";
 import { throwIfAborted } from "./security/abort.js";
 import { createByteSource, type ByteSource } from "./io/byte-source.js";
 import type { ReadTelemetry } from "./types.js";
+import type { JpegByteView } from "./io/jpeg-byte-view.js";
 
 export interface MetadataMaterialization {
   readonly bytes: Uint8Array;
@@ -16,6 +17,8 @@ export interface MetadataMaterialization {
   readonly inputBytes?: number;
   readonly warnings: readonly MetadataWarning[];
   readonly telemetry?: ReadTelemetry;
+  /** Original-offset sparse JPEG view used by metadata-scoped Blob reads. */
+  readonly jpegView?: JpegByteView;
   /** Map offsets in a compact parser view back to source-file offsets. */
   readonly mapOffset?: (offset: number) => number;
 }

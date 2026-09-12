@@ -23,7 +23,7 @@ export async function parseJpegMetadata(input: MetadataInput, options: ParseOpti
   if (options.signal?.aborted) throw new MetadataError("ABORTED", "Metadata operation was aborted.");
   if (detectFormat(bytes).format !== "jpeg") throw new MetadataError("UNSUPPORTED_FORMAT", "parseJpegMetadata() requires a recognized JPEG input.");
   const headerOnly = options.scope === "jpeg-header" || options.scope === "metadata";
-  const result = parseJpeg(bytes, limits, { selection, headerOnly, registry: resolveMetadataRegistry(options.registry), ...(materialization.mapOffset === undefined ? {} : { offsetMap: materialization.mapOffset }), ...(options.signal === undefined ? {} : { signal: options.signal }) });
+  const result = parseJpeg(bytes, limits, { selection, headerOnly, registry: resolveMetadataRegistry(options.registry), ...(materialization.mapOffset === undefined ? {} : { offsetMap: materialization.mapOffset }), ...(materialization.jpegView === undefined ? {} : { byteView: materialization.jpegView }), ...(options.signal === undefined ? {} : { signal: options.signal }) });
   const selected = { ...result, warnings: [...materialization.warnings, ...result.warnings] };
   return completeMetadataResult(
     selected,
