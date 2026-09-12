@@ -18,5 +18,5 @@
     "types": ["node", "vitest/globals"]
   },
   "include": ["src", "tests", "tsup.config.ts", "vitest.config.ts", "playwright.config.ts", "eslint.config.mjs"],
-  "exclude": ["dist", "coverage", "node_modules"]
+  "exclude": ["dist", "coverage", "node_modules", "tests/deno-smoke.ts"]
 }

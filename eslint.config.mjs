@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "coverage/**", "node_modules/**", "examples/integrations/**"],
+    ignores: ["dist/**", "coverage/**", "node_modules/**", "examples/integrations/**", "tests/deno-smoke.ts"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
