@@ -45,8 +45,10 @@ function toolkitInput(bytes, scenario) {
   return { input: bytes, source: null };
 }
 
-async function toolkitOperation(bytes, scenario) {
-  const toolkit = await import("../dist/index.js");
+async function toolkitOperation(bytes, scenario, toolkitModule) {
+  // Benchmarks exercise the published build. Contract tests inject the source
+  // module because `npm run check` typechecks and runs tests before build.
+  const toolkit = toolkitModule ?? await import("../dist/index.js");
   if (scenario.operation === "detection") {
     return { output: { supported: toolkit.detectFormat(bytes).format !== "unknown" }, transport: directTransport(bytes) };
   }
@@ -84,7 +86,7 @@ async function exifrOperation(bytes, scenario, exifr) {
 
 /** Execute one semantic benchmark operation for a named reader. */
 export async function runBenchmarkOperation(reader, bytes, scenario, modules) {
-  if (reader === "toolkit") return toolkitOperation(bytes, scenario);
+  if (reader === "toolkit") return toolkitOperation(bytes, scenario, modules.toolkit);
   if (reader === "exifreader") return exifReaderOperation(bytes, scenario, modules.ExifReader);
   if (reader === "exifr") return exifrOperation(bytes, scenario, modules.exifr);
   throw new Error(`Unknown benchmark reader: ${reader}`);

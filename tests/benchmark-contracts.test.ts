@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import ExifReader from "exifreader";
 import exifr from "exifr";
+import * as toolkitModule from "../src/index.js";
 
 import { runBenchmarkOperation } from "../scripts/benchmark-runner.mjs";
 import { assertScenarioContract, benchmarkScenarios } from "../scripts/benchmark-scenarios.mjs";
@@ -32,7 +33,7 @@ describe("competitor benchmark contracts", () => {
     const scenario = benchmarkScenarios.find((entry: { name: string }) => entry.name === "remote-range-simulation");
     expect(scenario).toBeDefined();
     if (scenario === undefined) return;
-    const modules = { ExifReader, exifr };
+    const modules = { ExifReader, exifr, toolkit: toolkitModule };
     const [toolkit, reader, exifrResult] = await Promise.all([
       runBenchmarkOperation("toolkit", bytes, scenario, modules),
       runBenchmarkOperation("exifreader", bytes, scenario, modules),
@@ -44,4 +45,3 @@ describe("competitor benchmark contracts", () => {
     expect(assertScenarioContract({ toolkit: toolkit.output, exifreader: reader.output, exifr: exifrResult.output }).passed).toBe(true);
   });
 });
-
