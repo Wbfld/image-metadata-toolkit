@@ -1,0 +1,40 @@
+{
+  "schema": "browser-image-metadata.heif-b02-sources.v1",
+  "retrieved": "2026-09-13",
+  "sources": [
+    {
+      "title": "ISO/IEC 23008-12:2025 — Image File Format",
+      "url": "https://committee.iso.org/standard/89035.html",
+      "version": "2025",
+      "edition": 3,
+      "authority": "ISO/IEC JTC 1/SC 29",
+      "license": "ISO copyrighted standard; consulted under licensed access; no source bytes are redistributed",
+      "hash": null,
+      "hashPolicy": "Not applicable: the copyrighted standard is cited but not copied into the repository.",
+      "usedFor": ["HEIF item semantics", "iloc construction methods", "iref relationships", "derived image items", "auxiliary and thumbnail semantics"]
+    },
+    {
+      "title": "ISO/IEC 14496-12:2022 — ISO base media file format",
+      "url": "https://www.iso.org/standard/83102.html",
+      "version": "2022",
+      "edition": 7,
+      "authority": "ISO/IEC JTC 1/SC 29",
+      "license": "ISO copyrighted standard; consulted under licensed access; no source bytes are redistributed",
+      "hash": null,
+      "hashPolicy": "Not applicable: the copyrighted standard is cited but not copied into the repository.",
+      "usedFor": ["box and full-box structure", "dref", "iinf", "iloc", "iprp", "ipma", "iref"]
+    },
+    {
+      "title": "AV1 Image File Format (AVIF)",
+      "url": "https://aomediacodec.github.io/av1-avif/v1.2.0.html",
+      "version": "v1.2.0",
+      "editionDate": "2025-10-16",
+      "authority": "Alliance for Open Media",
+      "license": "Alliance for Open Media specification; license notice at https://aomedia.org/license/",
+      "hash": null,
+      "hashPolicy": "Not applicable: the linked specification is cited but not copied into the repository.",
+      "usedFor": ["AVIF permitted item boxes", "AVIF grid and auxiliary relationships", "AVIF construction-method versions"]
+    }
+  ],
+  "fixturePolicy": "All B02 structural fixtures are generated in tests/heif-b02.test.ts from repository-authored bytes. No third-party image or standard source bytes are redistributed."
+}

@@ -10,6 +10,7 @@ import type {
   EditTarget,
   SecurityLimits,
 } from "./types.js";
+import { c2paMutationFailure, type C2paMutationPolicy } from "./trust/jumbf.js";
 
 const RIFF_HEADER = "RIFF";
 const WEBP_FORM = "WEBP";
@@ -33,6 +34,8 @@ export interface WebpRewriteOptions {
   readonly duplicatePolicy?: "preserve" | "replace-target" | "deduplicate-equivalent" | "reject";
   /** Independent encoded-payload verification policy. Enabled with the normal `verify` default. */
   readonly preservation?: PreservationVerifierOptions;
+  /** C2PA/JUMBF is refused by default; `preserve` is an explicit caller policy. */
+  readonly c2pa?: C2paMutationPolicy;
 }
 
 export interface WebpChunk {
@@ -339,6 +342,8 @@ export function rewriteWebpMetadata(input: Uint8Array, options: WebpRewriteOptio
   if (rawOptions === null || typeof rawOptions !== "object" || Array.isArray(rawOptions)) throw new WebpWriterError("INVALID_VALUE", "WebP writer options must be an object.");
   let limits: SecurityLimits;
   try { limits = resolveLimits(options.limits); } catch (error) { throw new WebpWriterError("INVALID_VALUE", error instanceof Error ? error.message : "WebP writer limits are invalid."); }
+  const c2paFailure = c2paMutationFailure(input, options.c2pa, limits);
+  if (c2paFailure !== null) throw new WebpWriterError("UNSUPPORTED_STRUCTURE", c2paFailure);
   if (!Array.isArray(options.blocks) || options.blocks.length === 0) throw new WebpWriterError("INVALID_VALUE", "WebP writer requires at least one block edit.");
   if (options.verify !== undefined && typeof options.verify !== "boolean") throw new WebpWriterError("INVALID_VALUE", "WebP writer verify must be boolean when supplied.");
   const rawPreservation: unknown = options.preservation;

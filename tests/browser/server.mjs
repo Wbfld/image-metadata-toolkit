@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { extname, resolve, sep } from "node:path";
 
 const root = resolve(import.meta.dirname, "../..");
+const t04FixturePath = globalThis.process?.env.C2PA_T04_FIXTURE;
 const contentTypes = new Map([
   [".html", "text/html; charset=utf-8"],
   [".js", "text/javascript; charset=utf-8"],
@@ -13,13 +14,23 @@ const contentTypes = new Map([
   [".png", "image/png"],
   [".webp", "image/webp"],
   [".avif", "image/avif"],
+  [".wasm", "application/wasm"],
 ]);
 
 const server = createServer(async (request, response) => {
   const pathname = decodeURIComponent(new URL(request.url ?? "/", "http://127.0.0.1").pathname);
   if (pathname === "/") {
     response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-    response.end("<!doctype html><title>browser-image-metadata browser test</title>");
+    response.end(`<!doctype html><title>browser-image-metadata browser test</title><script type="importmap">${JSON.stringify({ imports: { "@contentauth/c2pa-web": "/node_modules/@contentauth/c2pa-web/dist/index.js", highgain: "/node_modules/highgain/dist/index.js" } })}</script>`);
+    return;
+  }
+  if (pathname === "/c2pa-t04-fixture.jpg" && t04FixturePath !== undefined) {
+    try {
+      response.writeHead(200, { "content-type": "image/jpeg" });
+      createReadStream(t04FixturePath).pipe(response);
+    } catch {
+      response.writeHead(404).end();
+    }
     return;
   }
   const target = resolve(root, `.${pathname}`);

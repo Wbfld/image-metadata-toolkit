@@ -1,0 +1,516 @@
+{
+  "schema": "browser-image-metadata.heif-b03-evidence.v1",
+  "status": "pass",
+  "generatedAt": "2026-09-13T13:36:40.877Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "sourceManifest": {
+    "path": "data/heif/sources.json",
+    "schema": "browser-image-metadata.heif-b02-sources.v1",
+    "sha256": "ef693cbec24915982a5b30e1eb1a0c2ff13bfd210396e36daf0cd891c54ade4c"
+  },
+  "standards": [
+    {
+      "title": "ISO/IEC 23008-12:2025 — Image File Format",
+      "version": "2025",
+      "edition": 3,
+      "url": "https://committee.iso.org/standard/89035.html",
+      "license": "ISO copyrighted standard; consulted under licensed access; no source bytes are redistributed",
+      "hash": null
+    },
+    {
+      "title": "ISO/IEC 14496-12:2022 — ISO base media file format",
+      "version": "2022",
+      "edition": 7,
+      "url": "https://www.iso.org/standard/83102.html",
+      "license": "ISO copyrighted standard; consulted under licensed access; no source bytes are redistributed",
+      "hash": null
+    },
+    {
+      "title": "AV1 Image File Format (AVIF)",
+      "version": "v1.2.0",
+      "editionDate": "2025-10-16",
+      "url": "https://aomediacodec.github.io/av1-avif/v1.2.0.html",
+      "license": "Alliance for Open Media specification; license notice at https://aomedia.org/license/",
+      "hash": null
+    }
+  ],
+  "implementation": {
+    "model": "one result-level primary view plus a bounded collection of independent sequences, tracks, sample descriptions, samples, transformations, edits, references, and metadata associations",
+    "primarySelection": "a primary track is selected only when a sequence has exactly one picture track; multiple picture tracks remain candidates and produce ambiguous-picture-tracks",
+    "metadataPolicy": "item-graph relationships and track references remain separate; cdsc/meta track references are reverse-linked to the referenced picture track without flattening item metadata",
+    "samplePolicy": "sample payloads are never copied or decoded; only offsets, lengths, timing, sync state, and source provenance are retained",
+    "incompletePolicy": "malformed, truncated, unsafe, unsupported, or over-limit structures remain returned with typed diagnostics and complete=false",
+    "securityPolicy": "safe-integer arithmetic, bounded box/track/table/sample/relationship counts, bounded strings, bounded warning output, and no payload allocation"
+  },
+  "coverage": {
+    "cases": 6,
+    "unfragmented": true,
+    "multiplePictureTracks": true,
+    "avif": true,
+    "fragmented": true,
+    "malformed": true,
+    "limits": true,
+    "pixelDecode": false
+  },
+  "cases": [
+    {
+      "name": "unfragmented-independent-picture-and-metadata-tracks",
+      "fixturePath": "generated://heif-b03/unfragmented-independent-picture-and-metadata-tracks.bin",
+      "bytes": 1027,
+      "sha256": "85148dd11cebe02de00fd60a536cdd492c85197a832becac5d3c4dfe31961081",
+      "result": {
+        "format": "heif",
+        "dimensions": {
+          "width": 320,
+          "height": 240
+        },
+        "sequenceCount": 1,
+        "sequences": [
+          {
+            "sourceOffset": 24,
+            "byteLength": 977,
+            "fragmented": false,
+            "duration": 3000,
+            "primaryTrackId": 1,
+            "primaryTrackCandidates": [
+              1
+            ],
+            "primarySelection": "sole-picture-track",
+            "complete": true,
+            "tracks": [
+              {
+                "id": 1,
+                "kind": "picture",
+                "dimensions": {
+                  "width": 320,
+                  "height": 240
+                },
+                "sampleDescriptions": 1,
+                "samples": 3,
+                "metadataTrackIds": [
+                  2
+                ],
+                "references": [],
+                "complete": true
+              },
+              {
+                "id": 2,
+                "kind": "metadata",
+                "dimensions": null,
+                "sampleDescriptions": 1,
+                "samples": 1,
+                "metadataTrackIds": [],
+                "references": [
+                  {
+                    "type": "cdsc",
+                    "targetTrackIds": [
+                      1
+                    ]
+                  }
+                ],
+                "complete": true
+              }
+            ],
+            "metadataItemIds": [],
+            "metadataAssociations": [
+              {
+                "relationshipType": "cdsc",
+                "sourceItemId": null,
+                "targetItemId": null,
+                "sourceTrackId": 2,
+                "targetTrackId": 1,
+                "sourceOffset": 707,
+                "byteLength": 12,
+                "resolved": true
+              }
+            ]
+          }
+        ],
+        "warningCodes": []
+      },
+      "status": "passed"
+    },
+    {
+      "name": "ambiguous-multiple-picture-tracks",
+      "fixturePath": "generated://heif-b03/ambiguous-multiple-picture-tracks.bin",
+      "bytes": 1501,
+      "sha256": "ff67598fab6a58ce0728611040c6bc659b9e379f32c903e45191928c97f2a23e",
+      "result": {
+        "format": "heif",
+        "dimensions": null,
+        "sequenceCount": 1,
+        "sequences": [
+          {
+            "sourceOffset": 24,
+            "byteLength": 1436,
+            "fragmented": false,
+            "duration": 3000,
+            "primaryTrackId": null,
+            "primaryTrackCandidates": [
+              1,
+              2
+            ],
+            "primarySelection": "ambiguous-picture-tracks",
+            "complete": true,
+            "tracks": [
+              {
+                "id": 1,
+                "kind": "picture",
+                "dimensions": {
+                  "width": 320,
+                  "height": 240
+                },
+                "sampleDescriptions": 1,
+                "samples": 3,
+                "metadataTrackIds": [],
+                "references": [],
+                "complete": true
+              },
+              {
+                "id": 2,
+                "kind": "picture",
+                "dimensions": {
+                  "width": 321,
+                  "height": 240
+                },
+                "sampleDescriptions": 1,
+                "samples": 3,
+                "metadataTrackIds": [
+                  3
+                ],
+                "references": [],
+                "complete": true
+              },
+              {
+                "id": 3,
+                "kind": "metadata",
+                "dimensions": null,
+                "sampleDescriptions": 1,
+                "samples": 1,
+                "metadataTrackIds": [],
+                "references": [
+                  {
+                    "type": "cdsc",
+                    "targetTrackIds": [
+                      2
+                    ]
+                  }
+                ],
+                "complete": true
+              }
+            ],
+            "metadataItemIds": [],
+            "metadataAssociations": [
+              {
+                "relationshipType": "cdsc",
+                "sourceItemId": null,
+                "targetItemId": null,
+                "sourceTrackId": 3,
+                "targetTrackId": 2,
+                "sourceOffset": 1166,
+                "byteLength": 12,
+                "resolved": true
+              }
+            ]
+          }
+        ],
+        "warningCodes": []
+      },
+      "status": "passed"
+    },
+    {
+      "name": "avif-sequence-primary-track",
+      "fixturePath": "generated://heif-b03/avif-sequence-primary-track.bin",
+      "bytes": 1027,
+      "sha256": "8b0c65154586c14627e81c10fff26f5dca394af5d7355d802590b45550c5d5b9",
+      "result": {
+        "format": "avif",
+        "dimensions": {
+          "width": 320,
+          "height": 240
+        },
+        "sequenceCount": 1,
+        "sequences": [
+          {
+            "sourceOffset": 24,
+            "byteLength": 977,
+            "fragmented": false,
+            "duration": 3000,
+            "primaryTrackId": 1,
+            "primaryTrackCandidates": [
+              1
+            ],
+            "primarySelection": "sole-picture-track",
+            "complete": true,
+            "tracks": [
+              {
+                "id": 1,
+                "kind": "picture",
+                "dimensions": {
+                  "width": 320,
+                  "height": 240
+                },
+                "sampleDescriptions": 1,
+                "samples": 3,
+                "metadataTrackIds": [
+                  2
+                ],
+                "references": [],
+                "complete": true
+              },
+              {
+                "id": 2,
+                "kind": "metadata",
+                "dimensions": null,
+                "sampleDescriptions": 1,
+                "samples": 1,
+                "metadataTrackIds": [],
+                "references": [
+                  {
+                    "type": "cdsc",
+                    "targetTrackIds": [
+                      1
+                    ]
+                  }
+                ],
+                "complete": true
+              }
+            ],
+            "metadataItemIds": [],
+            "metadataAssociations": [
+              {
+                "relationshipType": "cdsc",
+                "sourceItemId": null,
+                "targetItemId": null,
+                "sourceTrackId": 2,
+                "targetTrackId": 1,
+                "sourceOffset": 707,
+                "byteLength": 12,
+                "resolved": true
+              }
+            ]
+          }
+        ],
+        "warningCodes": []
+      },
+      "status": "passed"
+    },
+    {
+      "name": "fragmented-picture-samples",
+      "fixturePath": "generated://heif-b03/fragmented-picture-samples.bin",
+      "bytes": 639,
+      "sha256": "18f7c9f4b456a7e8caf66ad696f1847bbe6f86c11a8a973334bbb4b6e75faf1b",
+      "result": {
+        "format": "heif",
+        "dimensions": {
+          "width": 320,
+          "height": 240
+        },
+        "sequenceCount": 1,
+        "sequences": [
+          {
+            "sourceOffset": 24,
+            "byteLength": 597,
+            "fragmented": true,
+            "duration": 3000,
+            "primaryTrackId": 1,
+            "primaryTrackCandidates": [
+              1
+            ],
+            "primarySelection": "sole-picture-track",
+            "complete": true,
+            "tracks": [
+              {
+                "id": 1,
+                "kind": "picture",
+                "dimensions": {
+                  "width": 320,
+                  "height": 240
+                },
+                "sampleDescriptions": 1,
+                "samples": 2,
+                "metadataTrackIds": [],
+                "references": [],
+                "complete": true
+              }
+            ],
+            "metadataItemIds": [],
+            "metadataAssociations": []
+          }
+        ],
+        "warningCodes": []
+      },
+      "status": "passed"
+    },
+    {
+      "name": "truncated-top-level-data",
+      "fixturePath": "generated://heif-b03/truncated-top-level-data.bin",
+      "bytes": 1024,
+      "sha256": "ef9bce20d238902dc236007e6cfec1de1ea7764181c421888ea1e64958470949",
+      "result": {
+        "format": "heif",
+        "dimensions": {
+          "width": 320,
+          "height": 240
+        },
+        "sequenceCount": 1,
+        "sequences": [
+          {
+            "sourceOffset": 24,
+            "byteLength": 977,
+            "fragmented": false,
+            "duration": 3000,
+            "primaryTrackId": 1,
+            "primaryTrackCandidates": [
+              1
+            ],
+            "primarySelection": "sole-picture-track",
+            "complete": false,
+            "tracks": [
+              {
+                "id": 1,
+                "kind": "picture",
+                "dimensions": {
+                  "width": 320,
+                  "height": 240
+                },
+                "sampleDescriptions": 1,
+                "samples": 3,
+                "metadataTrackIds": [
+                  2
+                ],
+                "references": [],
+                "complete": true
+              },
+              {
+                "id": 2,
+                "kind": "metadata",
+                "dimensions": null,
+                "sampleDescriptions": 1,
+                "samples": 1,
+                "metadataTrackIds": [],
+                "references": [
+                  {
+                    "type": "cdsc",
+                    "targetTrackIds": [
+                      1
+                    ]
+                  }
+                ],
+                "complete": true
+              }
+            ],
+            "metadataItemIds": [],
+            "metadataAssociations": [
+              {
+                "relationshipType": "cdsc",
+                "sourceItemId": null,
+                "targetItemId": null,
+                "sourceTrackId": 2,
+                "targetTrackId": 1,
+                "sourceOffset": 707,
+                "byteLength": 12,
+                "resolved": true
+              }
+            ]
+          }
+        ],
+        "warningCodes": [
+          "TRUNCATED_DATA",
+          "TRUNCATED_DATA",
+          "UNSAFE_OFFSET",
+          "UNSAFE_OFFSET",
+          "TRUNCATED_DATA"
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "name": "bounded-sample-limit",
+      "fixturePath": "generated://heif-b03/bounded-sample-limit.bin",
+      "bytes": 1027,
+      "sha256": "85148dd11cebe02de00fd60a536cdd492c85197a832becac5d3c4dfe31961081",
+      "result": {
+        "format": "heif",
+        "dimensions": {
+          "width": 320,
+          "height": 240
+        },
+        "sequenceCount": 1,
+        "sequences": [
+          {
+            "sourceOffset": 24,
+            "byteLength": 977,
+            "fragmented": false,
+            "duration": 3000,
+            "primaryTrackId": 1,
+            "primaryTrackCandidates": [
+              1
+            ],
+            "primarySelection": "sole-picture-track",
+            "complete": false,
+            "tracks": [
+              {
+                "id": 1,
+                "kind": "picture",
+                "dimensions": {
+                  "width": 320,
+                  "height": 240
+                },
+                "sampleDescriptions": 1,
+                "samples": 2,
+                "metadataTrackIds": [
+                  2
+                ],
+                "references": [],
+                "complete": false
+              },
+              {
+                "id": 2,
+                "kind": "metadata",
+                "dimensions": null,
+                "sampleDescriptions": 1,
+                "samples": 1,
+                "metadataTrackIds": [],
+                "references": [
+                  {
+                    "type": "cdsc",
+                    "targetTrackIds": [
+                      1
+                    ]
+                  }
+                ],
+                "complete": true
+              }
+            ],
+            "metadataItemIds": [],
+            "metadataAssociations": [
+              {
+                "relationshipType": "cdsc",
+                "sourceItemId": null,
+                "targetItemId": null,
+                "sourceTrackId": 2,
+                "targetTrackId": 1,
+                "sourceOffset": 707,
+                "byteLength": 12,
+                "resolved": true
+              }
+            ]
+          }
+        ],
+        "warningCodes": [
+          "LIMIT_EXCEEDED",
+          "LIMIT_EXCEEDED",
+          "LIMIT_EXCEEDED",
+          "MALFORMED_HEIF"
+        ]
+      },
+      "status": "passed"
+    }
+  ],
+  "payloadPolicy": "All fixtures are deterministic repository-authored structural bytes generated in memory by this command. No third-party image bytes, image copies, or decoded pixels are written.",
+  "complete": true
+}

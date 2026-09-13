@@ -2,6 +2,31 @@
 
 ## 2.0.0-alpha.3 — unreleased
 
+- added T01 bounded semantic privacy inspection with stable finding states and
+  categories, safe-by-default report serialization, and immutable T02 policy
+  presets with strict exact-field preflight;
+- added T03 bounded JUMBF/C2PA structural inventory for JPEG, PNG, WebP, and
+  ISO-BMFF carriers with default writer refusal and an explicit terminology
+  review packet; added isolated T04 browser and Node adapters for the pinned
+  official C2PA SDKs, with real integration evidence in
+  `reports/c2pa-adapter-integration.{json,md}`;
+- added B01 JPEG XL codestream and container dimensions, ordered `jxlp`
+  dimension headers, and bounded Brotli-compressed `brob` Exif/XML parsing
+  through an injected decoder or an explicit platform-stream capability;
+  raw codestream metadata remains separate and redistribution-safe evidence is
+  retained in `reports/jxl-b01-evidence.{json,md}`;
+- added B02 bounded HEIF/AVIF item graphs with `iloc` construction methods 0,
+  1, and 2, multiple extents, self-contained data references, ordered item
+  relationships, auxiliary and thumbnail properties, grid/overlay/identity
+  descriptors, cycle and limit rejection, metadata-only Blob range planning,
+  and redistribution-safe evidence in `reports/heif-b02-evidence.{json,md}`;
+- added B03 bounded HEIF/AVIF sequence collections with independent tracks,
+  sample descriptions and timing, track transformations and edits, metadata
+  associations, fragment provenance, explicit primary-track ambiguity, and
+  redistribution-safe structural evidence in
+  `reports/heif-b03-evidence.{json,md}`; sequence sample payloads remain
+  undecoded and HEIF/AVIF writing remains unsupported;
+
 - added W08 public preservation verification for independently hashed JPEG
   scans, PNG IDAT/fdAT ranges, and WebP image chunks, with dimensions,
   animation/image relationship, color/orientation policy, bounded

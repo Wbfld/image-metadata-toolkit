@@ -13,6 +13,7 @@ import type {
   EditTarget,
   SecurityLimits,
 } from "./types.js";
+import { c2paMutationFailure, type C2paMutationPolicy } from "./trust/jumbf.js";
 
 const SOI = 0xd8;
 const EOI = 0xd9;
@@ -128,6 +129,8 @@ export interface JpegRewriteOptions {
   readonly duplicatePolicy?: "preserve" | "replace-target" | "deduplicate-equivalent" | "reject";
   /** Independent encoded-payload verification policy. Enabled with the normal `verify` default. */
   readonly preservation?: PreservationVerifierOptions;
+  /** C2PA/JUMBF is refused by default; `preserve` is an explicit caller policy. */
+  readonly c2pa?: C2paMutationPolicy;
 }
 
 export interface JpegRewriteResult {
@@ -400,13 +403,15 @@ function parsePhotoshop(payload: Uint8Array): ParsedPhotoshop | null {
   return { resources, rawIim: false };
 }
 
-function findUnsupportedStructure(bytes: Uint8Array, index: JpegIndex, limits: SecurityLimits): void {
+function findUnsupportedStructure(bytes: Uint8Array, index: JpegIndex, limits: SecurityLimits, c2paPolicy?: C2paMutationPolicy): void {
   const extended = new Map<string, { readonly guid: string; readonly fullLength: number; readonly offset: number; readonly data: Uint8Array }[]>();
   const iccChunks: { readonly sequence: number; readonly total: number; readonly data: Uint8Array }[] = [];
   for (const segment of index.segments) {
     const payload = bytes.subarray(segment.payloadStart, segment.payloadEnd);
     if (segment.marker === APP2 && startsWith(payload, MPF_IDENTIFIER)) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG MPF secondary-image offsets are not rewritten by W03.", segment.start);
-    if (segment.marker === APP11 || containsAscii(payload, "jumb") || containsAscii(payload, "c2pa")) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG JUMBF/C2PA or APP11 offset-bearing metadata is not rewritten by W03.", segment.start);
+    if (segment.marker === APP11 || containsAscii(payload, "jumb") || containsAscii(payload, "c2pa")) {
+      if (c2paMutationFailure(bytes, c2paPolicy, limits) !== null) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", c2paMutationFailure(bytes, c2paPolicy, limits) ?? "JPEG C2PA/JUMBF mutation was refused.", segment.start);
+    }
     if (segment.kind === "extended-xmp") {
       const parsed = parseExtendedXmpChunk(payload);
       if (parsed === null) throw new JpegWriterError("UNSAFE_STRUCTURE", "JPEG Extended XMP has an invalid chunk header.", segment.start);
@@ -789,8 +794,8 @@ function removeIptcPayload(payload: Uint8Array, limits: SecurityLimits): Uint8Ar
   return result;
 }
 
-function outputForBlocks(input: Uint8Array, index: JpegIndex, blocks: readonly JpegBlockEdit[], limits: SecurityLimits, options: Pick<JpegRewriteOptions, "duplicatePolicy" | "verify" | "preservation"> = {}): JpegRewriteResult {
-  findUnsupportedStructure(input, index, limits);
+function outputForBlocks(input: Uint8Array, index: JpegIndex, blocks: readonly JpegBlockEdit[], limits: SecurityLimits, options: Pick<JpegRewriteOptions, "duplicatePolicy" | "verify" | "preservation" | "c2pa"> = {}): JpegRewriteResult {
+  findUnsupportedStructure(input, index, limits, options.c2pa);
   const works: SegmentWork[] = index.segments.map((segment) => ({ original: segment, originalBytes: input.subarray(segment.start, segment.end).slice(), bytes: input.subarray(segment.start, segment.end).slice(), removed: false }));
   const inserted: InsertedSegment[] = [];
   applyBlockEditsToWorks(index, blocks, limits, works, inserted, options.duplicatePolicy ?? "preserve");

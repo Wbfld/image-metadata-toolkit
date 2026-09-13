@@ -124,6 +124,9 @@ export function createMetadataWorkerClient(port: MessagePortLike, options: Metad
     if (closed) throw new MetadataError("ABORTED", "Metadata worker client has been closed.");
     if (pending.size >= maxPending) throw new MetadataError("LIMIT_EXCEEDED", `Metadata worker queue is limited to ${maxPending} requests.`);
     if (requestOptions.signal?.aborted) throw new MetadataError("ABORTED", "Metadata operation was aborted.");
+    if (operation === "parse" && typeof (requestOptions as ParseOptions).jxlBrotliDecompressor === "function") {
+      throw new MetadataError("UNSUPPORTED_STRUCTURE", "JxlBrotliDecompressor is a function and cannot be transferred through a structured-clone worker request; configure a decoder inside the worker instead.");
+    }
     const data = workerInput(input, requestOptions.signal);
     throwIfAborted(requestOptions.signal);
     const id = nextId++;

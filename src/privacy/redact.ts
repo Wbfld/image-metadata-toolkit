@@ -21,6 +21,7 @@ import type {
 import { redactJpeg } from "./jpeg-surgery.js";
 import { redactPng } from "./png-surgery.js";
 import { redactWebp } from "./webp-surgery.js";
+import { c2paMutationFailure } from "../trust/jumbf.js";
 
 const VALID_TARGETS = new Set<LegacyRedactionTarget>([
   "AllMetadata", "EXIF", "XMP", "PNGText", "IPTC", "ICC", "JFIF", "GPS", "SerialNumber",
@@ -432,13 +433,13 @@ export async function redactExactMetadata(bytes: Uint8Array, options: RedactOpti
           ...iptc.edits.map((edit) => ({ op: "replace" as const, kind: "iptc" as const, blockId: edit.blockId, data: edit.data })),
           ...iptc.removeBlocks.map((blockId) => ({ op: "remove" as const, kind: "iptc" as const, blockId })),
         ];
-        current = rewriteJpegMetadata(current, { blocks, duplicatePolicy: "replace-target", verify: true }).data as typeof current;
+        current = rewriteJpegMetadata(current, { blocks, duplicatePolicy: "replace-target", verify: true, ...(options.c2pa === undefined ? {} : { c2pa: options.c2pa }) }).data as typeof current;
       } else if (format === "png") {
         if (iptc.edits.length > 0 || iptc.removeBlocks.length > 0) throw new Error("PNG IPTC field redaction has no safe PNG IPTC resource writer.");
-        current = (await rewritePngMetadata(current, { blocks: xmp.edits.map((edit) => ({ op: "replace" as const, kind: "xmp" as const, blockId: edit.blockId, data: edit.data })), duplicatePolicy: "replace-target", verify: true })).data as typeof current;
+        current = (await rewritePngMetadata(current, { blocks: xmp.edits.map((edit) => ({ op: "replace" as const, kind: "xmp" as const, blockId: edit.blockId, data: edit.data })), duplicatePolicy: "replace-target", verify: true, ...(options.c2pa === undefined ? {} : { c2pa: options.c2pa }) })).data as typeof current;
       } else if (format === "webp") {
         if (iptc.edits.length > 0 || iptc.removeBlocks.length > 0) throw new Error("WebP IPTC field redaction has no WebP IPTC resource writer.");
-        current = rewriteWebpMetadata(current, { blocks: xmp.edits.map((edit) => ({ op: "replace" as const, kind: "xmp" as const, blockId: edit.blockId, data: edit.data })), duplicatePolicy: "replace-target", verify: true, preservation: { orientationPolicy: "preserve" } }).data as typeof current;
+        current = rewriteWebpMetadata(current, { blocks: xmp.edits.map((edit) => ({ op: "replace" as const, kind: "xmp" as const, blockId: edit.blockId, data: edit.data })), duplicatePolicy: "replace-target", verify: true, preservation: { orientationPolicy: "preserve" }, ...(options.c2pa === undefined ? {} : { c2pa: options.c2pa }) }).data as typeof current;
       } else if (xmp.edits.length > 0 || iptc.edits.length > 0 || iptc.removeBlocks.length > 0) {
         throw new Error(`Exact ${format.toUpperCase()} XMP/IPTC redaction is not supported by a lossless container writer.`);
       }
@@ -624,6 +625,8 @@ export function redactBytes(
     : normalizeStatic(options, limits);
   if (resolution.options === null) return redactionPreflightResult(bytes, resolution);
   const legacyOptions = resolution.options;
+  const c2paFailure = c2paMutationFailure(bytes, legacyOptions.c2pa, limits);
+  if (c2paFailure !== null) return { data: new Uint8Array(bytes), format: detectFormat(bytes).format, removed: [], warnings: [{ code: "UNSUPPORTED_STRUCTURE", message: c2paFailure, severity: "error" }] };
   const detection = detectFormat(bytes);
   const beginsWithSoi = bytes[0] === 0xff && bytes[1] === 0xd8;
   if (detection.format === "jpeg" || beginsWithSoi) {

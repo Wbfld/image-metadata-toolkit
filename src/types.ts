@@ -1,5 +1,6 @@
 /** Binary inputs accepted in browsers, workers, Node.js, and Deno. */
 import type { MetadataRegistry, MetadataRegistryFieldInput, MetadataRegistrySource } from "./registry.js";
+import type { PrivacyPolicyReport } from "./privacy/policies.js";
 
 export type MetadataInput = ArrayBuffer | ArrayBufferView | Blob;
 
@@ -80,6 +81,209 @@ export interface NclxColorData {
   readonly transferCharacteristics: number;
   readonly matrixCoefficients: number;
   readonly fullRange: boolean;
+}
+
+/** How an HEIF/AVIF item obtains its bytes from the ISO Base Media File Format. */
+export type HeifItemConstructionMode = "file" | "idat" | "item-offset" | "unsupported";
+
+/** A data-reference entry retained without dereferencing external resources. */
+export interface HeifDataReference {
+  readonly index: number;
+  readonly type: "url" | "urn" | "unknown";
+  readonly selfContained: boolean;
+  readonly resolvable: boolean;
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+}
+
+/** One extent in an `iloc` item location. Offsets are source-relative and are
+ * never interpreted as pixel coordinates. */
+export interface HeifItemExtent {
+  readonly index: number | null;
+  readonly offset: number;
+  readonly length: number;
+  readonly source: "file" | "idat" | "item-offset" | "unsupported";
+  readonly absoluteOffset: number | null;
+  readonly sourceItemId: number | null;
+  readonly resolved: boolean;
+}
+
+/** A property association retains both its property index and essential bit. */
+export interface HeifItemPropertyReference {
+  readonly propertyIndex: number;
+  readonly essential: boolean;
+}
+
+/** Bounded structural facts for a parsed HEIF/AVIF item property. `essential`
+ * is true when at least one retained item association marks this property as
+ * essential; per-item essentiality is retained in `HeifItemGraph.items[].properties`. */
+export interface HeifItemProperty {
+  readonly index: number;
+  readonly type: string;
+  readonly essential: boolean;
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+  readonly dimensions?: ImageDimensions;
+  readonly auxiliaryType?: string;
+  readonly auxiliarySubtypes?: readonly number[];
+}
+
+/** A resolved or intentionally non-resolved item location. */
+export interface HeifItemLocation {
+  readonly constructionMethod: HeifItemConstructionMode;
+  readonly dataReferenceIndex: number;
+  readonly dataReference: HeifDataReference | null;
+  readonly baseOffset: number;
+  readonly extents: readonly HeifItemExtent[];
+  readonly resolvedByteLength: number | null;
+  readonly resolution: "resolved" | "empty" | "external" | "unsupported" | "malformed";
+}
+
+export type HeifItemRelationshipType = "thumbnail" | "auxiliary" | "derived" | "describes" | "overlay-input" | "item-offset" | "unknown";
+
+/** Ordered directed relationship between two item IDs in one MetaBox. */
+export interface HeifItemRelationship {
+  readonly type: HeifItemRelationshipType;
+  readonly referenceType: string;
+  readonly sourceItemId: number;
+  readonly targetItemId: number;
+  readonly order: number;
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+}
+
+/** Bounded item graph for one or more HEIF/AVIF MetaBoxes. */
+export interface HeifItemGraph {
+  readonly metaOffset: number;
+  readonly primaryItemId: number | null;
+  readonly items: readonly {
+    readonly id: number;
+    readonly type: string;
+    readonly name: string | null;
+    readonly contentType: string | null;
+    readonly contentEncoding: string | null;
+    readonly hidden: boolean;
+    readonly location: HeifItemLocation | null;
+    readonly properties: readonly HeifItemPropertyReference[];
+    readonly dimensions: ImageDimensions | null;
+    readonly derived?: {
+      readonly type: "grid" | "overlay" | "identity" | "unknown";
+      readonly outputWidth: number | null;
+      readonly outputHeight: number | null;
+      readonly rows?: number;
+      readonly columns?: number;
+      readonly referenceCount: number;
+      readonly offsets?: readonly { readonly horizontal: number; readonly vertical: number }[];
+    };
+    readonly roles: readonly ("primary" | "thumbnail" | "auxiliary" | "derived" | "metadata" | "unknown")[];
+  }[];
+  readonly properties: readonly HeifItemProperty[];
+  readonly dataReferences: readonly HeifDataReference[];
+  readonly relationships: readonly HeifItemRelationship[];
+  readonly complete: boolean;
+}
+
+/** The ISO BMFF handler class retained for a HEIF/AVIF sequence track. */
+export type HeifSequenceTrackKind = "picture" | "auxiliary" | "metadata" | "unknown";
+
+/** Matrix and normalized orientation facts from a track header. */
+export interface HeifSequenceTransformation {
+  readonly matrix: readonly number[];
+  /** Present only when the matrix is one of the unambiguous orthogonal forms. */
+  readonly orientation: ImageTransform | null;
+}
+
+/** One sample description entry from a track's `stsd` box. */
+export interface HeifSequenceSampleDescription {
+  readonly index: number;
+  readonly format: string;
+  readonly dataReferenceIndex: number | null;
+  readonly dimensions: ImageDimensions | null;
+  readonly codecConfigurationTypes: readonly string[];
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+}
+
+/** A track reference is retained without assigning semantic meaning to an unknown type. */
+export interface HeifSequenceTrackReference {
+  readonly type: string;
+  readonly targetTrackIds: readonly number[];
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+}
+
+/** A bounded edit-list entry in track media time units. */
+export interface HeifSequenceEdit {
+  readonly segmentDuration: number;
+  readonly mediaTime: number | null;
+  readonly mediaRate: number | null;
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+}
+
+/** One independently addressable sample; no sample payload is decoded or copied. */
+export interface HeifSequenceSample {
+  readonly index: number;
+  readonly descriptionIndex: number | null;
+  readonly byteLength: number | null;
+  readonly offset: number | null;
+  readonly decodeTime: number | null;
+  readonly compositionTime: number | null;
+  readonly duration: number | null;
+  readonly sync: boolean | null;
+  readonly sourceOffset: number;
+  readonly sourceByteLength: number;
+  readonly fragmentOffset: number | null;
+}
+
+/** Explicit item/track metadata linkage, retaining unresolved item associations. */
+export interface HeifSequenceMetadataAssociation {
+  readonly relationshipType: string;
+  readonly sourceItemId: number | null;
+  readonly targetItemId: number | null;
+  readonly sourceTrackId: number | null;
+  readonly targetTrackId: number | null;
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+  readonly resolved: boolean;
+}
+
+/** One independently addressable HEIF/AVIF image-sequence track. */
+export interface HeifSequenceTrack {
+  readonly id: number;
+  readonly kind: HeifSequenceTrackKind;
+  readonly handlerType: string | null;
+  readonly handlerName: string | null;
+  readonly timescale: number | null;
+  readonly duration: number | null;
+  readonly language: string | null;
+  readonly dimensions: ImageDimensions | null;
+  readonly transformation: HeifSequenceTransformation | null;
+  readonly sampleDescriptions: readonly HeifSequenceSampleDescription[];
+  readonly samples: readonly HeifSequenceSample[];
+  readonly references: readonly HeifSequenceTrackReference[];
+  readonly edits: readonly HeifSequenceEdit[];
+  readonly associatedTrackIds: readonly number[];
+  readonly metadataTrackIds: readonly number[];
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+  readonly complete: boolean;
+}
+
+/** A bounded movie/fragment sequence view. Item metadata remains in `heif`. */
+export interface HeifSequence {
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+  readonly timescale: number | null;
+  readonly duration: number | null;
+  readonly fragmented: boolean;
+  readonly tracks: readonly HeifSequenceTrack[];
+  readonly primaryTrackId: number | null;
+  readonly primaryTrackCandidates: readonly number[];
+  readonly primarySelection: "sole-picture-track" | "ambiguous-picture-tracks" | "no-picture-track";
+  readonly metadataItemIds: readonly number[];
+  readonly metadataAssociations: readonly HeifSequenceMetadataAssociation[];
+  readonly complete: boolean;
 }
 
 export type WarningSeverity = "warning" | "error";
@@ -789,6 +993,10 @@ export interface MetadataResult {
   readonly transform?: ImageTransform;
   /** HEIF/AVIF primary-item `nclx` colour parameters, when present. */
   readonly nclx?: NclxColorData;
+  /** Bounded HEIF/AVIF item graph, including locations, properties, and references. */
+  readonly heif?: readonly HeifItemGraph[];
+  /** Bounded HEIF/AVIF movie and image-sequence tracks; item graphs remain separate in `heif`. */
+  readonly heifSequences?: readonly HeifSequence[];
   /** Common, normalized fields. Raw EXIF entries remain in `exif.fields`. */
   readonly fields: readonly MetadataField[];
   /** Typed EXIF interpretations derived from one or more retained fields. */
@@ -956,6 +1164,19 @@ export interface MetadataSelection {
   readonly tags?: readonly string[];
 }
 
+/**
+ * Bounded Brotli decoder supplied for JPEG XL `brob` metadata boxes.
+ *
+ * The parser copies the compressed input before calling this hook and checks
+ * the returned byte length against `maxOutputBytes`. Implementations must not
+ * allocate or retain output beyond that budget.
+ */
+export type JxlBrotliDecompressor = (
+  compressed: Uint8Array,
+  maxOutputBytes: number,
+  signal?: AbortSignal,
+) => Uint8Array | PromiseLike<Uint8Array>;
+
 export interface ParseOptions {
   readonly limits?: Partial<SecurityLimits>;
   /** Abort before or between asynchronous parsing stages. */
@@ -968,6 +1189,8 @@ export interface ParseOptions {
   readonly registry?: MetadataRegistry | readonly MetadataRegistryFieldInput[] | { readonly fields: readonly MetadataRegistryFieldInput[]; readonly sources?: readonly MetadataRegistrySource[] };
   /** Controls whether ambiguous or invalid composite derivations are withheld. */
   readonly normalization?: NormalizationMode;
+  /** Optional bounded Brotli implementation for JPEG XL `brob` metadata boxes. Not transferable through the structured-clone worker API. */
+  readonly jxlBrotliDecompressor?: JxlBrotliDecompressor;
 }
 
 /** Options for bounded-concurrency parsing of an ordered input collection. */
@@ -1304,6 +1527,8 @@ export interface RedactOptions {
   readonly preserve?: readonly RedactionTarget[];
   /** Optional immutable registry used to resolve canonical field selectors. */
   readonly registry?: MetadataRegistry | readonly MetadataRegistryFieldInput[] | { readonly fields: readonly MetadataRegistryFieldInput[]; readonly sources?: readonly MetadataRegistrySource[] };
+  /** C2PA/JUMBF is refused by default; preservation must be explicit. */
+  readonly c2pa?: "refuse" | "preserve" | "invalidate";
   readonly limits?: Partial<SecurityLimits>;
   readonly signal?: AbortSignal;
 }
@@ -1375,15 +1600,45 @@ export interface SanitizeOptions {
   readonly preserveColorProfile?: boolean;
   /** Retain EXIF orientation when selective EXIF surgery is available. Defaults to true. */
   readonly preserveOrientation?: boolean;
+  /** Named immutable T02 privacy policy. Omitted retains the legacy strict policy. */
+  readonly policy?: PrivacyPolicyId;
 }
 
 export interface PrivacyAuditOptions {
   readonly limits?: Partial<SecurityLimits>;
   readonly signal?: AbortSignal;
+  /** Include decoded sensitive lexical values only when explicitly requested. */
+  readonly includeRawValues?: boolean;
 }
 
 /** Machine-readable policy outcomes emitted by the privacy audit. */
 export type PrivacyReasonCode = MetadataCoverageReasonCode | "SENSITIVE_METADATA_PRESENT" | "RAW_XMP";
+
+export type PrivacyPolicyId = "share-safe" | "location-safe" | "anonymous" | "retain-rights" | "publisher" | "accessibility" | "forensic-preserve";
+
+/** Stable semantic state for a privacy finding. Human-readable messages are
+ * explanatory only; policy code must use this value and the category. */
+export type PrivacyFindingState = "presence" | "decoded-finding" | "opaque-risk" | "policy-violation";
+
+/** Stable semantic categories used by privacy inspection and policy presets. */
+export type PrivacyFindingCategory =
+  | "metadata-presence"
+  | "location"
+  | "person"
+  | "creator"
+  | "contact"
+  | "descriptive"
+  | "serial-identifier"
+  | "device-identifier"
+  | "timestamp"
+  | "document-identifier"
+  | "region"
+  | "prompt"
+  | "workflow"
+  | "embedded-preview"
+  | "unknown-xmp"
+  | "opaque-block"
+  | "unsupported-structure";
 
 interface SanitizationResultBase {
   readonly format: ImageFormat;
@@ -1391,6 +1646,7 @@ interface SanitizationResultBase {
   readonly warnings: readonly MetadataWarning[];
   readonly reasons: readonly string[];
   readonly reasonCodes?: readonly PrivacyReasonCode[];
+  readonly policy?: PrivacyPolicyReport;
 }
 
 export interface SuccessfulSanitizationResult extends SanitizationResultBase {

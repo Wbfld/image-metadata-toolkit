@@ -1,0 +1,92 @@
+{
+  "schema": "browser-image-metadata.jxl-b01-evidence.v1",
+  "status": "pass",
+  "generatedAt": "2026-09-13T11:30:12.452Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "standards": [
+    "ISO/IEC 18181-1:2024",
+    "ISO/IEC 18181-2:2024"
+  ],
+  "sourceManifest": "data/jxl/sources.json",
+  "implementation": {
+    "dimensions": "little-endian bit-level JPEG XL codestream size header",
+    "metadata": [
+      "Exif",
+      "xml ",
+      "brob(Exif)",
+      "brob(xml )"
+    ],
+    "rawCodestreamPolicy": "dimensions only; no container metadata inferred",
+    "decompressionPolicy": "injected bounded decoder or platform DecompressionStream(\"brotli\"); copied output; maxMetadataBytes, maxDecompressedBytes, maxDecompressedMetadataBytes, maxStringBytes, and maxXmpPackets enforced",
+    "provenancePolicy": "physical box ranges retained; decompressed logical field offsets are null"
+  },
+  "cases": [
+    {
+      "case": "raw-codestream-dimensions",
+      "status": "passed",
+      "dimensions": {
+        "width": 800,
+        "height": 600
+      },
+      "containerMetadata": false,
+      "warningCodes": [
+        "UNSUPPORTED_STRUCTURE"
+      ]
+    },
+    {
+      "case": "jxlc-dimensions",
+      "status": "passed",
+      "dimensions": {
+        "width": 1600,
+        "height": 900
+      },
+      "warningCodes": []
+    },
+    {
+      "case": "brotli-xml-custom-decoder",
+      "status": "passed",
+      "dimensions": {
+        "width": 16,
+        "height": 8
+      },
+      "packets": 1,
+      "warningCodes": []
+    },
+    {
+      "case": "platform-brotli-capability",
+      "status": "passed",
+      "outcome": "unsupported-or-invalid",
+      "warningCodes": [
+        "UNSUPPORTED_COMPRESSION"
+      ]
+    },
+    {
+      "case": "decompressed-output-limit",
+      "status": "passed",
+      "warningCodes": [
+        "LIMIT_EXCEEDED"
+      ]
+    },
+    {
+      "case": "metadata-aggregate-string-and-packet-limits",
+      "status": "passed",
+      "retainedPackets": 1,
+      "warningCodes": [
+        "LIMIT_EXCEEDED"
+      ]
+    },
+    {
+      "case": "malformed-and-unknown-box",
+      "status": "passed",
+      "warningCodes": [
+        "UNSUPPORTED_STRUCTURE"
+      ],
+      "opaqueBlock": true
+    }
+  ],
+  "complete": true,
+  "payloadPolicy": "synthetic compact byte fixtures only; no third-party or image payloads are retained"
+}

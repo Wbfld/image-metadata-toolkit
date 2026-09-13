@@ -11,6 +11,7 @@ import type {
   PngTextChunkType,
   SecurityLimits,
 } from "./types.js";
+import { c2paMutationFailure, type C2paMutationPolicy } from "./trust/jumbf.js";
 
 const PNG_SIGNATURE = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const XMP_KEYWORD = "XML:com.adobe.xmp";
@@ -44,6 +45,8 @@ export interface PngRewriteOptions {
   readonly crcPolicy?: PngCrcPolicy;
   /** Independent encoded-payload verification policy. Enabled with the normal `verify` default. */
   readonly preservation?: PreservationVerifierOptions;
+  /** C2PA/JUMBF is refused by default; `preserve` is an explicit caller policy. */
+  readonly c2pa?: C2paMutationPolicy;
 }
 
 export interface PngChunk {
@@ -460,6 +463,8 @@ export async function rewritePngMetadata(input: Uint8Array, options: PngRewriteO
   if (rawOptions === null || typeof rawOptions !== "object" || Array.isArray(rawOptions)) throw new PngWriterError("INVALID_VALUE", "PNG writer options must be an object.");
   let limits: SecurityLimits;
   try { limits = resolveLimits(options.limits); } catch (error) { throw new PngWriterError("INVALID_VALUE", error instanceof Error ? error.message : "PNG writer limits are invalid."); }
+  const c2paFailure = c2paMutationFailure(input, options.c2pa, limits);
+  if (c2paFailure !== null) throw new PngWriterError("UNSUPPORTED_STRUCTURE", c2paFailure);
   if (!Array.isArray(options.blocks) || options.blocks.length === 0) throw new PngWriterError("INVALID_VALUE", "PNG writer requires at least one block edit.");
   if (options.verify !== undefined && typeof options.verify !== "boolean") throw new PngWriterError("INVALID_VALUE", "PNG writer verify must be boolean when supplied.");
   const duplicatePolicy = options.duplicatePolicy ?? "preserve";

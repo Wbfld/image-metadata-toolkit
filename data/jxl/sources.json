@@ -1,0 +1,36 @@
+{
+  "schema": "browser-image-metadata.jxl-sources.v1",
+  "retrieved": "2026-09-13",
+  "sources": [
+    {
+      "title": "ISO/IEC 18181-1:2024 — JPEG XL image coding system — Part 1: Core coding system",
+      "url": "https://www.iso.org/standard/85066.html",
+      "version": "2024",
+      "authority": "ISO/IEC JTC 1/SC 29",
+      "license": "ISO copyrighted standard; no source bytes are redistributed",
+      "hash": null,
+      "hashPolicy": "Not applicable: the copyrighted standard was consulted remotely and is not copied into the repository.",
+      "usedFor": ["raw codestream marker", "codestream size-header bit grammar", "dimension bounds"]
+    },
+    {
+      "title": "ISO/IEC 18181-2:2024 — JPEG XL image coding system — Part 2: File format",
+      "url": "https://www.iso.org/standard/85253.html",
+      "version": "2024",
+      "authority": "ISO/IEC JTC 1/SC 29",
+      "license": "ISO copyrighted standard; no source bytes are redistributed",
+      "hash": null,
+      "hashPolicy": "Not applicable: the copyrighted standard was consulted remotely and is not copied into the repository.",
+      "usedFor": ["container signature", "ISOBMFF box lengths", "jxlc and jxlp codestream boxes", "Exif and XML boxes", "Brotli-compressed brob boxes"]
+    },
+    {
+      "title": "JPEG XL format overview from the reference implementation",
+      "url": "https://raw.githubusercontent.com/libjxl/libjxl/a4d2632eab3b847b76fa40f7ba8aa74ae71694e8/doc/format_overview.md",
+      "version": "libjxl commit a4d2632eab3b847b76fa40f7ba8aa74ae71694e8",
+      "authority": "JPEG XL Project reference implementation",
+      "license": "BSD-3-Clause",
+      "hash": null,
+      "hashPolicy": "Not applicable: the reference text is linked for implementation cross-checking and is not copied into the repository.",
+      "usedFor": ["independent terminology cross-check for brob and jxlp behavior"]
+    }
+  ]
+}

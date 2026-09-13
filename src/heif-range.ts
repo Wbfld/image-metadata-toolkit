@@ -15,8 +15,10 @@ interface ItemLocation {
   readonly method: number;
   readonly dataReferenceIndex: number;
   readonly baseOffset: number;
-  readonly extents: readonly { readonly offset: number; readonly length: number }[];
+  readonly extents: readonly { readonly index: number | null; readonly offset: number; readonly length: number }[];
 }
+interface ItemReference { readonly type: string; readonly from: number; readonly targets: readonly number[]; }
+interface DataReference { readonly index: number; readonly resolvable: boolean; }
 interface ItemPayload {
   readonly info: ItemInfo;
   readonly bytes: Uint8Array;
@@ -150,24 +152,90 @@ function parseLocations(payload: Uint8Array, maxItems: number, maxExtents: numbe
     const idSize = version < 2 ? 2 : 4;
     if (cursor + idSize > payload.length) return null;
     const id = idSize === 2 ? uint16(payload, cursor) : uint32(payload, cursor); cursor += idSize;
+    if (id === 0) return null;
     let method = 0;
-    if (version >= 1) { if (cursor + 2 > payload.length) return null; method = uint16(payload, cursor) & 0x0f; cursor += 2; }
+    if (version >= 1) {
+      if (cursor + 2 > payload.length) return null;
+      const constructionMethod = uint16(payload, cursor);
+      if ((constructionMethod & 0xfff0) !== 0) return null;
+      method = constructionMethod & 0x0f;
+      cursor += 2;
+    }
     if (cursor + 2 > payload.length) return null;
     const dataReferenceIndex = uint16(payload, cursor); cursor += 2;
     const base = sized(payload, cursor, baseOffsetSize); if (base === null) return null; cursor = base.next;
     if (cursor + 2 > payload.length) return null;
     const extentCount = uint16(payload, cursor); cursor += 2;
     if (extentCount > maxExtents) return null;
-    const extents: Array<{ offset: number; length: number }> = [];
+    const extents: Array<{ index: number | null; offset: number; length: number }> = [];
     for (let extentIndex = 0; extentIndex < extentCount; extentIndex += 1) {
-      if (indexSize > 0) { const indexValue = sized(payload, cursor, indexSize); if (indexValue === null) return null; cursor = indexValue.next; }
+      let indexValue: number | null = null;
+      if (indexSize > 0) { const parsedIndex = sized(payload, cursor, indexSize); if (parsedIndex === null || parsedIndex.value === 0) return null; cursor = parsedIndex.next; indexValue = parsedIndex.value; }
       const offset = sized(payload, cursor, offsetSize); if (offset === null) return null; cursor = offset.next;
       const length = sized(payload, cursor, lengthSize); if (length === null) return null; cursor = length.next;
-      extents.push({ offset: offset.value, length: length.value });
+      extents.push({ index: indexValue, offset: offset.value, length: length.value });
     }
     locations.push({ id, method, dataReferenceIndex, baseOffset: base.value, extents });
   }
   return cursor === payload.length ? locations : null;
+}
+
+function safeAdd(left: number, right: number): number | null {
+  const value = left + right;
+  return Number.isSafeInteger(value) && value >= left ? value : null;
+}
+
+function parseReferences(payload: Uint8Array, maxReferences: number): ItemReference[] | null {
+  if (payload.length < 4) return null;
+  const version = payload[0] ?? 0;
+  if (version > 1) return null;
+  const idSize = version === 0 ? 2 : 4;
+  const references: ItemReference[] = [];
+  let cursor = 4;
+  while (cursor < payload.length) {
+    if (references.length >= maxReferences || cursor > payload.length - 8) return null;
+    const size = uint32(payload, cursor);
+    const type = ascii(payload, cursor + 4);
+    const header = 8;
+    const end = cursor + (size === 0 ? payload.length - cursor : size);
+    if (size !== 0 && size < header || !Number.isSafeInteger(end) || end > payload.length) return null;
+    let at = cursor + header;
+    if (at + idSize + 2 > end) return null;
+    const from = idSize === 2 ? uint16(payload, at) : uint32(payload, at); at += idSize;
+    if (from === 0) return null;
+    const count = uint16(payload, at); at += 2;
+    if (count > maxReferences || at + count * idSize !== end) return null;
+    const targets: number[] = [];
+    for (let index = 0; index < count; index += 1) {
+      const target = idSize === 2 ? uint16(payload, at) : uint32(payload, at);
+      if (target === 0) return null;
+      targets.push(target);
+      at += idSize;
+    }
+    references.push({ type, from, targets });
+    cursor = end;
+  }
+  return references;
+}
+
+function parseDataReferences(payload: Uint8Array, maxReferences: number): Map<number, DataReference> | null {
+  if (payload.length < 8 || (payload[0] ?? 0) !== 0) return null;
+  const count = uint32(payload, 4);
+  if (count > maxReferences) return null;
+  const references = new Map<number, DataReference>();
+  let cursor = 8;
+  for (let index = 1; index <= count; index += 1) {
+    if (cursor > payload.length - 8) return null;
+    const size32 = uint32(payload, cursor);
+    const type = ascii(payload, cursor + 4);
+    const size = size32 === 0 ? payload.length - cursor : size32;
+    const end = cursor + size;
+    if (size < 12 || !Number.isSafeInteger(end) || end > payload.length) return null;
+    const flags = ((payload[cursor + 9] ?? 0) << 16) | ((payload[cursor + 10] ?? 0) << 8) | (payload[cursor + 11] ?? 0);
+    references.set(index, { index, resolvable: (type === "url " || type === "urn ") && (flags & 1) !== 0 });
+    cursor = end;
+  }
+  return cursor === payload.length ? references : null;
 }
 
 function canonicalIloc(items: readonly ItemPayload[], offsets: readonly number[], idsVersion: 1 | 2): { readonly bytes: Uint8Array; readonly patchOffsets: readonly number[] } {
@@ -196,21 +264,47 @@ function canonicalIloc(items: readonly ItemPayload[], offsets: readonly number[]
   return { bytes: box("iloc", payload), patchOffsets: patchOffsets.map((offset) => offset + 8) };
 }
 
-async function resolveItem(reader: BlobReader, location: ItemLocation, idatStart: number | null, idatEnd: number | null, limits: SecurityLimits): Promise<Uint8Array | null> {
-  if (location.dataReferenceIndex !== 0 || location.extents.length === 0 || (location.method !== 0 && location.method !== 1)) return null;
+async function resolveItem(reader: BlobReader, locations: ReadonlyMap<number, ItemLocation>, references: readonly ItemReference[], dataReferences: ReadonlyMap<number, DataReference>, itemId: number, location: ItemLocation, idatStart: number | null, idatEnd: number | null, limits: SecurityLimits, stack: ReadonlySet<number> = new Set<number>()): Promise<Uint8Array | null> {
+  if (stack.has(itemId) || location.extents.length === 0 || location.method < 0 || location.method > 2) return null;
+  if (location.method === 1 && location.dataReferenceIndex !== 0) return null;
+  if (location.method === 0 && location.dataReferenceIndex !== 0 && dataReferences.get(location.dataReferenceIndex)?.resolvable !== true) return null;
+  if (location.method === 2 && location.dataReferenceIndex !== 0) return null;
+  const nextStack = new Set(stack); nextStack.add(itemId);
   const parts: Uint8Array[] = [];
   let total = 0;
   for (const extent of location.extents) {
-    const sourceStart = location.method === 1 ? idatStart : 0;
-    const sourceEnd = location.method === 1 ? idatEnd : reader.size;
-    if (sourceStart === null || sourceEnd === null) return null;
-    const start = sourceStart + location.baseOffset + extent.offset;
-    if (!Number.isSafeInteger(start) || start < sourceStart || start > sourceEnd) return null;
+    if (location.extents.length > 1 && extent.length === 0) return null;
+    let source: Uint8Array | null = null;
+    let start = 0;
+    let sourceEnd = 0;
+    if (location.method === 2) {
+      const referenceTargets = references.filter((candidate) => candidate.type === "iloc" && candidate.from === itemId).flatMap(({ targets }) => targets);
+      const targetId = referenceTargets[(extent.index ?? 1) - 1];
+      const targetLocation = targetId === undefined ? undefined : locations.get(targetId);
+      if (targetId === undefined || targetLocation === undefined) return null;
+      source = await resolveItem(reader, locations, references, dataReferences, targetId, targetLocation, idatStart, idatEnd, limits, nextStack);
+      if (source === null) return null;
+      start = safeAdd(location.baseOffset, extent.offset) ?? -1;
+      sourceEnd = source.length;
+    } else {
+      const sourceStart = location.method === 1 ? idatStart : 0;
+      const directEnd = location.method === 1 ? idatEnd : reader.size;
+      if (sourceStart === null || directEnd === null) return null;
+      const relative = safeAdd(location.baseOffset, extent.offset);
+      start = relative === null ? -1 : safeAdd(sourceStart, relative) ?? -1;
+      sourceEnd = directEnd;
+      if (start < sourceStart) return null;
+    }
+    if (source === null) {
+      const sourceStart = location.method === 1 ? idatStart : 0;
+      if (sourceStart === null || start > sourceEnd) return null;
+    } else if (start < 0 || start > sourceEnd) return null;
     const length = extent.length === 0 ? sourceEnd - start : extent.length;
-    const end = start + length;
-    if (!Number.isSafeInteger(end) || end < start || end > sourceEnd || length > limits.maxSegmentBytes || total + length > limits.maxMetadataBytes) return null;
-    parts.push(await reader.read(start, end));
-    total += length;
+    const end = safeAdd(start, length);
+    const nextTotal = safeAdd(total, length);
+    if (end === null || end < start || end > sourceEnd || length > limits.maxSegmentBytes || nextTotal === null || nextTotal > limits.maxMetadataBytes) return null;
+    parts.push(source === null ? await reader.read(start, end) : source.subarray(start, end));
+    total = nextTotal;
   }
   return concat(parts);
 }
@@ -255,6 +349,30 @@ async function buildMeta(reader: BlobReader, header: BoxHeader, selection: Resol
   const locations = ilocPayload === null ? [] : parseLocations(ilocPayload, limits.maxIfdEntries, limits.maxSegments);
   if (locations === null) return null;
   const byId = new Map(locations.map((location) => [location.id, location]));
+  const references: ItemReference[] = [];
+  const dataReferences = new Map<number, DataReference>();
+  for (const child of children) {
+    const type = ascii(child, 4);
+    if (type === "iref") {
+      const parsed = parseReferences(child.subarray(8), limits.maxSegments);
+      if (parsed === null) return null;
+      references.push(...parsed);
+    } else if (type === "dinf") {
+      let at = 8;
+      while (at < child.length) {
+        if (at > child.length - 8) return null;
+        const size = uint32(child, at);
+        const end = at + (size === 0 ? child.length - at : size);
+        if (size < 8 || !Number.isSafeInteger(end) || end > child.length) return null;
+        if (ascii(child, at + 4) === "dref") {
+          const parsed = parseDataReferences(child.subarray(at + 8, end), limits.maxSegments);
+          if (parsed === null) return null;
+          for (const [index, reference] of parsed) dataReferences.set(index, reference);
+        }
+        at = end;
+      }
+    }
+  }
   const includeExif = wantsGroup(selection, "EXIF");
   const includeXmp = wantsGroup(selection, "XMP");
   const selectedInfos = infos.filter((info) => {
@@ -265,7 +383,7 @@ async function buildMeta(reader: BlobReader, header: BoxHeader, selection: Resol
   for (const info of selectedInfos) {
     const location = byId.get(info.id);
     if (location === undefined) { warning(warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has no item-location entry.`, offset: header.start }); continue; }
-    const data = await resolveItem(reader, location, idatStart, idatEnd, limits);
+    const data = await resolveItem(reader, byId, references, dataReferences, info.id, location, idatStart, idatEnd, limits);
     if (data === null) { warning(warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has an unsafe or unsupported extent.`, offset: header.start }); return null; }
     selectedPayloads.push({ info, bytes: data, locationPatch: 0 });
   }
@@ -298,6 +416,11 @@ export async function materializeHeifMetadata(reader: BlobReader, limits: Securi
     if (header.type === "ftyp" || ((header.type === "Exif" || header.type === "exif") && wantsGroup(selection, "EXIF")) || ((header.type === "xml " || header.type === "XMP ") && wantsGroup(selection, "XMP"))) {
       if (header.end - header.start > limits.maxSegmentBytes) return null;
       topBoxes.push(await reader.read(header.start, header.end));
+    } else if (header.type === "moov" || header.type === "moof") {
+      // Sequence tables contain source-relative sample offsets.  Compacting only
+      // metadata boxes would invalidate those offsets, so let the input layer
+      // perform its bounded full-read fallback for sequence-aware results.
+      return null;
     } else if (header.type === "meta") {
       const built = await buildMeta(reader, header, selection, limits, payloads, warnings);
       if (built === null) return null;

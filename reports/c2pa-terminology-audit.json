@@ -1,0 +1,87 @@
+{
+  "schema": "c2pa-terminology-audit-1",
+  "checkedAt": "2026-09-13T10:44:33.380Z",
+  "policy": "T03 inventory APIs may use detected/inventoried/present; official verification terminology is reserved for T04 adapters.",
+  "sourceResults": [
+    {
+      "file": "src/trust/jumbf.ts",
+      "reviewedStatements": 33,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "src/index.ts",
+      "reviewedStatements": 2,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "README.md",
+      "reviewedStatements": 3,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "API.md",
+      "reviewedStatements": 2,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "CAPABILITIES.md",
+      "reviewedStatements": 1,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "CHANGELOG.md",
+      "reviewedStatements": 1,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "T03_C2PA_INVENTORY.md",
+      "reviewedStatements": 3,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "T03_C2PA_TERMINOLOGY_REVIEW.md",
+      "reviewedStatements": 5,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "tests/trust-t03.test.ts",
+      "reviewedStatements": 14,
+      "forbiddenTerms": 0,
+      "classified": true
+    },
+    {
+      "file": "tests/trust-t04.test.ts",
+      "reviewedStatements": 0,
+      "forbiddenTerms": 0,
+      "classified": false
+    },
+    {
+      "file": "scripts/c2pa-integration.mjs",
+      "reviewedStatements": 0,
+      "forbiddenTerms": 0,
+      "classified": false
+    }
+  ],
+  "reviewPacket": {
+    "path": "T03_C2PA_TERMINOLOGY_REVIEW.md",
+    "requiredStatements": [
+      "This is an implementation audit packet, not human approval.",
+      "`inventoryC2pa`",
+      "`inventoryJumbfC2pa`",
+      "`detected`",
+      "`inventoried`",
+      "T04 adapters",
+      "human reviewer must still approve"
+    ],
+    "humanApproval": "pending"
+  },
+  "passed": true
+}

@@ -1,0 +1,55 @@
+{
+  "retrievedDate": "2026-09-13",
+  "standards": [
+    {
+      "id": "c2pa-technical-specification",
+      "edition": "2.4",
+      "url": "https://spec.c2pa.org/specifications/specifications/2.4/specs/C2PA_Specification.html",
+      "license": "CC BY 4.0",
+      "retrievedDate": "2026-09-13",
+      "sha256": "d55caebd96206f0de667962a4bab7098c6b6468fba68f8b55bcdd3a12d1ed26d",
+      "bytes": 1065169
+    },
+    {
+      "id": "jumbf-iso-19566-5",
+      "edition": "ISO/IEC 19566-5:2019",
+      "url": "https://www.iso.org/standard/72269.html",
+      "license": "ISO copyrighted standard; used under licensed access",
+      "retrievedDate": "2026-09-13",
+      "sha256": null,
+      "note": "The authoritative ISO publication is not redistributable. The implementation retains only derived structural facts and this source citation."
+    }
+  ],
+  "officialSdk": [
+    {
+      "package": "@contentauth/c2pa-web",
+      "version": "0.14.6",
+      "license": "MIT",
+      "releaseUrl": "https://github.com/contentauth/c2pa-js/releases/tag/@contentauth%2Fc2pa-web%400.14.6",
+      "sourceUrl": "https://github.com/contentauth/c2pa-js/tree/main/packages/c2pa-web",
+      "wasmResourceSha256": "e8043a7604a50bc627aa3e1af79990d19361f6be99af2c0bd736b9570d60b086",
+      "wasmResourceBytes": 8379356
+    },
+    {
+      "package": "@contentauth/c2pa-node",
+      "version": "0.9.5",
+      "license": "MIT",
+      "releaseUrl": "https://github.com/contentauth/c2pa-js/releases/tag/@contentauth%2Fc2pa-node%400.9.5",
+      "sourceUrl": "https://github.com/contentauth/c2pa-js/tree/main/packages/c2pa-node",
+      "nativeBinary": "Downloaded by the official package postinstall for the host architecture; no native binary is redistributed by this repository."
+    }
+  ],
+  "integrationFixtures": [
+    {
+      "id": "contentauth-example-firefly-tabby-cat",
+      "url": "https://raw.githubusercontent.com/contentauth/example-assets/c37f93e115289ac1ef00f899a860e6e08ab9886f/images/Firefly_tabby_cat.jpg",
+      "repository": "https://github.com/contentauth/example-assets",
+      "commit": "c37f93e115289ac1ef00f899a860e6e08ab9886f",
+      "path": "images/Firefly_tabby_cat.jpg",
+      "license": "MIT",
+      "sha256": "bdc5c19d4211d9c9f9f8dce5bf4e4dec29e9b32e308ff12a60979481e928154f",
+      "bytes": 1047024,
+      "role": "official C2PA-bearing fixture for actual Node and browser adapter integration"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ The package has no runtime dependencies. It accepts `ArrayBuffer`, any `ArrayBuf
 
 > **Current scope:** JPEG, PNG, TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, AVIF, IPTC-IIM, typed common ICC payloads, and bounded image/container details are implemented. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. The W02 reusable TIFF/EXIF graph serializer writes bounded classic TIFF in both byte orders and BigTIFF after the same verified layout path; standalone TIFF/BigTIFF EXIF field transactions are atomic and reparse-verified. W03 adds atomic JPEG marker metadata writing for EXIF, standard/Extended XMP, ICC, and IPTC while preserving entropy scans and decoding-critical markers byte-for-byte. W04 adds atomic PNG eXIf, XMP, text, and ICC chunk editing while preserving IDAT and APNG image payloads. W05 adds selective WebP EXIF field and XMP/ICC editing while preserving encoded WebP image chunks. W08 adds an independent public preservation verifier with hashable encoded-payload ranges and explicit non-pixel-equivalence evidence. HEIF and AVIF rewriting are not exposed.
 
-> **Support boundaries:** Container detection is signature recognition, not a promise of full metadata support. Blob/File preview and metadata scopes are intentionally partial and report `completeness` and `coverage`; malformed, opaque, and unsupported structures remain visible through warnings and explicit outcomes. W01 `editMetadata()` validation, W02 standalone TIFF/BigTIFF EXIF writing, W03 JPEG marker writing, and W04 PNG chunk writing are transactional and reparse-verified; other container writers remain explicit unsupported results. MakerNote interpretation and image-sequence semantics are unsupported—check [the generated capability matrix](./CAPABILITIES.md) before relying on a format or operation.
+> **Support boundaries:** Container detection is signature recognition, not a promise of full metadata support. Blob/File preview and metadata scopes are intentionally partial and report `completeness` and `coverage`; malformed, opaque, and unsupported structures remain visible through warnings and explicit outcomes. W01 `editMetadata()` validation, W02 standalone TIFF/BigTIFF EXIF writing, W03 JPEG marker writing, and W04 PNG chunk writing are transactional and reparse-verified; other container writers remain explicit unsupported results. MakerNote interpretation remains unsupported. HEIF/AVIF sequence tracks are inspected structurally without pixel decoding or writing—check [the generated capability matrix](./CAPABILITIES.md) before relying on a format or operation.
 
 ## Install
 
@@ -164,6 +164,14 @@ Pass an `AbortSignal` in `ParseOptions` to stop range reads, PNG
 decompression, and bounded container traversal at safe checkpoints. Worker
 clients can set `terminateOnAbort: true` when immediate interruption of a
 synchronous parse is required.
+
+JPEG XL `jxlc` and ordered `jxlp` codestream headers provide bounded image
+dimensions. Container `Exif` and `xml ` boxes are decoded directly; Brotli
+compressed `brob` boxes use the optional `jxlBrotliDecompressor` callback or a
+runtime `DecompressionStream("brotli")`. Unsupported platform Brotli support
+is reported explicitly, and raw codestreams never acquire inferred container
+metadata. See [B01_JPEG_XL.md](B01_JPEG_XL.md) for the standards basis and
+evidence.
 
 The result always has this stable top-level shape:
 
@@ -465,6 +473,36 @@ console.log(audit.coverage, audit.reasonCodes);
 console.log(getCapabilities(result.format).redaction);
 ```
 
+Each privacy finding has a stable `state` (`presence`, `decoded-finding`,
+`opaque-risk`, or policy-linked `policy-violation`) and semantic `category`.
+Reports omit sensitive raw values by default; pass `{ includeRawValues: true }`
+only when a deliberate diagnostic workflow requires them. The named immutable
+policy presets and their strict preflight behavior are documented in
+[`T02_PRIVACY_POLICIES.md`](./T02_PRIVACY_POLICIES.md).
+
+## C2PA inventory and optional verification
+
+`inventoryC2pa(input)` and `inventoryJumbfC2pa(input)` provide bounded
+presence/range/relationship inventory only. They do not verify signatures,
+certificates, trust, authenticity, or cryptographic bindings. Writers refuse
+C2PA-bearing or other protected offset-bearing input by default; callers must
+choose an explicit supported mutation policy. See
+[`T03_C2PA_INVENTORY.md`](./T03_C2PA_INVENTORY.md).
+
+Official verification is an optional integration and is not part of the core
+bundle:
+
+```ts
+import { verifyC2paInBrowser } from "browser-image-metadata/c2pa/browser";
+import { verifyC2paInNode } from "browser-image-metadata/c2pa/node";
+```
+
+The browser adapter requires a version-matched official WASM source. The Node
+adapter uses the official native SDK. Both retain the complete official result
+and expose namespaced typed statuses. Install the optional peers and run
+`npm run test:c2pa` for the real pinned integration gate. Deployment details
+and provenance are in [`T04_C2PA_ADAPTERS.md`](./T04_C2PA_ADAPTERS.md).
+
 ## Focused imports and workers
 
 Use `browser-image-metadata/detect` when only container detection is needed.
@@ -487,7 +525,7 @@ root exports remain compatible.
 
 ## Security limits
 
-All offsets and lengths are checked before reads or slices. PNG IDAT image data is never decompressed. zTXt and compressed iTXt text are decompressed only through a bounded `DecompressionStream`; per-chunk and cumulative decoded-metadata limits are enforced. The library never makes a network request.
+All offsets and lengths are checked before reads or slices. PNG IDAT image data is never decompressed. zTXt and compressed iTXt text, plus JPEG XL Brotli metadata, are decompressed only through bounded streams or explicitly injected bounded decoders; per-chunk and cumulative decoded-metadata limits are enforced. The library never makes a network request.
 
 | Limit | Default |
 | --- | ---: |
@@ -549,9 +587,9 @@ The [capability matrix](./CAPABILITIES.md) and [migration guide](./MIGRATION.md)
 
 ## Known limitations
 
-- JPEG, PNG, classic TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, and AVIF metadata are parsed in this release. ICC common payloads and image/container details are additive, bounded inspections; JPEG, PNG, plus WebP metadata chunks can be redacted.
+- JPEG, PNG, classic TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, and AVIF metadata are parsed in this release. JPEG XL includes codestream/container dimensions and container Exif/XML (including bounded injected Brotli metadata); raw codestream metadata remains non-addressable. ICC common payloads and image/container details are additive, bounded inspections; JPEG, PNG, plus WebP metadata chunks can be redacted.
 - XMP remains available as its original UTF-8 packet by default. The optional `browser-image-metadata/xmp` entry point decodes bounded RDF properties with no DTD or entity support, or applies an application's supplied decoder behind the same packet and output bounds. ICC inspection decodes common bounded payload types and exposes unknown payloads as ranges; it never applies color transforms.
-- MakerNote interpretation, image sequences, and complete HEIF/AVIF item-property semantics are not implemented. JPEG extended XMP is reassembled when referenced by a standard XMP packet. HEIF/AVIF inspection uses bounded primary-item `pitm`/`ipma` associations for `ispe` dimensions, `irot`/`imir` transforms, `colr` `prof`/`rICC` profiles, and `nclx` parameters. It follows `cdsc` references from metadata items to the primary image when selecting Exif and MIME RDF/XML metadata; without such references it preserves the legacy all-recognized-item behavior. It resolves bounded metadata through `iinf`/`iloc` construction method 0 (this file) or method 1 (the same `meta` box's `idat`), or direct metadata boxes. W02 writes standalone classic TIFF/BigTIFF EXIF graphs, W03 writes safe JPEG marker metadata, W04 writes PNG metadata chunks, and W05 writes WebP metadata chunks. HEIF and AVIF writing remain unsupported.
+- MakerNote interpretation is not implemented. JPEG extended XMP is reassembled when referenced by a standard XMP packet. HEIF/AVIF inspection exposes a bounded `result.heif` item graph: primary-item `pitm`/`ipma` associations, `ispe` dimensions, `irot`/`imir` transforms, `colr` `prof`/`rICC` profiles, `nclx` parameters, `auxC` types, multi-extent `iloc` locations, self-contained `dref` entries, ordered `thmb`/`auxl`/`dimg`/`cdsc`/`iloc` relationships, and grid/overlay/identity derived descriptors. It also exposes `result.heifSequences` for bounded ISO-BMFF movie/fragment tracks, sample descriptions, timing, transformations, edits, metadata associations, and explicit primary-track ambiguity. The top-level primary view uses sequence dimensions only for a sole picture track; all tracks and item graphs remain separate, and no pixels are decoded or sample payloads copied. It follows `cdsc` references from metadata items to the primary image when selecting Exif and MIME RDF/XML metadata; without such references it preserves the legacy all-recognized-item behavior. It resolves bounded metadata through `iloc` construction method 0 (this file), method 1 (the same `meta` box's `idat`), or method 2 (item-offset references), or direct metadata boxes. External data references are inventoried but never fetched; malformed, cyclic, unsupported, and over-limit structures remain diagnosed. W02 writes standalone classic TIFF/BigTIFF EXIF graphs, W03 writes safe JPEG marker metadata, W04 writes PNG metadata chunks, and W05 writes WebP metadata chunks. HEIF and AVIF writing remain unsupported.
 - EXIF date strings do not imply a timezone unless a separate offset tag exists. `getMetadataSummary()` combines valid offset/subsecond companions while retaining that uncertainty when no offset is stored.
 - Redaction removes metadata; W02 adds standalone TIFF/BigTIFF EXIF graph
   writing and exact-field transactions, W03 adds transactional JPEG marker

@@ -33,10 +33,37 @@ has a normalized `coverage` state (`complete`, `partial`, `skipped-by-selection`
 
 Supported metadata readers are JPEG EXIF/JFIF/XMP/IPTC/ICC, PNG EXIF/text/XMP/
 ICC, classic TIFF EXIF/XMP/IPTC/ICC, WebP EXIF/XMP/ICC, and bounded HEIF/AVIF
-EXIF/XMP/primary dimensions/ICC/`nclx` inspection. HEIF and AVIF use bounded
-`cdsc` item references to associate metadata items with the declared primary
-image. Unknown EXIF tags remain in
+EXIF/XMP/primary dimensions/ICC/`nclx` inspection. HEIF and AVIF additionally
+expose `result.heif`, a bounded per-`meta` item graph retaining `pitm`, `iinf`,
+`iloc` construction methods 0/1/2, multiple extents, self-contained `dref`
+entries, `ipco`/`ipma` properties, and ordered `thmb`, `auxl`, `dimg`, `cdsc`,
+and item-offset relationships. Grid, overlay, and identity derived descriptors
+are structural only; no item pixels are decoded and external data references
+are never fetched. Unknown EXIF tags remain in
 `result.exif.fields`.
+
+HEIF and AVIF sequence-bearing ISO-BMFF inputs additionally expose
+`result.heifSequences`. Each sequence retains its source range, timescale,
+duration, fragmentation state, independent tracks, track handler and language,
+stored dimensions, transformation matrix/orientation, sample descriptions,
+sample offsets/lengths/timing/sync state, edit entries, track references, and
+metadata associations. Item-graph metadata associations remain separate from
+track associations. The backward-compatible top-level `dimensions` and image
+detail view use sequence dimensions only when exactly one picture track is
+unambiguously selectable; multiple picture tracks remain in the collection and
+produce an explicit ambiguous primary-selection state. Sample payloads are
+never decoded or copied.
+
+JPEG XL container parsing reports codestream dimensions from `jxlc` or ordered
+`jxlp` headers and reads `Exif`/`xml ` boxes. Brotli-compressed `brob` metadata
+uses `ParseOptions.jxlBrotliDecompressor` when supplied; otherwise the parser
+uses the runtime `DecompressionStream("brotli")` if available and reports
+`UNSUPPORTED_COMPRESSION` when the platform exposes no Brotli stream support.
+The callback is bounded, receives copied compressed bytes and an output limit,
+and must not be used to infer metadata boxes in a naked codestream. Naked
+codestreams expose dimensions only. Because it is a function, the callback is
+not structured-clone transferable; worker clients reject it during preflight
+with `UNSUPPORTED_STRUCTURE`. Configure a decoder in the worker instead.
 
 `ParseOptions.select` accepts metadata `groups` and EXIF `tags`. All container
 readers avoid decoding unrequested EXIF fields and metadata families; `tags`
@@ -54,8 +81,12 @@ directory chains) and compacts only the requested
 metadata for the existing parser. `completeness.bytesRead` plus
 `completeness.inputBytes` report the range-read evidence. HEIF and AVIF copy
 bounded `ftyp`/`meta` structures and resolve only selected direct metadata
-boxes or `iinf`/`iloc` Exif and RDF/XML XMP item extents. Unsupported or
-malformed item layouts conservatively fall back to a full read.
+boxes or `iinf`/`iloc` Exif and RDF/XML XMP item extents using the same bounded
+construction-method resolver as full parsing. Unsupported or malformed item
+layouts conservatively fall back to a full read; sequence-bearing `moov` and
+`moof` boxes also use the bounded full-read fallback because sample offsets are
+source-relative and cannot safely be compacted. The range planner never
+dereferences external `dref` entries.
 
 Range-backed reads use the exported `createByteSource()` abstraction. It accepts
 the same `ArrayBuffer`, `ArrayBufferView`, and Blob/File inputs, validates every
@@ -507,6 +538,34 @@ explicit preserve-over-remove precedence, and outcomes are computed from
 resolved target identities and emitted records rather than warning text. See
 [`W07_REDACTION_SELECTORS.md`](./W07_REDACTION_SELECTORS.md).
 
+## Semantic privacy policies and C2PA
+
+`PRIVACY_POLICY_PRESETS`, `getPrivacyPolicy()`, and `evaluatePrivacyPolicy()`
+expose the immutable T02 policy definitions. `sanitizeMetadata(input, {
+policy: "share-safe" })` performs policy inspection, exact-field preflight,
+lossless mutation, and post-mutation inspection. Strict policies return no
+output when coverage or exact targeting is insufficient. See
+[`T01_PRIVACY_INSPECTION.md`](./T01_PRIVACY_INSPECTION.md) and
+[`T02_PRIVACY_POLICIES.md`](./T02_PRIVACY_POLICIES.md).
+
+`inventoryC2pa()` and `inventoryJumbfC2pa()` report bounded structural C2PA/JUMBF
+inventory only. The result uses `detected`, `stores`, `relationships`, and
+`mutationRisk` terminology and never represents cryptographic verification.
+See [`T03_C2PA_INVENTORY.md`](./T03_C2PA_INVENTORY.md).
+
+Official adapters are deliberately separate optional entry points:
+
+```ts
+import { verifyC2paInBrowser } from "browser-image-metadata/c2pa/browser";
+import { verifyC2paInNode } from "browser-image-metadata/c2pa/node";
+```
+
+They delegate all cryptographic work to the pinned official SDK, retain its
+complete result, and expose namespaced `official:*` or typed `adapter:*`
+statuses. The browser entry requires a version-matched `wasmSrc`; the Node
+entry loads the official native binding. See
+[`T04_C2PA_ADAPTERS.md`](./T04_C2PA_ADAPTERS.md).
+
 ## Focused entry points
 
 `browser-image-metadata/detect` contains signature detection only.
@@ -540,7 +599,8 @@ the lossless model is additive through `.rdf`/`.model`.
 EXIF results expose a bounded `exif.thumbnail` when the referenced thumbnail
 range is safe and within limits. HEIF and AVIF results keep stored dimensions
 separate from `displayDimensions`, expose primary-item `irot`/`imir`
-transforms, and return primary-item `nclx` colour parameters when present.
+transforms, return primary-item `nclx` colour parameters when present, and
+retain the complete bounded item graph in `result.heif`.
 `browser-image-metadata/worker` provides a module-worker client and installer.
 
 ## Types and compatibility

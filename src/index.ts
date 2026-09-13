@@ -55,8 +55,12 @@ import { rewriteWebpMetadata, WebpWriterError } from "./webp-writer.js";
 import { chunkExtendedXmp, serializeStructuredXmp, serializeXmp, XmpSerializationError } from "./metadata/serialization.js";
 import { IptcSerializationError, IptcSynchronizationError, serializeIptcIim, serializePhotoshopIptcResources, synchronizeIptcXmp } from "./metadata/serialization.js";
 import { verifyPreservation, verifyPreservationSync } from "./preservation.js";
+import { evaluatePrivacyPolicy, getPrivacyPolicy, policyRemovalTargets } from "./privacy/policies.js";
 
 export { detectFormat, editMetadata, parseTiffGraph, rewriteTiff, serializeTiff, tiffEvidence, TiffSerializationError, rewriteJpegMetadata, JpegWriterError, rewritePngMetadata, PngWriterError, rewriteWebpMetadata, WebpWriterError, verifyPreservation, verifyPreservationSync, chunkExtendedXmp, serializeStructuredXmp, serializeXmp, XmpSerializationError, serializeIptcIim, serializePhotoshopIptcResources, synchronizeIptcXmp, IptcSerializationError, IptcSynchronizationError, DEFAULT_LIMITS, getCapabilities, getCaptureTime, getGps, getMetadataSummary, getOrientation, getRotation, getThumbnail, getImageDetails, fromJsonSafe, queryIccTags, queryImageDetails, queryIptcSemantic, queryMetadata, queryStructuredXmp, toExifReaderCompatible, toExifrCompatible, toFamilyGroups, toFlatObject, toJsonSafe, toJsonSafeResult, toLosslessFamilyGroups, MetadataError };
+export { PRIVACY_POLICY_PRESETS, evaluatePrivacyPolicy, getPrivacyPolicy, getPrivacyPolicyRegistryCoverage } from "./privacy/policies.js";
+export { inventoryC2pa, inventoryJumbfC2pa } from "./trust/jumbf.js";
+export type { C2paInventoryContainer, C2paInventoryDiagnostic, C2paInventoryOptions, C2paInventoryRelationship, C2paInventoryResult, C2paInventoryStatus, C2paInventoryStore, C2paMutationPolicy } from "./trust/jumbf.js";
 export type { AdapterBudgetOptions, CanonicalFamilyGroups, ExifReaderDuplicatePolicy, ExifReaderMigrationOptions, FamilyGroupOptions, FlatCollisionPolicy, FlatObjectOptions, IccTagQuery, ImageDetailQuery, IptcSemanticQuery, JsonSafeOptions, MetadataQuery, MigrationOptions, XmpPropertyQuery } from "./adapters.js";
 export type { TiffEditEvidence, TiffEditTransaction, TiffTransactionOperation } from "./tiff.js";
 export type { JpegBlockEdit, JpegBlockKind, JpegEditTransaction, JpegIndex, JpegRewriteOptions, JpegRewriteResult, JpegScanPayload, JpegSegment, JpegTransactionOperation, JpegWriterErrorCode, PlacedChange } from "./jpeg-writer.js";
@@ -77,6 +81,7 @@ export type { MetadataSummary, MetadataConflict, CameraSummary, LensSummary, Exp
 export type { CaptureTimeSummary, ExifOrientation, GpsSummary, OrientationSummary, RotationSummary } from "./convenience.js";
 export type { CaptureTimeValue, CompositeCandidate, CompositeConflict, CompositeKind, CompositePayload, CompositeUncertainty, Equivalence35mmValue, ExifComposite, ExifCompositeSet, ExposureValueValue, FieldOfViewValue, GpsTimeValue, NormalizationMode, OrientationValue, PrimaryDisplayDimensionsValue } from "./types.js";
 export type { PrivacyAuditResult, PrivacyFinding, PrivacyOpaqueBlock } from "./privacy/audit.js";
+export type { PrivacyPolicy, PrivacyPolicyFinding, PrivacyPolicyRegistryCoverage, PrivacyPolicyReport } from "./privacy/policies.js";
 export { createMetadataRegistry, DEFAULT_METADATA_REGISTRY, METADATA_REGISTRY_SIZE, resolveMetadataRegistry } from "./registry.js";
 export type { MetadataCountConstraint, MetadataRegistry, MetadataRegistryField, MetadataRegistryFieldInput, MetadataRegistrySource } from "./registry.js";
 export type * from "./types.js";
@@ -294,7 +299,7 @@ export async function parseMetadata(input: MetadataInput, options: ParseOptions 
     result = parseGif(bytes, limits, selection, options.signal);
   } else if (detection.format === "jxl") {
     const { parseJxl } = await import("./parsers/jxl.js");
-    result = parseJxl(bytes, limits, selection, options.signal, registry);
+    result = await parseJxl(bytes, limits, selection, options.signal, registry, options.jxlBrotliDecompressor);
   } else if (detection.format === "heif" || detection.format === "avif") {
     const { parseHeif } = await import("./parsers/heif.js");
     result = parseHeif(bytes, limits, detection.format, selection, options.signal, registry);
@@ -556,6 +561,29 @@ export async function sanitizeMetadata(input: MetadataInput, options: SanitizeOp
   const bytes = await materializeInput(input, limits, options.signal);
   throwIfAborted(options.signal);
   const format = detectFormat(bytes).format;
+  if (options.policy !== undefined) {
+    const policy = getPrivacyPolicy(options.policy);
+    const initialAudit = await auditPrivacy(bytes, { limits, ...(options.signal === undefined ? {} : { signal: options.signal }) });
+    const planned = policyRemovalTargets(initialAudit, policy);
+    const initialReport = evaluatePrivacyPolicy(initialAudit, policy);
+    const retained: RedactionTarget[] = [];
+    if (options.preserveColorProfile !== false) retained.push("ICC");
+    if (options.preserveOrientation !== false) retained.push("Orientation");
+    const fail = (report: typeof initialReport, reasons: readonly string[], warnings: readonly MetadataWarning[] = []): SanitizationResult => ({ format, data: null, successful: false, retained, warnings, reasons: [...new Set(reasons)], reasonCodes: [...new Set([...warnings.map(({ code }) => code), ...report.coverage.reasons.map(({ code }) => code)])], policy: report });
+    if (!initialReport.complete) return fail(initialReport, [...initialReport.diagnostics, "The selected privacy policy refused output because coverage is insufficient."]);
+    if (planned.unresolved.length > 0 && policy.failureBehavior === "strict-no-output") return fail({ ...initialReport, unresolvedFindingTargets: planned.unresolved }, ["The selected privacy policy has no exact writable target for one or more findings.", ...planned.unresolved]);
+    if (planned.targets.length === 0) {
+      if (!initialReport.passed) return fail(initialReport, initialReport.blockedFindings.map((finding) => `${finding.category}:${finding.target}`));
+      return { format, data: new Uint8Array(bytes), successful: true, retained, warnings: [], reasons: [], reasonCodes: [], policy: initialReport };
+    }
+    const redacted = await redactMetadata(bytes, { remove: planned.targets, preserve: retained, limits, ...(options.signal === undefined ? {} : { signal: options.signal }) });
+    if (!redacted.outcome.successful) return fail({ ...initialReport, unresolvedFindingTargets: planned.unresolved }, redacted.outcome.reasons, redacted.warnings);
+    const afterAudit = await auditPrivacy(redacted.data, { limits, ...(options.signal === undefined ? {} : { signal: options.signal }) });
+    const afterReport = evaluatePrivacyPolicy(afterAudit, policy);
+    const report = { ...afterReport, removedFindingTargets: initialAudit.findings.filter((finding) => policy.removeCategories.includes(finding.category) && !afterAudit.findings.some((remaining) => remaining.target === finding.target)).map((finding) => finding.target), unresolvedFindingTargets: planned.unresolved };
+    if (!report.passed) return fail(report, [...report.diagnostics, ...report.blockedFindings.map((finding) => `${finding.category}:${finding.target}`)], [...redacted.warnings, ...afterAudit.warnings]);
+    return { format, data: new Uint8Array(redacted.data), successful: true, retained, warnings: [...redacted.warnings, ...afterAudit.warnings], reasons: [], reasonCodes: [...new Set([...redacted.warnings.map(({ code }) => code), ...afterAudit.reasonCodes])], policy: report };
+  }
   const retained: RedactionTarget[] = [];
   if (options.preserveColorProfile !== false) retained.push("ICC");
   if (options.preserveOrientation !== false) retained.push("Orientation");

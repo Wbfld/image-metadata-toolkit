@@ -50,7 +50,7 @@ const CAPABILITIES: Readonly<Record<ImageFormat, FormatCapabilities>> = {
   },
   jxl: {
     format: "jxl",
-    metadata: ["EXIF", "XMP"],
+    metadata: ["Dimensions", "EXIF", "XMP"],
     readScopes: ["full"],
     redaction: [],
     losslessRedaction: false,

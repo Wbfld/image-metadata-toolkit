@@ -385,6 +385,8 @@ export function toJsonSafeResult(result: MetadataResult, options: JsonSafeOption
     displayDimensions: result.displayDimensions,
     transform: result.transform,
     nclx: result.nclx,
+    heif: result.heif ?? null,
+    heifSequences: result.heifSequences ?? null,
     fields: result.fields,
     composites: result.composites ?? null,
     details: result.details ?? null,

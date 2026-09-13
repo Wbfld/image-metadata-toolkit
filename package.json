@@ -46,6 +46,30 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./c2pa/browser": {
+      "browser": {
+        "types": "./dist/c2pa-browser.d.ts",
+        "default": "./dist/c2pa-browser.js"
+      },
+      "import": {
+        "types": "./dist/c2pa-browser.d.ts",
+        "default": "./dist/c2pa-browser.js"
+      },
+      "require": {
+        "types": "./dist/c2pa-browser.d.cts",
+        "default": "./dist/c2pa-browser.cjs"
+      }
+    },
+    "./c2pa/node": {
+      "import": {
+        "types": "./dist/c2pa-node.d.ts",
+        "default": "./dist/c2pa-node.js"
+      },
+      "require": {
+        "types": "./dist/c2pa-node.d.cts",
+        "default": "./dist/c2pa-node.cjs"
+      }
+    },
     "./adapters": {
       "browser": {
         "types": "./dist/adapters.d.ts",
@@ -313,6 +337,14 @@
     "W06_IPTC_SERIALIZATION.md",
     "W07_REDACTION_SELECTORS.md",
     "W08_PRESERVATION_VERIFIER.md",
+    "B01_JPEG_XL.md",
+    "B02_HEIF_AVIF.md",
+    "B03_HEIF_AVIF_SEQUENCES.md",
+    "T01_PRIVACY_INSPECTION.md",
+    "T02_PRIVACY_POLICIES.md",
+    "T03_C2PA_INVENTORY.md",
+    "T03_C2PA_TERMINOLOGY_REVIEW.md",
+    "T04_C2PA_ADAPTERS.md",
     "CAPABILITIES.md",
     "METADATA_REGISTRY.md",
     "data",
@@ -327,9 +359,17 @@
   ],
   "sideEffects": false,
   "peerDependencies": {
+    "@contentauth/c2pa-node": "0.9.5",
+    "@contentauth/c2pa-web": "0.14.6",
     "@rgrove/parse-xml": "^5.0.0"
   },
   "peerDependenciesMeta": {
+    "@contentauth/c2pa-node": {
+      "optional": true
+    },
+    "@contentauth/c2pa-web": {
+      "optional": true
+    },
     "@rgrove/parse-xml": {
       "optional": true
     }
@@ -348,6 +388,11 @@
     "test:coverage": "vitest run --coverage --reporter=default --reporter=json --outputFile.json=coverage/test-results.json",
     "test:fuzz": "vitest run tests/fuzz.test.ts --testTimeout=15000",
     "test:browser": "npm run build && playwright test",
+    "test:c2pa": "npm run build && node scripts/c2pa-integration.mjs",
+    "test:jxl": "npm run build && node scripts/jxl-b01-evidence.mjs",
+    "test:heif": "npm run build && node scripts/heif-b02-evidence.mjs",
+    "test:heif-sequences": "npm run build && node scripts/heif-b03-evidence.mjs",
+    "c2pa:terminology": "node scripts/c2pa-terminology-audit.mjs",
     "test:deno": "deno check src/index.ts && npm run build && deno test --no-check --allow-read tests/deno-smoke.ts",
     "test:corpus": "npm run build && node scripts/external-corpus.mjs",
     "benchmark": "npm run build && node scripts/benchmark.mjs",
@@ -369,6 +414,8 @@
     "prepublishOnly": "npm run check"
   },
   "devDependencies": {
+    "@contentauth/c2pa-node": "0.9.5",
+    "@contentauth/c2pa-web": "0.14.6",
     "@eslint/js": "^9.35.0",
     "@playwright/test": "1.63.0",
     "@rgrove/parse-xml": "^5.0.0",

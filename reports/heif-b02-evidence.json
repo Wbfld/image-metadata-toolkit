@@ -1,0 +1,289 @@
+{
+  "schema": "browser-image-metadata.heif-b02-evidence.v1",
+  "status": "pass",
+  "generatedAt": "2026-09-13T12:33:30.488Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "sourceManifest": {
+    "path": "data/heif/sources.json",
+    "sha256": "ef693cbec24915982a5b30e1eb1a0c2ff13bfd210396e36daf0cd891c54ade4c",
+    "schema": "browser-image-metadata.heif-b02-sources.v1"
+  },
+  "standards": [
+    {
+      "title": "ISO/IEC 23008-12:2025 — Image File Format",
+      "version": "2025",
+      "edition": 3,
+      "url": "https://committee.iso.org/standard/89035.html",
+      "license": "ISO copyrighted standard; consulted under licensed access; no source bytes are redistributed",
+      "hash": null
+    },
+    {
+      "title": "ISO/IEC 14496-12:2022 — ISO base media file format",
+      "version": "2022",
+      "edition": 7,
+      "url": "https://www.iso.org/standard/83102.html",
+      "license": "ISO copyrighted standard; consulted under licensed access; no source bytes are redistributed",
+      "hash": null
+    },
+    {
+      "title": "AV1 Image File Format (AVIF)",
+      "version": "v1.2.0",
+      "editionDate": "2025-10-16",
+      "url": "https://aomediacodec.github.io/av1-avif/v1.2.0.html",
+      "license": "Alliance for Open Media specification; license notice at https://aomedia.org/license/",
+      "hash": null
+    }
+  ],
+  "implementation": {
+    "graph": "one bounded graph per MetaBox; pitm, iinf, iloc, dref, iprp/ipco/ipma, and iref retained with source ranges",
+    "constructionMethods": [
+      "file (iloc method 0)",
+      "idat (iloc method 1)",
+      "item-offset (iloc method 2)"
+    ],
+    "relationships": [
+      "thmb",
+      "auxl",
+      "dimg",
+      "cdsc",
+      "iloc",
+      "unknown reference types"
+    ],
+    "properties": [
+      "ispe",
+      "auxC",
+      "colr prof/rICC/nclx",
+      "irot",
+      "imir"
+    ],
+    "derived": [
+      "grid",
+      "iovl",
+      "iden"
+    ],
+    "externalDataPolicy": "self-contained url/urn references are only resolved within the source file; external and unknown references are inventoried and never fetched",
+    "pixelPolicy": "structural item semantics only; no pixel decoding",
+    "securityPolicy": "safe-integer offsets, bounded box/item/property/reference counts, bounded strings, bounded extents, cycle detection, and cumulative metadata-byte limits"
+  },
+  "cases": [
+    {
+      "fixture": "tests/fixtures/heif-iref-exif.heic",
+      "bytes": 860,
+      "sha256": "01e4d05f95b128c4008406fa546c60c3c42d405f1aac42b3e77691617d5828b0",
+      "format": "heif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [
+        "cdsc"
+      ],
+      "constructionMethods": [
+        "idat"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 0,
+      "iccPresent": false,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/heif-item-metadata.heic",
+      "bytes": 830,
+      "sha256": "45827c242151888ad23d4dcf493d53e8a161ad0d968e207db1de2afc4cb8efa5",
+      "format": "heif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [],
+      "constructionMethods": [
+        "file"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": false,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/heif-idat-item-metadata.heic",
+      "bytes": 834,
+      "sha256": "441bdac7b7f5eebca856ed9a93c69a5f2562de7d5dad4db8d22f6986f1cbdcd6",
+      "format": "heif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [],
+      "constructionMethods": [
+        "idat"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": false,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/heif-indexed-idat-item-metadata.heic",
+      "bytes": 842,
+      "sha256": "19d115037513946304499be5a1a9230f6652176f19c7805e1c223dd6b79802bb",
+      "format": "heif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [],
+      "constructionMethods": [
+        "idat"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": false,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/heif-tail-idat-item-metadata.heic",
+      "bytes": 834,
+      "sha256": "bcb9739d8f2fc8edb96dbbeaaae111902fd781961760aae455f22bc160dcc9a6",
+      "format": "heif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [],
+      "constructionMethods": [
+        "idat"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": false,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/heif-primary-icc.heic",
+      "bytes": 979,
+      "sha256": "61e007d7b3a343a9ba14c2e318bd8740705048ad17ef946082cdf918fd662aac",
+      "format": "heif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [],
+      "constructionMethods": [
+        "idat"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": true,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/avif-idat-item-metadata.avif",
+      "bytes": 834,
+      "sha256": "0ec4bd1d69f2e837d9b1509621465b71f9ee0d50936bc16aedb8ff544cfa8102",
+      "format": "avif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [],
+      "constructionMethods": [
+        "idat"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": false,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/avif-primary-nclx.avif",
+      "bytes": 854,
+      "sha256": "52d5649ac2bd6ef715e795a11576e1340c4e88b888b9ea1b2af72ea1c41b722d",
+      "format": "avif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [],
+      "constructionMethods": [
+        "idat"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": false,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/avif-primary-icc.avif",
+      "bytes": 979,
+      "sha256": "853ab0ba476ea3b2cdca5f72a3830d14d130a8f56674577ac46dc3d842593439",
+      "format": "avif",
+      "dimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [],
+      "constructionMethods": [
+        "idat"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": true,
+      "warningCodes": [],
+      "status": "passed"
+    },
+    {
+      "fixture": "tests/fixtures/libavif-paris-icc-exif-xmp.avif",
+      "bytes": 21132,
+      "sha256": "961bc38b61e60b7651fa20efa24269ae2f35e4958822a81c908c9bbf9b3f66e1",
+      "format": "avif",
+      "dimensions": {
+        "width": 403,
+        "height": 302
+      },
+      "graphCount": 1,
+      "itemCount": 3,
+      "relationshipTypes": [
+        "cdsc"
+      ],
+      "constructionMethods": [
+        "file"
+      ],
+      "completeGraphs": 1,
+      "xmpPackets": 1,
+      "iccPresent": true,
+      "warningCodes": [],
+      "status": "passed"
+    }
+  ],
+  "complete": true,
+  "payloadPolicy": "checked repository fixtures only; no third-party image bytes or derived image copies are written by this command"
+}

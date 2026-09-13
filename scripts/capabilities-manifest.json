@@ -107,7 +107,7 @@
     {
       "format": "JPEG XL",
       "code": "jxl",
-      "read": "EXIF and XMP from container boxes",
+      "read": "Codestream/container dimensions, EXIF, and XMP from JPEG XL boxes",
       "selectiveDecode": "EXIF and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "No",
@@ -116,15 +116,15 @@
       "positiveFixture": "generated JPEG XL container contract fixture",
       "malformedFixture": "generated malformed JPEG XL contract fixture",
       "evidence": {
-        "positive": "tests/integration.test.ts#parses JPEG XL container XML metadata without decoding pixels",
-        "malformed": "tests/integration.test.ts#parses JPEG XL container XML metadata without decoding pixels",
-        "selection": "tests/integration.test.ts#selects GIF and JPEG XL metadata families before decoding payloads"
+        "positive": "tests/jxl-b01.test.ts#reads small and non-small codestream dimensions in complete and partial container boxes",
+        "malformed": "tests/jxl-b01.test.ts#reports truncated and contradictory codestream containers without guessing dimensions",
+        "selection": "tests/jxl-b01.test.ts#does not invoke a Brotli decoder for an unselected metadata family"
       }
     },
     {
       "format": "HEIF",
       "code": "heif",
-      "read": "Primary dimensions and image details, EXIF, XMP, decoded common ICC tags, transforms, nclx",
+      "read": "Primary dimensions, bounded HEIF item graphs, ISO-BMFF sequence tracks/samples, EXIF, XMP, decoded common ICC tags, transforms, nclx",
       "selectiveDecode": "EXIF tags and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes",
@@ -133,15 +133,15 @@
       "positiveFixture": "heif-item-metadata.heic",
       "malformedFixture": "heif-truncated.heic",
       "evidence": {
-        "positive": "tests/integration.test.ts#inspects HEIF EXIF/XMP boxes and dimensions",
-        "malformed": "tests/integration.test.ts#reports truncated HEIF boxes without throwing",
-        "selection": "tests/integration.test.ts#applies selection while decoding HEIF and AVIF metadata families"
+        "positive": "tests/heif-b03.test.ts#retains independent picture tracks, samples, timing, transformations, and primary selection",
+        "malformed": "tests/heif-b03.test.ts#fails closed for duplicate tracks, unsafe sample offsets, missing tables, and sample limits",
+        "selection": "tests/heif-b03.test.ts#keeps sequence fields available through the bounded JSON result adapter"
       }
     },
     {
       "format": "AVIF",
       "code": "avif",
-      "read": "Primary dimensions and image details, EXIF, XMP, decoded common ICC tags, transforms, nclx",
+      "read": "Primary dimensions, bounded AVIF item graphs, ISO-BMFF sequence tracks/samples, EXIF, XMP, decoded common ICC tags, transforms, nclx",
       "selectiveDecode": "EXIF tags and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes",
@@ -150,9 +150,9 @@
       "positiveFixture": "avif-idat-item-metadata.avif",
       "malformedFixture": "avif-metadata.avif",
       "evidence": {
-        "positive": "tests/integration.test.ts#inspects AVIF metadata with the same bounded BMFF reader",
-        "malformed": "tests/integration.test.ts#warns rather than guessing conflicting or malformed HEIF property associations",
-        "selection": "tests/integration.test.ts#applies selection while decoding HEIF and AVIF metadata families"
+        "positive": "tests/heif-b03.test.ts#retains independent picture tracks, samples, timing, transformations, and primary selection",
+        "malformed": "tests/heif-b03.test.ts#fails closed for duplicate tracks, unsafe sample offsets, missing tables, and sample limits",
+        "selection": "tests/heif-b03.test.ts#keeps sequence fields available through the bounded JSON result adapter"
       }
     }
   ],
@@ -164,6 +164,12 @@
     "Unsupported and malformed structures remain visible through capabilities, coverage, warnings, and explicit redaction outcomes.",
     "W01 `editMetadata()` validates canonical-field and explicit-selector transactions, preserve-first policies, bounded values, and typed operation evidence. W02 executes exact EXIF field set/delete/copy/alias/rename transactions for standalone classic TIFF and BigTIFF through the reusable graph serializer with fixed-point verification. W03 executes transactional JPEG marker metadata writing for EXIF, standard/Extended XMP, ICC, and IPTC while preserving entropy scans and decoding-critical markers. W04 executes transactional PNG eXIf, XMP, text, and ICC chunk writing while preserving IDAT and APNG image payloads. W05 executes selective WebP EXIF field and XMP/ICC writing while preserving VP8/VP8L/ALPH/ANMF image payloads; other container writers remain explicit unsupported results. W06 adds deterministic RDF/XML and IPTC-IIM serializers, explicit conflict policies, and deterministic Extended XMP chunk generation while retaining raw/lexical values and unknown properties. W07 adds registry-backed typed redaction selectors for field, family, sensitivity, URI/local-name, block, and associated-image identity, with atomic preflight rejection, physical duplicate-block scoping, and machine-based outcomes. W08 adds an independent public verifier for encoded image-payload ranges, dimensions, image relationships, configured color/orientation policies, and explicit non-pixel-equivalence evidence.",
     "The public npm brand and import name are browser-image-metadata; image-metadata-toolkit is the repository slug only.",
-    "IPTC Photo Metadata 2025.1 semantics are additive through iptcSemantic/readIptcSemantic; all IIM and URI-aware XMP candidates and conflicts remain available, while unknown XMP remains conservatively classified."
+    "IPTC Photo Metadata 2025.1 semantics are additive through iptcSemantic/readIptcSemantic; all IIM and URI-aware XMP candidates and conflicts remain available, while unknown XMP remains conservatively classified.",
+    "T01 auditPrivacy() performs bounded semantic privacy inspection for decoded EXIF/IPTC/XMP values and opaque structures. Findings expose stable state/category/reason identifiers, exact provenance links where available, and omit raw values unless includeRawValues is explicitly enabled.",
+    "T02 exposes immutable versioned share-safe, location-safe, anonymous, retain-rights, publisher, accessibility, and forensic-preserve policy presets. Strict policy sanitization refuses output when coverage or exact-field targeting is insufficient; policy reports include the exact ID and version.",
+    "T03 inventoryC2pa()/inventoryJumbfC2pa() structurally inventory C2PA/JUMBF carrier ranges in JPEG, PNG, WebP, and ISO-BMFF without cryptographic verification or remote fetches. Applicable writers refuse detected C2PA-bearing input by default unless an explicit mutation policy is selected.",
+    "T04 is an optional integration layer exposed only from browser-image-metadata/c2pa/browser and browser-image-metadata/c2pa/node. Exact optional official SDK peers are isolated from core bundles; npm run test:c2pa runs the pinned real browser and Node adapters and retains redistribution-safe evidence in reports/c2pa-adapter-integration.{json,md}.",
+    "B01 parses JPEG XL codestream and container dimensions, complete and partial codestream boxes, and bounded uncompressed or Brotli-compressed Exif/XML metadata. Raw codestream metadata is not inferred as container metadata; Brotli support is explicit through an injected decoder or the runtime platform stream.",
+    "B02 exposes bounded HEIF/AVIF item graphs through result.heif: iloc construction methods 0, 1, and 2, multiple extents, self-contained data references, ordered thmb/auxl/dimg/cdsc/iloc relationships, ispe/auxC/irot/imir/colr properties, and grid/iovl/iden derived descriptors. It never decodes pixels or dereferences external data references; malformed, cyclic, unsupported, or over-limit structures remain typed diagnostics. Blob/File metadata scope uses the same bounded method-aware resolver and falls back to a full read when the layout cannot be reconstructed safely."
   ]
 }

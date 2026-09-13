@@ -639,6 +639,7 @@ export async function fetchMetadata(input: RequestInfo | URL, options: HttpMetad
       ...(options.select === undefined ? {} : { select: options.select }),
       ...(options.registry === undefined ? {} : { registry: options.registry }),
       ...(options.normalization === undefined ? {} : { normalization: options.normalization }),
+      ...(options.jxlBrotliDecompressor === undefined ? {} : { jxlBrotliDecompressor: options.jxlBrotliDecompressor }),
       scope: options.scope ?? "metadata",
       ...(combined.signal === undefined ? {} : { signal: combined.signal }),
     };

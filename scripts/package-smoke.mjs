@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile as execFileCallback } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -49,6 +49,14 @@ try {
     "package/dist/index.cjs",
     "package/dist/index.d.ts",
     "package/dist/index.d.cts",
+    "package/dist/c2pa-browser.js",
+    "package/dist/c2pa-browser.cjs",
+    "package/dist/c2pa-browser.d.ts",
+    "package/dist/c2pa-browser.d.cts",
+    "package/dist/c2pa-node.js",
+    "package/dist/c2pa-node.cjs",
+    "package/dist/c2pa-node.d.ts",
+    "package/dist/c2pa-node.d.cts",
     "package/dist/adapters.js",
     "package/dist/adapters.cjs",
     "package/dist/adapters.d.ts",
@@ -117,6 +125,11 @@ try {
   const browserBundle = await readFile(join(root, "dist/index.js"), "utf8");
   assert.ok(!/\bnode:(?:fs|net|http|https|worker_threads)\b/.test(browserBundle), "browser ESM bundle contains a Node-only import");
   assert.ok(Buffer.byteLength(browserBundle, "utf8") < 300 * 1024, "browser ESM bundle exceeds the release size budget");
+  for (const entry of await readdir(join(root, "dist"))) {
+    if (!/\.(?:js|cjs)$/u.test(entry) || /^c2pa-(?:browser|node)\./u.test(entry)) continue;
+    const bundle = await readFile(join(root, "dist", entry), "utf8");
+    assert.ok(!/@contentauth\/c2pa-(?:web|node)|c2pa_(?:web|node)/u.test(bundle), `ordinary bundle ${entry} contains an optional C2PA SDK reference`);
+  }
   for (const [entry, budget] of [["detect.js", 1.5], ["jpeg.js", 15], ["mini.js", 4], ["index.js", 30], ["redact.js", 12]]) {
     const compressedKiB = gzipSync(await readFile(join(root, "dist", entry))).byteLength / 1024;
     assert.ok(compressedKiB <= budget, `${entry} initial ESM shell is ${compressedKiB.toFixed(2)} KiB gzip, above its ${budget} KiB budget`);
@@ -129,7 +142,7 @@ try {
   const consumer = join(stage, "consumer");
   await mkdir(consumer);
   await writeFile(join(consumer, "package.json"), JSON.stringify({ private: true, type: "module" }));
-  await run("npm", ["install", "--ignore-scripts", "--offline", "--no-audit", "--no-fund", tarball], consumer);
+  await run("npm", ["install", "--omit=peer", "--ignore-scripts", "--offline", "--no-audit", "--no-fund", tarball], consumer);
 
   const fixture = new Uint8Array(await readFile(join(root, "tests/fixtures/jpeg-exif-little-endian.jpg")));
   const fixtureLiteral = JSON.stringify([...fixture]);
@@ -137,7 +150,8 @@ try {
   const tiffFixtureLiteral = JSON.stringify([...tiffFixture]);
   await writeFile(join(consumer, "esm-smoke.mjs"), [
     'import assert from "node:assert/strict";',
-    'import { detectFormat, editMetadata, getCapabilities, parseMetadata, readGps, readTags } from "browser-image-metadata";',
+    'import { detectFormat, editMetadata, getCapabilities, inventoryC2pa, parseMetadata, readGps, readTags } from "browser-image-metadata";',
+    'import { verifyC2paInBrowser } from "browser-image-metadata/c2pa/browser";',
     'import { detectFormat as detectOnly } from "browser-image-metadata/detect";',
     'import { fetchMetadata } from "browser-image-metadata/fetch";',
     'import { fetchMetadata as fetchHttpMetadata } from "browser-image-metadata/http";',
@@ -157,6 +171,8 @@ try {
     'assert.equal(jpegWritten.preservation?.successful, true);',
     'assert.equal((await verifyPreservation(bytes, jpegWritten.data)).successful, true);',
     'assert.equal(detectFormat(bytes).format, "jpeg");',
+    'assert.equal((await inventoryC2pa(bytes)).status, "not-present");',
+    'assert.match((await verifyC2paInBrowser(bytes)).status, /^adapter:(?:sdk-unavailable|configuration)$/u);',
     'const esmEdit = await editMetadata(bytes, { operations: [{ op: "set", operationId: "title", target: { kind: "field", fieldId: "XMP:dc:title" }, value: "title" }] });',
     'assert.equal(esmEdit.status, "applied");',
     'assert.ok(esmEdit.data instanceof Uint8Array && esmEdit.data.byteLength > bytes.byteLength);',
@@ -185,9 +201,11 @@ try {
     'import assert from "node:assert/strict";',
     'import { writeFile } from "node:fs/promises";',
     'import { parseMetadata } from "browser-image-metadata/node";',
+    'import { verifyC2paInNode } from "browser-image-metadata/c2pa/node";',
     `const bytes = Uint8Array.from(${fixtureLiteral});`,
     'await writeFile("node-fixture.jpg", bytes);',
     'assert.equal((await parseMetadata("node-fixture.jpg", { scope: "metadata" })).format, "jpeg");',
+    'assert.equal((await verifyC2paInNode(bytes, { remoteManifestFetch: false })).status, "adapter:sdk-unavailable");',
   ].join("\n"));
   await writeFile(join(consumer, "node-browser-smoke.mjs"), [
     'import assert from "node:assert/strict";',

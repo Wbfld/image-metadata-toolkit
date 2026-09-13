@@ -2,13 +2,26 @@ import { parseMetadata } from "../index.js";
 import { materializeInput } from "../input.js";
 import { throwIfAborted } from "../security/abort.js";
 import { resolveLimits } from "../security/limits.js";
-import type { MetadataCoverage, MetadataCoverageReasonCode, MetadataInput, MetadataResult, MetadataWarning, PrivacyAuditOptions, PrivacyReasonCode, Sensitivity } from "../types.js";
+import { inspectSemanticPrivacyDetailed } from "./semantic.js";
+import type { MetadataCoverage, MetadataCoverageReasonCode, MetadataInput, MetadataResult, MetadataWarning, PrivacyAuditOptions, PrivacyReasonCode, Sensitivity, PrivacyFindingCategory, PrivacyFindingState } from "../types.js";
 
 export interface PrivacyFinding {
   readonly target: string;
   readonly sensitivity: Sensitivity;
   readonly message: string;
   readonly reasonCode: PrivacyReasonCode;
+  readonly state: PrivacyFindingState;
+  readonly category: PrivacyFindingCategory;
+  readonly fieldId?: string;
+  readonly blockId?: string | null;
+  readonly namespaceUri?: string;
+  readonly localName?: string;
+  readonly packetIndex?: number;
+  readonly occurrence?: number;
+  readonly sourceOffset?: number | null;
+  readonly sourceLength?: number | null;
+  readonly validation?: string;
+  readonly rawValue?: unknown;
 }
 
 export interface PrivacyAuditResult {
@@ -90,7 +103,7 @@ export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOp
   };
   const classes: Array<[string, boolean, Sensitivity, string]> = [
     ["EXIF", result.exif !== null, "moderate", "EXIF metadata is present."],
-    ["XMP", result.xmp !== null, "moderate", "XMP metadata is present and its packet contents were not semantically inspected."],
+    ["XMP", result.xmp !== null, "moderate", "XMP metadata is present; bounded semantic findings and any opaque remainder are reported."],
     ["IPTC", result.iptc !== null, "moderate", "IPTC metadata is present."],
     ["ICC", result.icc !== null, "low", "An ICC color profile is present."],
     ["JFIF", result.jfif !== null, "low", "JFIF header metadata is present."],
@@ -98,13 +111,13 @@ export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOp
   ];
   for (const [target, present, sensitivity, message] of classes) {
     if (present) {
-      findings.push({ target, sensitivity, message, reasonCode: target === "XMP" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT" });
+      findings.push({ target, sensitivity, message, reasonCode: target === "XMP" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT", state: "presence", category: "metadata-presence" });
       addReasonCode(target === "XMP" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT");
     }
   }
   for (const item of result.fields) {
     if (item.sensitivity === "high" || item.sensitivity === "moderate") {
-      findings.push({ target: item.name, sensitivity: item.sensitivity, message: `${item.name} is present in ${item.ifd}.`, reasonCode: "SENSITIVE_METADATA_PRESENT" });
+      findings.push({ target: item.name, sensitivity: item.sensitivity, message: `${item.name} is present in ${item.ifd}.`, reasonCode: "SENSITIVE_METADATA_PRESENT", state: "presence", category: "metadata-presence", fieldId: item.id, blockId: item.source?.blockId ?? null });
       addReasonCode("SENSITIVE_METADATA_PRESENT");
     }
   }
@@ -113,7 +126,7 @@ export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOp
   if (semantic !== undefined) {
     for (const field of semantic.fields) {
       if (field.candidates.length === 0 || field.sensitivity === "none") continue;
-      findings.push({ target: field.id, sensitivity: field.sensitivity, message: `${field.name} has ${field.candidates.length} IPTC/XMP semantic candidate${field.candidates.length === 1 ? "" : "s"}; all candidates are retained for review.`, reasonCode: "SENSITIVE_METADATA_PRESENT" });
+      findings.push({ target: field.id, sensitivity: field.sensitivity, message: `${field.name} has ${field.candidates.length} IPTC/XMP semantic candidate${field.candidates.length === 1 ? "" : "s"}; all candidates are retained for review.`, reasonCode: "SENSITIVE_METADATA_PRESENT", state: "decoded-finding", category: "metadata-presence", fieldId: field.id });
       addReasonCode("SENSITIVE_METADATA_PRESENT");
     }
     if (!semantic.complete) {
@@ -126,7 +139,7 @@ export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOp
         const target = candidate.source.kind === "xmp"
           ? `unknown-xmp:${candidate.source.namespaceUri ?? "unresolved"}:${candidate.source.localName ?? candidate.source.fieldId}`
           : `unknown-iim:${candidate.source.record ?? "?"}:${candidate.source.dataset ?? "?"}`;
-        findings.push({ target, sensitivity: "high", message: "Unknown IPTC/XMP semantic data is retained and treated as potentially sensitive.", reasonCode: candidate.source.kind === "xmp" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT" });
+        findings.push({ target, sensitivity: "high", message: "Unknown IPTC/XMP semantic data is retained and treated as potentially sensitive.", reasonCode: candidate.source.kind === "xmp" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT", state: "opaque-risk", category: candidate.source.kind === "xmp" ? "unknown-xmp" : "opaque-block", fieldId: candidate.source.fieldId, blockId: candidate.source.blockId ?? null, ...(candidate.source.namespaceUri === undefined ? {} : { namespaceUri: candidate.source.namespaceUri }), ...(candidate.source.localName === undefined ? {} : { localName: candidate.source.localName }) });
       }
       gaps.push(`${semantic.unknown.length} unknown IPTC-IIM/XMP semantic value${semantic.unknown.length === 1 ? "" : "s"} remain retained and conservatively classified.`);
       addReasonCode(result.xmp === null ? "SENSITIVE_METADATA_PRESENT" : "RAW_XMP");
@@ -144,6 +157,34 @@ export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOp
     gaps.push("XMP packets are retained as raw XML and may contain additional sensitive properties.");
     addReasonCode("RAW_XMP");
   }
+  const semanticInspection = inspectSemanticPrivacyDetailed(result, limits, options.includeRawValues === true);
+  for (const semanticFinding of semanticInspection.findings) {
+    findings.push({
+      target: semanticFinding.target,
+      sensitivity: semanticFinding.sensitivity,
+      message: semanticFinding.reason,
+      reasonCode: semanticFinding.category === "unknown-xmp" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT",
+      state: semanticFinding.state,
+      category: semanticFinding.category,
+      fieldId: semanticFinding.fieldId,
+      blockId: semanticFinding.blockId,
+      ...(semanticFinding.namespaceUri === undefined ? {} : { namespaceUri: semanticFinding.namespaceUri }),
+      ...(semanticFinding.localName === undefined ? {} : { localName: semanticFinding.localName }),
+      ...(semanticFinding.packetIndex === undefined ? {} : { packetIndex: semanticFinding.packetIndex }),
+      ...(semanticFinding.occurrence === undefined ? {} : { occurrence: semanticFinding.occurrence }),
+      ...(semanticFinding.sourceOffset === undefined ? {} : { sourceOffset: semanticFinding.sourceOffset }),
+      ...(semanticFinding.sourceLength === undefined ? {} : { sourceLength: semanticFinding.sourceLength }),
+      ...(semanticFinding.validation === undefined ? {} : { validation: semanticFinding.validation }),
+      ...(semanticFinding.rawValue === undefined ? {} : { rawValue: semanticFinding.rawValue }),
+    });
+    addReasonCode(semanticFinding.category === "unknown-xmp" ? "RAW_XMP" : "SENSITIVE_METADATA_PRESENT");
+  }
+  if (!semanticInspection.complete) {
+    gaps.push(...semanticInspection.diagnostics);
+    findings.push({ target: "privacy:semantic-inspection", sensitivity: "high", message: "Semantic privacy inspection was incomplete; the uninspected remainder is an opaque risk.", reasonCode: "PARSER_ERROR", state: "opaque-risk", category: "unsupported-structure", fieldId: "privacy:semantic-inspection", blockId: null });
+    addCoverageReason("PARSER_ERROR", "Semantic privacy inspection reached a configured parser or output limit.");
+    worsenCoverage("partial");
+  }
   if (result.format === "jpeg") {
     const inspection = jpegInspection(bytes);
     opaqueBlocks.push(...inspection.opaqueBlocks);
@@ -151,6 +192,7 @@ export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOp
     if (inspection.opaqueBlocks.length > 0) {
       gaps.push("Opaque JPEG APP markers are retained by lossless redaction.");
       for (const block of inspection.opaqueBlocks) {
+        findings.push({ target: block.label, sensitivity: "high", message: `${block.label} is opaque and may contain sensitive or offset-bearing data.`, reasonCode: "OPAQUE_JPEG_MARKER", state: "opaque-risk", category: "opaque-block", blockId: `jpeg:opaque:${block.offset}` });
         addCoverageReason("OPAQUE_JPEG_MARKER", `${block.label} is not classified by the JPEG metadata policy.`, `jpeg:opaque:${block.offset}`);
       }
       worsenCoverage("opaque");
@@ -174,6 +216,23 @@ export async function auditPrivacy(input: MetadataInput, options: PrivacyAuditOp
     worsenCoverage("opaque");
   }
   if (result.exif?.fields.some((field) => field.name === "JPEGInterchangeFormat" || field.name === "JPEGInterchangeFormatLength")) thumbnails.push("EXIF JPEG thumbnail");
+  for (const image of result.exif?.associatedImages ?? []) {
+    thumbnails.push(`${image.role} associated image`);
+    const opaque = image.offset === null || image.length === null;
+    findings.push({
+      target: `${image.directoryId}:${image.role}`,
+      sensitivity: "high",
+      message: opaque ? "An associated image has no safely bounded byte range and remains an opaque privacy risk." : "An associated image or embedded preview may contain pixels and metadata outside the primary-image policy.",
+      reasonCode: "SENSITIVE_METADATA_PRESENT",
+      state: opaque ? "opaque-risk" : "decoded-finding",
+      category: "embedded-preview",
+      fieldId: `${image.directoryId}:${image.role}`,
+      blockId: null,
+      ...(image.offset === null ? {} : { sourceOffset: image.offset }),
+      ...(image.length === null ? {} : { sourceLength: image.length }),
+    });
+    addReasonCode("SENSITIVE_METADATA_PRESENT");
+  }
   const coverage: MetadataCoverage = {
     requested: result.coverage.requested,
     wholeFile,

@@ -53,6 +53,7 @@ describe("worker entry point", () => {
     const preAborted = new AbortController();
     preAborted.abort();
     await expect(aborting.parse(fixture, { signal: preAborted.signal })).rejects.toMatchObject({ code: "ABORTED" });
+    await expect(aborting.parse(fixture, { jxlBrotliDecompressor: () => new Uint8Array() })).rejects.toMatchObject({ code: "UNSUPPORTED_STRUCTURE" });
     const controller = new AbortController();
     const aborted = aborting.parse(fixture, { signal: controller.signal });
     await new Promise<void>((resolve) => queueMicrotask(resolve));

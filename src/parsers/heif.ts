@@ -4,10 +4,11 @@ import { parseXmpPacket } from "../metadata/xmp.js";
 import { extractExifThumbnail } from "../metadata/thumbnail.js";
 import { wantsGroup, type ResolvedSelection } from "../selection.js";
 import { throwIfAborted } from "../security/abort.js";
-import type { ExifData, ImageDimensions, ImageTransform, MetadataBlock, MetadataField, NclxColorData, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
+import { parseHeifSequences } from "../heif-sequences.js";
+import type { ExifData, HeifDataReference, HeifItemConstructionMode, HeifItemExtent, HeifItemGraph, HeifItemLocation as PublicHeifItemLocation, HeifItemProperty, HeifItemPropertyReference, HeifItemRelationship, ImageDimensions, ImageTransform, MetadataBlock, MetadataField, NclxColorData, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
 import type { MetadataRegistry } from "../registry.js";
 
-const CONTAINER_BOXES = new Set(["meta", "iprp", "ipco", "moov", "trak", "mdia", "minf", "stbl"]);
+const CONTAINER_BOXES = new Set(["meta", "iprp", "ipco", "dinf", "moov", "trak", "mdia", "minf", "stbl"]);
 
 interface ScanBudget {
   remainingBoxes: number;
@@ -142,17 +143,39 @@ function isPresent<T>(value: T | null): value is T {
   return value !== null;
 }
 
-interface ItemInfo { readonly id: number; readonly type: string; readonly contentType?: string; }
+interface ItemInfo {
+  readonly id: number;
+  readonly type: string;
+  readonly name: string;
+  readonly contentType?: string;
+  readonly contentEncoding?: string;
+  readonly hidden: boolean;
+}
 interface ItemLocation {
   readonly method: number;
   readonly dataReferenceIndex: number;
   readonly baseOffset: number;
-  readonly extents: readonly { offset: number; length: number }[];
+  readonly extents: readonly { index: number | null; offset: number; length: number }[];
 }
 interface ParsedItemInfos {
   readonly infos: readonly ItemInfo[];
   readonly malformed: boolean;
   readonly limited: boolean;
+}
+interface ParsedDataReference {
+  readonly index: number;
+  readonly type: "url" | "urn" | "unknown";
+  readonly selfContained: boolean;
+  readonly resolvable: boolean;
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+}
+interface ItemReference {
+  readonly type: string;
+  readonly from: number;
+  readonly targets: readonly number[];
+  readonly sourceOffset: number;
+  readonly byteLength: number;
 }
 interface ItemProperty {
   readonly type?: string;
@@ -163,6 +186,8 @@ interface ItemProperty {
   readonly nclx?: NclxColorData;
   readonly rotation?: ImageTransform["rotation"];
   readonly mirrorAxis?: "vertical" | "horizontal";
+  readonly auxiliaryType?: string;
+  readonly auxiliarySubtypes?: readonly number[];
 }
 
 function uint16(bytes: Uint8Array, offset: number): number { return ((bytes[offset] ?? 0) << 8) | (bytes[offset + 1] ?? 0); }
@@ -209,6 +234,7 @@ function parseItemInfos(payload: Uint8Array, maxItems: number, maxStringBytes: n
     {
       const data = cursor + 8;
       const infeVersion = payload[data] ?? 0;
+      const itemFlags = ((payload[data + 1] ?? 0) << 16) | ((payload[data + 2] ?? 0) << 8) | (payload[data + 3] ?? 0);
       let itemId: number;
       let typeOffset: number;
       if (infeVersion === 3) {
@@ -226,6 +252,7 @@ function parseItemInfos(payload: Uint8Array, maxItems: number, maxStringBytes: n
       const itemName = readNullTerminated(payload, typeOffset + 4, cursor + size, maxStringBytes);
       if (itemName === null) return { infos, malformed: true, limited: count > maxItems };
       let contentType: string | undefined;
+      let contentEncoding: string | undefined;
       if (itemType === "mime") {
         const content = readNullTerminated(payload, itemName.next, cursor + size, maxStringBytes);
         if (content === null) return { infos, malformed: true, limited: count > maxItems };
@@ -240,9 +267,21 @@ function parseItemInfos(payload: Uint8Array, maxItems: number, maxStringBytes: n
           if (encoding === null || encoding.next !== cursor + size) {
             return { infos, malformed: true, limited: count > maxItems };
           }
+          const parsedEncoding = asciiValue(encoding.value);
+          if (parsedEncoding === null) return { infos, malformed: true, limited: count > maxItems };
+          contentEncoding = parsedEncoding;
         }
       }
-      infos.push(contentType === undefined ? { id: itemId, type: itemType } : { id: itemId, type: itemType, contentType });
+      const decodedName = decodeUtf8(itemName.value);
+      if (decodedName === null) return { infos, malformed: true, limited: count > maxItems };
+      infos.push({
+        id: itemId,
+        type: itemType,
+        name: decodedName,
+        hidden: (itemFlags & 1) !== 0,
+        ...(contentType === undefined ? {} : { contentType }),
+        ...(contentEncoding === undefined ? {} : { contentEncoding }),
+      });
     }
     cursor += size;
   }
@@ -295,12 +334,15 @@ function parseItemLocations(payload: Uint8Array, maxItems: number, maxExtents: n
     if (cursor + 2 > payload.length) return { locations, malformed: true, limited: itemCount > maxItems };
     const extentCount = uint16(payload, cursor); cursor += 2;
     if (extentCount > maxExtents) return { locations, malformed: true, limited: itemCount > maxItems };
-    const extents: Array<{ offset: number; length: number }> = [];
+    const extents: Array<{ index: number | null; offset: number; length: number }> = [];
     for (let extentIndex = 0; extentIndex < extentCount; extentIndex += 1) {
+      let indexValue: number | null = null;
       if (indexSize > 0) {
         const index = sizedInteger(payload, cursor, indexSize);
         if (index === null) return { locations, malformed: true, limited: itemCount > maxItems };
         cursor = index.next;
+        if (index.value === 0) return { locations, malformed: true, limited: itemCount > maxItems };
+        indexValue = index.value;
       }
       const offset = sizedInteger(payload, cursor, offsetSize);
       if (offset === null) return { locations, malformed: true, limited: itemCount > maxItems };
@@ -308,7 +350,7 @@ function parseItemLocations(payload: Uint8Array, maxItems: number, maxExtents: n
       const length = sizedInteger(payload, cursor, lengthSize);
       if (length === null) return { locations, malformed: true, limited: itemCount > maxItems };
       cursor = length.next;
-      extents.push({ offset: offset.value, length: length.value });
+      extents.push({ index: indexValue, offset: offset.value, length: length.value });
     }
     if (locations.has(itemId)) malformed = true;
     else locations.set(itemId, { method, dataReferenceIndex, baseOffset: base.value, extents });
@@ -316,7 +358,39 @@ function parseItemLocations(payload: Uint8Array, maxItems: number, maxExtents: n
   return { locations, malformed: malformed || (itemCount <= maxItems && cursor !== payload.length), limited: itemCount > maxItems };
 }
 
+function parseDataReferences(payload: Uint8Array, sourceOffset: number, limits: SecurityLimits): { references: ParsedDataReference[]; malformed: boolean; limited: boolean } {
+  const references: ParsedDataReference[] = [];
+  if (payload.length < 8) return { references, malformed: true, limited: false };
+  const version = payload[0] ?? 0;
+  if (version !== 0) return { references, malformed: true, limited: false };
+  const count = uint32(payload, 4);
+  if (count > limits.maxIfdEntries) return { references, malformed: false, limited: true };
+  let cursor = 8;
+  for (let index = 1; index <= count; index += 1) {
+    if (cursor > payload.length - 8) return { references, malformed: true, limited: false };
+    const size32 = uint32(payload, cursor);
+    const type = boxType(payload, cursor + 4);
+    const size = size32 === 0 ? payload.length - cursor : size32;
+    const end = cursor + size;
+    if (size < 12 || !Number.isSafeInteger(end) || end > payload.length) return { references, malformed: true, limited: false };
+    const flags = ((payload[cursor + 9] ?? 0) << 16) | ((payload[cursor + 10] ?? 0) << 8) | (payload[cursor + 11] ?? 0);
+    const knownType = type === "url " || type === "urn ";
+    const selfContained = knownType && (flags & 1) !== 0;
+    references.push({
+      index,
+      type: type === "url " ? "url" : type === "urn " ? "urn" : "unknown",
+      selfContained,
+      resolvable: selfContained,
+      sourceOffset: sourceOffset + cursor,
+      byteLength: size,
+    });
+    cursor = end;
+  }
+  return { references, malformed: cursor !== payload.length, limited: false };
+}
+
 interface ItemScanState {
+  metaStart: number;
   infos: ItemInfo[];
   locations: Map<number, ItemLocation>;
   warnings: MetadataWarning[];
@@ -326,8 +400,11 @@ interface ItemScanState {
   primaryItemId: number | null;
   properties: Map<number, ItemProperty>;
   associations: Map<number, readonly number[]>;
+  associationDetails: Map<number, readonly HeifItemPropertyReference[]>;
   /** `cdsc` references from a metadata item to the item it describes. */
   descriptions: Map<number, ReadonlySet<number>>;
+  references: ItemReference[];
+  dataReferences: Map<number, ParsedDataReference>;
   itemPropertiesSeen: boolean;
   propertyContainerSeen: boolean;
 }
@@ -368,6 +445,82 @@ function parseColourProperty(payload: Uint8Array): ColourProperty | null {
   };
 }
 
+function signed16(bytes: Uint8Array, offset: number): number {
+  const value = uint16(bytes, offset);
+  return value >= 0x8000 ? value - 0x10000 : value;
+}
+
+function signed32(bytes: Uint8Array, offset: number): number {
+  const value = uint32(bytes, offset);
+  return value >= 0x80000000 ? value - 0x100000000 : value;
+}
+
+function parseAuxiliaryProperty(payload: Uint8Array, maxStringBytes: number): { readonly type: string; readonly subtypes: readonly number[] } | null {
+  if (payload.length < 5) return null;
+  const value = readNullTerminated(payload, 4, payload.length, maxStringBytes);
+  if (value === null) return null;
+  const type = decodeUtf8(value.value);
+  if (type === null || type.length === 0) return null;
+  const remaining = payload.length - value.next;
+  if (remaining % 4 !== 0 || remaining / 4 > 1024) return null;
+  const subtypes: number[] = [];
+  for (let cursor = value.next; cursor < payload.length; cursor += 4) subtypes.push(uint32(payload, cursor));
+  return { type, subtypes };
+}
+
+interface DerivedDescriptor {
+  readonly type: "grid" | "overlay" | "identity" | "unknown";
+  readonly outputWidth: number | null;
+  readonly outputHeight: number | null;
+  readonly rows?: number;
+  readonly columns?: number;
+  readonly referenceCount: number;
+  readonly offsets?: readonly { readonly horizontal: number; readonly vertical: number }[];
+}
+
+function parseDerivedDescriptor(itemType: string, payload: Uint8Array, referenceCount: number): DerivedDescriptor | null {
+  if (itemType === "iden") return { type: "identity", outputWidth: null, outputHeight: null, referenceCount };
+  if (itemType === "grid") {
+    if (payload.length < 8) return null;
+    const version = payload[0] ?? 0;
+    const flags = payload[1] ?? 0;
+    if (version !== 0 || (flags & 0xfe) !== 0) return null;
+    const rows = (payload[2] ?? 0) + 1;
+    const columns = (payload[3] ?? 0) + 1;
+    const wide = (flags & 1) !== 0;
+    const fieldBytes = wide ? 4 : 2;
+    if (payload.length !== 4 + fieldBytes * 2) return null;
+    const outputWidth = wide ? uint32(payload, 4) : uint16(payload, 4);
+    const outputHeight = wide ? uint32(payload, 4 + fieldBytes) : uint16(payload, 4 + fieldBytes);
+    const expectedCount = rows * columns;
+    if (outputWidth === 0 || outputHeight === 0 || expectedCount !== referenceCount) return null;
+    return { type: "grid", outputWidth, outputHeight, rows, columns, referenceCount };
+  }
+  if (itemType === "iovl") {
+    if (payload.length < 10 || referenceCount > 4096) return null;
+    const version = payload[0] ?? 0;
+    const flags = payload[1] ?? 0;
+    if (version !== 0 || (flags & 0xfe) !== 0) return null;
+    const fieldBytes = (flags & 1) !== 0 ? 4 : 2;
+    const expectedLength = 10 + fieldBytes * 2 + referenceCount * fieldBytes * 2;
+    if (payload.length !== expectedLength) return null;
+    const outputWidth = fieldBytes === 4 ? uint32(payload, 10) : uint16(payload, 10);
+    const outputHeight = fieldBytes === 4 ? uint32(payload, 10 + fieldBytes) : uint16(payload, 10 + fieldBytes);
+    if (outputWidth === 0 || outputHeight === 0) return null;
+    const offsets: Array<{ horizontal: number; vertical: number }> = [];
+    let cursor = 10 + fieldBytes * 2;
+    for (let index = 0; index < referenceCount; index += 1) {
+      offsets.push({
+        horizontal: fieldBytes === 4 ? signed32(payload, cursor) : signed16(payload, cursor),
+        vertical: fieldBytes === 4 ? signed32(payload, cursor + fieldBytes) : signed16(payload, cursor + fieldBytes),
+      });
+      cursor += fieldBytes * 2;
+    }
+    return { type: "overlay", outputWidth, outputHeight, referenceCount, offsets };
+  }
+  return { type: "unknown", outputWidth: null, outputHeight: null, referenceCount };
+}
+
 function parsePropertyContainer(payload: Uint8Array, sourceOffset: number, limits: SecurityLimits, state: ItemScanState): void {
   if (state.propertyContainerSeen) {
     warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF metadata contains multiple item-property containers.", offset: 0 });
@@ -389,6 +542,8 @@ function parsePropertyContainer(payload: Uint8Array, sourceOffset: number, limit
     const propertyPayload = payload.subarray(cursor + 8, cursor + size);
     const dimensions = type === "ispe" ? parseSpatialExtent(propertyPayload) : null;
     const colour = type === "colr" ? parseColourProperty(propertyPayload) : null;
+    const auxiliary = type === "auxC" ? parseAuxiliaryProperty(propertyPayload, limits.maxStringBytes) : null;
+    if (type === "auxC" && auxiliary === null) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF auxiliary-type property is malformed.", offset: cursor + 8 });
     if (colour?.malformed === true) {
       warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF nclx colour property is truncated or has reserved range bits.", offset: cursor + 8 });
     }
@@ -403,6 +558,7 @@ function parsePropertyContainer(payload: Uint8Array, sourceOffset: number, limit
       ...(colour?.nclx === undefined ? {} : { nclx: colour.nclx }),
       ...(rotation === undefined ? {} : { rotation }),
       ...(mirrorAxis === undefined ? {} : { mirrorAxis }),
+      ...(auxiliary === null ? {} : { auxiliaryType: auxiliary.type, auxiliarySubtypes: auxiliary.subtypes }),
     });
     index += 1;
     cursor += size;
@@ -430,6 +586,7 @@ function parsePropertyAssociations(payload: Uint8Array, limits: SecurityLimits, 
       return;
     }
     const indices: number[] = [];
+    const details: HeifItemPropertyReference[] = [];
     for (let associationIndex = 0; associationIndex < associationCount; associationIndex += 1) {
       const encoded = wide ? uint16(payload, cursor) : (payload[cursor] ?? 0);
       cursor += wide ? 2 : 1;
@@ -439,16 +596,19 @@ function parsePropertyAssociations(payload: Uint8Array, limits: SecurityLimits, 
         continue;
       }
       indices.push(propertyIndex);
+      details.push({ propertyIndex, essential: wide ? (encoded & 0x8000) !== 0 : (encoded & 0x80) !== 0 });
     }
     if (state.associations.has(itemId)) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF item ${itemId} has duplicate property-association entries.`, offset: cursor });
-    else state.associations.set(itemId, indices);
+    else {
+      state.associations.set(itemId, indices);
+      state.associationDetails.set(itemId, details);
+    }
   }
 }
 
-/** Read bounded `cdsc` ItemReferenceBox entries. A descriptive item points to
- * the image item it describes, so metadata selection uses the reverse lookup
- * from the primary image. */
-function parseItemReferences(payload: Uint8Array, limits: SecurityLimits, state: ItemScanState): void {
+/** Read bounded SingleItemTypeReferenceBox entries while retaining every
+ * reference type and its declaration order. */
+function parseItemReferences(payload: Uint8Array, sourceOffset: number, limits: SecurityLimits, state: ItemScanState): void {
   if (payload.length < 4) {
     warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF item-reference box is truncated.", offset: 0 });
     return;
@@ -495,35 +655,37 @@ function parseItemReferences(payload: Uint8Array, limits: SecurityLimits, state:
       warning(state.warnings, limits, { code: "TRUNCATED_DATA", message: "HEIF item-reference child box extends beyond its parent.", offset: cursor, length: size });
       return;
     }
-    if (type === "cdsc") {
-      let referenceCursor = cursor + header;
-      if (referenceCursor + itemIdSize + 2 > end) {
-        warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF content-description reference is truncated.", offset: referenceCursor });
-        return;
-      }
-      const fromItemId = itemIdSize === 2 ? uint16(payload, referenceCursor) : uint32(payload, referenceCursor);
+    let referenceCursor = cursor + header;
+    if (referenceCursor + itemIdSize + 2 > end) {
+      warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF ${type} item reference is truncated.`, offset: referenceCursor });
+      return;
+    }
+    const fromItemId = itemIdSize === 2 ? uint16(payload, referenceCursor) : uint32(payload, referenceCursor);
+    referenceCursor += itemIdSize;
+    const count = uint16(payload, referenceCursor);
+    referenceCursor += 2;
+    if (count > limits.maxIfdEntries || referenceCursor + count * itemIdSize !== end) {
+      warning(state.warnings, limits, { code: count > limits.maxIfdEntries ? "LIMIT_EXCEEDED" : "MALFORMED_HEIF", message: `HEIF ${type} item reference list is truncated or exceeds the configured limit.`, offset: referenceCursor });
+      return;
+    }
+    if (fromItemId === 0) {
+      warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF ${type} reference uses reserved item ID zero.`, offset: cursor + header });
+      return;
+    }
+    const targets: number[] = [];
+    for (let index = 0; index < count; index += 1) {
+      const target = itemIdSize === 2 ? uint16(payload, referenceCursor) : uint32(payload, referenceCursor);
       referenceCursor += itemIdSize;
-      const count = uint16(payload, referenceCursor);
-      referenceCursor += 2;
-      if (count > limits.maxIfdEntries || referenceCursor + count * itemIdSize !== end) {
-        warning(state.warnings, limits, { code: count > limits.maxIfdEntries ? "LIMIT_EXCEEDED" : "MALFORMED_HEIF", message: "HEIF content-description reference list is truncated or exceeds the configured limit.", offset: referenceCursor });
-        return;
-      }
-      if (fromItemId === 0) {
-        warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF content-description reference uses reserved item ID zero.", offset: cursor + header });
-        return;
-      }
-      const targets = new Set<number>(state.descriptions.get(fromItemId) ?? []);
-      for (let index = 0; index < count; index += 1) {
-        const target = itemIdSize === 2 ? uint16(payload, referenceCursor) : uint32(payload, referenceCursor);
-        referenceCursor += itemIdSize;
-        if (target === 0) {
-          warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF content-description reference uses reserved item ID zero.", offset: referenceCursor - itemIdSize });
-          continue;
-        }
-        targets.add(target);
-      }
-      state.descriptions.set(fromItemId, targets);
+      if (target === 0) {
+        warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF ${type} reference uses reserved item ID zero.`, offset: referenceCursor - itemIdSize });
+      } else if (targets.length < limits.maxIfdEntries) targets.push(target);
+    }
+    const reference: ItemReference = { type, from: fromItemId, targets, sourceOffset: sourceOffset + cursor, byteLength: end - cursor };
+    state.references.push(reference);
+    if (type === "cdsc") {
+      const described = new Set<number>(state.descriptions.get(fromItemId) ?? []);
+      for (const target of targets) described.add(target);
+      state.descriptions.set(fromItemId, described);
     }
     cursor = end;
   }
@@ -612,12 +774,15 @@ function validatePropertyAssociations(state: ItemScanState, limits: SecurityLimi
 function validateItemReferences(state: ItemScanState, limits: SecurityLimits): void {
   const known = new Set(state.infos.map(({ id }) => id));
   if (state.primaryItemId !== null) known.add(state.primaryItemId);
-  for (const [source, targets] of state.descriptions) {
-    if (!known.has(source)) {
-      warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF content-description reference has an unknown source item ${source}.`, offset: 0 });
+  for (const reference of state.references) {
+    if (!known.has(reference.from)) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF ${reference.type} reference has an unknown source item ${reference.from}.`, offset: reference.sourceOffset });
+    for (const target of reference.targets) {
+      if (!known.has(target)) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF ${reference.type} reference has an unknown target item ${target}.`, offset: reference.sourceOffset });
     }
-    for (const target of targets) {
-      if (!known.has(target)) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF content-description reference has an unknown target item ${target}.`, offset: 0 });
+  }
+  for (const [itemId, location] of state.locations) {
+    if (location.method === 2 && !state.references.some((reference) => reference.type === "iloc" && reference.from === itemId)) {
+      warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF item ${itemId} uses item-offset construction without an iloc reference.`, offset: state.metaStart });
     }
   }
 }
@@ -675,12 +840,20 @@ function scanItemBoxes(bytes: Uint8Array, start: number, end: number, depth: num
     } else if (type === "idat") {
       if (state.idat !== null) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF metadata contains multiple idat boxes.", offset: payloadStart });
       else { state.idat = payload; state.idatOffset = payloadStart; }
+    } else if (type === "dref") {
+      const parsed = parseDataReferences(payload, payloadStart, limits);
+      if (parsed.malformed) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF data-reference box is malformed.", offset: payloadStart });
+      if (parsed.limited) warning(state.warnings, limits, { code: "LIMIT_EXCEEDED", message: "HEIF data-reference count exceeds the configured limit.", offset: payloadStart });
+      for (const reference of parsed.references) {
+        if (state.dataReferences.has(reference.index)) warning(state.warnings, limits, { code: "MALFORMED_HEIF", message: `HEIF data-reference index ${reference.index} is duplicated.`, offset: reference.sourceOffset });
+        else state.dataReferences.set(reference.index, reference);
+      }
     } else if (type === "ipco") {
-      parsePropertyContainer(payload, cursor, limits, state);
+      parsePropertyContainer(payload, payloadStart, limits, state);
     } else if (type === "ipma") {
       parsePropertyAssociations(payload, limits, state);
     } else if (type === "iref") {
-      parseItemReferences(payload, limits, state);
+      parseItemReferences(payload, payloadStart, limits, state);
     }
     if (type === "iprp") {
       if (state.itemPropertiesSeen) {
@@ -796,19 +969,47 @@ interface MetadataPropertyProvenance {
 
 function resolveItem(
   bytes: Uint8Array,
+  state: ItemScanState,
+  itemId: number,
   location: ItemLocation,
-  idat: Uint8Array | null,
-  idatOffset: number | null,
   limits: SecurityLimits,
   maxBytes: number,
+  stack: ReadonlySet<number> = new Set<number>(),
 ): ResolvedItem | null {
-  if (location.method !== 0 && location.method !== 1) return null;
-  if (location.dataReferenceIndex !== 0 || location.extents.length === 0) return null;
-  const source = location.method === 1 ? idat : bytes;
-  if (source === null) return null;
+  if (stack.has(itemId) || location.extents.length === 0) return null;
+  const nextStack = new Set(stack);
+  nextStack.add(itemId);
   const parts: Uint8Array[] = [];
   let total = 0;
+  let firstSourceOffset: number | undefined;
   for (const extent of location.extents) {
+    if (location.extents.length > 1 && extent.length === 0) return null;
+    let source: Uint8Array;
+    if (location.method === 2) {
+      if (location.dataReferenceIndex !== 0) return null;
+      const targetIndex = extent.index ?? 1;
+      const targetId = itemOffsetTarget(state, itemId, targetIndex);
+      if (targetId === null) return null;
+      const targetLocation = state.locations.get(targetId);
+      if (targetLocation === undefined) return null;
+      const resolvedTarget = resolveItem(bytes, state, targetId, targetLocation, limits, maxBytes - total, nextStack);
+      if (resolvedTarget === null) return null;
+      source = resolvedTarget.data;
+      const start = location.baseOffset + extent.offset;
+      if (!Number.isSafeInteger(start) || start > source.length) return null;
+      const length = extent.length === 0 ? source.length - start : extent.length;
+      const end = start + length;
+      const nextTotal = total + length;
+      if (!Number.isSafeInteger(end) || end > source.length || length > limits.maxSegmentBytes || !Number.isSafeInteger(nextTotal) || nextTotal > limits.maxMetadataBytes || nextTotal > maxBytes) return null;
+      parts.push(source.subarray(start, end));
+      total = nextTotal;
+      continue;
+    }
+    if (location.method !== 0 && location.method !== 1) return null;
+    if (location.method === 1 && location.dataReferenceIndex !== 0) return null;
+    if (location.method === 0 && location.dataReferenceIndex !== 0 && state.dataReferences.get(location.dataReferenceIndex)?.resolvable !== true) return null;
+    source = location.method === 1 ? state.idat ?? new Uint8Array() : bytes;
+    const sourceBase = location.method === 1 ? state.idatOffset ?? 0 : 0;
     const start = location.baseOffset + extent.offset;
     if (!Number.isSafeInteger(start) || start > source.length) return null;
     const length = extent.length === 0 ? source.length - start : extent.length;
@@ -823,18 +1024,230 @@ function resolveItem(
       nextTotal > maxBytes
     ) return null;
     parts.push(source.subarray(start, end));
+    const sourceOffset = sourceBase + start;
+    if (firstSourceOffset === undefined) firstSourceOffset = sourceOffset;
     total = nextTotal;
   }
   const result = new Uint8Array(total);
   let cursor = 0;
   for (const part of parts) { result.set(part, cursor); cursor += part.length; }
-  const firstExtent = location.extents[0];
-  const sourceOffset = firstExtent === undefined
-    ? undefined
-    : location.method === 0
-      ? location.baseOffset + firstExtent.offset
-      : idatOffset === null ? undefined : idatOffset + location.baseOffset + firstExtent.offset;
-  return { data: result, ...(sourceOffset === undefined ? {} : { sourceOffset }) };
+  return { data: result, ...(firstSourceOffset === undefined ? {} : { sourceOffset: firstSourceOffset }) };
+}
+
+function constructionMode(method: number): HeifItemConstructionMode {
+  if (method === 0) return "file";
+  if (method === 1) return "idat";
+  if (method === 2) return "item-offset";
+  return "unsupported";
+}
+
+function safeAdd(left: number, right: number): number | null {
+  const value = left + right;
+  return Number.isSafeInteger(value) && value >= left ? value : null;
+}
+
+function itemOffsetTarget(state: ItemScanState, itemId: number, index: number | null): number | null {
+  const targets = state.references.filter((candidate) => candidate.type === "iloc" && candidate.from === itemId).flatMap(({ targets: values }) => values);
+  const target = targets[(index ?? 1) - 1];
+  return target === undefined ? null : target;
+}
+
+function measureItem(
+  bytes: Uint8Array,
+  state: ItemScanState,
+  itemId: number,
+  stack: ReadonlySet<number> = new Set<number>(),
+): number | null {
+  if (stack.has(itemId)) return null;
+  const location = state.locations.get(itemId);
+  if (location === undefined || location.extents.length === 0) return location?.extents.length === 0 ? 0 : null;
+  if (location.method === 2) {
+    if (location.dataReferenceIndex !== 0) return null;
+    const nextStack = new Set(stack); nextStack.add(itemId);
+    let total = 0;
+    for (const extent of location.extents) {
+      const targetId = itemOffsetTarget(state, itemId, extent.index);
+      if (targetId === null) return null;
+      const targetLength = measureItem(bytes, state, targetId, nextStack);
+      if (targetLength === null) return null;
+      const start = safeAdd(location.baseOffset, extent.offset);
+      if (start === null || start > targetLength) return null;
+      const length = extent.length === 0 ? targetLength - start : extent.length;
+      const end = safeAdd(start, length);
+      const nextTotal = safeAdd(total, length);
+      if (end === null || end > targetLength || nextTotal === null) return null;
+      total = nextTotal;
+    }
+    return total;
+  }
+  if (location.method !== 0 && location.method !== 1) return null;
+  if (location.method === 1 && location.dataReferenceIndex !== 0) return null;
+  if (location.method === 0 && location.dataReferenceIndex !== 0 && state.dataReferences.get(location.dataReferenceIndex)?.resolvable !== true) return null;
+  const sourceLength = location.method === 1 ? state.idat?.length : bytes.length;
+  if (sourceLength === undefined) return null;
+  let total = 0;
+  for (const extent of location.extents) {
+    const start = safeAdd(location.baseOffset, extent.offset);
+    if (start === null || start > sourceLength) return null;
+    if (location.extents.length > 1 && extent.length === 0) return null;
+    const length = extent.length === 0 ? sourceLength - start : extent.length;
+    const end = safeAdd(start, length);
+    const nextTotal = safeAdd(total, length);
+    if (end === null || end > sourceLength || nextTotal === null) return null;
+    total = nextTotal;
+  }
+  return total;
+}
+
+function publicDataReference(reference: ParsedDataReference | undefined): HeifDataReference | null {
+  if (reference === undefined) return null;
+  return reference;
+}
+
+function publicLocation(bytes: Uint8Array, state: ItemScanState, itemId: number, location: ItemLocation): PublicHeifItemLocation {
+  const mode = constructionMode(location.method);
+  const dataReference = publicDataReference(state.dataReferences.get(location.dataReferenceIndex));
+  const external = location.dataReferenceIndex !== 0 && dataReference?.resolvable !== true;
+  const resolvedByteLength = external || mode === "unsupported" ? null : measureItem(bytes, state, itemId);
+  const resolution: PublicHeifItemLocation["resolution"] = location.extents.length === 0
+    ? "empty"
+    : external
+      ? "external"
+      : mode === "unsupported"
+        ? "unsupported"
+        : resolvedByteLength === null
+          ? "malformed"
+          : "resolved";
+  const extents: HeifItemExtent[] = location.extents.map((extent) => {
+    const sourceItemId = mode === "item-offset" ? itemOffsetTarget(state, itemId, extent.index) : null;
+    const relativeOffset = safeAdd(location.baseOffset, extent.offset);
+    const absoluteOffset = mode === "file"
+      ? relativeOffset
+      : mode === "idat" && state.idatOffset !== null && relativeOffset !== null
+        ? safeAdd(state.idatOffset, relativeOffset)
+        : null;
+    return {
+      index: extent.index,
+      offset: extent.offset,
+      length: extent.length,
+      source: mode,
+      absoluteOffset,
+      sourceItemId,
+      resolved: resolution === "resolved",
+    };
+  });
+  return {
+    constructionMethod: mode,
+    dataReferenceIndex: location.dataReferenceIndex,
+    dataReference,
+    baseOffset: location.baseOffset,
+    extents,
+    resolvedByteLength,
+    resolution,
+  };
+}
+
+function relationshipType(type: string, sourceInfo: ItemInfo | undefined): HeifItemRelationship["type"] {
+  if (type === "thmb") return "thumbnail";
+  if (type === "auxl") return "auxiliary";
+  if (type === "cdsc") return "describes";
+  if (type === "iloc") return "item-offset";
+  if (type === "dimg") return sourceInfo?.type === "iovl" ? "overlay-input" : "derived";
+  return "unknown";
+}
+
+function buildItemGraph(bytes: Uint8Array, state: ItemScanState, limits: SecurityLimits): HeifItemGraph {
+  const infoById = new Map(state.infos.map((info) => [info.id, info]));
+  const essentialPropertyIndices = new Set(
+    [...state.associationDetails.values()]
+      .flatMap((references) => references)
+      .filter(({ essential }) => essential)
+      .map(({ propertyIndex }) => propertyIndex),
+  );
+  const itemIds = [...new Set([
+    ...state.infos.map(({ id }) => id),
+    ...state.locations.keys(),
+    ...state.associations.keys(),
+    ...state.references.flatMap(({ from, targets }) => [from, ...targets]),
+    ...(state.primaryItemId === null ? [] : [state.primaryItemId]),
+  ])].slice(0, limits.maxIfdEntries);
+  const relationships: HeifItemRelationship[] = [];
+  for (const reference of state.references) {
+    for (let index = 0; index < reference.targets.length && relationships.length < limits.maxImageDetailRelationships; index += 1) {
+      const targetItemId = reference.targets[index];
+      if (targetItemId === undefined) continue;
+      relationships.push({
+        type: relationshipType(reference.type, infoById.get(reference.from)),
+        referenceType: reference.type,
+        sourceItemId: reference.from,
+        targetItemId,
+        order: index,
+        sourceOffset: reference.sourceOffset,
+        byteLength: reference.byteLength,
+      });
+    }
+  }
+  const properties = [...state.properties.entries()].slice(0, limits.maxIfdEntries).map(([index, property]): HeifItemProperty => ({
+    index,
+    type: property.type ?? "unknown",
+    essential: essentialPropertyIndices.has(index),
+    sourceOffset: property.sourceOffset ?? state.metaStart,
+    byteLength: property.byteLength ?? 0,
+    ...(property.dimensions === undefined ? {} : { dimensions: property.dimensions }),
+    ...(property.auxiliaryType === undefined ? {} : { auxiliaryType: property.auxiliaryType }),
+    ...(property.auxiliarySubtypes === undefined ? {} : { auxiliarySubtypes: property.auxiliarySubtypes }),
+  }));
+  const items = itemIds.map((id) => {
+    const info = infoById.get(id) ?? { id, type: "unknown", name: "", hidden: false };
+    const referencesForItem = state.associationDetails.get(info.id) ?? [];
+    const dimensions = referencesForItem.map(({ propertyIndex }) => state.properties.get(propertyIndex)?.dimensions).find((value): value is ImageDimensions => value !== undefined) ?? null;
+    const locationValue = state.locations.get(info.id);
+    const location = locationValue === undefined ? null : publicLocation(bytes, state, info.id, locationValue);
+    if (location !== null && location.resolution !== "resolved" && location.resolution !== "empty") {
+      warning(state.warnings, limits, { code: location.resolution === "malformed" ? "MALFORMED_HEIF" : "UNSAFE_OFFSET", message: `HEIF item ${info.id} location is ${location.resolution} and was not resolved.`, offset: state.metaStart });
+    }
+    const outgoing = relationships.filter(({ sourceItemId }) => sourceItemId === info.id);
+    const roles: Array<"primary" | "thumbnail" | "auxiliary" | "derived" | "metadata" | "unknown"> = [];
+    if (info.id === state.primaryItemId) roles.push("primary");
+    if (outgoing.some(({ type }) => type === "thumbnail")) roles.push("thumbnail");
+    if (outgoing.some(({ type }) => type === "auxiliary")) roles.push("auxiliary");
+    if (info.type === "grid" || info.type === "iovl" || info.type === "iden") roles.push("derived");
+    if (info.type === "Exif" || info.type === "mime") roles.push("metadata");
+    if (roles.length === 0) roles.push("unknown");
+    const referenceCount = relationships.filter(({ sourceItemId, referenceType }) => sourceItemId === info.id && (referenceType === "dimg" || referenceType === "iovl")).length;
+    let derived: HeifItemGraph["items"][number]["derived"];
+    if (info.type === "grid" || info.type === "iovl" || info.type === "iden") {
+      const descriptor = info.type === "iden"
+        ? { data: new Uint8Array(0) }
+        : locationValue === undefined ? null : resolveItem(bytes, state, info.id, locationValue, limits, Math.min(limits.maxValueBytes, limits.maxMetadataBytes));
+      const parsed = descriptor === null ? null : parseDerivedDescriptor(info.type, descriptor.data, referenceCount);
+      if (parsed !== null) derived = parsed;
+      else warning(state.warnings, limits, { code: descriptor === null ? "UNSAFE_OFFSET" : "MALFORMED_HEIF", message: `HEIF ${info.type} derived-item descriptor is missing or malformed.`, offset: state.metaStart });
+    }
+    return {
+      id: info.id,
+      type: info.type,
+      name: info.name,
+      contentType: info.contentType ?? null,
+      contentEncoding: info.contentEncoding ?? null,
+      hidden: info.hidden,
+      location,
+      properties: referencesForItem,
+      dimensions,
+      ...(derived === undefined ? {} : { derived }),
+      roles,
+    };
+  });
+  const complete = !state.warnings.some((item) => item.severity === "error" || item.code === "MALFORMED_HEIF" || item.code === "UNSAFE_OFFSET" || item.code === "LIMIT_EXCEEDED" || item.code === "TRUNCATED_DATA");
+  return {
+    metaOffset: state.metaStart,
+    primaryItemId: state.primaryItemId,
+    items,
+    properties,
+    dataReferences: [...state.dataReferences.values()].slice(0, limits.maxIfdEntries),
+    relationships,
+    complete,
+  };
 }
 
 function inspectItemMetadata(
@@ -842,7 +1255,7 @@ function inspectItemMetadata(
   limits: SecurityLimits,
   maxMetadataBytes = limits.maxMetadataBytes,
   selection: { readonly exif?: boolean; readonly xmp?: boolean; readonly icc?: boolean } = {},
-): { exif: Uint8Array | null; exifOffset?: number; xmp: Uint8Array[]; items: readonly MetadataItemProvenance[]; properties: readonly MetadataPropertyProvenance[]; dimensions: ImageDimensions | null; displayDimensions?: ImageDimensions; transform?: ImageTransform; icc: Uint8Array | null; nclx: NclxColorData | null; metadataBytes: number; warnings: readonly MetadataWarning[] } {
+): { exif: Uint8Array | null; exifOffset?: number; xmp: Uint8Array[]; items: readonly MetadataItemProvenance[]; properties: readonly MetadataPropertyProvenance[]; graphs: readonly HeifItemGraph[]; dimensions: ImageDimensions | null; displayDimensions?: ImageDimensions; transform?: ImageTransform; icc: Uint8Array | null; nclx: NclxColorData | null; metadataBytes: number; warnings: readonly MetadataWarning[] } {
   const includeExif = selection.exif !== false;
   const includeXmp = selection.xmp !== false;
   const includeIcc = selection.icc !== false;
@@ -851,17 +1264,22 @@ function inspectItemMetadata(
   const ranges: MetaRange[] = [];
   findMetaRanges(bytes, 0, bytes.length, 0, limits, boxBudget, warnings, ranges);
   const states: ItemScanState[] = ranges.map((range) => {
+    const stateWarnings: MetadataWarning[] = [];
     const state: ItemScanState = {
+      metaStart: range.start,
       infos: [],
       locations: new Map<number, ItemLocation>(),
-      warnings,
+      warnings: stateWarnings,
       idat: null,
       idatOffset: null,
       boxBudget,
       primaryItemId: null,
       properties: new Map<number, ItemProperty>(),
       associations: new Map<number, readonly number[]>(),
+      associationDetails: new Map<number, readonly HeifItemPropertyReference[]>(),
       descriptions: new Map<number, ReadonlySet<number>>(),
+      references: [],
+      dataReferences: new Map<number, ParsedDataReference>(),
       itemPropertiesSeen: false,
       propertyContainerSeen: false,
     };
@@ -886,12 +1304,12 @@ function inspectItemMetadata(
       if (associatedMetadataIds !== null && !associatedMetadataIds.has(info.id)) continue;
       const location = state.locations.get(info.id);
       if (location === undefined) {
-        warning(warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has no item-location entry.`, offset: 0 });
+        warning(state.warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has no item-location entry.`, offset: 0 });
         continue;
       }
-      const resolved = resolveItem(bytes, location, state.idat, state.idatOffset, limits, maxMetadataBytes - metadataBytes);
+      const resolved = resolveItem(bytes, state, info.id, location, limits, maxMetadataBytes - metadataBytes);
       if (resolved === null) {
-        warning(warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has an unsafe or unsupported extent.`, offset: 0 });
+        warning(state.warnings, limits, { code: "UNSAFE_OFFSET", message: `HEIF metadata item ${info.id} has an unsafe or unsupported extent.`, offset: 0 });
         continue;
       }
       metadataBytes += resolved.data.length;
@@ -939,12 +1357,15 @@ function inspectItemMetadata(
   const displayDimensions = dimension === null || transform === null
     ? null
     : (transform.rotation === 90 || transform.rotation === 270 ? { width: dimension.height, height: dimension.width } : dimension);
+  const graphs = states.map((state) => buildItemGraph(bytes, state, limits));
+  for (const state of states) for (const item of state.warnings) warning(warnings, limits, item);
   return {
     exif: itemData,
     ...(itemDataOffset === undefined ? {} : { exifOffset: itemDataOffset }),
     xmp: foundXmp,
     items,
     properties,
+    graphs,
     dimensions: dimension !== null && dimensions.every(({ width, height }) => width === dimension.width && height === dimension.height) ? dimension : null,
     ...(displayDimensions === null ? {} : { displayDimensions }),
     ...(transform === null ? {} : { transform }),
@@ -1044,6 +1465,8 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
     xmp: includeXmp,
     icc: includeIcc,
   });
+  const sequenceMetadata = parseHeifSequences(bytes, limits, itemMetadata.graphs);
+  for (const item of sequenceMetadata.warnings) warning(warnings, limits, item);
   for (const item of itemMetadata.warnings) warning(warnings, limits, item);
   for (const item of itemMetadata.items) {
     const offset = item.sourceOffset ?? null;
@@ -1122,7 +1545,10 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
     }
   }
   if (bytes.length < 16 || ascii(bytes, 4) !== "ftyp") warningError(warnings, limits, { code: "MALFORMED_HEIF", message: "HEIF/AVIF input has no valid ftyp box.", offset: 0 });
-  const storedDimensions = itemMetadata.dimensions ?? fallbackDimensions;
+  const primarySequences = sequenceMetadata.sequences.filter(({ primaryTrackId }) => primaryTrackId !== null);
+  const primarySequence = primarySequences.length === 1 ? primarySequences[0] : undefined;
+  const primarySequenceTrack = primarySequence?.tracks.find(({ id }) => id === primarySequence.primaryTrackId);
+  const storedDimensions = itemMetadata.dimensions ?? fallbackDimensions ?? primarySequenceTrack?.dimensions ?? null;
   const resolvedBlocks = blocks.map((block) => {
     const offset = block.offset;
     const length = block.length;
@@ -1139,6 +1565,8 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
     format,
     mimeType: format === "avif" ? "image/avif" : "image/heif",
     dimensions: storedDimensions,
+    heif: itemMetadata.graphs,
+    ...(sequenceMetadata.sequences.length === 0 ? {} : { heifSequences: sequenceMetadata.sequences }),
     ...(itemMetadata.displayDimensions === undefined ? {} : { displayDimensions: itemMetadata.displayDimensions }),
     ...(itemMetadata.transform === undefined ? {} : { transform: itemMetadata.transform }),
     ...(itemMetadata.nclx === null ? {} : { nclx: itemMetadata.nclx }),
