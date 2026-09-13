@@ -74,6 +74,34 @@
         "default": "./dist/detect.cjs"
       }
     },
+    "./edit": {
+      "browser": {
+        "types": "./dist/edit.d.ts",
+        "default": "./dist/edit.js"
+      },
+      "import": {
+        "types": "./dist/edit.d.ts",
+        "default": "./dist/edit.js"
+      },
+      "require": {
+        "types": "./dist/edit.d.cts",
+        "default": "./dist/edit.cjs"
+      }
+    },
+    "./tiff": {
+      "browser": {
+        "types": "./dist/tiff.d.ts",
+        "default": "./dist/tiff.js"
+      },
+      "import": {
+        "types": "./dist/tiff.d.ts",
+        "default": "./dist/tiff.js"
+      },
+      "require": {
+        "types": "./dist/tiff.d.cts",
+        "default": "./dist/tiff.cjs"
+      }
+    },
     "./fetch": {
       "browser": {
         "types": "./dist/fetch.d.ts",
@@ -102,6 +130,16 @@
         "default": "./dist/http.cjs"
       }
     },
+    "./iptc": {
+      "import": {
+        "types": "./dist/iptc.d.ts",
+        "default": "./dist/iptc.js"
+      },
+      "require": {
+        "types": "./dist/iptc.d.cts",
+        "default": "./dist/iptc.cjs"
+      }
+    },
     "./node": {
       "browser": {
         "types": "./dist/node-browser.d.ts",
@@ -128,6 +166,62 @@
       "require": {
         "types": "./dist/jpeg.d.cts",
         "default": "./dist/jpeg.cjs"
+      }
+    },
+    "./jpeg-writer": {
+      "browser": {
+        "types": "./dist/jpeg-writer.d.ts",
+        "default": "./dist/jpeg-writer.js"
+      },
+      "import": {
+        "types": "./dist/jpeg-writer.d.ts",
+        "default": "./dist/jpeg-writer.js"
+      },
+      "require": {
+        "types": "./dist/jpeg-writer.d.cts",
+        "default": "./dist/jpeg-writer.cjs"
+      }
+    },
+    "./png-writer": {
+      "browser": {
+        "types": "./dist/png-writer.d.ts",
+        "default": "./dist/png-writer.js"
+      },
+      "import": {
+        "types": "./dist/png-writer.d.ts",
+        "default": "./dist/png-writer.js"
+      },
+      "require": {
+        "types": "./dist/png-writer.d.cts",
+        "default": "./dist/png-writer.cjs"
+      }
+    },
+    "./webp-writer": {
+      "browser": {
+        "types": "./dist/webp-writer.d.ts",
+        "default": "./dist/webp-writer.js"
+      },
+      "import": {
+        "types": "./dist/webp-writer.d.ts",
+        "default": "./dist/webp-writer.js"
+      },
+      "require": {
+        "types": "./dist/webp-writer.d.cts",
+        "default": "./dist/webp-writer.cjs"
+      }
+    },
+    "./preservation": {
+      "browser": {
+        "types": "./dist/preservation.d.ts",
+        "default": "./dist/preservation.js"
+      },
+      "import": {
+        "types": "./dist/preservation.d.ts",
+        "default": "./dist/preservation.js"
+      },
+      "require": {
+        "types": "./dist/preservation.d.cts",
+        "default": "./dist/preservation.cjs"
       }
     },
     "./mini": {
@@ -211,6 +305,14 @@
     "dist",
     "README.md",
     "API.md",
+    "W01_MUTATION_MODEL.md",
+    "W02_TIFF_SERIALIZATION.md",
+    "W03_JPEG_WRITING.md",
+    "W04_PNG_WRITING.md",
+    "W05_WEBP_WRITING.md",
+    "W06_IPTC_SERIALIZATION.md",
+    "W07_REDACTION_SELECTORS.md",
+    "W08_PRESERVATION_VERIFIER.md",
     "CAPABILITIES.md",
     "METADATA_REGISTRY.md",
     "data",

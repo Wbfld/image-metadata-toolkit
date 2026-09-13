@@ -56,7 +56,7 @@ function render(manifestText) {
     "",
     "## Removal semantics",
     "",
-    "Removal copies encoded image payloads without recompressing pixels. JPEG entropy-coded scan data, PNG IDAT data, and WebP image chunks remain encoded as they were. JPEGs with MPF secondary images or Ultra HDR gain-map XMP are refused atomically until their offset relationships can be rewritten safely.",
+    "Removal and W03 JPEG writing copy encoded image payloads without recompressing pixels. JPEG entropy-coded scan data, PNG IDAT data, and WebP image chunks remain encoded as they were. W03 writes JPEG EXIF, standard/Extended XMP, ICC, and IPTC marker metadata while preserving scans and decoding-critical markers; JPEGs with MPF secondary images, Ultra HDR gain-map XMP, JUMBF/C2PA, or other protected offset-bearing structures are refused atomically.",
     "",
     "`redactMetadata()` reports every operation through `outcome`. A successful outcome means every requested target that is supported for the detected format was handled; it does not mean unknown container data has been interpreted. `auditPrivacy()` identifies recognized sensitive values, opaque blocks, thumbnails, trailing data, warnings, and inspection gaps before a sharing workflow makes a policy decision.",
     "",
@@ -78,7 +78,7 @@ function render(manifestText) {
     "",
     ...manifest.notes.map((note) => `- ${note}`),
     "- ICC inspection decodes bounded ASCII/legacy descriptions, text, MLUC, XYZ, sampled and parametric curves, matrices, measurement, viewing-condition, colorant, signature, and LUT8/LUT16/A-to-B/B-to-A header structures. Exact shared payload ranges are accepted, partial overlaps are rejected, and unknown payloads remain range-only; color transforms are never applied. `npm run icc:reference` requires the complete hash-pinned corpus in `data/icc/reference-corpus.json`, compares the standards-based decoder with pinned ExifTool 13.42 output, records semantic matches and explicit non-comparable values, and fails on incomplete or mismatching evidence. The checked redistribution-safe reports are `reports/icc-reference-report.json` and `reports/icc-reference-report.md`.",
-    "- MakerNote interpretation, image sequences, complete HEIF/AVIF item-property semantics, and TIFF/WebP/HEIF/AVIF writing remain unsupported.",
+    "- MakerNote interpretation, image sequences, complete HEIF/AVIF item-property semantics, and PNG/WebP/HEIF/AVIF writing remain unsupported. W02 writes standalone classic TIFF and BigTIFF EXIF graphs in both byte orders; W03 writes bounded JPEG marker metadata with explicit fail-closed boundaries.",
     "- EXIF date strings do not imply a timezone unless a separate offset tag exists.",
     "",
   ];

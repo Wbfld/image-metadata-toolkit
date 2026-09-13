@@ -2,6 +2,31 @@
 
 ## 2.0.0-alpha.3 — unreleased
 
+- added W08 public preservation verification for independently hashed JPEG
+  scans, PNG IDAT/fdAT ranges, and WebP image chunks, with dimensions,
+  animation/image relationship, color/orientation policy, bounded
+  decodability, and explicit non-pixel-equivalence evidence; W03-W05 writer
+  results now include this report when verification is enabled;
+- added W03 transactional JPEG metadata writing for EXIF, standard and
+  Extended XMP, ICC, and IPTC marker blocks; the writer preserves entropy
+  scans, decoding-critical markers, duplicate APP markers, comments, and
+  trailing bytes, reports byte-change and payload evidence, splits oversized
+  XMP/ICC values safely, and refuses MPF, Ultra HDR, JUMBF/C2PA, malformed,
+  and other unsupported offset-bearing structures atomically;
+- added the `browser-image-metadata/jpeg-writer` package entry point and
+  documented its explicit block and trust-first edit APIs;
+
+- added the W02 bounded TIFF/EXIF graph serializer and immutable classic
+  TIFF/BigTIFF rewrite path, including both byte orders, unknown/value and
+  thumbnail preservation, changed type/count/length edits, relocated offsets,
+  duplicate/order policies, fixed-point verification, and transactional
+  standalone TIFF integration in `editMetadata()`;
+
+- added the W01 trust-first `editMetadata()` transaction contract with typed
+  canonical-field/selector operations, preserve-first policy resolution,
+  bounded input validation, explicit operation evidence, and fail-closed
+  unsupported results for formats without a dedicated writer;
+
 - completed S09 output adapters: bounded deterministic field/family/detail/IPTC/
   ICC queries, lossless canonical-family and JSON-safe result views, explicit
   duplicate and migration policies, reversible binary/rational/64-bit tags,

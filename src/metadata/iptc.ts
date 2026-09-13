@@ -299,16 +299,26 @@ interface DatasetValue {
   readonly dataset: number;
   readonly key: number;
   readonly raw: Uint8Array;
+  /** Absolute source offset of the IIM dataset marker. */
+  readonly entryOffset: number;
+  /** Complete on-wire IIM dataset length, including marker and length bytes. */
+  readonly entryLength: number;
   readonly offset: number;
 }
 
-function resourcePayloads(payload: Uint8Array): { payloads: Uint8Array[]; malformed: boolean } {
-  if (payload[0] === 0x1c) return { payloads: [payload], malformed: false };
+interface IptcResourcePayload {
+  readonly data: Uint8Array;
+  /** Offset of the IIM payload relative to the containing APP13/tag payload. */
+  readonly offset: number;
+}
+
+function resourcePayloads(payload: Uint8Array): { payloads: IptcResourcePayload[]; malformed: boolean } {
+  if (payload[0] === 0x1c) return { payloads: [{ data: payload, offset: 0 }], malformed: false };
   if (payload.length < PHOTOSHOP_IDENTIFIER.length) return { payloads: [], malformed: false };
   for (let index = 0; index < PHOTOSHOP_IDENTIFIER.length; index += 1) {
     if (payload[index] !== PHOTOSHOP_IDENTIFIER[index]) return { payloads: [], malformed: false };
   }
-  const payloads: Uint8Array[] = [];
+  const payloads: IptcResourcePayload[] = [];
   let cursor = PHOTOSHOP_IDENTIFIER.length;
   while (cursor < payload.length) {
     if (cursor > payload.length - 12 || !RESOURCE_SIGNATURE.every((byte, index) => payload[cursor + index] === byte)) return { payloads: [], malformed: true };
@@ -322,7 +332,7 @@ function resourcePayloads(payload: Uint8Array): { payloads: Uint8Array[]; malfor
     const resourceEnd = resourceStart + resourceLength;
     const next = resourceEnd + (resourceLength & 1);
     if (!Number.isSafeInteger(resourceEnd) || !Number.isSafeInteger(next) || next > payload.length) return { payloads: [], malformed: true };
-    if (resourceId === IPTC_RESOURCE_ID) payloads.push(payload.subarray(resourceStart, resourceEnd));
+    if (resourceId === IPTC_RESOURCE_ID) payloads.push({ data: payload.subarray(resourceStart, resourceEnd), offset: resourceStart });
     cursor = next;
   }
   return { payloads, malformed: false };
@@ -390,9 +400,9 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
   }
 
   let byteLength = 0;
-  let consumed = 0;
   const datasets: DatasetValue[] = [];
-  for (const resource of inspected.payloads) {
+  for (const resourceInfo of inspected.payloads) {
+    const resource = resourceInfo.data;
     if (!Number.isSafeInteger(byteLength + resource.length)) {
       if (warnings.length < limits.maxWarnings) warnings.push({ code: "LIMIT_EXCEEDED", message: "IPTC resource byte accounting overflowed safely.", severity: "error" });
       break;
@@ -407,11 +417,11 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
       if (resource[cursor] !== 0x1c) {
         // Preserve opaque resource bytes for compatibility. Some producers use
         // private payloads in the IPTC resource block that are not IIM datasets.
-        if (cursor > 0 && warnings.length < limits.maxWarnings) warnings.push({ code: "MALFORMED_IPTC", message: "IPTC resource contains bytes outside an IIM dataset.", severity: "warning", offset: warningBaseOffset + consumed + cursor });
+        if (cursor > 0 && warnings.length < limits.maxWarnings) warnings.push({ code: "MALFORMED_IPTC", message: "IPTC resource contains bytes outside an IIM dataset.", severity: "warning", offset: warningBaseOffset + resourceInfo.offset + cursor });
         break;
       }
       if (cursor > resource.length - 5) {
-        if (warnings.length < limits.maxWarnings) warnings.push({ code: "TRUNCATED_DATA", message: "IPTC dataset header is truncated.", severity: "error", offset: warningBaseOffset + consumed + cursor });
+        if (warnings.length < limits.maxWarnings) warnings.push({ code: "TRUNCATED_DATA", message: "IPTC dataset header is truncated.", severity: "error", offset: warningBaseOffset + resourceInfo.offset + cursor });
         break;
       }
       const record = resource[cursor + 1] ?? 0;
@@ -422,14 +432,14 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
       if ((declared & 0x8000) !== 0) {
         const countBytes = declared & 0x7fff;
         if (countBytes < 1 || countBytes > 4 || cursor > resource.length - 5 - countBytes) {
-          if (warnings.length < limits.maxWarnings) warnings.push({ code: "MALFORMED_IPTC", message: "IPTC extended dataset length is invalid.", severity: "error", offset: warningBaseOffset + consumed + cursor + 3 });
+          if (warnings.length < limits.maxWarnings) warnings.push({ code: "MALFORMED_IPTC", message: "IPTC extended dataset length is invalid.", severity: "error", offset: warningBaseOffset + resourceInfo.offset + cursor + 3 });
           break;
         }
         valueLength = 0;
         for (let index = 0; index < countBytes; index += 1) {
           const nextLength = valueLength * 256 + (resource[cursor + 5 + index] ?? 0);
           if (!Number.isSafeInteger(nextLength)) {
-            if (warnings.length < limits.maxWarnings) warnings.push({ code: "LIMIT_EXCEEDED", message: "IPTC extended dataset length overflowed safely.", severity: "error", offset: warningBaseOffset + consumed + cursor + 3 });
+            if (warnings.length < limits.maxWarnings) warnings.push({ code: "LIMIT_EXCEEDED", message: "IPTC extended dataset length overflowed safely.", severity: "error", offset: warningBaseOffset + resourceInfo.offset + cursor + 3 });
             valueLength = -1;
             break;
           }
@@ -441,7 +451,7 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
       const valueStart = cursor + headerLength;
       const valueEnd = valueStart + valueLength;
       if (!Number.isSafeInteger(valueEnd) || valueEnd > resource.length) {
-        if (warnings.length < limits.maxWarnings) warnings.push({ code: "TRUNCATED_DATA", message: "IPTC dataset extends beyond its resource.", severity: "error", offset: warningBaseOffset + consumed + cursor, length: valueLength });
+        if (warnings.length < limits.maxWarnings) warnings.push({ code: "TRUNCATED_DATA", message: "IPTC dataset extends beyond its resource.", severity: "error", offset: warningBaseOffset + resourceInfo.offset + cursor, length: valueLength });
         break;
       }
       if (datasets.length >= Math.min(limits.maxIfdEntries, limits.maxIptcDatasets)) {
@@ -449,10 +459,12 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
         break;
       }
       const key = (record << 8) | dataset;
-      datasets.push({ record, dataset, key, raw: resource.subarray(valueStart, valueEnd).slice(), offset: warningBaseOffset + consumed + valueStart });
+      const entryOffset = warningBaseOffset + resourceInfo.offset + cursor;
+      const valueOffset = warningBaseOffset + resourceInfo.offset + valueStart;
+      const entryLength = valueEnd - cursor;
+      datasets.push({ record, dataset, key, raw: resource.subarray(valueStart, valueEnd).slice(), entryOffset, entryLength, offset: valueOffset });
       cursor = valueEnd;
     }
-    consumed += resource.length;
   }
   let characterSet: "latin1" | "utf-8" | "unknown" = "latin1";
   const charsetDataset = datasets.find(({ key }) => key === 0x015a);
@@ -528,7 +540,7 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
     if (invalid) { value = dataset.raw; type = "UNDEFINED"; }
     const display = typeof value === "number" ? `Urgency ${value}` : typeof value === "string" ? value : `0x${hex(dataset.raw)}`;
     const occurrence = fields.filter((field) => field.tag === dataset.key).length;
-    fields.push({ id: occurrence === 0 ? `IPTC:${dataset.record}:${dataset.dataset}` : `IPTC:${dataset.record}:${dataset.dataset}:${occurrence}`, ifd: "IPTC", tag: dataset.key, name, raw: dataset.raw, value, display, description: DATASET_DESCRIPTIONS[name] ?? definition?.description ?? definition?.label ?? `IPTC-IIM record ${dataset.record}, dataset ${dataset.dataset}.`, type, sensitivity: SENSITIVE_DATASETS.has(dataset.key) ? "moderate" : "low", known: definition !== undefined || Object.hasOwn(DATASET_NAMES, dataset.key), occurrence, ...(definition?.dataformat === null || definition?.dataformat === undefined ? {} : { format: definition.dataformat }), ...(IIM_MIN_BYTES[dataset.key] === undefined ? {} : { minLength: IIM_MIN_BYTES[dataset.key] }), ...(maxBytes === undefined ? {} : { maxLength: maxBytes }), repeatable: definition?.occurrence === "multi" || dataset.key === 0x020c || dataset.key === 0x0219, standardVersion: "IPTC Photo Metadata 2025.1" });
+    fields.push({ id: occurrence === 0 ? `IPTC:${dataset.record}:${dataset.dataset}` : `IPTC:${dataset.record}:${dataset.dataset}:${occurrence}`, ifd: "IPTC", tag: dataset.key, name, raw: dataset.raw, value, display, description: DATASET_DESCRIPTIONS[name] ?? definition?.description ?? definition?.label ?? `IPTC-IIM record ${dataset.record}, dataset ${dataset.dataset}.`, type, sensitivity: SENSITIVE_DATASETS.has(dataset.key) ? "moderate" : "low", known: definition !== undefined || Object.hasOwn(DATASET_NAMES, dataset.key), occurrence, ...(definition?.dataformat === null || definition?.dataformat === undefined ? {} : { format: definition.dataformat }), ...(IIM_MIN_BYTES[dataset.key] === undefined ? {} : { minLength: IIM_MIN_BYTES[dataset.key] }), ...(maxBytes === undefined ? {} : { maxLength: maxBytes }), repeatable: definition?.occurrence === "multi" || dataset.key === 0x020c || dataset.key === 0x0219, standardVersion: "IPTC Photo Metadata 2025.1", source: { blockId: "IPTC-IIM", entryOffset: dataset.entryOffset, entryLength: dataset.entryLength, valueOffset: dataset.offset, valueLength: dataset.raw.length } });
   }
   const data = byteLength > 0
     ? { byteLength, ...(charsetDataset === undefined ? {} : { characterSet }), fields, diagnostics: warnings }

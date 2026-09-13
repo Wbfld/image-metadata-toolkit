@@ -465,7 +465,9 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
         if (parsedIptc.data !== null) {
           iptcBytes += parsedIptc.data.byteLength;
           iptcCharacterSet = parsedIptc.data.characterSet;
-          normalizedFields.push(...parsedIptc.fields.map((field) => ({ ...field, source: { blockId, entryOffset: null, entryLength: null, valueOffset: null, valueLength: null } })));
+          normalizedFields.push(...parsedIptc.fields.map((field) => field.source === undefined
+            ? { ...field, source: { blockId, entryOffset: null, entryLength: null, valueOffset: null, valueLength: null } }
+            : { ...field, source: { ...field.source, blockId } }));
         }
         for (const item of parsedIptc.warnings) {
           warning(

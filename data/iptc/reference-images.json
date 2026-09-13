@@ -13,7 +13,7 @@
       "fileName": "IPTC-PhotometadataRef-Std2025.1.jpg",
       "sha256": "c5db0ba76bb4a495485334491d57b3b55cf8a151a79f0c7cc7865321fa3c0027",
       "expectedPropertyIds": ["altTextAccessibility","cityName","copyrightNotice","countryName","countryCode","creatorNames","creatorContactInfo","jobtitle","creditLine","dateCreated","description","captionWriter","extDescrAccessibility","headline","instructions","intellectualGenre","jobid","keywords","provinceState","usageTerms","sceneCodes","source","subjectCodes","sublocationName","title","additionalModelInfo","aIPromptInformation","aIPromptWriterNam","aISystemUsed","aISystemVersionUsed","artworkOrObjects","organisationInImageCodes","contributors","copyrightOwners","aboutCvTerms","dataMining","digitalImageGuid","digitalSourceType","embdEncRightsExprs","eventId","eventName","genres","imageCreators","imageRating","imageRegion","registryEntries","suppliers","imageSupplierImageId","licensors","linkedEncRightsExprs","locationCreated","locationsShown","maxAvailHeight","maxAvailWidth","minorModelAgeDisclosure","modelAges","modelReleaseDocuments","modelReleaseStatus","organisationInImageNames","otherConstraints","personInImageNames","personsShown","productsShown","propertyReleaseDocuments","propertyReleaseStatus","webstatementRights"],
-      "normalizedSemanticHash": "5f7477ec275474284376546b60976f788bfb3e886805aa89efe732931c24ee7c"
+      "normalizedSemanticHash": "17e8859465bc5ff7668213cc276a7925ed1aea6e5a782a30eca8062a8ed36ea3"
     },
     {
       "edition": "2023.1",
@@ -24,7 +24,7 @@
       "fileName": "IPTC-PhotometadataRef-Std2023.1.jpg",
       "sha256": "6031119963955cfc142301a0b918a5559dfd367122bfd2ea2bfa0ad733eb57d9",
       "expectedPropertyIds": ["altTextAccessibility","cityName","copyrightNotice","countryName","countryCode","creatorNames","creatorContactInfo","jobtitle","creditLine","dateCreated","description","captionWriter","extDescrAccessibility","headline","instructions","intellectualGenre","jobid","keywords","provinceState","usageTerms","sceneCodes","source","subjectCodes","sublocationName","title","additionalModelInfo","artworkOrObjects","organisationInImageCodes","contributors","copyrightOwners","aboutCvTerms","dataMining","digitalImageGuid","digitalSourceType","embdEncRightsExprs","eventId","eventName","genres","imageCreators","imageRating","imageRegion","registryEntries","suppliers","imageSupplierImageId","licensors","linkedEncRightsExprs","locationCreated","locationsShown","maxAvailHeight","maxAvailWidth","minorModelAgeDisclosure","modelAges","modelReleaseDocuments","modelReleaseStatus","organisationInImageNames","otherConstraints","personInImageNames","personsShown","productsShown","propertyReleaseDocuments","propertyReleaseStatus","webstatementRights"],
-      "normalizedSemanticHash": "a3a9fd19bc92b2466830f8644d243f8d580ec272f27e16536b368a4baa813104"
+      "normalizedSemanticHash": "8a4ea369b8f461945e13d807feeead71958de8ae4a2edf3cc7784ee4b666305f"
     }
   ]
 }

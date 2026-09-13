@@ -1,13 +1,14 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "status": "pass",
-  "executedAt": "2026-09-12T19:29:48.375Z",
+  "executedAt": "2026-09-13T07:51:16.632Z",
   "package": {
     "name": "browser-image-metadata",
     "version": "2.0.0-alpha.3"
   },
   "manifest": "data/iptc/reference-images.json",
-  "normalizationPolicy": "Lossless semantic candidates are normalized into sorted JSON object keys; RDF array order, language alternatives, lexical values, nested resources, IIM/XMP repetitions, conflicts, and packet/block/offset provenance remain ordered evidence.",
+  "normalizationPolicy": "Lossless semantic candidates are normalized into sorted JSON object keys; RDF array order, language alternatives, lexical values, nested resources, IIM/XMP repetitions, conflicts, and packet/block/offset provenance remain ordered evidence. Physical offsets are compared only for validity after writing, never for semantic equality.",
+  "serializationPolicy": "Parse the complete supported official IIM/XMP view, serialize each XMP packet and each IPTC resource through the package writers, replace only those JPEG metadata blocks, reparse, and compare stable semantic candidates. No source or output image is retained in the repository.",
   "images": [
     {
       "edition": "2023.1",
@@ -19,7 +20,7 @@
       "expectedProperties": 62,
       "presentProperties": 62,
       "candidateCount": 86,
-      "normalizedSemanticHash": "a3a9fd19bc92b2466830f8644d243f8d580ec272f27e16536b368a4baa813104",
+      "normalizedSemanticHash": "8a4ea369b8f461945e13d807feeead71958de8ae4a2edf3cc7784ee4b666305f",
       "mismatches": {
         "missingPropertyIds": [],
         "unexpectedPropertyIds": [],
@@ -30,7 +31,90 @@
         "INVALID_VALUE:XMP http://iptc.org/std/Iptc4xmpExt/2008-02-29/RegistryId -> registryEntries: RegistryEntry.role must be an absolute URI. RegistryEntry.role must be an absolute URI.",
         "INVALID_VALUE:XMP http://iptc.org/std/Iptc4xmpExt/2008-02-29/LinkedEncRightsExpr -> linkedEncRightsExprs: LinkedEncRightsExpr.rightsExprEncType must be an absolute URI.",
         "INVALID_VALUE:XMP http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProductInImage -> productsShown: ProductWGtin.identifiers must be an absolute URI."
-      ]
+      ],
+      "serialization": {
+        "attempted": true,
+        "serialized": true,
+        "reparsed": true,
+        "xmpPackets": 1,
+        "iptcBlocks": 1,
+        "outputByteLength": 135586,
+        "outputSha256": "8b710bb1df322f591820a772398b73db76dde0f72f3a533ce9ff4243bed99912",
+        "semanticHashBefore": "ebe00e6ed8052e4207fa894f8f6de58226a52327cbc8bb6f9a62f741569b4539",
+        "semanticHashAfter": "ebe00e6ed8052e4207fa894f8f6de58226a52327cbc8bb6f9a62f741569b4539",
+        "semanticEqual": true,
+        "mismatches": [],
+        "supportedPropertyCount": 62,
+        "roundTrippedPropertyCount": 62,
+        "coverage": {
+          "before": {
+            "supportedPropertyCount": 62,
+            "presentPropertyCount": 62,
+            "candidateCount": 89,
+            "conflictCount": 20,
+            "invalidCandidateCount": 4,
+            "unsupportedCandidateCount": 0,
+            "versionSpecificProperties": [],
+            "shape": {
+              "arrays": 91,
+              "languageAlternatives": 33,
+              "structuredResources": 37,
+              "qualifiers": 0,
+              "nestedProperties": 185
+            }
+          },
+          "after": {
+            "supportedPropertyCount": 62,
+            "presentPropertyCount": 62,
+            "candidateCount": 89,
+            "conflictCount": 20,
+            "invalidCandidateCount": 4,
+            "unsupportedCandidateCount": 0,
+            "versionSpecificProperties": [],
+            "shape": {
+              "arrays": 91,
+              "languageAlternatives": 33,
+              "structuredResources": 37,
+              "qualifiers": 0,
+              "nestedProperties": 185
+            }
+          }
+        },
+        "unsupportedSourceProperties": [],
+        "provenanceBefore": {
+          "candidateCount": 89,
+          "withBlockId": 89,
+          "withOffset": 89,
+          "withLength": 89,
+          "invalid": 0
+        },
+        "provenanceAfter": {
+          "candidateCount": 89,
+          "withBlockId": 89,
+          "withOffset": 89,
+          "withLength": 89,
+          "invalid": 0
+        },
+        "reparsedFormat": "jpeg",
+        "reparsedDimensions": {
+          "width": 2000,
+          "height": 1000
+        },
+        "reparsedBlocks": [
+          {
+            "id": "jpeg:APP13:366",
+            "family": "IPTC",
+            "offset": 366,
+            "length": 706
+          },
+          {
+            "id": "jpeg:APP1:1072",
+            "family": "XMP",
+            "offset": 1072,
+            "length": 28009
+          }
+        ]
+      }
     },
     {
       "edition": "2025.1",
@@ -42,7 +126,7 @@
       "expectedProperties": 66,
       "presentProperties": 66,
       "candidateCount": 90,
-      "normalizedSemanticHash": "5f7477ec275474284376546b60976f788bfb3e886805aa89efe732931c24ee7c",
+      "normalizedSemanticHash": "17e8859465bc5ff7668213cc276a7925ed1aea6e5a782a30eca8062a8ed36ea3",
       "mismatches": {
         "missingPropertyIds": [],
         "unexpectedPropertyIds": [],
@@ -53,7 +137,100 @@
         "INVALID_VALUE:XMP http://iptc.org/std/Iptc4xmpExt/2008-02-29/RegistryId -> registryEntries: RegistryEntry.role must be an absolute URI. RegistryEntry.role must be an absolute URI.",
         "INVALID_VALUE:XMP http://iptc.org/std/Iptc4xmpExt/2008-02-29/LinkedEncRightsExpr -> linkedEncRightsExprs: LinkedEncRightsExpr.rightsExprEncType must be an absolute URI.",
         "INVALID_VALUE:XMP http://iptc.org/std/Iptc4xmpExt/2008-02-29/ProductInImage -> productsShown: ProductWGtin.identifiers must be an absolute URI."
-      ]
+      ],
+      "serialization": {
+        "attempted": true,
+        "serialized": true,
+        "reparsed": true,
+        "xmpPackets": 1,
+        "iptcBlocks": 1,
+        "outputByteLength": 139923,
+        "outputSha256": "9c7b38a7813cb951b7319e30427b78faa1a77738894cbf7359914c21229cf0b2",
+        "semanticHashBefore": "00e549bf54bd1c97ed0f0d2bc22a8327b9c92601eee1b1ef406c9fc9fa535be8",
+        "semanticHashAfter": "00e549bf54bd1c97ed0f0d2bc22a8327b9c92601eee1b1ef406c9fc9fa535be8",
+        "semanticEqual": true,
+        "mismatches": [],
+        "supportedPropertyCount": 66,
+        "roundTrippedPropertyCount": 66,
+        "coverage": {
+          "before": {
+            "supportedPropertyCount": 66,
+            "presentPropertyCount": 66,
+            "candidateCount": 93,
+            "conflictCount": 20,
+            "invalidCandidateCount": 4,
+            "unsupportedCandidateCount": 0,
+            "versionSpecificProperties": [
+              "iptc:aIPromptInformation",
+              "iptc:aIPromptWriterNam",
+              "iptc:aISystemUsed",
+              "iptc:aISystemVersionUsed"
+            ],
+            "shape": {
+              "arrays": 91,
+              "languageAlternatives": 33,
+              "structuredResources": 37,
+              "qualifiers": 0,
+              "nestedProperties": 188
+            }
+          },
+          "after": {
+            "supportedPropertyCount": 66,
+            "presentPropertyCount": 66,
+            "candidateCount": 93,
+            "conflictCount": 20,
+            "invalidCandidateCount": 4,
+            "unsupportedCandidateCount": 0,
+            "versionSpecificProperties": [
+              "iptc:aIPromptInformation",
+              "iptc:aIPromptWriterNam",
+              "iptc:aISystemUsed",
+              "iptc:aISystemVersionUsed"
+            ],
+            "shape": {
+              "arrays": 91,
+              "languageAlternatives": 33,
+              "structuredResources": 37,
+              "qualifiers": 0,
+              "nestedProperties": 188
+            }
+          }
+        },
+        "unsupportedSourceProperties": [],
+        "provenanceBefore": {
+          "candidateCount": 93,
+          "withBlockId": 93,
+          "withOffset": 93,
+          "withLength": 93,
+          "invalid": 0
+        },
+        "provenanceAfter": {
+          "candidateCount": 93,
+          "withBlockId": 93,
+          "withOffset": 93,
+          "withLength": 93,
+          "invalid": 0
+        },
+        "reparsedFormat": "jpeg",
+        "reparsedDimensions": {
+          "width": 2000,
+          "height": 1000
+        },
+        "reparsedBlocks": [
+          {
+            "id": "jpeg:APP13:342",
+            "family": "IPTC",
+            "offset": 342,
+            "length": 754
+          },
+          {
+            "id": "jpeg:APP1:1096",
+            "family": "XMP",
+            "offset": 1096,
+            "length": 28509
+          }
+        ]
+      }
     }
   ],
   "mismatches": [],

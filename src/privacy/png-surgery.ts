@@ -1,4 +1,4 @@
-import type { RedactionRecord, SurgeryResult, RedactOptions, SecurityLimits } from "../types.js";
+import type { LegacyRedactOptions, RedactionRecord, SurgeryResult, SecurityLimits } from "../types.js";
 import { redactExifTiff } from "./jpeg-surgery.js";
 import { WarningCollector } from "../security/warnings.js";
 
@@ -42,10 +42,23 @@ function keyword(bytes: Uint8Array, start: number, end: number): string | null {
   try { return new TextDecoder("latin1").decode(bytes.subarray(start, cursor)); } catch { return null; }
 }
 
-function selected(remove: readonly string[], preserve: readonly string[], target: string): boolean {
-  if (!remove.includes(target) || preserve.includes("AllMetadata")) return false;
-  if (preserve.includes(target)) return false;
-  if (target === "EXIF" && preserve.some((item) => EXIF_FIELD_TARGETS.has(item))) return false;
+function targetInScope(target: string, blockId: string, scopes: LegacyRedactOptions["scopes"]): boolean {
+  const selectedScopes = (scopes ?? []).filter((scope) => scope.target === target);
+  return selectedScopes.length === 0 || selectedScopes.some((scope) => scope.blockIds.includes(blockId));
+}
+
+function preserved(target: string, blockId: string, preserve: readonly string[], scopes: LegacyRedactOptions["scopes"]): boolean {
+  if (familyPreserved(target, blockId, preserve, scopes)) return true;
+  return target === "EXIF" && preserve.some((item) => EXIF_FIELD_TARGETS.has(item) && targetInScope(item, blockId, scopes));
+}
+
+function familyPreserved(target: string, blockId: string, preserve: readonly string[], scopes: LegacyRedactOptions["scopes"]): boolean {
+  return (preserve.includes("AllMetadata") && targetInScope("AllMetadata", blockId, scopes))
+    || (preserve.includes(target) && targetInScope(target, blockId, scopes));
+}
+
+function selected(remove: readonly string[], preserve: readonly string[], target: string, blockId: string, scopes: LegacyRedactOptions["scopes"]): boolean {
+  if (!remove.includes(target) || preserved(target, blockId, preserve, scopes)) return false;
   return true;
 }
 
@@ -71,12 +84,12 @@ function replaceChunk(type: string, data: Uint8Array): Uint8Array {
 }
 
 /** Remove selected PNG ancillary chunks without touching image data chunks. */
-export function redactPng(bytes: Uint8Array, options: RedactOptions, limits: SecurityLimits): SurgeryResult {
+export function redactPng(bytes: Uint8Array, options: LegacyRedactOptions, limits: SecurityLimits): SurgeryResult {
   const warnings = new WarningCollector(limits);
   const records: RedactionRecord[] = [];
   const remove = options.remove;
   const preserve = options.preserve ?? [];
-  const preserveExifField = preserve.some((item) => EXIF_FIELD_TARGETS.has(item));
+  const scopes = options.scopes;
   const parts: Uint8Array[] = [bytes.subarray(0, 8)];
   let cursor = 8;
   let chunks = 0;
@@ -111,6 +124,7 @@ export function redactPng(bytes: Uint8Array, options: RedactOptions, limits: Sec
     }
     if (type === "IEND" && length !== 0) malformed = true;
     if (malformed) break;
+    const blockId = `png:${type}:${cursor}`;
     let target: RedactionRecord["target"] | null = null;
     if (type === "eXIf") target = "EXIF";
     else if (type === "iCCP") target = "ICC";
@@ -128,25 +142,23 @@ export function redactPng(bytes: Uint8Array, options: RedactOptions, limits: Sec
       }
     }
     const broadExif = (remove.includes("EXIF") || remove.includes("AllMetadata"))
-      && !preserve.includes("AllMetadata")
-      && !preserve.includes("EXIF");
+      && !familyPreserved("EXIF", blockId, preserve, scopes);
     const needsSelectiveExif = target === "EXIF"
-      && !preserve.includes("AllMetadata")
-      && !preserve.includes("EXIF")
-      && (preserveExifField || remove.some((item) => EXIF_FIELD_TARGETS.has(item) && !preserve.includes(item)));
+      && !familyPreserved("EXIF", blockId, preserve, scopes)
+      && (preserve.some((item) => EXIF_FIELD_TARGETS.has(item) && targetInScope(item, blockId, scopes)) || remove.some((item) => EXIF_FIELD_TARGETS.has(item) && targetInScope(item, blockId, scopes) && !preserve.includes(item)));
     const removeChunk = target !== null && (
-      selected(remove, preserve, target)
-      || (remove.includes("AllMetadata") && !preserve.includes("AllMetadata") && (target !== "EXIF" || !preserveExifField) && !preserve.includes(target))
+      selected(remove, preserve, target, blockId, scopes)
+      || (remove.includes("AllMetadata") && !familyPreserved(target, blockId, preserve, scopes) && (target !== "EXIF" || !preserve.some((item) => EXIF_FIELD_TARGETS.has(item) && targetInScope(item, blockId, scopes))))
     );
 
     if (target === "EXIF" && needsSelectiveExif) {
       try {
-        const transformed = redactExifTiff(bytes.subarray(dataStart, dataEnd), options, limits);
+        const transformed = redactExifTiff(bytes.subarray(dataStart, dataEnd), options, limits, blockId);
         const changed = transformed.counts.size > 0;
         if (changed) {
           addRecords(records, transformed.counts);
           parts.push(replaceChunk(type, transformed.bytes));
-        } else if (broadExif && !preserveExifField) {
+        } else if (broadExif) {
           addRecord(records, "EXIF");
         } else {
           parts.push(bytes.subarray(cursor, end));

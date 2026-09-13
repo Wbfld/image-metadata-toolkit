@@ -1,4 +1,4 @@
-import type { RedactionRecord, SurgeryResult, RedactOptions, SecurityLimits } from "../types.js";
+import type { LegacyRedactOptions, RedactionRecord, SurgeryResult, SecurityLimits } from "../types.js";
 import { WarningCollector } from "../security/warnings.js";
 
 interface Chunk {
@@ -30,9 +30,20 @@ function category(type: string): "EXIF" | "XMP" | "ICC" | null {
   return null;
 }
 
-function shouldRemove(target: string, remove: readonly string[], preserve: readonly string[]): boolean {
-  if (preserve.includes("AllMetadata") || preserve.includes(target)) return false;
-  if (target === "EXIF" && preserve.some((item) => CHILD_TARGETS.has(item))) return false;
+function targetInScope(target: string, blockId: string, scopes: LegacyRedactOptions["scopes"]): boolean {
+  const selectedScopes = (scopes ?? []).filter((scope) => scope.target === target);
+  return selectedScopes.length === 0 || selectedScopes.some((scope) => scope.blockIds.includes(blockId));
+}
+
+function preserved(target: string, blockId: string, preserve: readonly string[], scopes: LegacyRedactOptions["scopes"]): boolean {
+  if (preserve.includes("AllMetadata") && targetInScope("AllMetadata", blockId, scopes)) return true;
+  if (preserve.includes(target) && targetInScope(target, blockId, scopes)) return true;
+  return target === "EXIF" && preserve.some((item) => CHILD_TARGETS.has(item) && targetInScope(item, blockId, scopes));
+}
+
+function shouldRemove(target: string, blockId: string, remove: readonly string[], preserve: readonly string[], scopes: LegacyRedactOptions["scopes"]): boolean {
+  if (preserved(target, blockId, preserve, scopes)) return false;
+  if (!targetInScope(target, blockId, scopes)) return false;
   return remove.includes(target) || remove.includes("AllMetadata");
 }
 
@@ -42,7 +53,7 @@ function addRecord(records: RedactionRecord[], target: RedactionRecord["target"]
   else records[records.indexOf(existing)] = { ...existing, occurrences: existing.occurrences + 1 };
 }
 
-function result(data: Uint8Array, records: RedactionRecord[], options: RedactOptions, warnings: WarningCollector): SurgeryResult {
+function result(data: Uint8Array, records: RedactionRecord[], options: LegacyRedactOptions, warnings: WarningCollector): SurgeryResult {
   const removed = options.remove.includes("AllMetadata")
     ? records
     : options.remove.flatMap((target) => {
@@ -53,12 +64,13 @@ function result(data: Uint8Array, records: RedactionRecord[], options: RedactOpt
 }
 
 /** Remove WebP EXIF, XMP, and ICCP chunks while copying image payloads verbatim. */
-export function redactWebp(bytes: Uint8Array, options: RedactOptions, limits: SecurityLimits): SurgeryResult {
+export function redactWebp(bytes: Uint8Array, options: LegacyRedactOptions, limits: SecurityLimits): SurgeryResult {
   const original = new Uint8Array(bytes);
   const warnings = new WarningCollector(limits);
   const records: RedactionRecord[] = [];
   const remove = options.remove as readonly string[];
   const preserve = options.preserve ?? [];
+  const scopes = options.scopes;
   if (bytes.length < 12 || String.fromCharCode(...bytes.subarray(0, 4)) !== "RIFF" || String.fromCharCode(...bytes.subarray(8, 12)) !== "WEBP") {
     warnings.add({ code: "MALFORMED_WEBP", message: "The input does not begin with a valid RIFF/WEBP header.", severity: "error" });
     return result(original, records, options, warnings);
@@ -116,7 +128,8 @@ export function redactWebp(bytes: Uint8Array, options: RedactOptions, limits: Se
   const removedStarts = new Set<number>();
   for (const chunk of chunks) {
     const target = category(chunk.type);
-    if (target !== null && shouldRemove(target, remove, preserve)) {
+    const blockId = `webp:${chunk.type.trim()}:${chunk.start}`;
+    if (target !== null && shouldRemove(target, blockId, remove, preserve, scopes)) {
       removedStarts.add(chunk.start);
       addRecord(records, target);
     }

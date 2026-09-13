@@ -47,15 +47,29 @@ import { deriveExifComposites } from "./normalize/composites.js";
 import { attachIptcSemantic, deriveIptcSemantic } from "./normalize/iptc.js";
 import { deriveImageDetails, getImageDetails } from "./details.js";
 import { fromJsonSafe, queryIccTags, queryImageDetails, queryIptcSemantic, queryMetadata, queryStructuredXmp, toExifReaderCompatible, toExifrCompatible, toFamilyGroups, toFlatObject, toJsonSafe, toJsonSafeResult, toLosslessFamilyGroups } from "./adapters.js";
+import { editMetadata } from "./edit.js";
+import { parseTiffGraph, rewriteTiff, serializeTiff, tiffEvidence, TiffSerializationError } from "./tiff.js";
+import { rewriteJpegMetadata, JpegWriterError } from "./jpeg-writer.js";
+import { rewritePngMetadata, PngWriterError } from "./png-writer.js";
+import { rewriteWebpMetadata, WebpWriterError } from "./webp-writer.js";
+import { chunkExtendedXmp, serializeStructuredXmp, serializeXmp, XmpSerializationError } from "./metadata/serialization.js";
+import { IptcSerializationError, IptcSynchronizationError, serializeIptcIim, serializePhotoshopIptcResources, synchronizeIptcXmp } from "./metadata/serialization.js";
+import { verifyPreservation, verifyPreservationSync } from "./preservation.js";
 
-export { detectFormat, DEFAULT_LIMITS, getCapabilities, getCaptureTime, getGps, getMetadataSummary, getOrientation, getRotation, getThumbnail, getImageDetails, fromJsonSafe, queryIccTags, queryImageDetails, queryIptcSemantic, queryMetadata, queryStructuredXmp, toExifReaderCompatible, toExifrCompatible, toFamilyGroups, toFlatObject, toJsonSafe, toJsonSafeResult, toLosslessFamilyGroups, MetadataError };
+export { detectFormat, editMetadata, parseTiffGraph, rewriteTiff, serializeTiff, tiffEvidence, TiffSerializationError, rewriteJpegMetadata, JpegWriterError, rewritePngMetadata, PngWriterError, rewriteWebpMetadata, WebpWriterError, verifyPreservation, verifyPreservationSync, chunkExtendedXmp, serializeStructuredXmp, serializeXmp, XmpSerializationError, serializeIptcIim, serializePhotoshopIptcResources, synchronizeIptcXmp, IptcSerializationError, IptcSynchronizationError, DEFAULT_LIMITS, getCapabilities, getCaptureTime, getGps, getMetadataSummary, getOrientation, getRotation, getThumbnail, getImageDetails, fromJsonSafe, queryIccTags, queryImageDetails, queryIptcSemantic, queryMetadata, queryStructuredXmp, toExifReaderCompatible, toExifrCompatible, toFamilyGroups, toFlatObject, toJsonSafe, toJsonSafeResult, toLosslessFamilyGroups, MetadataError };
 export type { AdapterBudgetOptions, CanonicalFamilyGroups, ExifReaderDuplicatePolicy, ExifReaderMigrationOptions, FamilyGroupOptions, FlatCollisionPolicy, FlatObjectOptions, IccTagQuery, ImageDetailQuery, IptcSemanticQuery, JsonSafeOptions, MetadataQuery, MigrationOptions, XmpPropertyQuery } from "./adapters.js";
+export type { TiffEditEvidence, TiffEditTransaction, TiffTransactionOperation } from "./tiff.js";
+export type { JpegBlockEdit, JpegBlockKind, JpegEditTransaction, JpegIndex, JpegRewriteOptions, JpegRewriteResult, JpegScanPayload, JpegSegment, JpegTransactionOperation, JpegWriterErrorCode, PlacedChange } from "./jpeg-writer.js";
+export type { PngBlockEdit, PngBlockKind, PngChunk, PngCrcPolicy, PngEditTransaction, PngIndex, PngPlacedChange, PngRewriteOptions, PngRewriteResult, PngTransactionOperation, PngWriterErrorCode } from "./png-writer.js";
+export type { WebpBlockEdit, WebpBlockKind, WebpChunk, WebpEditTransaction, WebpIndex, WebpPlacedChange, WebpRewriteOptions, WebpRewriteResult, WebpTransactionOperation, WebpWriterErrorCode } from "./webp-writer.js";
+export type { PreservationComparison, PreservationComparisonStatus, PreservationDecodabilityEvidence, PreservationExtractionEvidence, PreservationImageSummary, PreservationPayloadEvidence, PreservationPayloadKind, PreservationPayloadStatus, PreservationPayloadSummary, PreservationPolicy, PreservationRangeEvidence, PreservationReport, PreservationVerifierOptions } from "./preservation.js";
 export { deriveExifComposites } from "./normalize/composites.js";
 export { attachIptcSemantic, deriveIptcSemantic } from "./normalize/iptc.js";
 export { IPTC_IIM_DATASETS } from "./metadata/iptc.js";
 export { IPTC_TECHREFERENCE_PREVIOUS_PROPERTIES, IPTC_TECHREFERENCE_PROPERTIES, IPTC_TECHREFERENCE_SOURCE, IPTC_TECHREFERENCE_STRUCTURES, IPTC_TECHREFERENCE_VERSION_DELTA } from "./generated/iptc-pmd.js";
 export { mergeStructuredXmp, parseStructuredXmp, parseStructuredXmpBytes, parseStructuredXmpBytesDetailed, parseStructuredXmpDetailed, parseStructuredXmpDocuments, parseStructuredXmpWithDecoder, parseStructuredXmpWithDecoderDetailed, parseStructuredXmpBytesWithDecoder, parseStructuredXmpBytesWithDecoderDetailed, validateStructuredXmpPacket } from "./metadata/xmp.js";
 export type { StructuredXmpDecoder, StructuredXmpOptions, StructuredXmpPacket, StructuredXmpParseResult, XmpAliasDefinition, XmpArrayValue, XmpConflict, XmpDescription, XmpDiagnostic, XmpDiagnosticCode, XmpLiteralValue, XmpMergedDocument, XmpNamespaceBinding, XmpProperty, XmpPropertyCandidate, XmpPropertyValue, XmpQualifiedName, XmpQualifier, XmpRdfDocument, XmpResourceValue, XmpValue } from "./metadata/xmp.js";
+export type { ExtendedXmpChunkOptions, ExtendedXmpSerialization, IptcIimEncoding, IptcIimFieldInput, IptcIimSerializeOptions, IptcInvalidValuePolicy, IptcSynchronizationConflict, IptcSynchronizationPolicy, IptcXmpSynchronizationInput, IptcXmpSynchronizationOptions, IptcXmpSynchronizationResult, PhotoshopIptcResourceOptions, XmpSerializeOptions } from "./metadata/serialization.js";
 export { createByteSource } from "./io/byte-source.js";
 export type { ByteSource, ByteSourceOptions } from "./io/byte-source.js";
 export type { FormatCapabilities, MetadataCapability, MetadataReadScope } from "./capabilities.js";
@@ -471,8 +485,24 @@ export async function redactMetadata(input: MetadataInput, options: RedactOption
   throwIfAborted(options.signal);
   const bytes = await materializeInput(input, limits, options.signal);
   throwIfAborted(options.signal);
-  const { redactBytes } = await import("./privacy/redact.js");
-  return completeRedactionResult(redactBytes(bytes, options, limits), options);
+  const { attachRedactionOperationEvidence, redactBytes, redactExactMetadata, redactionPreflightResult, resolveRedactionOptions } = await import("./privacy/redact.js");
+  const resolution = await resolveRedactionOptions(bytes, options, limits);
+  const exactRemoval = resolution.exact.some((mapping) => options.remove.includes(mapping.request) && mapping.addresses.length > 0);
+  const surgery = resolution.options === null
+    ? redactionPreflightResult(bytes, resolution)
+    : exactRemoval
+      ? await redactExactMetadata(bytes, options, resolution, limits)
+      : redactBytes(bytes, resolution.options, limits);
+  const completed = completeRedactionResult(attachRedactionOperationEvidence(surgery, options, resolution), options, resolution.mappings);
+  if (resolution.mappings.some(({ request }) => typeof request !== "string")) {
+    const mapped = resolution.mappings.map(({ request, legacyTargets }) => {
+      const direct = completed.removed.find((record) => record.target === request);
+      if (direct !== undefined) return direct;
+      return { target: request, occurrences: completed.removed.filter((record) => typeof record.target === "string" && legacyTargets.includes(record.target)).reduce((total, record) => total + record.occurrences, 0) };
+    }).filter(({ occurrences }) => occurrences > 0);
+    return { ...completed, removed: mapped };
+  }
+  return completed;
 }
 
 /** Audit recognized privacy metadata without modifying the input. */

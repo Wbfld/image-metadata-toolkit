@@ -142,6 +142,157 @@ therefore cannot provide true range efficiency, even when `scope: "metadata"`
 is requested. Stream values must be `ArrayBuffer` or `ArrayBufferView` binary
 chunks; text chunks are rejected.
 
+## `editMetadata(input, options)`
+
+```ts
+editMetadata(input: MetadataInput, options: EditMetadataOptions): Promise<EditMetadataResult>
+```
+
+W01 defines the trust-first edit transaction contract. Operations are `set`, `delete`, `copy`, `rename`, `alias`,
+`remove-group`, `remove-policy`, and `merge-sidecar`. Every operation uses a
+canonical field ID or an explicit selector; copy/rename/alias use explicit
+source and destination targets. Operation IDs are required and appear directly
+in `result.operations` and `result.unapplied`.
+
+Preserve rules always win over removal rules. Unknown values are preserved by
+default, source ordering and duplicates are retained by default, conflicts are
+preserved by default, and verification defaults to reparsing plus encoded
+image-payload preservation checks. First/last selection is never implicit; use
+the explicit ordering, duplicate, and conflict policy types when a different
+result is wanted. Sidecar data is supplied as bounded bytes or text and is
+never loaded from a path or URL by the core entry point.
+
+The result is discriminated by `successful` and `status`. On standalone
+classic TIFF and BigTIFF input, exact EXIF field identities and `field-id`
+selectors for `set`, `delete`, `copy`, `alias`, and `rename` are written through
+the reusable W02 TIFF graph serializer. On JPEG input, W03 also writes exact
+EXIF operations and explicit standard/Extended XMP, ICC, and IPTC blocks
+through a marker-only transaction. On PNG input, W04 also writes eXIf, XMP
+`iTXt`, ordinary text, and ICC `iCCP` blocks. JPEG entropy-coded scans,
+decoding-critical markers, and trailing bytes are copied byte-for-byte. Both
+writers return freshly allocated, reparsed output with input/output and
+retained-payload SHA-256 evidence. Changed types, counts, lengths, ordering,
+duplicate policy, and relocated TIFF offsets are handled by the dedicated
+writers. PNG IDAT and APNG image payloads, and WebP VP8/VP8L/ALPH/ANMF image
+payloads, remain byte-for-byte identical. Containers without a dedicated
+writer remain typed unsupported results.
+
+The result is discriminated by `successful` and `status`. It distinguishes
+`unsupported`, `invalid-value`, `unsafe-structure`, `policy-failure`,
+`verification-failure`, and `mixed-failure`; each operation has a typed failure
+code and evidence. Human-readable diagnostic text and parser warnings are not
+used to calculate unapplied operations. See
+[`W01_MUTATION_MODEL.md`](./W01_MUTATION_MODEL.md) for the complete decision
+record and invariants.
+
+## PNG metadata writing
+
+```ts
+rewritePngMetadata(input: Uint8Array, options: PngRewriteOptions): Promise<PngRewriteResult>
+```
+
+The root package and `browser-image-metadata/png-writer` export the W04 raw
+PNG block writer. `PngBlockEdit` adds, replaces, or removes complete eXIf TIFF,
+UTF-8 XMP `iTXt`, `tEXt`/`zTXt`/`iTXt`, and complete ICC profiles. Text and ICC
+compression is bounded and asynchronous through the runtime compression
+stream. Chunk order, CRCs, duplicate policy, APNG relationships, unknown
+ancillary chunks, dimensions, and every IDAT/fdAT payload are validated before
+output is returned. The default duplicate policy is `preserve`; physical
+`blockId`, `replace-target`, `deduplicate-equivalent`, and `reject` policies
+are explicit. Invalid CRCs are rejected by default; the explicit
+`preserve-unknown` CRC policy is forensic-only and preserves invalid unknown
+ancillary bytes without claiming normalized output. See
+[`W04_PNG_WRITING.md`](./W04_PNG_WRITING.md).
+The default result also exposes the independent W08 `preservation` report;
+`verify: false` returns `preservation: null`.
+
+## JPEG metadata writing
+
+```ts
+rewriteJpegMetadata(input: Uint8Array, options: JpegRewriteOptions): JpegRewriteResult
+```
+
+The root package and `browser-image-metadata/jpeg-writer` export the W03 raw
+block writer. `JpegBlockEdit` adds, replaces, or removes standard XMP,
+Extended XMP, complete ICC profiles, and raw IPTC-IIM data. Oversized XMP and
+ICC values are split into valid JPEG segments and reassembled during output
+verification. Standard XMP and Extended XMP relationships must remain valid;
+orphan, overlapping, incomplete, malformed, or invalid UTF-8 Extended XMP is
+rejected. IPTC replacement preserves unrelated Photoshop resources in APP13.
+
+The default duplicate policy is `preserve`; `replace-target`,
+`deduplicate-equivalent`, and `reject` are explicit alternatives for standard
+XMP/IPTC physical blocks. Extended XMP and ICC are treated as logical
+sequences because their chunks are interdependent. `byteChanges` reports output marker ranges, and
+`preservedPayloads` reports every entropy-coded scan copied for comparison.
+The default result also exposes the independent W08 `preservation` report;
+`preservation` options make color/orientation policy explicit and
+`verify: false` returns `preservation: null`.
+Default verification reparses the JPEG, checks frame dimensions and scan bytes,
+checks Extended XMP references, and checks non-target markers. MPF secondary
+images, Ultra HDR gain maps, JUMBF/C2PA/APP11 offset-bearing structures, DNL
+height-deferred codestreams, malformed resources, and over-limit output fail
+closed without exposing partial bytes. See
+[`W03_JPEG_WRITING.md`](./W03_JPEG_WRITING.md) for the complete boundary and
+operation model.
+
+## WebP metadata writing
+
+```ts
+rewriteWebpMetadata(input: Uint8Array, options: WebpRewriteOptions): WebpRewriteResult
+```
+
+The root package and `browser-image-metadata/webp-writer` export the W05 raw
+WebP writer. It selectively edits complete EXIF, XMP, and ICC chunks; the
+`editMetadata()` adapter additionally sets and deletes normalized EXIF fields
+through the W02 TIFF serializer. VP8/VP8L files are promoted to VP8X when
+metadata is added. RIFF lengths, odd padding, VP8X metadata flags, dimensions,
+alpha/animation relationships, duplicate policy, and unknown chunks are
+validated. VP8, VP8L, ALPH, and ANMF image payload chunks are returned as exact
+preservation evidence and must remain byte-identical. The default result also
+exposes the independent W08 `preservation` report; `verify: false` returns
+`preservation: null`. See
+[`W05_WEBP_WRITING.md`](./W05_WEBP_WRITING.md).
+
+## Preservation verification
+
+```ts
+verifyPreservation(before: MetadataInput, after: MetadataInput, options?: PreservationVerifierOptions): Promise<PreservationReport>
+verifyPreservationSync(before: Uint8Array, after: Uint8Array, options?: PreservationVerifierOptions): PreservationReport
+```
+
+The root package and `browser-image-metadata/preservation` expose the W08
+independent preservation verifier. It hashes every bounded JPEG scan, PNG
+`IDAT`/`fdAT` range, and WebP `VP8 `, `VP8L`, `ALPH`, and `ANMF` range before
+and after editing, while comparing dimensions and image/animation
+relationships. Reports are JSON-safe and contain explicit matched,
+mismatched, missing, and non-comparable counts, source offsets, lengths,
+hashes, diagnostics, and configured color/orientation policy outcomes.
+`pixelEquivalence` is always `not-claimed`; no decoder or pixel comparison is
+performed. Unsupported container payload extraction is reported as incomplete.
+The existing JPEG, PNG, and WebP writers run this verifier by default and
+return their report in `result.preservation`; `verify: false` is an explicit
+raw-writer opt-out.
+
+See [`W08_PRESERVATION_VERIFIER.md`](./W08_PRESERVATION_VERIFIER.md).
+
+## TIFF graph serialization
+
+```ts
+parseTiffGraph(input: Uint8Array, options?: TiffSerializeOptions): TiffGraph
+serializeTiff(graph: TiffGraph, options?: TiffSerializeOptions): Uint8Array
+rewriteTiff(input: Uint8Array, options: TiffRewriteOptions): Uint8Array
+```
+
+The `browser-image-metadata/tiff` entry point exposes these APIs as well. A
+graph retains ordered directories and entries, raw unknown values, typed
+directory references, and relocatable standard payloads including thumbnails.
+Serialization supports classic TIFF in II/MM byte order and BigTIFF with
+checked 64-bit fields. It rejects contradictory definitions, unsafe arithmetic,
+truncated structures, unresolved references, over-limit counts/values, and
+output larger than the configured bound before returning bytes. `rewriteTiff`
+is immutable and performs a bounded fixed-point reparse by default.
+
 ## `redactMetadata(input, options)`
 
 ```ts
@@ -270,6 +421,32 @@ map. `document.provenance` identifies embedded or Extended-XMP sources.
 candidates and conflicts. The merge input can carry caller-supplied sidecar
 provenance, but core parsing never reads sidecar files.
 
+W06 adds `serializeStructuredXmp()` (also exported as `serializeXmp`) for
+deterministic RDF/XML serialization of the complete model. It preserves
+namespace URI/local-name identity, lexical literals, arrays and ordering,
+language alternatives, resources, blank nodes, typed resources, qualifiers,
+duplicate properties, and unknown properties. XML text and attributes are
+escaped and XML 1.0-invalid code points are rejected. `chunkExtendedXmp()`
+returns bounded, deterministic Adobe Extended XMP payloads with a SHA-256
+derived or caller-supplied GUID; the payloads can be checked with
+`parseExtendedXmpChunk()` and `reassembleExtendedXmp()`.
+
+`serializeIptcIim()` and `serializePhotoshopIptcResources()` are available from
+the root package and `browser-image-metadata/iptc`. The former preserves input
+dataset order, repetitions, and raw bytes, supports UTF-8/Latin-1/binary
+values, and emits safe ordinary or extended IIM lengths. The latter emits
+padded Photoshop 3.0 `8BIM` resource blocks and supports multiple IPTC
+resources. Strict validation is the default; callers reserializing an
+intentionally invalid raw value must request `invalidValuePolicy:
+"preserve-raw"`.
+
+`synchronizeIptcXmp()` maps only generated namespace/local-name and IIM
+record/dataset pairs. Its default `preserve-all` policy reports conflicts and
+does not overwrite either side. `prefer-iim` and `prefer-xmp` are explicit
+projection policies, while `reject-conflict` throws before output is emitted.
+The standards sources and focused evidence are documented in
+[`W06_IPTC_SERIALIZATION.md`](./W06_IPTC_SERIALIZATION.md).
+
 `getIptcSemantic()` and `readIptcSemantic()` expose the additive IPTC Photo
 Metadata Standard 2025.1 view. It is generated from the pinned official
 TechReference and maps IPTC-IIM plus URI/local-name XMP properties from IPTC
@@ -319,6 +496,16 @@ Image/container details additionally bound retained candidates with
 `maxImageDetailRelationships` (4,096). These are cumulative output limits;
 truncated results retain diagnostics rather than allocating from hostile
 header counts.
+
+`RedactOptions` also accepts typed selectors for canonical field IDs, metadata
+families, sensitivities, namespace URI/local-name pairs, physical block IDs,
+and associated images. Typed selectors are preflight-resolved against the
+bounded parser and optional `RedactOptions.registry`; unmatched selectors
+return the original bytes and an unsuccessful outcome before surgery starts.
+Duplicate physical blocks are scoped independently. Preserve rules have
+explicit preserve-over-remove precedence, and outcomes are computed from
+resolved target identities and emitted records rather than warning text. See
+[`W07_REDACTION_SELECTORS.md`](./W07_REDACTION_SELECTORS.md).
 
 ## Focused entry points
 

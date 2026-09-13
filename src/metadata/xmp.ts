@@ -280,6 +280,22 @@ function collectQualifiers(node: XmlNode, excluded: ReadonlySet<string>, state: 
   }
   return qualifiers;
 }
+function qualifiedValueWithExtraQualifiers(value: XmpValue, extra: readonly XmpQualifier[]): XmpValue {
+  if (extra.length === 0) return value;
+  return { ...value, qualifiers: [...value.qualifiers, ...extra] };
+}
+function rdfTypeName(typeNode: XmlNode | undefined, state: ParseState): XmpQualifiedName | null {
+  if (typeNode === undefined) return null;
+  const resource = rdfAttribute(typeNode, "resource")?.value;
+  if (resource !== undefined) {
+    const binding = [...state.namespaceBindings].sort((left, right) => right.namespaceUri.length - left.namespaceUri.length || left.order - right.order).find((candidate) => resource.startsWith(candidate.namespaceUri));
+    if (binding !== undefined && resource.length > binding.namespaceUri.length) {
+      const localName = resource.slice(binding.namespaceUri.length);
+      if (splitName(localName) !== null) return { namespaceUri: binding.namespaceUri, localName, prefix: binding.prefix, qualifiedName: `${binding.prefix}:${localName}` };
+    }
+  }
+  return nameFor(typeNode);
+}
 function parseValue(node: XmlNode, state: ParseState): XmpValue {
   const resource = rdfAttribute(node, "resource")?.value; const nodeId = rdfAttribute(node, "nodeID")?.value; const parseType = rdfAttribute(node, "parseType")?.value; const excluded = new Set(["rdf:resource", "rdf:nodeID", "rdf:parseType", "rdf:datatype", "xml:lang", "xmlns"]); const qualifiers = collectQualifiers(node, excluded, state);
   if (resource !== undefined) return { kind: "resource", resourceUri: resource, nodeId: null, typeName: null, properties: [], qualifiers }; if (nodeId !== undefined) return { kind: "blank-node", resourceUri: null, nodeId, typeName: null, properties: [], qualifiers };
@@ -288,10 +304,15 @@ function parseValue(node: XmlNode, state: ParseState): XmpValue {
   if (parseType === "Resource" || node.children.length > 0) {
     const resourceDescription = node.children.find((child) => isRdf(child, "Description"));
     const resourceChildren = resourceDescription?.children ?? node.children;
+    const qualifiedValue = parseType === "Resource" ? resourceChildren.find((child) => isRdf(child, "value")) : undefined;
+    if (qualifiedValue !== undefined) {
+      const nestedQualifiers = resourceChildren.filter((child) => child !== qualifiedValue).map((child, order) => ({ name: nameFor(child), value: parseValue(child, state), order } satisfies XmpQualifier));
+      return qualifiedValueWithExtraQualifiers(parseValue(qualifiedValue, state), [...qualifiers, ...nestedQualifiers]);
+    }
     const typeChild = resourceChildren.find((child) => isRdf(child, "type"));
     const resourceUri = resourceDescription === undefined ? null : rdfAttribute(resourceDescription, "about")?.value ?? null;
     const nestedNodeId = resourceDescription === undefined ? null : rdfAttribute(resourceDescription, "nodeID")?.value ?? null;
-    return { kind: parseType === "Resource" ? "typed-resource" : nestedNodeId !== null ? "blank-node" : "resource", resourceUri, nodeId: nestedNodeId ?? (resourceUri === null ? `_:b${state.blankNodeIndex++}` : null), typeName: typeChild === undefined ? null : nameFor(typeChild), properties: parseDescriptionProperties(resourceChildren, state), qualifiers };
+    return { kind: parseType === "Resource" ? "typed-resource" : nestedNodeId !== null ? "blank-node" : "resource", resourceUri, nodeId: nestedNodeId ?? (resourceUri === null ? `_:b${state.blankNodeIndex++}` : null), typeName: rdfTypeName(typeChild, state), properties: parseDescriptionProperties(resourceChildren, state), qualifiers };
   }
   return makeLiteral(node, qualifiers);
 }
@@ -314,7 +335,7 @@ function parseRdfDocument(root: XmlNode, state: ParseState, sourceLength: number
       }
       properties.push(...parseDescriptionProperties(node.children, state));
       const typeChild = node.children.find((child) => isRdf(child, "type"));
-      descriptions.push({ subject: subjectFor(node, state), typeName: typeChild === undefined ? null : nameFor(typeChild), properties, sourceStart: node.start, sourceEnd: node.end });
+      descriptions.push({ subject: subjectFor(node, state), typeName: rdfTypeName(typeChild, state), properties, sourceStart: node.start, sourceEnd: node.end });
     }
     for (const child of node.children) visit(child, node);
   };

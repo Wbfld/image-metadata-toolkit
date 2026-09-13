@@ -56,36 +56,36 @@
       }
     ],
     "tests": {
-      "files": 25,
-      "total": 349,
-      "passed": 349,
+      "files": 34,
+      "total": 429,
+      "passed": 429,
       "failed": 0,
       "skipped": 0
     },
     "coverage": {
       "lines": {
-        "total": 12849,
-        "covered": 11599,
+        "total": 18030,
+        "covered": 16219,
         "skipped": 0,
-        "pct": 90.27
+        "pct": 89.95
       },
       "statements": {
-        "total": 12849,
-        "covered": 11599,
+        "total": 18030,
+        "covered": 16219,
         "skipped": 0,
-        "pct": 90.27
+        "pct": 89.95
       },
       "functions": {
-        "total": 753,
-        "covered": 722,
+        "total": 1115,
+        "covered": 1060,
         "skipped": 0,
-        "pct": 95.88
+        "pct": 95.06
       },
       "branches": {
-        "total": 7718,
-        "covered": 5831,
+        "total": 11438,
+        "covered": 8604,
         "skipped": 0,
-        "pct": 75.55
+        "pct": 75.22
       },
       "branchesTrue": {
         "total": 0,
@@ -96,8 +96,8 @@
     },
     "tarball": {
       "file": "browser-image-metadata-2.0.0-alpha.3.tgz",
-      "bytes": 3863073,
-      "sha256": "9c43f57d093633b92f9471ed354a7a71e1421a04499838f8549198599687da2d"
+      "bytes": 6482463,
+      "sha256": "b86f7f8bd67ac9088e4e74ffd9b19f5d5030cdb987d29c29cfcde94180e37cc2"
     },
     "exportEntries": [
       {
@@ -107,8 +107,8 @@
           "default"
         ],
         "target": "./dist/index.js",
-        "bytes": 1934,
-        "gzipBytes": 730
+        "bytes": 2802,
+        "gzipBytes": 998
       },
       {
         "export": ".",
@@ -117,8 +117,8 @@
           "types"
         ],
         "target": "./dist/index.d.ts",
-        "bytes": 700089,
-        "gzipBytes": 44679
+        "bytes": 703749,
+        "gzipBytes": 45645
       },
       {
         "export": ".",
@@ -127,8 +127,8 @@
           "default"
         ],
         "target": "./dist/index.js",
-        "bytes": 1934,
-        "gzipBytes": 730
+        "bytes": 2802,
+        "gzipBytes": 998
       },
       {
         "export": ".",
@@ -137,8 +137,8 @@
           "types"
         ],
         "target": "./dist/index.d.ts",
-        "bytes": 700089,
-        "gzipBytes": 44679
+        "bytes": 703749,
+        "gzipBytes": 45645
       },
       {
         "export": ".",
@@ -147,8 +147,8 @@
           "default"
         ],
         "target": "./dist/index.cjs",
-        "bytes": 1121583,
-        "gzipBytes": 168446
+        "bytes": 1463819,
+        "gzipBytes": 235498
       },
       {
         "export": ".",
@@ -157,8 +157,8 @@
           "types"
         ],
         "target": "./dist/index.d.cts",
-        "bytes": 700098,
-        "gzipBytes": 44678
+        "bytes": 703766,
+        "gzipBytes": 45650
       },
       {
         "export": "./adapters",
@@ -177,8 +177,8 @@
           "types"
         ],
         "target": "./dist/adapters.d.ts",
-        "bytes": 6783,
-        "gzipBytes": 1915
+        "bytes": 6802,
+        "gzipBytes": 1927
       },
       {
         "export": "./adapters",
@@ -197,8 +197,8 @@
           "types"
         ],
         "target": "./dist/adapters.d.ts",
-        "bytes": 6783,
-        "gzipBytes": 1915
+        "bytes": 6802,
+        "gzipBytes": 1927
       },
       {
         "export": "./adapters",
@@ -217,8 +217,8 @@
           "types"
         ],
         "target": "./dist/adapters.d.cts",
-        "bytes": 6786,
-        "gzipBytes": 1916
+        "bytes": 6805,
+        "gzipBytes": 1928
       },
       {
         "export": "./browser-thumbnail",
@@ -238,7 +238,7 @@
         ],
         "target": "./dist/browser-thumbnail.d.ts",
         "bytes": 629,
-        "gzipBytes": 361
+        "gzipBytes": 360
       },
       {
         "export": "./browser-thumbnail",
@@ -258,7 +258,7 @@
         ],
         "target": "./dist/browser-thumbnail.d.ts",
         "bytes": 629,
-        "gzipBytes": 361
+        "gzipBytes": 360
       },
       {
         "export": "./browser-thumbnail",
@@ -278,7 +278,7 @@
         ],
         "target": "./dist/browser-thumbnail.d.cts",
         "bytes": 630,
-        "gzipBytes": 362
+        "gzipBytes": 361
       },
       {
         "export": "./detect",
@@ -297,7 +297,7 @@
           "types"
         ],
         "target": "./dist/detect.d.ts",
-        "bytes": 329,
+        "bytes": 330,
         "gzipBytes": 216
       },
       {
@@ -317,7 +317,7 @@
           "types"
         ],
         "target": "./dist/detect.d.ts",
-        "bytes": 329,
+        "bytes": 330,
         "gzipBytes": 216
       },
       {
@@ -337,8 +337,68 @@
           "types"
         ],
         "target": "./dist/detect.d.cts",
-        "bytes": 331,
-        "gzipBytes": 216
+        "bytes": 332,
+        "gzipBytes": 218
+      },
+      {
+        "export": "./edit",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/edit.js",
+        "bytes": 627,
+        "gzipBytes": 262
+      },
+      {
+        "export": "./edit",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/edit.d.ts",
+        "bytes": 1432,
+        "gzipBytes": 594
+      },
+      {
+        "export": "./edit",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/edit.js",
+        "bytes": 627,
+        "gzipBytes": 262
+      },
+      {
+        "export": "./edit",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/edit.d.ts",
+        "bytes": 1432,
+        "gzipBytes": 594
+      },
+      {
+        "export": "./edit",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/edit.cjs",
+        "bytes": 632425,
+        "gzipBytes": 110333
+      },
+      {
+        "export": "./edit",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/edit.d.cts",
+        "bytes": 1434,
+        "gzipBytes": 595
       },
       {
         "export": "./fetch",
@@ -347,8 +407,8 @@
           "default"
         ],
         "target": "./dist/fetch.js",
-        "bytes": 2920,
-        "gzipBytes": 1093
+        "bytes": 3280,
+        "gzipBytes": 1205
       },
       {
         "export": "./fetch",
@@ -358,7 +418,7 @@
         ],
         "target": "./dist/fetch.d.ts",
         "bytes": 849,
-        "gzipBytes": 481
+        "gzipBytes": 478
       },
       {
         "export": "./fetch",
@@ -367,8 +427,8 @@
           "default"
         ],
         "target": "./dist/fetch.js",
-        "bytes": 2920,
-        "gzipBytes": 1093
+        "bytes": 3280,
+        "gzipBytes": 1205
       },
       {
         "export": "./fetch",
@@ -378,7 +438,7 @@
         ],
         "target": "./dist/fetch.d.ts",
         "bytes": 849,
-        "gzipBytes": 481
+        "gzipBytes": 478
       },
       {
         "export": "./fetch",
@@ -387,8 +447,8 @@
           "default"
         ],
         "target": "./dist/fetch.cjs",
-        "bytes": 912152,
-        "gzipBytes": 139226
+        "bytes": 914042,
+        "gzipBytes": 139395
       },
       {
         "export": "./fetch",
@@ -398,7 +458,7 @@
         ],
         "target": "./dist/fetch.d.cts",
         "bytes": 850,
-        "gzipBytes": 482
+        "gzipBytes": 479
       },
       {
         "export": "./http",
@@ -407,8 +467,8 @@
           "default"
         ],
         "target": "./dist/http.js",
-        "bytes": 26576,
-        "gzipBytes": 5830
+        "bytes": 26936,
+        "gzipBytes": 5953
       },
       {
         "export": "./http",
@@ -418,7 +478,7 @@
         ],
         "target": "./dist/http.d.ts",
         "bytes": 1738,
-        "gzipBytes": 825
+        "gzipBytes": 823
       },
       {
         "export": "./http",
@@ -427,8 +487,8 @@
           "default"
         ],
         "target": "./dist/http.js",
-        "bytes": 26576,
-        "gzipBytes": 5830
+        "bytes": 26936,
+        "gzipBytes": 5953
       },
       {
         "export": "./http",
@@ -438,7 +498,7 @@
         ],
         "target": "./dist/http.d.ts",
         "bytes": 1738,
-        "gzipBytes": 825
+        "gzipBytes": 823
       },
       {
         "export": "./http",
@@ -447,8 +507,8 @@
           "default"
         ],
         "target": "./dist/http.cjs",
-        "bytes": 935838,
-        "gzipBytes": 143740
+        "bytes": 937728,
+        "gzipBytes": 143911
       },
       {
         "export": "./http",
@@ -458,7 +518,47 @@
         ],
         "target": "./dist/http.d.cts",
         "bytes": 1740,
-        "gzipBytes": 826
+        "gzipBytes": 823
+      },
+      {
+        "export": "./iptc",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/iptc.js",
+        "bytes": 354,
+        "gzipBytes": 232
+      },
+      {
+        "export": "./iptc",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/iptc.d.ts",
+        "bytes": 1697,
+        "gzipBytes": 681
+      },
+      {
+        "export": "./iptc",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/iptc.cjs",
+        "bytes": 181537,
+        "gzipBytes": 26647
+      },
+      {
+        "export": "./iptc",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/iptc.d.cts",
+        "bytes": 1700,
+        "gzipBytes": 682
       },
       {
         "export": "./jpeg",
@@ -467,8 +567,8 @@
           "default"
         ],
         "target": "./dist/jpeg.js",
-        "bytes": 566,
-        "gzipBytes": 259
+        "bytes": 536,
+        "gzipBytes": 255
       },
       {
         "export": "./jpeg",
@@ -478,7 +578,7 @@
         ],
         "target": "./dist/jpeg.d.ts",
         "bytes": 423,
-        "gzipBytes": 263
+        "gzipBytes": 262
       },
       {
         "export": "./jpeg",
@@ -487,8 +587,8 @@
           "default"
         ],
         "target": "./dist/jpeg.js",
-        "bytes": 566,
-        "gzipBytes": 259
+        "bytes": 536,
+        "gzipBytes": 255
       },
       {
         "export": "./jpeg",
@@ -498,7 +598,7 @@
         ],
         "target": "./dist/jpeg.d.ts",
         "bytes": 423,
-        "gzipBytes": 263
+        "gzipBytes": 262
       },
       {
         "export": "./jpeg",
@@ -507,8 +607,8 @@
           "default"
         ],
         "target": "./dist/jpeg.cjs",
-        "bytes": 727682,
-        "gzipBytes": 106528
+        "bytes": 729569,
+        "gzipBytes": 106954
       },
       {
         "export": "./jpeg",
@@ -518,7 +618,67 @@
         ],
         "target": "./dist/jpeg.d.cts",
         "bytes": 425,
-        "gzipBytes": 264
+        "gzipBytes": 263
+      },
+      {
+        "export": "./jpeg-writer",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/jpeg-writer.js",
+        "bytes": 571,
+        "gzipBytes": 269
+      },
+      {
+        "export": "./jpeg-writer",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/jpeg-writer.d.ts",
+        "bytes": 4909,
+        "gzipBytes": 1593
+      },
+      {
+        "export": "./jpeg-writer",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/jpeg-writer.js",
+        "bytes": 571,
+        "gzipBytes": 269
+      },
+      {
+        "export": "./jpeg-writer",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/jpeg-writer.d.ts",
+        "bytes": 4909,
+        "gzipBytes": 1593
+      },
+      {
+        "export": "./jpeg-writer",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/jpeg-writer.cjs",
+        "bytes": 529589,
+        "gzipBytes": 93456
+      },
+      {
+        "export": "./jpeg-writer",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/jpeg-writer.d.cts",
+        "bytes": 4911,
+        "gzipBytes": 1594
       },
       {
         "export": "./mini",
@@ -527,8 +687,8 @@
           "default"
         ],
         "target": "./dist/mini.js",
-        "bytes": 733,
-        "gzipBytes": 332
+        "bytes": 703,
+        "gzipBytes": 321
       },
       {
         "export": "./mini",
@@ -547,8 +707,8 @@
           "default"
         ],
         "target": "./dist/mini.js",
-        "bytes": 733,
-        "gzipBytes": 332
+        "bytes": 703,
+        "gzipBytes": 321
       },
       {
         "export": "./mini",
@@ -567,8 +727,8 @@
           "default"
         ],
         "target": "./dist/mini.cjs",
-        "bytes": 736020,
-        "gzipBytes": 108316
+        "bytes": 737910,
+        "gzipBytes": 108746
       },
       {
         "export": "./mini",
@@ -578,7 +738,7 @@
         ],
         "target": "./dist/mini.d.cts",
         "bytes": 514,
-        "gzipBytes": 274
+        "gzipBytes": 277
       },
       {
         "export": "./node",
@@ -588,7 +748,7 @@
         ],
         "target": "./dist/node-browser.js",
         "bytes": 588,
-        "gzipBytes": 306
+        "gzipBytes": 310
       },
       {
         "export": "./node",
@@ -598,7 +758,7 @@
         ],
         "target": "./dist/node-browser.d.ts",
         "bytes": 598,
-        "gzipBytes": 284
+        "gzipBytes": 281
       },
       {
         "export": "./node",
@@ -607,8 +767,8 @@
           "default"
         ],
         "target": "./dist/node.js",
-        "bytes": 11450,
-        "gzipBytes": 2911
+        "bytes": 11810,
+        "gzipBytes": 3030
       },
       {
         "export": "./node",
@@ -618,7 +778,7 @@
         ],
         "target": "./dist/node.d.ts",
         "bytes": 2182,
-        "gzipBytes": 883
+        "gzipBytes": 880
       },
       {
         "export": "./node",
@@ -627,8 +787,8 @@
           "default"
         ],
         "target": "./dist/node.cjs",
-        "bytes": 920797,
-        "gzipBytes": 141006
+        "bytes": 922687,
+        "gzipBytes": 141174
       },
       {
         "export": "./node",
@@ -638,7 +798,127 @@
         ],
         "target": "./dist/node.d.cts",
         "bytes": 2184,
-        "gzipBytes": 884
+        "gzipBytes": 881
+      },
+      {
+        "export": "./png-writer",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/png-writer.js",
+        "bytes": 356,
+        "gzipBytes": 211
+      },
+      {
+        "export": "./png-writer",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/png-writer.d.ts",
+        "bytes": 4622,
+        "gzipBytes": 1503
+      },
+      {
+        "export": "./png-writer",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/png-writer.js",
+        "bytes": 356,
+        "gzipBytes": 211
+      },
+      {
+        "export": "./png-writer",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/png-writer.d.ts",
+        "bytes": 4622,
+        "gzipBytes": 1503
+      },
+      {
+        "export": "./png-writer",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/png-writer.cjs",
+        "bytes": 290326,
+        "gzipBytes": 55464
+      },
+      {
+        "export": "./png-writer",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/png-writer.d.cts",
+        "bytes": 4624,
+        "gzipBytes": 1504
+      },
+      {
+        "export": "./preservation",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/preservation.js",
+        "bytes": 253,
+        "gzipBytes": 153
+      },
+      {
+        "export": "./preservation",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/preservation.d.ts",
+        "bytes": 4909,
+        "gzipBytes": 1437
+      },
+      {
+        "export": "./preservation",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/preservation.js",
+        "bytes": 253,
+        "gzipBytes": 153
+      },
+      {
+        "export": "./preservation",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/preservation.d.ts",
+        "bytes": 4909,
+        "gzipBytes": 1437
+      },
+      {
+        "export": "./preservation",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/preservation.cjs",
+        "bytes": 42503,
+        "gzipBytes": 10078
+      },
+      {
+        "export": "./preservation",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/preservation.d.cts",
+        "bytes": 4910,
+        "gzipBytes": 1438
       },
       {
         "export": "./redact",
@@ -647,8 +927,8 @@
           "default"
         ],
         "target": "./dist/redact.js",
-        "bytes": 821,
-        "gzipBytes": 376
+        "bytes": 2410,
+        "gzipBytes": 887
       },
       {
         "export": "./redact",
@@ -657,8 +937,8 @@
           "types"
         ],
         "target": "./dist/redact.d.ts",
-        "bytes": 359,
-        "gzipBytes": 218
+        "bytes": 473,
+        "gzipBytes": 260
       },
       {
         "export": "./redact",
@@ -667,8 +947,8 @@
           "default"
         ],
         "target": "./dist/redact.js",
-        "bytes": 821,
-        "gzipBytes": 376
+        "bytes": 2410,
+        "gzipBytes": 887
       },
       {
         "export": "./redact",
@@ -677,8 +957,8 @@
           "types"
         ],
         "target": "./dist/redact.d.ts",
-        "bytes": 359,
-        "gzipBytes": 218
+        "bytes": 473,
+        "gzipBytes": 260
       },
       {
         "export": "./redact",
@@ -687,8 +967,8 @@
           "default"
         ],
         "target": "./dist/redact.cjs",
-        "bytes": 198742,
-        "gzipBytes": 30361
+        "bytes": 1458639,
+        "gzipBytes": 235138
       },
       {
         "export": "./redact",
@@ -697,8 +977,128 @@
           "types"
         ],
         "target": "./dist/redact.d.cts",
-        "bytes": 360,
-        "gzipBytes": 218
+        "bytes": 475,
+        "gzipBytes": 261
+      },
+      {
+        "export": "./tiff",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/tiff.js",
+        "bytes": 301,
+        "gzipBytes": 203
+      },
+      {
+        "export": "./tiff",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/tiff.d.ts",
+        "bytes": 2838,
+        "gzipBytes": 1079
+      },
+      {
+        "export": "./tiff",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/tiff.js",
+        "bytes": 301,
+        "gzipBytes": 203
+      },
+      {
+        "export": "./tiff",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/tiff.d.ts",
+        "bytes": 2838,
+        "gzipBytes": 1079
+      },
+      {
+        "export": "./tiff",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/tiff.cjs",
+        "bytes": 226308,
+        "gzipBytes": 41849
+      },
+      {
+        "export": "./tiff",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/tiff.d.cts",
+        "bytes": 2840,
+        "gzipBytes": 1080
+      },
+      {
+        "export": "./webp-writer",
+        "conditions": [
+          "browser",
+          "default"
+        ],
+        "target": "./dist/webp-writer.js",
+        "bytes": 361,
+        "gzipBytes": 213
+      },
+      {
+        "export": "./webp-writer",
+        "conditions": [
+          "browser",
+          "types"
+        ],
+        "target": "./dist/webp-writer.d.ts",
+        "bytes": 4150,
+        "gzipBytes": 1320
+      },
+      {
+        "export": "./webp-writer",
+        "conditions": [
+          "import",
+          "default"
+        ],
+        "target": "./dist/webp-writer.js",
+        "bytes": 361,
+        "gzipBytes": 213
+      },
+      {
+        "export": "./webp-writer",
+        "conditions": [
+          "import",
+          "types"
+        ],
+        "target": "./dist/webp-writer.d.ts",
+        "bytes": 4150,
+        "gzipBytes": 1320
+      },
+      {
+        "export": "./webp-writer",
+        "conditions": [
+          "require",
+          "default"
+        ],
+        "target": "./dist/webp-writer.cjs",
+        "bytes": 285544,
+        "gzipBytes": 54364
+      },
+      {
+        "export": "./webp-writer",
+        "conditions": [
+          "require",
+          "types"
+        ],
+        "target": "./dist/webp-writer.d.cts",
+        "bytes": 4152,
+        "gzipBytes": 1321
       },
       {
         "export": "./worker",
@@ -707,8 +1107,8 @@
           "default"
         ],
         "target": "./dist/worker.js",
-        "bytes": 6612,
-        "gzipBytes": 1982
+        "bytes": 6972,
+        "gzipBytes": 2099
       },
       {
         "export": "./worker",
@@ -717,7 +1117,7 @@
           "types"
         ],
         "target": "./dist/worker.d.ts",
-        "bytes": 1817,
+        "bytes": 1819,
         "gzipBytes": 786
       },
       {
@@ -727,8 +1127,8 @@
           "default"
         ],
         "target": "./dist/worker.js",
-        "bytes": 6612,
-        "gzipBytes": 1982
+        "bytes": 6972,
+        "gzipBytes": 2099
       },
       {
         "export": "./worker",
@@ -737,7 +1137,7 @@
           "types"
         ],
         "target": "./dist/worker.d.ts",
-        "bytes": 1817,
+        "bytes": 1819,
         "gzipBytes": 786
       },
       {
@@ -747,8 +1147,8 @@
           "default"
         ],
         "target": "./dist/worker.cjs",
-        "bytes": 975114,
-        "gzipBytes": 151814
+        "bytes": 1463241,
+        "gzipBytes": 236103
       },
       {
         "export": "./worker",
@@ -757,7 +1157,7 @@
           "types"
         ],
         "target": "./dist/worker.d.cts",
-        "bytes": 1818,
+        "bytes": 1820,
         "gzipBytes": 787
       },
       {
@@ -767,8 +1167,8 @@
           "default"
         ],
         "target": "./dist/xmp.js",
-        "bytes": 462,
-        "gzipBytes": 193
+        "bytes": 639,
+        "gzipBytes": 270
       },
       {
         "export": "./xmp",
@@ -777,8 +1177,8 @@
           "types"
         ],
         "target": "./dist/xmp.d.ts",
-        "bytes": 7304,
-        "gzipBytes": 1535
+        "bytes": 1189,
+        "gzipBytes": 469
       },
       {
         "export": "./xmp",
@@ -787,8 +1187,8 @@
           "default"
         ],
         "target": "./dist/xmp.cjs",
-        "bytes": 37884,
-        "gzipBytes": 8090
+        "bytes": 58379,
+        "gzipBytes": 13392
       },
       {
         "export": "./xmp",
@@ -797,8 +1197,8 @@
           "types"
         ],
         "target": "./dist/xmp.d.cts",
-        "bytes": 7305,
-        "gzipBytes": 1535
+        "bytes": 1192,
+        "gzipBytes": 470
       },
       {
         "export": "./xmp/rgrove",
@@ -817,8 +1217,8 @@
           "types"
         ],
         "target": "./dist/xmp-rgrove.d.ts",
-        "bytes": 903,
-        "gzipBytes": 403
+        "bytes": 936,
+        "gzipBytes": 427
       },
       {
         "export": "./xmp/rgrove",
@@ -827,8 +1227,8 @@
           "default"
         ],
         "target": "./dist/xmp-rgrove.cjs",
-        "bytes": 30435,
-        "gzipBytes": 6781
+        "bytes": 31783,
+        "gzipBytes": 7089
       },
       {
         "export": "./xmp/rgrove",
@@ -837,8 +1237,8 @@
           "types"
         ],
         "target": "./dist/xmp-rgrove.d.cts",
-        "bytes": 906,
-        "gzipBytes": 404
+        "bytes": 939,
+        "gzipBytes": 425
       }
     ],
     "distFiles": [
@@ -852,11 +1252,11 @@
       },
       {
         "file": "dist/adapters.d.cts",
-        "bytes": 6786
+        "bytes": 6805
       },
       {
         "file": "dist/adapters.d.ts",
-        "bytes": 6783
+        "bytes": 6802
       },
       {
         "file": "dist/adapters.js",
@@ -867,12 +1267,12 @@
         "bytes": 72
       },
       {
-        "file": "dist/audit-RJLQQZWY.js",
-        "bytes": 9723
+        "file": "dist/audit-7N7EDNVO.js",
+        "bytes": 10083
       },
       {
-        "file": "dist/audit-RJLQQZWY.js.map",
-        "bytes": 20330
+        "file": "dist/audit-7N7EDNVO.js.map",
+        "bytes": 20342
       },
       {
         "file": "dist/browser-thumbnail.cjs",
@@ -899,12 +1299,12 @@
         "bytes": 3370
       },
       {
-        "file": "dist/chunk-24QGH26J.js",
-        "bytes": 76491
+        "file": "dist/chunk-2KJZMLAO.js",
+        "bytes": 25633
       },
       {
-        "file": "dist/chunk-24QGH26J.js.map",
-        "bytes": 173705
+        "file": "dist/chunk-2KJZMLAO.js.map",
+        "bytes": 54254
       },
       {
         "file": "dist/chunk-2XZA7URF.js",
@@ -915,36 +1315,52 @@
         "bytes": 21483
       },
       {
-        "file": "dist/chunk-4PRZMO6Z.js",
-        "bytes": 40201
+        "file": "dist/chunk-36SI3ZBC.js",
+        "bytes": 31397
       },
       {
-        "file": "dist/chunk-4PRZMO6Z.js.map",
-        "bytes": 90129
+        "file": "dist/chunk-36SI3ZBC.js.map",
+        "bytes": 71763
       },
       {
-        "file": "dist/chunk-7GVUGKRL.js",
-        "bytes": 3181
+        "file": "dist/chunk-37W76TFJ.js",
+        "bytes": 73409
       },
       {
-        "file": "dist/chunk-7GVUGKRL.js.map",
-        "bytes": 6001
+        "file": "dist/chunk-37W76TFJ.js.map",
+        "bytes": 171359
       },
       {
-        "file": "dist/chunk-AOOSFMWR.js",
-        "bytes": 291
+        "file": "dist/chunk-3FOVDC6M.js",
+        "bytes": 3929
       },
       {
-        "file": "dist/chunk-AOOSFMWR.js.map",
-        "bytes": 39692
+        "file": "dist/chunk-3FOVDC6M.js.map",
+        "bytes": 9275
       },
       {
-        "file": "dist/chunk-BO33KVJI.js",
-        "bytes": 50250
+        "file": "dist/chunk-6BQQUTMX.js",
+        "bytes": 57998
       },
       {
-        "file": "dist/chunk-BO33KVJI.js.map",
-        "bytes": 113925
+        "file": "dist/chunk-6BQQUTMX.js.map",
+        "bytes": 127195
+      },
+      {
+        "file": "dist/chunk-6MSHYGXI.js",
+        "bytes": 29780
+      },
+      {
+        "file": "dist/chunk-6MSHYGXI.js.map",
+        "bytes": 67833
+      },
+      {
+        "file": "dist/chunk-CBLLSFZH.js",
+        "bytes": 5760
+      },
+      {
+        "file": "dist/chunk-CBLLSFZH.js.map",
+        "bytes": 13249
       },
       {
         "file": "dist/chunk-EAT6X4MD.js",
@@ -963,20 +1379,20 @@
         "bytes": 10685
       },
       {
-        "file": "dist/chunk-H42EMQWB.js",
-        "bytes": 25105
-      },
-      {
-        "file": "dist/chunk-H42EMQWB.js.map",
-        "bytes": 52360
-      },
-      {
         "file": "dist/chunk-I3MTDIOY.js",
         "bytes": 972
       },
       {
         "file": "dist/chunk-I3MTDIOY.js.map",
         "bytes": 2060
+      },
+      {
+        "file": "dist/chunk-JCMXODZV.js",
+        "bytes": 3219
+      },
+      {
+        "file": "dist/chunk-JCMXODZV.js.map",
+        "bytes": 6002
       },
       {
         "file": "dist/chunk-JDVGNLU4.js",
@@ -987,12 +1403,20 @@
         "bytes": 40344
       },
       {
-        "file": "dist/chunk-JJCTAOPH.js",
-        "bytes": 1362
+        "file": "dist/chunk-LXIVCQGV.js",
+        "bytes": 291
       },
       {
-        "file": "dist/chunk-JJCTAOPH.js.map",
-        "bytes": 3115
+        "file": "dist/chunk-LXIVCQGV.js.map",
+        "bytes": 56034
+      },
+      {
+        "file": "dist/chunk-M2MZD3WC.js",
+        "bytes": 58494
+      },
+      {
+        "file": "dist/chunk-M2MZD3WC.js.map",
+        "bytes": 127523
       },
       {
         "file": "dist/chunk-MY5EJ4DN.js",
@@ -1003,60 +1427,92 @@
         "bytes": 65783
       },
       {
-        "file": "dist/chunk-QQJOOSCJ.js",
-        "bytes": 60736
+        "file": "dist/chunk-NOMGH3HD.js",
+        "bytes": 41549
       },
       {
-        "file": "dist/chunk-QQJOOSCJ.js.map",
-        "bytes": 139967
+        "file": "dist/chunk-NOMGH3HD.js.map",
+        "bytes": 93111
       },
       {
-        "file": "dist/chunk-WE26ORTR.js",
-        "bytes": 87304
+        "file": "dist/chunk-SGV6E4Z3.js",
+        "bytes": 63264
       },
       {
-        "file": "dist/chunk-WE26ORTR.js.map",
-        "bytes": 185074
+        "file": "dist/chunk-SGV6E4Z3.js.map",
+        "bytes": 137417
       },
       {
-        "file": "dist/chunk-XTHU3UA2.js",
-        "bytes": 449051
+        "file": "dist/chunk-SWPAFJ4D.js",
+        "bytes": 163518
       },
       {
-        "file": "dist/chunk-XTHU3UA2.js.map",
-        "bytes": 789339
+        "file": "dist/chunk-SWPAFJ4D.js.map",
+        "bytes": 358683
       },
       {
-        "file": "dist/chunk-Y5MTMPWE.js",
-        "bytes": 58494
+        "file": "dist/chunk-TPA5AVQ7.js",
+        "bytes": 61995
       },
       {
-        "file": "dist/chunk-Y5MTMPWE.js.map",
-        "bytes": 127523
+        "file": "dist/chunk-TPA5AVQ7.js.map",
+        "bytes": 145213
       },
       {
-        "file": "dist/chunk-YJO2JPZ2.js",
-        "bytes": 77223
+        "file": "dist/chunk-UYWG5CB7.js",
+        "bytes": 27533
       },
       {
-        "file": "dist/chunk-YJO2JPZ2.js.map",
-        "bytes": 180258
+        "file": "dist/chunk-UYWG5CB7.js.map",
+        "bytes": 63453
       },
       {
-        "file": "dist/chunk-ZMP3GSHD.js",
-        "bytes": 599
+        "file": "dist/chunk-V3CM3ONI.js",
+        "bytes": 1362
       },
       {
-        "file": "dist/chunk-ZMP3GSHD.js.map",
-        "bytes": 1775
+        "file": "dist/chunk-V3CM3ONI.js.map",
+        "bytes": 3114
       },
       {
-        "file": "dist/composites-Bo_qR8ar.d.ts",
-        "bytes": 4998
+        "file": "dist/chunk-VOWYFZ3C.js",
+        "bytes": 32241
       },
       {
-        "file": "dist/composites-C5Xe-xFm.d.cts",
-        "bytes": 4999
+        "file": "dist/chunk-VOWYFZ3C.js.map",
+        "bytes": 73411
+      },
+      {
+        "file": "dist/chunk-Z5MUHS4T.js",
+        "bytes": 449524
+      },
+      {
+        "file": "dist/chunk-Z5MUHS4T.js.map",
+        "bytes": 790584
+      },
+      {
+        "file": "dist/chunk-ZUUG4ZT6.js",
+        "bytes": 85751
+      },
+      {
+        "file": "dist/chunk-ZUUG4ZT6.js.map",
+        "bytes": 195799
+      },
+      {
+        "file": "dist/chunk-ZZUECHHS.js",
+        "bytes": 46281
+      },
+      {
+        "file": "dist/chunk-ZZUECHHS.js.map",
+        "bytes": 96485
+      },
+      {
+        "file": "dist/composites-4RCt9Stf.d.ts",
+        "bytes": 5004
+      },
+      {
+        "file": "dist/composites-D0u9O2bF.d.cts",
+        "bytes": 5005
       },
       {
         "file": "dist/detect.cjs",
@@ -1068,11 +1524,11 @@
       },
       {
         "file": "dist/detect.d.cts",
-        "bytes": 331
+        "bytes": 332
       },
       {
         "file": "dist/detect.d.ts",
-        "bytes": 329
+        "bytes": 330
       },
       {
         "file": "dist/detect.js",
@@ -1083,12 +1539,36 @@
         "bytes": 70
       },
       {
+        "file": "dist/edit.cjs",
+        "bytes": 632425
+      },
+      {
+        "file": "dist/edit.cjs.map",
+        "bytes": 1777411
+      },
+      {
+        "file": "dist/edit.d.cts",
+        "bytes": 1434
+      },
+      {
+        "file": "dist/edit.d.ts",
+        "bytes": 1432
+      },
+      {
+        "file": "dist/edit.js",
+        "bytes": 627
+      },
+      {
+        "file": "dist/edit.js.map",
+        "bytes": 68
+      },
+      {
         "file": "dist/fetch.cjs",
-        "bytes": 912152
+        "bytes": 914042
       },
       {
         "file": "dist/fetch.cjs.map",
-        "bytes": 2034361
+        "bytes": 2061392
       },
       {
         "file": "dist/fetch.d.cts",
@@ -1100,35 +1580,35 @@
       },
       {
         "file": "dist/fetch.js",
-        "bytes": 2920
+        "bytes": 3280
       },
       {
         "file": "dist/fetch.js.map",
-        "bytes": 5882
+        "bytes": 5894
       },
       {
-        "file": "dist/gif-CDXUS7XD.js",
+        "file": "dist/gif-W4C4PTLS.js",
         "bytes": 9969
       },
       {
-        "file": "dist/gif-CDXUS7XD.js.map",
+        "file": "dist/gif-W4C4PTLS.js.map",
         "bytes": 21286
       },
       {
-        "file": "dist/heif-WKUCXPWL.js",
-        "bytes": 52771
+        "file": "dist/heif-GOQNKVEE.js",
+        "bytes": 52741
       },
       {
-        "file": "dist/heif-WKUCXPWL.js.map",
-        "bytes": 117337
+        "file": "dist/heif-GOQNKVEE.js.map",
+        "bytes": 117336
       },
       {
         "file": "dist/http.cjs",
-        "bytes": 935838
+        "bytes": 937728
       },
       {
         "file": "dist/http.cjs.map",
-        "bytes": 2085721
+        "bytes": 2112752
       },
       {
         "file": "dist/http.d.cts",
@@ -1140,51 +1620,99 @@
       },
       {
         "file": "dist/http.js",
-        "bytes": 26576
+        "bytes": 26936
       },
       {
         "file": "dist/http.js.map",
-        "bytes": 57231
+        "bytes": 57243
       },
       {
         "file": "dist/index.cjs",
-        "bytes": 1121583
+        "bytes": 1463819
       },
       {
         "file": "dist/index.cjs.map",
-        "bytes": 2330776
+        "bytes": 3099508
       },
       {
         "file": "dist/index.d.cts",
-        "bytes": 700098
+        "bytes": 703766
       },
       {
         "file": "dist/index.d.ts",
-        "bytes": 700089
+        "bytes": 703749
       },
       {
         "file": "dist/index.js",
-        "bytes": 1934
+        "bytes": 2802
       },
       {
         "file": "dist/index.js.map",
         "bytes": 69
       },
       {
-        "file": "dist/jpeg-P7UGS2OL.js",
-        "bytes": 402
+        "file": "dist/iptc.cjs",
+        "bytes": 181537
       },
       {
-        "file": "dist/jpeg-P7UGS2OL.js.map",
+        "file": "dist/iptc.cjs.map",
+        "bytes": 650312
+      },
+      {
+        "file": "dist/iptc.d.cts",
+        "bytes": 1700
+      },
+      {
+        "file": "dist/iptc.d.ts",
+        "bytes": 1697
+      },
+      {
+        "file": "dist/iptc.js",
+        "bytes": 354
+      },
+      {
+        "file": "dist/iptc.js.map",
+        "bytes": 68
+      },
+      {
+        "file": "dist/jpeg-GQRFYR64.js",
+        "bytes": 342
+      },
+      {
+        "file": "dist/jpeg-GQRFYR64.js.map",
         "bytes": 77
       },
       {
+        "file": "dist/jpeg-writer.cjs",
+        "bytes": 529589
+      },
+      {
+        "file": "dist/jpeg-writer.cjs.map",
+        "bytes": 1528640
+      },
+      {
+        "file": "dist/jpeg-writer.d.cts",
+        "bytes": 4911
+      },
+      {
+        "file": "dist/jpeg-writer.d.ts",
+        "bytes": 4909
+      },
+      {
+        "file": "dist/jpeg-writer.js",
+        "bytes": 571
+      },
+      {
+        "file": "dist/jpeg-writer.js.map",
+        "bytes": 75
+      },
+      {
         "file": "dist/jpeg.cjs",
-        "bytes": 727682
+        "bytes": 729569
       },
       {
         "file": "dist/jpeg.cjs.map",
-        "bytes": 1635924
+        "bytes": 1658909
       },
       {
         "file": "dist/jpeg.d.cts",
@@ -1196,35 +1724,35 @@
       },
       {
         "file": "dist/jpeg.js",
-        "bytes": 566
+        "bytes": 536
       },
       {
         "file": "dist/jpeg.js.map",
         "bytes": 68
       },
       {
-        "file": "dist/jxl-RY3QITPS.js",
-        "bytes": 6424
+        "file": "dist/jxl-HS7FKTMN.js",
+        "bytes": 6394
       },
       {
-        "file": "dist/jxl-RY3QITPS.js.map",
-        "bytes": 14144
+        "file": "dist/jxl-HS7FKTMN.js.map",
+        "bytes": 14143
       },
       {
-        "file": "dist/limits-CezIkX9d.d.ts",
+        "file": "dist/limits-B5DEVnSi.d.ts",
         "bytes": 368
       },
       {
-        "file": "dist/limits-DVag2lhO.d.cts",
+        "file": "dist/limits-BA4IXgLz.d.cts",
         "bytes": 369
       },
       {
         "file": "dist/mini.cjs",
-        "bytes": 736020
+        "bytes": 737910
       },
       {
         "file": "dist/mini.cjs.map",
-        "bytes": 1658130
+        "bytes": 1681141
       },
       {
         "file": "dist/mini.d.cts",
@@ -1236,7 +1764,7 @@
       },
       {
         "file": "dist/mini.js",
-        "bytes": 733
+        "bytes": 703
       },
       {
         "file": "dist/mini.js.map",
@@ -1248,7 +1776,7 @@
       },
       {
         "file": "dist/node-browser.cjs.map",
-        "bytes": 40953
+        "bytes": 57295
       },
       {
         "file": "dist/node-browser.d.cts",
@@ -1268,11 +1796,11 @@
       },
       {
         "file": "dist/node.cjs",
-        "bytes": 920797
+        "bytes": 922687
       },
       {
         "file": "dist/node.cjs.map",
-        "bytes": 2054879
+        "bytes": 2081910
       },
       {
         "file": "dist/node.d.cts",
@@ -1284,115 +1812,227 @@
       },
       {
         "file": "dist/node.js",
-        "bytes": 11450
+        "bytes": 11810
       },
       {
         "file": "dist/node.js.map",
-        "bytes": 26262
+        "bytes": 26274
       },
       {
-        "file": "dist/png-ZLC54QK2.js",
-        "bytes": 23120
+        "file": "dist/png-PIBIAZM6.js",
+        "bytes": 23090
       },
       {
-        "file": "dist/png-ZLC54QK2.js.map",
-        "bytes": 49589
+        "file": "dist/png-PIBIAZM6.js.map",
+        "bytes": 49588
       },
       {
-        "file": "dist/redact-JDCJPTDU.js",
-        "bytes": 228
+        "file": "dist/png-writer.cjs",
+        "bytes": 290326
       },
       {
-        "file": "dist/redact-JDCJPTDU.js.map",
+        "file": "dist/png-writer.cjs.map",
+        "bytes": 651756
+      },
+      {
+        "file": "dist/png-writer.d.cts",
+        "bytes": 4624
+      },
+      {
+        "file": "dist/png-writer.d.ts",
+        "bytes": 4622
+      },
+      {
+        "file": "dist/png-writer.js",
+        "bytes": 356
+      },
+      {
+        "file": "dist/png-writer.js.map",
+        "bytes": 74
+      },
+      {
+        "file": "dist/preservation.cjs",
+        "bytes": 42503
+      },
+      {
+        "file": "dist/preservation.cjs.map",
+        "bytes": 97964
+      },
+      {
+        "file": "dist/preservation.d.cts",
+        "bytes": 4910
+      },
+      {
+        "file": "dist/preservation.d.ts",
+        "bytes": 4909
+      },
+      {
+        "file": "dist/preservation.js",
+        "bytes": 253
+      },
+      {
+        "file": "dist/preservation.js.map",
+        "bytes": 76
+      },
+      {
+        "file": "dist/redact-6E2WZOQR.js",
+        "bytes": 814
+      },
+      {
+        "file": "dist/redact-6E2WZOQR.js.map",
         "bytes": 79
       },
       {
         "file": "dist/redact.cjs",
-        "bytes": 198742
+        "bytes": 1458639
       },
       {
         "file": "dist/redact.cjs.map",
-        "bytes": 764717
+        "bytes": 3101851
       },
       {
         "file": "dist/redact.d.cts",
-        "bytes": 360
+        "bytes": 475
       },
       {
         "file": "dist/redact.d.ts",
-        "bytes": 359
+        "bytes": 473
       },
       {
         "file": "dist/redact.js",
-        "bytes": 821
+        "bytes": 2410
       },
       {
         "file": "dist/redact.js.map",
-        "bytes": 1332
+        "bytes": 3892
       },
       {
-        "file": "dist/tiff-2PSJDZKV.js",
-        "bytes": 10885
+        "file": "dist/tiff-IXBX3NFR.js",
+        "bytes": 10855
       },
       {
-        "file": "dist/tiff-2PSJDZKV.js.map",
-        "bytes": 24501
+        "file": "dist/tiff-IXBX3NFR.js.map",
+        "bytes": 24500
       },
       {
-        "file": "dist/types-CRY00-ko.d.cts",
-        "bytes": 44164
+        "file": "dist/tiff.cjs",
+        "bytes": 226308
       },
       {
-        "file": "dist/types-CRY00-ko.d.ts",
-        "bytes": 44164
+        "file": "dist/tiff.cjs.map",
+        "bytes": 501331
       },
       {
-        "file": "dist/webp-FB4NC7MR.js",
-        "bytes": 10729
+        "file": "dist/tiff.d.cts",
+        "bytes": 2840
       },
       {
-        "file": "dist/webp-FB4NC7MR.js.map",
-        "bytes": 23628
+        "file": "dist/tiff.d.ts",
+        "bytes": 2838
+      },
+      {
+        "file": "dist/tiff.js",
+        "bytes": 301
+      },
+      {
+        "file": "dist/tiff.js.map",
+        "bytes": 68
+      },
+      {
+        "file": "dist/types-AeBkFSos.d.cts",
+        "bytes": 61826
+      },
+      {
+        "file": "dist/types-AeBkFSos.d.ts",
+        "bytes": 61826
+      },
+      {
+        "file": "dist/webp-ZE5B3KMU.js",
+        "bytes": 10699
+      },
+      {
+        "file": "dist/webp-ZE5B3KMU.js.map",
+        "bytes": 23627
+      },
+      {
+        "file": "dist/webp-writer.cjs",
+        "bytes": 285544
+      },
+      {
+        "file": "dist/webp-writer.cjs.map",
+        "bytes": 641702
+      },
+      {
+        "file": "dist/webp-writer.d.cts",
+        "bytes": 4152
+      },
+      {
+        "file": "dist/webp-writer.d.ts",
+        "bytes": 4150
+      },
+      {
+        "file": "dist/webp-writer.js",
+        "bytes": 361
+      },
+      {
+        "file": "dist/webp-writer.js.map",
+        "bytes": 75
       },
       {
         "file": "dist/worker.cjs",
-        "bytes": 975114
+        "bytes": 1463241
       },
       {
         "file": "dist/worker.cjs.map",
-        "bytes": 2168115
+        "bytes": 3113909
       },
       {
         "file": "dist/worker.d.cts",
-        "bytes": 1818
+        "bytes": 1820
       },
       {
         "file": "dist/worker.d.ts",
-        "bytes": 1817
+        "bytes": 1819
       },
       {
         "file": "dist/worker.js",
-        "bytes": 6612
+        "bytes": 6972
       },
       {
         "file": "dist/worker.js.map",
-        "bytes": 15984
+        "bytes": 15996
+      },
+      {
+        "file": "dist/xmp-C6XIK049.d.ts",
+        "bytes": 7471
+      },
+      {
+        "file": "dist/xmp-CvzizD05.d.ts",
+        "bytes": 4931
+      },
+      {
+        "file": "dist/xmp-D8wzr5KN.d.cts",
+        "bytes": 7472
+      },
+      {
+        "file": "dist/xmp-T_QkIqqB.d.cts",
+        "bytes": 4932
       },
       {
         "file": "dist/xmp-rgrove.cjs",
-        "bytes": 30435
+        "bytes": 31783
       },
       {
         "file": "dist/xmp-rgrove.cjs.map",
-        "bytes": 82300
+        "bytes": 85282
       },
       {
         "file": "dist/xmp-rgrove.d.cts",
-        "bytes": 906
+        "bytes": 939
       },
       {
         "file": "dist/xmp-rgrove.d.ts",
-        "bytes": 903
+        "bytes": 936
       },
       {
         "file": "dist/xmp-rgrove.js",
@@ -1404,23 +2044,23 @@
       },
       {
         "file": "dist/xmp.cjs",
-        "bytes": 37884
+        "bytes": 58379
       },
       {
         "file": "dist/xmp.cjs.map",
-        "bytes": 87061
+        "bytes": 154477
       },
       {
         "file": "dist/xmp.d.cts",
-        "bytes": 7305
+        "bytes": 1192
       },
       {
         "file": "dist/xmp.d.ts",
-        "bytes": 7304
+        "bytes": 1189
       },
       {
         "file": "dist/xmp.js",
-        "bytes": 462
+        "bytes": 639
       },
       {
         "file": "dist/xmp.js.map",
@@ -2962,9 +3602,9 @@
     }
   },
   "environment": {
-    "observedAt": "2026-09-12T20:50:32.498Z",
+    "observedAt": "2026-09-13T07:59:16.767Z",
     "git": {
-      "commit": "ee8ea823e4a4002cb603f4398a6cc2c064fa0bec",
+      "commit": "2dc6930b4e65965c6611d4c385a3b8556afe8b6b",
       "dirty": true
     },
     "runtime": {
@@ -2974,7 +3614,7 @@
       "runtime": "darwin-arm64"
     },
     "benchmarks": {
-      "generatedAt": "2026-09-12T20:50:27.761Z",
+      "generatedAt": "2026-09-13T07:59:09.274Z",
       "environment": {
         "node": "v23.7.0",
         "platform": "darwin",
@@ -3001,9 +3641,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 24.263,
-                  "median": 24.448,
-                  "p95": 24.448
+                  "min": 35.817,
+                  "median": 35.825,
+                  "p95": 35.825
                 },
                 "transport": {
                   "mode": "memory",
@@ -3051,8 +3691,8 @@
                 "runs": 25,
                 "milliseconds": {
                   "min": 0.005,
-                  "median": 0.008,
-                  "p95": 0.068
+                  "median": 0.007,
+                  "p95": 0.047
                 },
                 "transport": {
                   "mode": "memory",
@@ -3102,9 +3742,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 22.716,
-                  "median": 22.989,
-                  "p95": 22.989
+                  "min": 22.14,
+                  "median": 22.786,
+                  "p95": 22.786
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3151,9 +3791,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.081,
-                  "median": 0.108,
-                  "p95": 0.35
+                  "min": 0.08,
+                  "median": 0.104,
+                  "p95": 0.32
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3203,9 +3843,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 17.978,
-                  "median": 20.272,
-                  "p95": 20.272
+                  "min": 17.694,
+                  "median": 17.728,
+                  "p95": 17.728
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3252,9 +3892,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.058,
-                  "median": 0.066,
-                  "p95": 0.261
+                  "min": 0.054,
+                  "median": 0.061,
+                  "p95": 0.238
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3309,9 +3949,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 37.124,
-                  "median": 37.162,
-                  "p95": 37.162
+                  "min": 44.918,
+                  "median": 44.972,
+                  "p95": 44.972
                 },
                 "transport": {
                   "mode": "memory",
@@ -3358,9 +3998,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.17,
-                  "median": 0.227,
-                  "p95": 1.149
+                  "min": 0.156,
+                  "median": 0.214,
+                  "p95": 1.133
                 },
                 "transport": {
                   "mode": "memory",
@@ -3410,9 +4050,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 23.105,
-                  "median": 23.479,
-                  "p95": 23.479
+                  "min": 21.864,
+                  "median": 21.9,
+                  "p95": 21.9
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3459,9 +4099,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.059,
+                  "min": 0.06,
                   "median": 0.074,
-                  "p95": 0.2
+                  "p95": 0.16
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3511,9 +4151,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 16.945,
-                  "median": 18.891,
-                  "p95": 18.891
+                  "min": 16.712,
+                  "median": 16.965,
+                  "p95": 16.965
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3560,9 +4200,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.015,
-                  "median": 0.018,
-                  "p95": 0.048
+                  "min": 0.014,
+                  "median": 0.016,
+                  "p95": 0.038
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3617,9 +4257,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 36.972,
-                  "median": 37.682,
-                  "p95": 37.682
+                  "min": 44.866,
+                  "median": 45.385,
+                  "p95": 45.385
                 },
                 "transport": {
                   "mode": "memory",
@@ -3668,9 +4308,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.137,
-                  "median": 0.156,
-                  "p95": 0.268
+                  "min": 0.133,
+                  "median": 0.153,
+                  "p95": 0.269
                 },
                 "transport": {
                   "mode": "memory",
@@ -3722,9 +4362,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 23.149,
-                  "median": 23.223,
-                  "p95": 23.223
+                  "min": 22.187,
+                  "median": 23.376,
+                  "p95": 23.376
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3773,9 +4413,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.051,
-                  "median": 0.055,
-                  "p95": 0.139
+                  "min": 0.049,
+                  "median": 0.051,
+                  "p95": 0.081
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3827,9 +4467,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 17.861,
-                  "median": 18.211,
-                  "p95": 18.211
+                  "min": 18.014,
+                  "median": 18.109,
+                  "p95": 18.109
                 },
                 "transport": {
                   "mode": "full-input",
@@ -3879,7 +4519,7 @@
                 "runs": 25,
                 "milliseconds": {
                   "min": 0.051,
-                  "median": 0.054,
+                  "median": 0.057,
                   "p95": 0.07
                 },
                 "transport": {
@@ -3937,9 +4577,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 36.371,
-                  "median": 36.573,
-                  "p95": 36.573
+                  "min": 45.111,
+                  "median": 45.386,
+                  "p95": 45.386
                 },
                 "transport": {
                   "mode": "memory",
@@ -3988,9 +4628,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.136,
-                  "median": 0.16,
-                  "p95": 0.295
+                  "min": 0.129,
+                  "median": 0.155,
+                  "p95": 0.336
                 },
                 "transport": {
                   "mode": "memory",
@@ -4042,9 +4682,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 22.358,
-                  "median": 23.237,
-                  "p95": 23.237
+                  "min": 23.139,
+                  "median": 23.379,
+                  "p95": 23.379
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4095,7 +4735,7 @@
                 "milliseconds": {
                   "min": 0.048,
                   "median": 0.051,
-                  "p95": 0.064
+                  "p95": 0.075
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4147,9 +4787,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.119,
-                  "median": 18.183,
-                  "p95": 18.183
+                  "min": 18.142,
+                  "median": 18.166,
+                  "p95": 18.166
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4199,8 +4839,8 @@
                 "runs": 25,
                 "milliseconds": {
                   "min": 0.043,
-                  "median": 0.048,
-                  "p95": 0.08
+                  "median": 0.047,
+                  "p95": 0.072
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4257,9 +4897,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 39.015,
-                  "median": 39.209,
-                  "p95": 39.209
+                  "min": 47.732,
+                  "median": 47.868,
+                  "p95": 47.868
                 },
                 "transport": {
                   "mode": "memory",
@@ -4316,9 +4956,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.248,
-                  "median": 0.308,
-                  "p95": 0.442
+                  "min": 0.234,
+                  "median": 0.304,
+                  "p95": 0.44
                 },
                 "transport": {
                   "mode": "memory",
@@ -4378,9 +5018,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 23.251,
-                  "median": 23.851,
-                  "p95": 23.851
+                  "min": 22.458,
+                  "median": 23.447,
+                  "p95": 23.447
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4437,8 +5077,8 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.049,
-                  "median": 0.055,
+                  "min": 0.05,
+                  "median": 0.054,
                   "p95": 0.089
                 },
                 "transport": {
@@ -4499,9 +5139,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.457,
-                  "median": 18.569,
-                  "p95": 18.569
+                  "min": 18.209,
+                  "median": 18.331,
+                  "p95": 18.331
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4558,9 +5198,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.046,
-                  "median": 0.051,
-                  "p95": 0.1
+                  "min": 0.045,
+                  "median": 0.047,
+                  "p95": 0.064
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4625,9 +5265,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 40.702,
-                  "median": 40.793,
-                  "p95": 40.793
+                  "min": 49.295,
+                  "median": 49.514,
+                  "p95": 49.514
                 },
                 "transport": {
                   "mode": "memory",
@@ -4691,9 +5331,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.255,
-                  "median": 0.313,
-                  "p95": 0.57
+                  "min": 0.237,
+                  "median": 0.294,
+                  "p95": 0.598
                 },
                 "transport": {
                   "mode": "memory",
@@ -4760,9 +5400,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 23.021,
-                  "median": 23.374,
-                  "p95": 23.374
+                  "min": 24.699,
+                  "median": 24.75,
+                  "p95": 24.75
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4826,9 +5466,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.049,
-                  "median": 0.053,
-                  "p95": 0.073
+                  "min": 0.05,
+                  "median": 0.054,
+                  "p95": 0.075
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4895,9 +5535,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.327,
-                  "median": 18.651,
-                  "p95": 18.651
+                  "min": 18.159,
+                  "median": 18.625,
+                  "p95": 18.625
                 },
                 "transport": {
                   "mode": "full-input",
@@ -4963,7 +5603,7 @@
                 "milliseconds": {
                   "min": 0.048,
                   "median": 0.05,
-                  "p95": 0.065
+                  "p95": 0.067
                 },
                 "transport": {
                   "mode": "full-input",
@@ -5035,9 +5675,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 41.579,
-                  "median": 41.842,
-                  "p95": 41.842
+                  "min": 49.744,
+                  "median": 50.096,
+                  "p95": 50.096
                 },
                 "transport": {
                   "mode": "instrumented-range",
@@ -5094,9 +5734,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.338,
-                  "median": 0.473,
-                  "p95": 0.674
+                  "min": 0.34,
+                  "median": 0.467,
+                  "p95": 0.793
                 },
                 "transport": {
                   "mode": "instrumented-range",
@@ -5156,9 +5796,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 22.589,
-                  "median": 23.625,
-                  "p95": 23.625
+                  "min": 23.262,
+                  "median": 23.265,
+                  "p95": 23.265
                 },
                 "transport": {
                   "mode": "full-input",
@@ -5215,9 +5855,9 @@
               "warm": {
                 "runs": 25,
                 "milliseconds": {
-                  "min": 0.048,
-                  "median": 0.055,
-                  "p95": 0.168
+                  "min": 0.045,
+                  "median": 0.051,
+                  "p95": 0.07
                 },
                 "transport": {
                   "mode": "full-input",
@@ -5277,9 +5917,9 @@
               "cold": {
                 "runs": 3,
                 "milliseconds": {
-                  "min": 18.403,
-                  "median": 18.453,
-                  "p95": 18.453
+                  "min": 18.3,
+                  "median": 18.375,
+                  "p95": 18.375
                 },
                 "transport": {
                   "mode": "full-input",
@@ -5337,8 +5977,8 @@
                 "runs": 25,
                 "milliseconds": {
                   "min": 0.044,
-                  "median": 0.047,
-                  "p95": 0.063
+                  "median": 0.049,
+                  "p95": 0.066
                 },
                 "transport": {
                   "mode": "full-input",

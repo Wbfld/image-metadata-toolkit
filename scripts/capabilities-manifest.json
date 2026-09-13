@@ -43,7 +43,7 @@
       "selectiveDecode": "EXIF and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes",
-      "losslessRemoval": "EXIF, XMP, ICC, PNG text",
+      "losslessRemoval": "EXIF, XMP, ICC, PNG text; W04 metadata writing",
       "strictSanitization": "Yes, subject to the reported outcome",
       "positiveFixture": "png-metadata.png",
       "malformedFixture": "png-truncated.png",
@@ -77,7 +77,7 @@
       "selectiveDecode": "EXIF and metadata groups",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes",
-      "losslessRemoval": "EXIF, XMP, ICC",
+      "losslessRemoval": "EXIF, XMP, ICC; W05 metadata writing",
       "strictSanitization": "Yes, subject to the reported outcome",
       "positiveFixture": "webp-metadata.webp",
       "malformedFixture": "webp-truncated.webp",
@@ -162,6 +162,7 @@
     "The browser-image-metadata/http entry point performs explicit HTTP range metadata reads. It validates Content-Range, identity encoding, total size, validators, redirects, and caller-selected origins; it fails closed unless allowFullResponseFallback permits a bounded full response. result.telemetry.http records request, response, decoded-byte, cache, fallback, redirect, validator, and completeness evidence.",
     "The browser-image-metadata/node entry is Node-only: paths, FileHandles, and seekable file sources use the existing bounded range planners, while non-seekable binary streams are fully spooled under maxInputBytes and cannot provide true range efficiency. File descriptors and owned sources close by default on success, failure, and abort; closeSource:false makes external ownership explicit.",
     "Unsupported and malformed structures remain visible through capabilities, coverage, warnings, and explicit redaction outcomes.",
+    "W01 `editMetadata()` validates canonical-field and explicit-selector transactions, preserve-first policies, bounded values, and typed operation evidence. W02 executes exact EXIF field set/delete/copy/alias/rename transactions for standalone classic TIFF and BigTIFF through the reusable graph serializer with fixed-point verification. W03 executes transactional JPEG marker metadata writing for EXIF, standard/Extended XMP, ICC, and IPTC while preserving entropy scans and decoding-critical markers. W04 executes transactional PNG eXIf, XMP, text, and ICC chunk writing while preserving IDAT and APNG image payloads. W05 executes selective WebP EXIF field and XMP/ICC writing while preserving VP8/VP8L/ALPH/ANMF image payloads; other container writers remain explicit unsupported results. W06 adds deterministic RDF/XML and IPTC-IIM serializers, explicit conflict policies, and deterministic Extended XMP chunk generation while retaining raw/lexical values and unknown properties. W07 adds registry-backed typed redaction selectors for field, family, sensitivity, URI/local-name, block, and associated-image identity, with atomic preflight rejection, physical duplicate-block scoping, and machine-based outcomes. W08 adds an independent public verifier for encoded image-payload ranges, dimensions, image relationships, configured color/orientation policies, and explicit non-pixel-equivalence evidence.",
     "The public npm brand and import name are browser-image-metadata; image-metadata-toolkit is the repository slug only.",
     "IPTC Photo Metadata 2025.1 semantics are additive through iptcSemantic/readIptcSemantic; all IIM and URI-aware XMP candidates and conflicts remain available, while unknown XMP remains conservatively classified."
   ]

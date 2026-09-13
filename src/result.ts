@@ -1,4 +1,23 @@
-import type { MetadataBlockStatus, MetadataCoverage, MetadataCoverageReasonCode, MetadataCoverageState, MetadataResult, ParseCompleteness, ParsedMetadataResult, ReadTelemetry, RedactOptions, RedactionOutcome, RedactionResult, SurgeryResult } from "./types.js";
+import type { MetadataBlockStatus, MetadataCoverage, MetadataCoverageReasonCode, MetadataCoverageState, MetadataResult, ParseCompleteness, ParsedMetadataResult, ReadTelemetry, RedactOptions, RedactionOutcome, RedactionResult, RedactionTarget, SurgeryResult } from "./types.js";
+
+export interface RedactionTargetResolution {
+  readonly request: RedactionTarget;
+  readonly legacyTargets: readonly string[];
+}
+
+function redactionTargetLabel(target: RedactionTarget): string {
+  if (typeof target === "string") return target;
+  if (target.kind === "field") return `field:${target.fieldId}`;
+  const selector = target.selector;
+  switch (selector.kind) {
+    case "family": return `family:${selector.family}`;
+    case "namespace-property": return `property:${selector.namespaceUri}#${selector.localName}`;
+    case "sensitivity": return `sensitivity:${selector.sensitivity}`;
+    case "field-id": return `field:${selector.fieldId}`;
+    case "block": return `block:${selector.blockId}`;
+    case "associated-image": return `associated-image:${selector.imageId}`;
+  }
+}
 
 function blockCoverage(status: MetadataBlockStatus): MetadataCoverageState {
   if (status === "decoded") return "complete";
@@ -61,12 +80,41 @@ export function completeMetadataResult(
 }
 
 /** Add an explicit outcome to container surgery results. */
-export function completeRedactionResult(result: SurgeryResult, options: Pick<RedactOptions, "remove">): RedactionResult {
+export function completeRedactionResult(
+  result: SurgeryResult,
+  options: Pick<RedactOptions, "remove">,
+  resolutions: readonly RedactionTargetResolution[] = [],
+): RedactionResult {
   const failedWarnings = result.warnings.filter((warning) => warning.code === "REDACTION_SKIPPED" || warning.severity === "error");
-  const unapplied = options.remove.filter((target) => failedWarnings.some((warning) => warning.message.includes(target)))
-    .filter((target, index, values) => values.indexOf(target) === index);
+  if (result.operations !== undefined) {
+    const unapplied = result.operations
+      .filter((operation) => operation.status !== "applied")
+      .map((operation) => operation.target)
+      .filter((target, index, values) => values.indexOf(target) === index);
+    const successful = failedWarnings.length === 0 && result.operations.every((operation) => operation.status === "applied");
+    const reasons = failedWarnings.map((warning) => warning.message);
+    const outcome: RedactionOutcome = {
+      successful,
+      complete: successful,
+      unapplied,
+      reasons,
+    };
+    return { ...result, outcome };
+  }
+  const removedLegacyTargets = new Set(result.removed.map(({ target }) => typeof target === "string" ? target : redactionTargetLabel(target)));
+  const mappingFor = (target: RedactionTarget): RedactionTargetResolution | undefined => resolutions.find((resolution) => resolution.request === target);
+  const applied = (target: RedactionTarget): boolean => {
+    const mapping = mappingFor(target);
+    if (mapping !== undefined) return mapping.legacyTargets.some((legacyTarget) => removedLegacyTargets.has(legacyTarget));
+    return removedLegacyTargets.has(redactionTargetLabel(target));
+  };
+  const unapplied = failedWarnings.length === 0
+    ? []
+    : options.remove.filter((target) => !applied(target)).filter((target, index, values) => values.indexOf(target) === index);
   const reasons = failedWarnings.map((warning) => warning.message);
-  if (failedWarnings.length > 0 && unapplied.length === 0) unapplied.push(...options.remove.filter((target, index, values) => values.indexOf(target) === index));
+  if (failedWarnings.length > 0 && unapplied.length === 0 && options.remove.length > 0 && result.removed.length === 0) {
+    unapplied.push(...options.remove.filter((target, index, values) => values.indexOf(target) === index));
+  }
   const outcome: RedactionOutcome = {
     successful: failedWarnings.length === 0,
     complete: failedWarnings.length === 0,

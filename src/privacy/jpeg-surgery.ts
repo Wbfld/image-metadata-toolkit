@@ -3,7 +3,7 @@ import type {
   RedactionRecord,
   SurgeryResult,
   RedactionTarget,
-  RedactOptions,
+  LegacyRedactOptions,
   SecurityLimits,
   WarningCode,
 } from "../types.js";
@@ -117,6 +117,8 @@ interface SelectiveContext {
   readonly remove: ReadonlySet<RedactionTarget>;
   readonly preserve: ReadonlySet<RedactionTarget>;
   readonly broadTarget: "AllMetadata" | "EXIF" | null;
+  readonly blockId: string | null;
+  readonly scopes: readonly { readonly target: RedactionTarget; readonly blockIds: readonly string[] }[];
 }
 
 interface SelectiveResult {
@@ -150,7 +152,7 @@ class SurgeryFailure extends Error {
  */
 export function redactJpeg(
   bytes: Uint8Array,
-  options: RedactOptions,
+  options: LegacyRedactOptions,
   limits: SecurityLimits,
 ): SurgeryResult {
   const original = new Uint8Array(bytes);
@@ -175,7 +177,8 @@ export function redactJpeg(
 
     for (const segment of parsed.segments) {
       const category = classifySegment(bytes, segment);
-      const segmentTarget = removalTargetForSegment(segment, category, remove, preserve);
+      const segmentBlockId = physicalBlockId(segment);
+      const segmentTarget = removalTargetForSegment(segment, category, remove, preserve, segmentBlockId, options.scopes ?? []);
 
       if (segmentTarget !== null) {
         removedSegments.add(segment.start);
@@ -183,12 +186,12 @@ export function redactJpeg(
         continue;
       }
 
-      if (category !== "EXIF" || preserve.has("EXIF")) {
+      if (category !== "EXIF" || ((preserve.has("AllMetadata") && targetInScope("AllMetadata", segmentBlockId, options.scopes ?? [])) || (preserve.has("EXIF") && targetInScope("EXIF", segmentBlockId, options.scopes ?? [])))) {
         continue;
       }
 
       const broadTarget = broadExifTarget(remove, preserve);
-      if (!hasSelectiveExifRequest(remove, preserve, broadTarget)) {
+      if (!hasSelectiveExifRequest(remove, preserve, broadTarget, segmentBlockId, options.scopes ?? [])) {
         continue;
       }
 
@@ -200,6 +203,8 @@ export function redactJpeg(
           remove,
           preserve,
           broadTarget,
+          blockId: segmentBlockId,
+          scopes: options.scopes ?? [],
         });
       } catch (error) {
         throw failureAtSegmentOffset(error, segment.start);
@@ -493,12 +498,15 @@ function removalTargetForSegment(
   category: SegmentCategory,
   remove: ReadonlySet<RedactionTarget>,
   preserve: ReadonlySet<RedactionTarget>,
+  blockId: string,
+  scopes: readonly { readonly target: RedactionTarget; readonly blockIds: readonly string[] }[],
 ): RedactionTarget | null {
   const categoryTarget = category === "OTHER" ? null : category;
   if (
     categoryTarget !== null &&
     remove.has(categoryTarget) &&
-    !categoryIsPreserved(categoryTarget, preserve)
+    targetInScope(categoryTarget, blockId, scopes) &&
+    !categoryIsPreserved(categoryTarget, preserve, blockId, scopes)
   ) {
     return categoryTarget;
   }
@@ -512,24 +520,42 @@ function removalTargetForSegment(
   if (categoryTarget === null && segment.marker !== COM) {
     return null;
   }
-  if (categoryTarget !== null && categoryIsPreserved(categoryTarget, preserve)) {
+  if (categoryTarget !== null && (!targetInScope("AllMetadata", blockId, scopes) || categoryIsPreserved(categoryTarget, preserve, blockId, scopes))) {
     return null;
   }
+  if (categoryTarget === null && !targetInScope("AllMetadata", blockId, scopes)) return null;
   return "AllMetadata";
+}
+
+function physicalBlockId(segment: JpegSegment): string {
+  const app = segment.marker === 0xed ? "13" : String(segment.marker - 0xe0);
+  return `jpeg:APP${app}:${segment.start}`;
+}
+
+function targetInScope(
+  target: RedactionTarget,
+  blockId: string,
+  scopes: readonly { readonly target: RedactionTarget; readonly blockIds: readonly string[] }[],
+): boolean {
+  const selected = scopes.filter((scope) => scope.target === target);
+  return selected.length === 0 || selected.some((scope) => scope.blockIds.includes(blockId));
 }
 
 function categoryIsPreserved(
   target: Exclude<SegmentCategory, "OTHER">,
   preserve: ReadonlySet<RedactionTarget>,
+  blockId: string | null = null,
+  scopes: readonly { readonly target: RedactionTarget; readonly blockIds: readonly string[] }[] = [],
 ): boolean {
-  if (preserve.has(target) || preserve.has("AllMetadata")) {
+  if (preserve.has("AllMetadata") && (blockId === null || targetInScope("AllMetadata", blockId, scopes))) {
     return true;
   }
+  if (preserve.has(target) && (blockId === null || targetInScope(target, blockId, scopes))) return true;
   if (target !== "EXIF") {
     return false;
   }
   for (const child of EXIF_CHILD_TARGETS) {
-    if (preserve.has(child)) {
+    if (preserve.has(child) && (blockId === null || targetInScope(child, blockId, scopes))) {
       return true;
     }
   }
@@ -553,15 +579,17 @@ function hasSelectiveExifRequest(
   remove: ReadonlySet<RedactionTarget>,
   preserve: ReadonlySet<RedactionTarget>,
   broadTarget: "AllMetadata" | "EXIF" | null,
+  blockId: string,
+  scopes: readonly { readonly target: RedactionTarget; readonly blockIds: readonly string[] }[],
 ): boolean {
   if (preserve.has("AllMetadata") || preserve.has("EXIF")) {
     return false;
   }
   if (broadTarget !== null) {
-    return true;
+    return targetInScope(broadTarget, blockId, scopes);
   }
   for (const target of EXIF_CHILD_TARGETS) {
-    if (remove.has(target) && !isTargetPreserved(target, preserve)) {
+    if (remove.has(target) && targetInScope(target, blockId, scopes) && !isTargetPreserved(target, preserve, blockId, scopes)) {
       return true;
     }
   }
@@ -590,8 +618,9 @@ function redactExifSegment(
  */
 export function redactExifTiff(
   tiff: Uint8Array,
-  options: RedactOptions,
+  options: LegacyRedactOptions,
   limits: SecurityLimits,
+  blockId: string | null = null,
 ): ExifTiffRedactionResult {
   const remove = new Set(options.remove);
   const preserve = new Set(options.preserve ?? []);
@@ -599,6 +628,8 @@ export function redactExifTiff(
     remove,
     preserve,
     broadTarget: broadExifTarget(remove, preserve),
+    blockId,
+    scopes: options.scopes ?? [],
   });
 }
 
@@ -927,30 +958,31 @@ function targetForEntry(
 ): RedactionTarget | null {
   const mapped = mappedTarget(kind, entry.tag);
 
-  if (mapped !== null && context.remove.has(mapped) && !isTargetPreserved(mapped, context.preserve)) {
+  if (mapped !== null && context.remove.has(mapped) && targetInScope(mapped, context.blockId ?? "", context.scopes) && !isTargetPreserved(mapped, context.preserve, context.blockId, context.scopes)) {
     return mapped;
   }
   if (
     mapped === "SerialNumber" &&
     context.remove.has("SerialNumber") &&
-    !isTargetPreserved("SerialNumber", context.preserve)
+    targetInScope("SerialNumber", context.blockId ?? "", context.scopes) &&
+    !isTargetPreserved("SerialNumber", context.preserve, context.blockId, context.scopes)
   ) {
     return "SerialNumber";
   }
 
   if (kind === "GPSIFD" && context.remove.has("GPS") && !context.preserve.has("GPS")) {
-    if (mapped === null || !isTargetPreserved(mapped, context.preserve)) {
+    if ((mapped === null || !isTargetPreserved(mapped, context.preserve, context.blockId, context.scopes)) && targetInScope("GPS", context.blockId ?? "", context.scopes)) {
       return "GPS";
     }
   }
-  if (entry.tag === GPS_POINTER && context.remove.has("GPS") && !gpsMustBePreserved(context.preserve)) {
+  if (entry.tag === GPS_POINTER && context.remove.has("GPS") && targetInScope("GPS", context.blockId ?? "", context.scopes) && !gpsMustBePreserved(context.preserve, context.blockId, context.scopes)) {
     return "GPS";
   }
 
   if (context.broadTarget === null) {
     return null;
   }
-  if (entryIsPreserved(kind, entry, mapped, context.preserve)) {
+  if (entryIsPreserved(kind, entry, mapped, context.preserve, context.blockId, context.scopes)) {
     return null;
   }
   return context.broadTarget;
@@ -1014,22 +1046,24 @@ function entryIsPreserved(
   entry: IfdEntry,
   mapped: RedactionTarget | null,
   preserve: ReadonlySet<RedactionTarget>,
+  blockId: string | null = null,
+  scopes: readonly { readonly target: RedactionTarget; readonly blockIds: readonly string[] }[] = [],
 ): boolean {
-  if (preserve.has("AllMetadata") || preserve.has("EXIF")) {
+  if ((preserve.has("AllMetadata") && (blockId === null || targetInScope("AllMetadata", blockId, scopes))) || (preserve.has("EXIF") && (blockId === null || targetInScope("EXIF", blockId, scopes)))) {
     return true;
   }
-  if (mapped !== null && isTargetPreserved(mapped, preserve)) {
+  if (mapped !== null && isTargetPreserved(mapped, preserve, blockId, scopes)) {
     return true;
   }
-  if (kind === "GPSIFD" && preserve.has("GPS")) {
+  if (kind === "GPSIFD" && preserve.has("GPS") && (blockId === null || targetInScope("GPS", blockId, scopes))) {
     return true;
   }
   if (entry.tag === GPS_POINTER) {
-    return gpsMustBePreserved(preserve);
+    return gpsMustBePreserved(preserve, blockId, scopes);
   }
   if (entry.tag === EXIF_POINTER) {
     for (const target of EXIF_IFD_TARGETS) {
-      if (preserve.has(target)) {
+      if (preserve.has(target) && (blockId === null || targetInScope(target, blockId, scopes))) {
         return true;
       }
     }
@@ -1037,12 +1071,16 @@ function entryIsPreserved(
   return false;
 }
 
-function gpsMustBePreserved(preserve: ReadonlySet<RedactionTarget>): boolean {
-  if (preserve.has("AllMetadata") || preserve.has("EXIF") || preserve.has("GPS")) {
+function gpsMustBePreserved(
+  preserve: ReadonlySet<RedactionTarget>,
+  blockId: string | null = null,
+  scopes: readonly { readonly target: RedactionTarget; readonly blockIds: readonly string[] }[] = [],
+): boolean {
+  if ((preserve.has("AllMetadata") && (blockId === null || targetInScope("AllMetadata", blockId, scopes))) || (preserve.has("EXIF") && (blockId === null || targetInScope("EXIF", blockId, scopes))) || (preserve.has("GPS") && (blockId === null || targetInScope("GPS", blockId, scopes)))) {
     return true;
   }
   for (const target of GPS_FIELD_TARGETS) {
-    if (preserve.has(target)) {
+    if (preserve.has(target) && (blockId === null || targetInScope(target, blockId, scopes))) {
       return true;
     }
   }
@@ -1052,11 +1090,13 @@ function gpsMustBePreserved(preserve: ReadonlySet<RedactionTarget>): boolean {
 function isTargetPreserved(
   target: RedactionTarget,
   preserve: ReadonlySet<RedactionTarget>,
+  blockId: string | null = null,
+  scopes: readonly { readonly target: RedactionTarget; readonly blockIds: readonly string[] }[] = [],
 ): boolean {
-  if (preserve.has("AllMetadata") || preserve.has("EXIF") || preserve.has(target)) {
+  if ((preserve.has("AllMetadata") && (blockId === null || targetInScope("AllMetadata", blockId, scopes))) || (preserve.has("EXIF") && (blockId === null || targetInScope("EXIF", blockId, scopes))) || (preserve.has(target) && (blockId === null || targetInScope(target, blockId, scopes)))) {
     return true;
   }
-  return GPS_FIELD_TARGETS.has(target) && preserve.has("GPS");
+  return GPS_FIELD_TARGETS.has(target) && preserve.has("GPS") && (blockId === null || targetInScope("GPS", blockId, scopes));
 }
 
 function rebuildJpeg(
@@ -1096,7 +1136,7 @@ function rebuildJpeg(
 function result(
   data: Uint8Array,
   counts: ReadonlyMap<RedactionTarget, number>,
-  options: RedactOptions,
+  options: LegacyRedactOptions,
   warnings: readonly MetadataWarning[],
 ): SurgeryResult {
   const removed: RedactionRecord[] = [];

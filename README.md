@@ -4,9 +4,9 @@ Parse, explain, validate, and privacy-redact image metadata locally in browsers,
 
 The package has no runtime dependencies. It accepts `ArrayBuffer`, any `ArrayBufferView` (including Node.js `Buffer`), `Blob`, and browser `File` inputs.
 
-> **Current scope:** JPEG, PNG, TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, AVIF, IPTC-IIM, typed common ICC payloads, and bounded image/container details are implemented. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. HEIF/AVIF safely inspect direct EXIF/XMP boxes, standard `iinf`/`iloc` metadata items stored in-file or in their own `idat`, `cdsc` primary-image associations, and primary-item `colr` ICC or `nclx` colour data. Arbitrary metadata writing and HEIF/AVIF rewriting are not exposed.
+> **Current scope:** JPEG, PNG, TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, AVIF, IPTC-IIM, typed common ICC payloads, and bounded image/container details are implemented. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. The W02 reusable TIFF/EXIF graph serializer writes bounded classic TIFF in both byte orders and BigTIFF after the same verified layout path; standalone TIFF/BigTIFF EXIF field transactions are atomic and reparse-verified. W03 adds atomic JPEG marker metadata writing for EXIF, standard/Extended XMP, ICC, and IPTC while preserving entropy scans and decoding-critical markers byte-for-byte. W04 adds atomic PNG eXIf, XMP, text, and ICC chunk editing while preserving IDAT and APNG image payloads. W05 adds selective WebP EXIF field and XMP/ICC editing while preserving encoded WebP image chunks. W08 adds an independent public preservation verifier with hashable encoded-payload ranges and explicit non-pixel-equivalence evidence. HEIF and AVIF rewriting are not exposed.
 
-> **Support boundaries:** Container detection is signature recognition, not a promise of full metadata support. Blob/File preview and metadata scopes are intentionally partial and report `completeness` and `coverage`; malformed, opaque, and unsupported structures remain visible through warnings and explicit outcomes. TIFF/WebP/HEIF/AVIF writing, MakerNote interpretation, image-sequence semantics, and arbitrary metadata editing are unsupported—check [the generated capability matrix](./CAPABILITIES.md) before relying on a format or operation.
+> **Support boundaries:** Container detection is signature recognition, not a promise of full metadata support. Blob/File preview and metadata scopes are intentionally partial and report `completeness` and `coverage`; malformed, opaque, and unsupported structures remain visible through warnings and explicit outcomes. W01 `editMetadata()` validation, W02 standalone TIFF/BigTIFF EXIF writing, W03 JPEG marker writing, and W04 PNG chunk writing are transactional and reparse-verified; other container writers remain explicit unsupported results. MakerNote interpretation and image-sequence semantics are unsupported—check [the generated capability matrix](./CAPABILITIES.md) before relying on a format or operation.
 
 ## Install
 
@@ -240,6 +240,15 @@ console.log(cleaned.outcome.successful, cleaned.outcome.unapplied);
 
 Whole-segment targets are `EXIF`, `XMP`, `IPTC`, `ICC`, `JFIF`, and `AllMetadata`. PNG additionally supports `PNGText` for non-XMP `tEXt`, `zTXt`, and `iTXt` chunks. Selective EXIF targets include every normalized field, `GPS`, and `SerialNumber`. A `preserve` selection wins over a conflicting `remove` selection.
 
+W07 adds typed redaction selectors while retaining these string targets as a
+compatibility adapter. Selectors can address canonical field IDs, metadata
+families, sensitivities, namespace URI/local-name pairs, physical block IDs,
+and associated-image IDs. They are resolved against the bounded parser and
+optional caller-supplied registry before mutation; unmatched selectors fail
+atomically. Duplicate physical blocks remain independently selectable, and
+outcomes use typed identity and emitted records rather than warning text. See
+[`W07_REDACTION_SELECTORS.md`](./W07_REDACTION_SELECTORS.md).
+
 `AllMetadata` means every metadata class the library can positively identify plus JPEG comments and PNG text chunks. Unknown APP markers are retained because some—such as Adobe APP14—can affect decoding. Removing `IPTC` removes the containing Photoshop APP13 resource block segment.
 
 JPEG redaction rewrites marker segments only. Selective EXIF redaction removes directory entries, zeroes their detached value bytes, and scrubs orphaned EXIF payload bytes during broad removal; whole EXIF removal drops the APP1 segment. PNG uses the same validated selective EXIF surgery and regenerates its changed chunk CRC. WebP surgery updates RIFF length and VP8X metadata flags while copying image payloads unchanged. JPEG entropy-coded scan bytes and PNG IDAT payloads are never decoded or recompressed. Every redaction includes an explicit `outcome`; if a structure required for surgery is unsafe, the operation is atomic and reports an unsuccessful outcome. JPEGs containing MPF secondary images or Ultra HDR gain-map XMP are refused atomically until their secondary-image offsets can be rewritten safely.
@@ -253,6 +262,41 @@ const sanitized = await sanitizeMetadata(file);
 if (sanitized.successful && sanitized.data) await saveBytes(sanitized.data);
 else console.warn(sanitized.reasons);
 ```
+
+## Trust-first edit model
+
+`editMetadata(input, options)` validates stable operation IDs, canonical fields
+and explicit selectors for set, delete, copy, rename/alias, group and policy
+removal, and caller-supplied sidecar merges. On standalone TIFF/BigTIFF input,
+W02 executes exact EXIF field set/delete/copy/alias/rename operations through a
+fresh directory graph, recalculates offsets, reparses the output, and returns
+hash and payload evidence. Preserve rules win over removal rules; unknown
+metadata, source order, duplicates, and conflicts are preserved by default.
+The result reports typed operation evidence and distinguishes invalid values,
+unsafe structures, policy failures, verification failures, and unsupported
+operations without parsing warning messages. JPEG uses the W03 marker writer
+for exact EXIF operations and explicit standard/Extended XMP, ICC, and IPTC
+blocks; scans and decoding-critical markers are preserved byte-for-byte. PNG
+block edits preserve IDAT and APNG image payloads byte-for-byte. See
+[`W01_MUTATION_MODEL.md`](./W01_MUTATION_MODEL.md),
+[`W02_TIFF_SERIALIZATION.md`](./W02_TIFF_SERIALIZATION.md), and
+[`W03_JPEG_WRITING.md`](./W03_JPEG_WRITING.md), and
+[`W04_PNG_WRITING.md`](./W04_PNG_WRITING.md).
+WebP metadata transactions are documented in [`W05_WEBP_WRITING.md`](./W05_WEBP_WRITING.md).
+Standards-aware RDF/XML and IPTC-IIM serialization, explicit IIM/XMP conflict
+policies, and Extended XMP chunking are documented in
+[`W06_IPTC_SERIALIZATION.md`](./W06_IPTC_SERIALIZATION.md). The root package,
+`browser-image-metadata/xmp`, and `browser-image-metadata/iptc` expose those
+serializers without reading sidecar files or publishing third-party images.
+The independent encoded-payload verifier is documented in
+[`W08_PRESERVATION_VERIFIER.md`](./W08_PRESERVATION_VERIFIER.md) and is also
+available from `browser-image-metadata/preservation`.
+
+For direct graph work, `parseTiffGraph()`, `serializeTiff()`, and
+`rewriteTiff()` are exported from the root package and
+`browser-image-metadata/tiff`. The graph retains raw values, unknown entries,
+directory relationships, and relocatable standard image/thumbnail payloads;
+the writer never decodes or recompresses pixels.
 
 ## Normalized EXIF fields
 
@@ -507,9 +551,13 @@ The [capability matrix](./CAPABILITIES.md) and [migration guide](./MIGRATION.md)
 
 - JPEG, PNG, classic TIFF, BigTIFF, WebP, GIF, JPEG XL, HEIF, and AVIF metadata are parsed in this release. ICC common payloads and image/container details are additive, bounded inspections; JPEG, PNG, plus WebP metadata chunks can be redacted.
 - XMP remains available as its original UTF-8 packet by default. The optional `browser-image-metadata/xmp` entry point decodes bounded RDF properties with no DTD or entity support, or applies an application's supplied decoder behind the same packet and output bounds. ICC inspection decodes common bounded payload types and exposes unknown payloads as ranges; it never applies color transforms.
-- MakerNote interpretation, image sequences, and complete HEIF/AVIF item-property semantics are not implemented. JPEG extended XMP is reassembled when referenced by a standard XMP packet. HEIF/AVIF inspection uses bounded primary-item `pitm`/`ipma` associations for `ispe` dimensions, `irot`/`imir` transforms, `colr` `prof`/`rICC` profiles, and `nclx` parameters. It follows `cdsc` references from metadata items to the primary image when selecting Exif and MIME RDF/XML metadata; without such references it preserves the legacy all-recognized-item behavior. It resolves bounded metadata through `iinf`/`iloc` construction method 0 (this file) or method 1 (the same `meta` box's `idat`), or direct metadata boxes. TIFF/WebP/HEIF/AVIF writing remains unsupported.
+- MakerNote interpretation, image sequences, and complete HEIF/AVIF item-property semantics are not implemented. JPEG extended XMP is reassembled when referenced by a standard XMP packet. HEIF/AVIF inspection uses bounded primary-item `pitm`/`ipma` associations for `ispe` dimensions, `irot`/`imir` transforms, `colr` `prof`/`rICC` profiles, and `nclx` parameters. It follows `cdsc` references from metadata items to the primary image when selecting Exif and MIME RDF/XML metadata; without such references it preserves the legacy all-recognized-item behavior. It resolves bounded metadata through `iinf`/`iloc` construction method 0 (this file) or method 1 (the same `meta` box's `idat`), or direct metadata boxes. W02 writes standalone classic TIFF/BigTIFF EXIF graphs, W03 writes safe JPEG marker metadata, W04 writes PNG metadata chunks, and W05 writes WebP metadata chunks. HEIF and AVIF writing remain unsupported.
 - EXIF date strings do not imply a timezone unless a separate offset tag exists. `getMetadataSummary()` combines valid offset/subsecond companions while retaining that uncertainty when no offset is stored.
-- Redaction removes metadata; arbitrary metadata editing and pixel-orientation transforms are outside the first-release API.
+- Redaction removes metadata; W02 adds standalone TIFF/BigTIFF EXIF graph
+  writing and exact-field transactions, W03 adds transactional JPEG marker
+  metadata writing, W04 adds PNG metadata editing, and W05 adds WebP metadata
+  editing. HEIF and AVIF editing, sidecar I/O, and pixel-orientation
+  transforms remain outside this release's writer surface.
 - Height-deferred JPEG codestreams whose SOF height is supplied later by DNL are not supported in this first pass.
 
 ## License

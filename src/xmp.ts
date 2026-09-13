@@ -3,6 +3,8 @@ export { parseStructuredXmp } from "./metadata/xmp.js";
 export { deriveXmpPacketProvenance, mergeStructuredXmp, parseStructuredXmpDetailed, parseStructuredXmpDocuments, parseStructuredXmpBytesDetailed, validateStructuredXmpPacket } from "./metadata/xmp.js";
 export { parseStructuredXmpBytes } from "./metadata/xmp.js";
 export { parseStructuredXmpWithDecoder, parseStructuredXmpWithDecoderDetailed, parseStructuredXmpBytesWithDecoder, parseStructuredXmpBytesWithDecoderDetailed } from "./metadata/xmp.js";
+export { chunkExtendedXmp, serializeStructuredXmp, serializeXmp, XmpSerializationError } from "./metadata/serialization.js";
+export type { ExtendedXmpChunkOptions, ExtendedXmpSerialization, XmpSerializeOptions } from "./metadata/serialization.js";
 export type {
   StructuredXmpDecoder,
   StructuredXmpOptions,

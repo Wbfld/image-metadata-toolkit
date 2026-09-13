@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+const W03_PROGRESSIVE_JPEG = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wgARCAACAAIDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAB//EABUBAQEAAAAAAAAAAAAAAAAAAAMF/9oADAMBAAIQAxAAAAF1Wf8A/8QAFhABAQEAAAAAAAAAAAAAAAAABAYD/9oACAEBAAEFApsAdJ7/xAAcEQEAAQQDAAAAAAAAAAAAAAABAgADBEEFITH/2gAIAQMBAT8Blx2HlSb9+1GU5dqxFV9V2u2v/8QAHBEAAgICAwAAAAAAAAAAAAAAAQIEBQADQlJh/9oACAECAQE/AbupgJZyFXQgAd+I7HzP/8QAGxAAAgIDAQAAAAAAAAAAAAAAAQMCBAAFERL/2gAIAQEABj8C1bGU0SlKkkklY6T4Gf/EABcQAQEBAQAAAAAAAAAAAAAAAAERACH/2gAIAQEAAT8hRi76i6s67//aAAwDAQACAAMAAAAQ3//EABcRAQADAAAAAAAAAAAAAAAAAAEAESH/2gAIAQMBAT8QeDrvrkBUKoqqq3P/xAAXEQEAAwAAAAAAAAAAAAAAAAABACFB/9oACAECAQE/EA3BAGAAAFAwn//EABcQAQADAAAAAAAAAAAAAAAAAAEAESH/2gAIAQEAAT8QQ/T9QUsiqrqs/9k=";
+
 test("parses local File and Blob inputs without network access", async ({ page }) => {
   await page.goto("/");
   const result = await page.evaluate(async () => {
@@ -94,4 +96,39 @@ test("creates and idempotently revokes browser thumbnail object URLs", async ({ 
     return { created: url.startsWith("blob:"), revoked: true };
   });
   expect(result).toEqual({ created: true, revoked: true });
+});
+
+test("W03 edited baseline and progressive multi-scan JPEGs remain independently displayable", async ({ page }, testInfo) => {
+  await page.goto("/");
+  const result = await page.evaluate(async ({ progressive }) => {
+    const modulePath = "/dist/jpeg-writer.js";
+    const { rewriteJpegMetadata } = await import(modulePath);
+    const packet = "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\"/>";
+    const cases = [
+      { name: "baseline", bytes: new Uint8Array(await (await fetch("/tests/fixtures/base.jpg")).arrayBuffer()) },
+      { name: "progressive-multi-scan", bytes: Uint8Array.from(atob(progressive), (character) => character.charCodeAt(0)) },
+    ];
+    const decoded = [];
+    for (const item of cases) {
+      const edited = rewriteJpegMetadata(item.bytes, { blocks: [{ op: "add", kind: "standard-xmp", data: packet }] });
+      const url = URL.createObjectURL(new Blob([edited.data], { type: "image/jpeg" }));
+      try {
+        const image = new Image();
+        image.src = url;
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error(`${item.name} JPEG was not displayable`));
+        });
+        decoded.push({ name: item.name, width: image.naturalWidth, height: image.naturalHeight });
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+    return decoded;
+  }, { progressive: W03_PROGRESSIVE_JPEG });
+  expect(result).toEqual([
+    { name: "baseline", width: 2, height: 2 },
+    { name: "progressive-multi-scan", width: 2, height: 2 },
+  ]);
+  expect(testInfo.project.name).toMatch(/chromium|firefox|webkit/u);
 });
