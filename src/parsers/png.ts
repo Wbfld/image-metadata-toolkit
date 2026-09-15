@@ -560,7 +560,12 @@ export async function parsePng(bytes: Uint8Array, limits: SecurityLimits, select
               length,
             });
           } else if (parsed.entry !== null) {
-            if (wantsGroup(selection, "PNGText")) pngText.push(parsed.entry);
+            if (wantsGroup(selection, "PNGText")) pngText.push({
+              ...parsed.entry,
+              sourceOffset: cursor,
+              sourceLength: next - cursor,
+              ...(blocks[blockIndex]?.id === undefined ? {} : { blockId: blocks[blockIndex].id }),
+            });
             if (wantsGroup(selection, "XMP") && parsed.xmp !== null) {
               const block = blocks[blockIndex];
               if (block !== undefined) blocks[blockIndex] = { ...block, family: "XMP", container: `${type} XMP chunk` };

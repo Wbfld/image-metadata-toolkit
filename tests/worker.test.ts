@@ -16,7 +16,30 @@ class TestPort {
   public removeEventListener(_type: "message", listener: Listener): void { this.listeners.delete(listener); }
 }
 
+function rafHeader(): Uint8Array {
+  const bytes = new Uint8Array(108);
+  bytes.set(new TextEncoder().encode("FUJIFILMCCD-RAW "), 0);
+  bytes.set(new TextEncoder().encode("0201"), 16);
+  return bytes;
+}
+
 describe("worker entry point", () => {
+  it("parses an explicit XMP sidecar through the worker boundary", async () => {
+    const clientPort = new TestPort();
+    const workerPort = new TestPort();
+    clientPort.peer = workerPort;
+    workerPort.peer = clientPort;
+    const uninstall = installMetadataWorker(workerPort);
+    const client = createMetadataWorkerClient(clientPort);
+    const packet = new TextEncoder().encode('<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:ex="urn:worker:"><rdf:Description><ex:value>sidecar</ex:value></rdf:Description></rdf:RDF>');
+    const result = await client.parseSidecar(packet, { id: "worker-sidecar.xmp" });
+    expect(result.source).toMatchObject({ kind: "sidecar", id: "worker-sidecar.xmp" });
+    expect(result.coverage.complete).toBe(true);
+    expect(result.value?.rdf?.properties[0]?.name.namespaceUri).toBe("urn:worker:");
+    client.close();
+    uninstall();
+  });
+
   it("round-trips bounded requests through request IDs and cleans up", async () => {
     const clientPort = new TestPort();
     const workerPort = new TestPort();
@@ -28,6 +51,21 @@ describe("worker entry point", () => {
     const result = await client.parse(fixture);
     expect(result.format).toBe("jpeg");
     expect(result.completeness.complete).toBe(true);
+    client.close();
+    uninstall();
+  });
+
+  it("keeps B05 RAF detection available through the worker boundary", async () => {
+    const clientPort = new TestPort();
+    const workerPort = new TestPort();
+    clientPort.peer = workerPort;
+    workerPort.peer = clientPort;
+    const uninstall = installMetadataWorker(workerPort);
+    const client = createMetadataWorkerClient(clientPort);
+    const result = await client.parse(rafHeader().slice().buffer);
+    expect(result.format).toBe("raf");
+    expect(result.fileKind).toBe("raf");
+    expect(result.completeness.complete).toBe(false);
     client.close();
     uninstall();
   });
@@ -54,6 +92,7 @@ describe("worker entry point", () => {
     preAborted.abort();
     await expect(aborting.parse(fixture, { signal: preAborted.signal })).rejects.toMatchObject({ code: "ABORTED" });
     await expect(aborting.parse(fixture, { jxlBrotliDecompressor: () => new Uint8Array() })).rejects.toMatchObject({ code: "UNSUPPORTED_STRUCTURE" });
+    await expect(aborting.parse(fixture, { makerNotePlugins: [] })).rejects.toMatchObject({ code: "UNSUPPORTED_STRUCTURE" });
     const controller = new AbortController();
     const aborted = aborting.parse(fixture, { signal: controller.signal });
     await new Promise<void>((resolve) => queueMicrotask(resolve));

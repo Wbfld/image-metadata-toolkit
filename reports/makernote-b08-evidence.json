@@ -1,0 +1,4262 @@
+{
+  "schema": "browser-image-metadata.makernote-b08-evidence.v1",
+  "ticket": "B08",
+  "generatedAt": "2026-09-13",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "fixtureCount": 14,
+  "packCount": 7,
+  "corpus": {
+    "pathRecorded": "environment-supplied temporary corpus; image bytes are not retained",
+    "required": true
+  },
+  "sources": {
+    "formatReference": {
+      "id": "exiv2-makernote-reference",
+      "title": "Exiv2 MakerNote documentation",
+      "url": "https://www.exiv2.org/makernote.html",
+      "version": "retrieved-2026-09-13",
+      "license": "GPL-2.0-or-later / Exiv2 documentation; corroborating reference only",
+      "sha256": "166c17756e3dcc5b501eb57adea9541ccd154d3ee125c8d237ba41d20f55cba4",
+      "noImplementationCopy": true
+    },
+    "fixtureIndex": {
+      "url": "https://raw.pixls.us/data/filelist.sha256",
+      "version": "2026-09-13 index",
+      "license": "CC0-1.0 / contributor public-domain dedication as declared by raw.pixls.us",
+      "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+    }
+  },
+  "independentOracle": {
+    "package": "exiftool-vendored",
+    "packageVersion": "33.5.0",
+    "implementationVersion": "13.42",
+    "license": "MIT wrapper; bundled ExifTool is Artistic License 2.0 / GPL-1.0-or-later",
+    "source": "https://github.com/photostructure/exiftool-vendored.js",
+    "role": "secondary output oracle only"
+  },
+  "normalizationPolicy": "Numeric values compare in canonical decimal form. Text compares after Unicode NFC normalization and ordinary trimming; fields declared ascii-padding additionally remove trailing NUL/space padding; case-insensitive-ascii is used only for documented enum labels whose independent oracle differs in case. numeric-sequence compares bounded numeric arrays with an oracle's space-delimited representation, and dimensions compares a two-number array with an oracle's WIDTHxHEIGHT representation. Arrays, rationals, and byte payloads without an explicit semantic policy are represented only by stable hashes. Null, absent, opaque, and unsupported values never count as matches.",
+  "thresholds": {
+    "minimumFixtureCount": 14,
+    "minimumFixturesPerPack": 2,
+    "maximumMismatched": 0,
+    "maximumMissingLocal": 0,
+    "maximumMissingReference": 0,
+    "minimumMeaningfulComparisons": 14
+  },
+  "comparisons": {
+    "overall": {
+      "found": 217,
+      "matched": 37,
+      "normalizedMatch": 6,
+      "mismatched": 0,
+      "missingLocal": 0,
+      "missingReference": 0,
+      "nonComparable": 174
+    },
+    "byField": {
+      "apple:0x0001": {
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "apple:0x0002": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x0003": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x0004": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x0005": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x0006": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x0007": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x0008": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x000c": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x000d": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x000e": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "apple:0x000f": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "image:dimensions.width": {
+        "found": 14,
+        "matched": 10,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "image:dimensions.height": {
+        "found": 14,
+        "matched": 10,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "canon:0x0001": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "canon:0x0002": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "canon:0x0004": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "canon:0x0006": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "canon:0x0007": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "canon:0x0009": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "canon:0x000c": {
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "nikon:0x0001": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "nikon:0x0002": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "nikon:0x0004": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 2,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "nikon:0x0005": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 2,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "nikon:0x0007": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 2,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "nikon:0x0008": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "nikon:0x0009": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "nikon:0x000b": {
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "nikon:0x000c": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "nikon:0x00a7": {
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "sony:0x1003": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "sony:0x2003": {
+        "found": 1,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 1
+      },
+      "sony:0x200c": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "sony:0x200d": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "sony:0x2014": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "sony:0xb020": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "sony:0xb02a": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "sony:0x9400": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1000": {
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "fujifilm:0x1001": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1002": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1003": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x100a": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x100b": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x100e": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1010": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1011": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1021": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1022": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1023": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1025": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1031": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1040": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1041": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1404": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1405": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1407": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1439": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "fujifilm:0x1447": {
+        "found": 2,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      "panasonic:0x0001": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x0002": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x0003": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x0007": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x000f": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x001a": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x001c": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x001f": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x0020": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x0025": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x0029": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x002b": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "panasonic:0x0033": {
+        "found": 2,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "pentax:0x0001": {
+        "found": 4,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "pentax:0x0002": {
+        "found": 4,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
+      },
+      "pentax:0x0003": {
+        "found": 4,
+        "matched": 1,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 3
+      },
+      "pentax:0x0004": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "pentax:0x0005": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "pentax:0x0006": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "pentax:0x0007": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "pentax:0x0008": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "pentax:0x000c": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "pentax:0x000d": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "pentax:0x000e": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      },
+      "pentax:0x0012": {
+        "found": 4,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 4
+      }
+    },
+    "byProducer": {
+      "Apple": {
+        "found": 28,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 26
+      },
+      "Canon": {
+        "found": 18,
+        "matched": 6,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 12
+      },
+      "Nikon": {
+        "found": 24,
+        "matched": 8,
+        "normalizedMatch": 6,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 10
+      },
+      "Sony": {
+        "found": 19,
+        "matched": 4,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 15
+      },
+      "Fujifilm": {
+        "found": 46,
+        "matched": 8,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 38
+      },
+      "Panasonic/Leica": {
+        "found": 30,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 30
+      },
+      "Pentax": {
+        "found": 52,
+        "matched": 9,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 43
+      }
+    },
+    "byFormat": {
+      "dng": {
+        "found": 28,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 26
+      },
+      "cr2": {
+        "found": 18,
+        "matched": 6,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 12
+      },
+      "nef": {
+        "found": 24,
+        "matched": 8,
+        "normalizedMatch": 6,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 10
+      },
+      "arw": {
+        "found": 19,
+        "matched": 4,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 15
+      },
+      "raf": {
+        "found": 46,
+        "matched": 8,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 38
+      },
+      "rw2": {
+        "found": 30,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 30
+      },
+      "pef": {
+        "found": 52,
+        "matched": 9,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 43
+      }
+    },
+    "records": [
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0001",
+        "oracleKey": "MakerNoteVersion",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460",
+        "referenceNormalizedSha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460"
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "3b8baafad19f4ece91c046fc292437e7bf3a776b114e0ff7a0e6ccfee875d3b5",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "359bb4c0c087212064d297cc93a3e86b2b0638c9e682303612b51e270ba083c7",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0004",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0005",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "6f7e5d9fdb3ff50cf15ba3236749485ab4cf6ef207d84132360ea00bc1694b35",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0006",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "95a5d9a0a9de4e2ef18fcf06fa5139c5742b27d56c4b9c3b652e27dd6bff4cc2",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0008",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "119275632e9e0b326a785810785fec4d9ca0b4994e00af7b72908ea47446af99",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x000c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "0bd9f42b5a94241ae002421a30e823971477dca1f820ebbd7cd36e99ae5f3798",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x000d",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x000e",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x000f",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a4aab3f1f08004e907d2357fafe74cab56359bcb32e23f52e7eb1d3a9c0a2ad3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "b3520e4e2a6270035d91864079f910727aea97da4ce6d160bcb3dc8589322713",
+        "referenceNormalizedSha256": "3ae57017bf48241d147d2f6d90017355215a59f3af89f62b446e680bdb96f1ec",
+        "reason": "The package result and the independent oracle select different container-level primary images for this RAW family (preview dimensions versus sensor dimensions), so a dimension equality claim would be unsound for MakerNote evidence."
+      },
+      {
+        "fixtureId": "apple-iphone-6s-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "14a6ae39a2d54aa066eebae0f5ba2986e6a68fdf587364ff30e8bc0a1681597e",
+        "referenceNormalizedSha256": "b7eaca01f5e137c475a58e62dc1dcf634bce98a33930cc4e6e4d9e63e3645ff9",
+        "reason": "The package result and the independent oracle select different container-level primary images for this RAW family (preview dimensions versus sensor dimensions), so a dimension equality claim would be unsound for MakerNote evidence."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0001",
+        "oracleKey": "MakerNoteVersion",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460",
+        "referenceNormalizedSha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460"
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "944438fa08158bbc6e1e247edac7225a7e9de8b73401a4c904069fa2b11182e6",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "d08ecb0de02e072525aa9821a36c0572cbb48559f2797e6159145413c792af2e",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0004",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0005",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "e4c8699453ab4bf324153ee23f40ab6e7fb85a4de547ebb15cf7f9c6b6bf2e85",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0006",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7f801d20a03affe0b17c419c2b91a46941aca94983920d86fafec4fb97b62235",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x0008",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "196bf1c7292d35dff6a25d1597bc63c980b735b71a8fa59420375e8d7568c1f4",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x000c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "ca7705b96a015a28983d045c18721f49bbdd7c7c13d2edd87728263ee783eda4",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x000d",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x000e",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "apple:0x000f",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a4aab3f1f08004e907d2357fafe74cab56359bcb32e23f52e7eb1d3a9c0a2ad3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "b3520e4e2a6270035d91864079f910727aea97da4ce6d160bcb3dc8589322713",
+        "referenceNormalizedSha256": "3ae57017bf48241d147d2f6d90017355215a59f3af89f62b446e680bdb96f1ec",
+        "reason": "The package result and the independent oracle select different container-level primary images for this RAW family (preview dimensions versus sensor dimensions), so a dimension equality claim would be unsound for MakerNote evidence."
+      },
+      {
+        "fixtureId": "apple-iphone-7-plus",
+        "producer": "Apple",
+        "format": "dng",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "14a6ae39a2d54aa066eebae0f5ba2986e6a68fdf587364ff30e8bc0a1681597e",
+        "referenceNormalizedSha256": "b7eaca01f5e137c475a58e62dc1dcf634bce98a33930cc4e6e4d9e63e3645ff9",
+        "reason": "The package result and the independent oracle select different container-level primary images for this RAW family (preview dimensions versus sensor dimensions), so a dimension equality claim would be unsound for MakerNote evidence."
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "0921a5746072c93bff4d42c09ade05db04562562e8f927f172a8a320afe4c603",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "c5b27e59b8f7ee97861b0af0fc60f0290fea2ee47bfb8c42b0461c8333032bf5",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0004",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "25b441fcd9bed501a02e7566a9a7b5e4c3d664416e8249fa1afdaa7ad16b2306",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0006",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0009",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x000c",
+        "oracleKey": "SerialNumber",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "3d5c6b58e690424bb2a4c3412c660901903d1ec423d220565a45a83267c7b8bd",
+        "referenceNormalizedSha256": "3d5c6b58e690424bb2a4c3412c660901903d1ec423d220565a45a83267c7b8bd"
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "0163cc754349fe159c3e4bd95192c3830a5c088750d591feb71b7abdeb2c678c",
+        "referenceNormalizedSha256": "0163cc754349fe159c3e4bd95192c3830a5c088750d591feb71b7abdeb2c678c"
+      },
+      {
+        "fixtureId": "canon-eos-7d-raw",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "72967471ff8683aef0d8e65bf96bae89058f099d580fe26a1493026a3fa584d2",
+        "referenceNormalizedSha256": "72967471ff8683aef0d8e65bf96bae89058f099d580fe26a1493026a3fa584d2"
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "035ca48bf515303d2b3cb419745ed2cd65963fb7eca7ecf37fabe136e571f387",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "c5b27e59b8f7ee97861b0af0fc60f0290fea2ee47bfb8c42b0461c8333032bf5",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0004",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "25b441fcd9bed501a02e7566a9a7b5e4c3d664416e8249fa1afdaa7ad16b2306",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0006",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x0009",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "canon:0x000c",
+        "oracleKey": "SerialNumber",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "ef1e98fa346c825e69c255e0f9a0965f19b7912f5c591c1925fd5b84aa4b3051",
+        "referenceNormalizedSha256": "ef1e98fa346c825e69c255e0f9a0965f19b7912f5c591c1925fd5b84aa4b3051"
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "0163cc754349fe159c3e4bd95192c3830a5c088750d591feb71b7abdeb2c678c",
+        "referenceNormalizedSha256": "0163cc754349fe159c3e4bd95192c3830a5c088750d591feb71b7abdeb2c678c"
+      },
+      {
+        "fixtureId": "canon-eos-7d-image",
+        "producer": "Canon",
+        "format": "cr2",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "72967471ff8683aef0d8e65bf96bae89058f099d580fe26a1493026a3fa584d2",
+        "referenceNormalizedSha256": "72967471ff8683aef0d8e65bf96bae89058f099d580fe26a1493026a3fa584d2"
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "3e8e66e0a74f6f75d3a3c711dcc18d6711dca8a8ffd630641c400b88dc55e110",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "895f2e118d2415c3a515b950051379e106dad04667c40d45a869ec308272475d",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0004",
+        "oracleKey": "Quality",
+        "status": "normalized-match",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "e166c5e63f47bab65d400d7ea51b47b11fca3a457e993af00473fac2f21c6e47",
+        "referenceNormalizedSha256": "e166c5e63f47bab65d400d7ea51b47b11fca3a457e993af00473fac2f21c6e47"
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0005",
+        "oracleKey": "WhiteBalance",
+        "status": "normalized-match",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "0d86f560548a5d315f873fcc5d6f90760a8ba01320abec6ad68cbe1a61d6083d",
+        "referenceNormalizedSha256": "0d86f560548a5d315f873fcc5d6f90760a8ba01320abec6ad68cbe1a61d6083d"
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0007",
+        "oracleKey": "FocusMode",
+        "status": "normalized-match",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "a201715c986cda84316af84be7bd4b7a66de9a20e4a6ff918fdecb0c40608e3f",
+        "referenceNormalizedSha256": "a201715c986cda84316af84be7bd4b7a66de9a20e4a6ff918fdecb0c40608e3f"
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0008",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0009",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x000b",
+        "oracleKey": "WhiteBalanceFineTune",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "e5cef3d1c4790dd46669a368eb04b947596c96895cd8995951162f864cd00298",
+        "referenceNormalizedSha256": "e5cef3d1c4790dd46669a368eb04b947596c96895cd8995951162f864cd00298"
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x000c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "243f9ced9cd05d670028c23a89d70a6fb3d4802621e647b814118e14927a6673",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x00a7",
+        "oracleKey": "ShutterCount",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "3ba01436a3328235e7734a5ca6ed62466b8dab3c29e33e8924d50f4c2986963f",
+        "referenceNormalizedSha256": "3ba01436a3328235e7734a5ca6ed62466b8dab3c29e33e8924d50f4c2986963f"
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "580eafd85a4dcfe10594462cd833d51bd36ba52f69f4c0932ca63f0ff933aa5d",
+        "referenceNormalizedSha256": "580eafd85a4dcfe10594462cd833d51bd36ba52f69f4c0932ca63f0ff933aa5d"
+      },
+      {
+        "fixtureId": "nikon-d3200",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "4d8ff7b9a8c209aeb4414f9949f8ae26879ca9cfe9fad3ae0c4186e0b326e8f4",
+        "referenceNormalizedSha256": "4d8ff7b9a8c209aeb4414f9949f8ae26879ca9cfe9fad3ae0c4186e0b326e8f4"
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "d59721fc77d2ed2f96ddc8c19e7a45bb1df3dfbba4ea16dfe4c77d9c28952b5f",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "8e03793e717922203c63528a1e041db24152e1ce1f34ece7555dfa7d6f1fdf26",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0004",
+        "oracleKey": "Quality",
+        "status": "normalized-match",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "e166c5e63f47bab65d400d7ea51b47b11fca3a457e993af00473fac2f21c6e47",
+        "referenceNormalizedSha256": "e166c5e63f47bab65d400d7ea51b47b11fca3a457e993af00473fac2f21c6e47"
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0005",
+        "oracleKey": "WhiteBalance",
+        "status": "normalized-match",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "634635a2166efa2ae765abd31d4ae807082287e329a8a7fff42b1fb30f65087e",
+        "referenceNormalizedSha256": "634635a2166efa2ae765abd31d4ae807082287e329a8a7fff42b1fb30f65087e"
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0007",
+        "oracleKey": "FocusMode",
+        "status": "normalized-match",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "4cedf4e73e7ce24d9e6ae573eb855d82a27b8d3b65df5c4ded3050da53fd1b99",
+        "referenceNormalizedSha256": "4cedf4e73e7ce24d9e6ae573eb855d82a27b8d3b65df5c4ded3050da53fd1b99"
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0008",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "fa8f53a98fc7e9a2c9a592630bed36a9f5e3a0b7f72e48eb2f3899be4cab7ebc",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x0009",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x000b",
+        "oracleKey": "WhiteBalanceFineTune",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "e5cef3d1c4790dd46669a368eb04b947596c96895cd8995951162f864cd00298",
+        "referenceNormalizedSha256": "e5cef3d1c4790dd46669a368eb04b947596c96895cd8995951162f864cd00298"
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x000c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "169c941e2eb8ab90dc86b8bab18ecf9b8d47593ca1db5ec552deb9ba397d5ccb",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "nikon:0x00a7",
+        "oracleKey": "ShutterCount",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "f7dd74cca0e0dbe6555b4f241a6dbbaa231002581c8efa2f0dc7b0dedd6449ef",
+        "referenceNormalizedSha256": "f7dd74cca0e0dbe6555b4f241a6dbbaa231002581c8efa2f0dc7b0dedd6449ef"
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "afe291bfe198cee1ba0dcf569d3f913f617d721cd29836d670e4749bab55a622",
+        "referenceNormalizedSha256": "afe291bfe198cee1ba0dcf569d3f913f617d721cd29836d670e4749bab55a622"
+      },
+      {
+        "fixtureId": "nikon-1-aw1",
+        "producer": "Nikon",
+        "format": "nef",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "712e2494edb281ca875fac8ac99056c2304349457ca0e8b1811c5c5ba4ad5ce7",
+        "referenceNormalizedSha256": "712e2494edb281ca875fac8ac99056c2304349457ca0e8b1811c5c5ba4ad5ce7"
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x1003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a35750930f00bbe45f75a4bf895fd03fcafa7fc292886ea2c00f88543b32ea32",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x2003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x200c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "06681a106a042887c58ccf87cd2594a963e1a01c64d2b8e9e10d799221614288",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x200d",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "918bf71cfb0b609e2456a6779b8f06e6b0104d0c6b160e2cc0a8a215da05645a",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x2014",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2bfbd7e9c4dea5e4dd72ec9f00185cbdf5a5b9e72fbbe9d7994a6eeeec37347c",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0xb020",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0xb02a",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "09d0fe6613ea51a83a482284dfd3482f3cf124215223f677a143986388b7ef4c",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x9400",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "858093cf7faeb2fd4c9da49f049921cd33fabab23bf3332527edd3325dbba9a0",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "da1f484847aa9ebd0293407c0b352a80744dca1f6c1480ea74a2e0f744b79488",
+        "referenceNormalizedSha256": "da1f484847aa9ebd0293407c0b352a80744dca1f6c1480ea74a2e0f744b79488"
+      },
+      {
+        "fixtureId": "sony-nex-6",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "735d07286e14dcd48e6a794683194522ce1438371958d7b8d74109a1cb0d6154",
+        "referenceNormalizedSha256": "735d07286e14dcd48e6a794683194522ce1438371958d7b8d74109a1cb0d6154"
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x1003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "514e480b846379c2f426fb268c4c798ae51e1a6306b2d1b02e868aa3314efb84",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x200c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "06681a106a042887c58ccf87cd2594a963e1a01c64d2b8e9e10d799221614288",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x200d",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "918bf71cfb0b609e2456a6779b8f06e6b0104d0c6b160e2cc0a8a215da05645a",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x2014",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "f8d6604686e6aca2a842c4585e347357c104a27d19c51a64e48d47c5cdeedbc6",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0xb020",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "61a131a277cc18f90696861d172e604ddfb8005a15bd3a16e496c9515028db52",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0xb02a",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "0e7d82811ce10b2a4f8ec5d7b7c972e9c84bf0a2715c5c8ac4bcfdbbf8078fcc",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "sony:0x9400",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "84beb118180c014c8dbcade0a9b0122f6aff7413d527c565ce670209215988d4",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "da1f484847aa9ebd0293407c0b352a80744dca1f6c1480ea74a2e0f744b79488",
+        "referenceNormalizedSha256": "da1f484847aa9ebd0293407c0b352a80744dca1f6c1480ea74a2e0f744b79488"
+      },
+      {
+        "fixtureId": "sony-dsc-hx99",
+        "producer": "Sony",
+        "format": "arw",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "d50f55c4d78f133658bb8e93a70d8b2aff4800fdfb4a048108c3c10faa77d135",
+        "referenceNormalizedSha256": "d50f55c4d78f133658bb8e93a70d8b2aff4800fdfb4a048108c3c10faa77d135"
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1000",
+        "oracleKey": "Quality",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "5e7a1c4cc73d750e2db6584f9302151ef13ded93196d1041633b218a1c91d8b6",
+        "referenceNormalizedSha256": "5e7a1c4cc73d750e2db6584f9302151ef13ded93196d1041633b218a1c91d8b6"
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "e3a534c81abf0641d823da24a2ab681479dfd964d1a423be59a550ec62593fbb",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2a5c3c212f7f9611136a507a1bf6ef5edadefd72488dc68dc92e722ab8d4c25a",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x100a",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "f8d6604686e6aca2a842c4585e347357c104a27d19c51a64e48d47c5cdeedbc6",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x100b",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2209c12466a4ecd1908149821867a21b6cb79b8501c3208661ffce5397111802",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x100e",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1010",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "065e55b19ad1d30ae5d074068ea09572a22da9b73174a03156d9fe17b5f5bf85",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1011",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "4ab2e0ae99c2fa97ca067c0a2dd1ca765fbfa7b096a46fe1ff7eac766a5c8fed",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1021",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1022",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1023",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a16c7536d1a4abbb2c0ac4ed4365296ad96e0b08ace6fe37137526c6c31e2741",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1025",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "b1dfb057bdf79ae8a8582cde9fa747808062e43411bc70515becd0979969afc7",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1031",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "07a3a6b8ec1b69701896d5a78e6e6d92490c89e1edefdb7f45720a971c331b5b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1040",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "0c4468049be9aeb915a29cf4d51ba0c73b1914992db22a9b52c5c44b13feb105",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1041",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "17eed2c0e7c9788d0b46fafdf328b3e955aa0a22132c16cde72aa4f32dcd5282",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1404",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7a10b3822cd5ac92f1cba131c98709ef5f88109dcab794eb96bf4dd4a122ca58",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1405",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7a10b3822cd5ac92f1cba131c98709ef5f88109dcab794eb96bf4dd4a122ca58",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1407",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a2c8a76daa61105677336267e0370050bde783af19666be37d0032e82d352642",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1439",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1447",
+        "oracleKey": "FujiModel",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "68dafbba383a6a623aa94ffc5d800c664335b604920dbe892ec5d29897a1790d",
+        "referenceNormalizedSha256": "68dafbba383a6a623aa94ffc5d800c664335b604920dbe892ec5d29897a1790d"
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "9e4e8f6577d3f6576e3c74eb1a993feadddf8ceab1be0bb61a44f708cb7a9a57",
+        "referenceNormalizedSha256": "9e4e8f6577d3f6576e3c74eb1a993feadddf8ceab1be0bb61a44f708cb7a9a57"
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2720",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "127da7641018db8658416653380e1669499af54be978ea371c70c20ba7159543",
+        "referenceNormalizedSha256": "127da7641018db8658416653380e1669499af54be978ea371c70c20ba7159543"
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1000",
+        "oracleKey": "Quality",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "5e7a1c4cc73d750e2db6584f9302151ef13ded93196d1041633b218a1c91d8b6",
+        "referenceNormalizedSha256": "5e7a1c4cc73d750e2db6584f9302151ef13ded93196d1041633b218a1c91d8b6"
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "e3a534c81abf0641d823da24a2ab681479dfd964d1a423be59a550ec62593fbb",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2a5c3c212f7f9611136a507a1bf6ef5edadefd72488dc68dc92e722ab8d4c25a",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x100a",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "f8d6604686e6aca2a842c4585e347357c104a27d19c51a64e48d47c5cdeedbc6",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x100b",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2209c12466a4ecd1908149821867a21b6cb79b8501c3208661ffce5397111802",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x100e",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1010",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "065e55b19ad1d30ae5d074068ea09572a22da9b73174a03156d9fe17b5f5bf85",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1011",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "4ab2e0ae99c2fa97ca067c0a2dd1ca765fbfa7b096a46fe1ff7eac766a5c8fed",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1021",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1022",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1023",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a16c7536d1a4abbb2c0ac4ed4365296ad96e0b08ace6fe37137526c6c31e2741",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1025",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "b1dfb057bdf79ae8a8582cde9fa747808062e43411bc70515becd0979969afc7",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1031",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "07a3a6b8ec1b69701896d5a78e6e6d92490c89e1edefdb7f45720a971c331b5b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1040",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "0c4468049be9aeb915a29cf4d51ba0c73b1914992db22a9b52c5c44b13feb105",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1041",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "17eed2c0e7c9788d0b46fafdf328b3e955aa0a22132c16cde72aa4f32dcd5282",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1404",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7a10b3822cd5ac92f1cba131c98709ef5f88109dcab794eb96bf4dd4a122ca58",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1405",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7a10b3822cd5ac92f1cba131c98709ef5f88109dcab794eb96bf4dd4a122ca58",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1407",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a2c8a76daa61105677336267e0370050bde783af19666be37d0032e82d352642",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1439",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "fujifilm:0x1447",
+        "oracleKey": "FujiModel",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "68dafbba383a6a623aa94ffc5d800c664335b604920dbe892ec5d29897a1790d",
+        "referenceNormalizedSha256": "68dafbba383a6a623aa94ffc5d800c664335b604920dbe892ec5d29897a1790d"
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "9e4e8f6577d3f6576e3c74eb1a993feadddf8ceab1be0bb61a44f708cb7a9a57",
+        "referenceNormalizedSha256": "9e4e8f6577d3f6576e3c74eb1a993feadddf8ceab1be0bb61a44f708cb7a9a57"
+      },
+      {
+        "fixtureId": "fujifilm-x-t3-2721",
+        "producer": "Fujifilm",
+        "format": "raf",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "127da7641018db8658416653380e1669499af54be978ea371c70c20ba7159543",
+        "referenceNormalizedSha256": "127da7641018db8658416653380e1669499af54be978ea371c70c20ba7159543"
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "266aa5886067fbbc1a3a39fe432fc5bbf561abc90e4b8a322215ac17df6ce012",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "d07df864aa478da43863da5fc5b90f513ec088a33e1a040a715d44e1d7e4f19a",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x000f",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "fb5a880b4037042a3f92b67002734455fca31610dcc8bff921794ff3cc1f3e2c",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x001a",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "cc11310c456c3690d5a74c23aa31cc25b4e74cdae146c71e54ad9dbc1d109fde",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x001c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "cc11310c456c3690d5a74c23aa31cc25b4e74cdae146c71e54ad9dbc1d109fde",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x001f",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "f326bd84707ed76597becb832280595d1a5aaceb0905dc40e3553ebb861bde80",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0020",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "cc11310c456c3690d5a74c23aa31cc25b4e74cdae146c71e54ad9dbc1d109fde",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0025",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "59324bdf906221fb57add7ecbe15b9eef5fde6f910a9fd7bc36d9ae37c90c92a",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0029",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "8ce46e63466e5f346aa2d8b30e4060bc116046b2286507e102e10311fe0bb038",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x002b",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0033",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "non-comparable",
+        "localPresent": false,
+        "referencePresent": true,
+        "referenceNormalizedSha256": "01b848424800213dd239318f982a17a065c2791bebbd1ec5231ec0bfd0e34c91",
+        "reason": "The package result and the independent oracle select different container-level primary images for this RAW family (preview dimensions versus sensor dimensions), so a dimension equality claim would be unsound for MakerNote evidence."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-4x3",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "non-comparable",
+        "localPresent": false,
+        "referencePresent": true,
+        "referenceNormalizedSha256": "60a5c47ef94a6bc5981919a5c351e95da63a61a919e168daa2f5ee697e610d6b",
+        "reason": "The package result and the independent oracle select different container-level primary images for this RAW family (preview dimensions versus sensor dimensions), so a dimension equality claim would be unsound for MakerNote evidence."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "266aa5886067fbbc1a3a39fe432fc5bbf561abc90e4b8a322215ac17df6ce012",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "d07df864aa478da43863da5fc5b90f513ec088a33e1a040a715d44e1d7e4f19a",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x000f",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "fb5a880b4037042a3f92b67002734455fca31610dcc8bff921794ff3cc1f3e2c",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x001a",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "cc11310c456c3690d5a74c23aa31cc25b4e74cdae146c71e54ad9dbc1d109fde",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x001c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "cc11310c456c3690d5a74c23aa31cc25b4e74cdae146c71e54ad9dbc1d109fde",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x001f",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "f326bd84707ed76597becb832280595d1a5aaceb0905dc40e3553ebb861bde80",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0020",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "cc11310c456c3690d5a74c23aa31cc25b4e74cdae146c71e54ad9dbc1d109fde",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0025",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "59324bdf906221fb57add7ecbe15b9eef5fde6f910a9fd7bc36d9ae37c90c92a",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0029",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "07aa4b16e6613d4063da9522b6de05361d74b40a03cf63a1c090b59b362fd48b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x002b",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "panasonic:0x0033",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "non-comparable",
+        "localPresent": false,
+        "referencePresent": true,
+        "referenceNormalizedSha256": "01b848424800213dd239318f982a17a065c2791bebbd1ec5231ec0bfd0e34c91",
+        "reason": "The package result and the independent oracle select different container-level primary images for this RAW family (preview dimensions versus sensor dimensions), so a dimension equality claim would be unsound for MakerNote evidence."
+      },
+      {
+        "fixtureId": "panasonic-dmc-gf6-3x2",
+        "producer": "Panasonic/Leica",
+        "format": "rw2",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "non-comparable",
+        "localPresent": false,
+        "referencePresent": true,
+        "referenceNormalizedSha256": "686ef9b484a42d08dfcc5b953e3b53dfcbd3fb9478622bb1f7f1bde2e0085b62",
+        "reason": "The package result and the independent oracle select different container-level primary images for this RAW family (preview dimensions versus sensor dimensions), so a dimension equality claim would be unsound for MakerNote evidence."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0001",
+        "oracleKey": "PentaxModelType",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "referenceNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b"
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0002",
+        "oracleKey": "PreviewImageSize",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "52b3327d92adb396da35f332be2e73b6ea439387d21addfdeb4e9b441bcc3f39",
+        "referenceNormalizedSha256": "52b3327d92adb396da35f332be2e73b6ea439387d21addfdeb4e9b441bcc3f39"
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0003",
+        "oracleKey": "PreviewImageLength",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "a3c0c1fb2ac6c38834876a9b2d67916c2c1b880b9f6913258fb8c9cc3f7aed93",
+        "referenceNormalizedSha256": "a3c0c1fb2ac6c38834876a9b2d67916c2c1b880b9f6913258fb8c9cc3f7aed93"
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0004",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "9e09e67dff660b8ba6dbe3ef684c0eddc7c9903cc453e86df6fe270e3dc5abe0",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0005",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "655f47bbafcedadda8ab9d2db22be84a7c6c36cc80731ddd635bb9d20a3ac0b0",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0006",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "b0875bfe38b7144b0f0c88a4fa50be652c021a5f33b2f53a91f398a362f63023",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "3e418bd1776b59721da13e8cd8937366f46aebbaed3768eaea2b065ba3fd9f9c",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0008",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "2bf175f9655e7bb7357b9f0a7c6051465a5ae701104ffe741b98e852c0e4d460",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "726f9560f85f62161edfc8cdd3d787501ec55bfe45176ae2e2e686e763cf4b0f",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000d",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a4aab3f1f08004e907d2357fafe74cab56359bcb32e23f52e7eb1d3a9c0a2ad3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000e",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "9c36040e5141b46541ccdc5223cda239086fe5e1fdd26fff90630c3191d9ebe3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0012",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7aab2b02a05b2763b3e055ca7b18c4248899377d2462a624e1c75fe10bf0dbcf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "0c14f09ad225316762926604fff1140d2728952b4ed08b89080723eef8c95120",
+        "referenceNormalizedSha256": "0c14f09ad225316762926604fff1140d2728952b4ed08b89080723eef8c95120"
+      },
+      {
+        "fixtureId": "pentax-k-1-8550",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "d7b61edd15c51ce6dff1fb942754bdb03547a69d33bbd97a245cd9f6a82e269d",
+        "referenceNormalizedSha256": "d7b61edd15c51ce6dff1fb942754bdb03547a69d33bbd97a245cd9f6a82e269d"
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0001",
+        "oracleKey": "PentaxModelType",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "referenceNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b"
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0002",
+        "oracleKey": "PreviewImageSize",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "52b3327d92adb396da35f332be2e73b6ea439387d21addfdeb4e9b441bcc3f39",
+        "referenceNormalizedSha256": "52b3327d92adb396da35f332be2e73b6ea439387d21addfdeb4e9b441bcc3f39"
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "48e8e2fc4c0cf7a000ad5156174fec5dc98542f203bbaa2d681a7d822230b364",
+        "reason": "This fixture contains multiple preview resources and the independent oracle selects a different preview than the MakerNote-linked resource; no one-to-one comparison is sound."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0004",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "179b438f7cedcc2452435f6fb2da4504153a0a32cb046821e9b5ad17ea266615",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0005",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "655f47bbafcedadda8ab9d2db22be84a7c6c36cc80731ddd635bb9d20a3ac0b0",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0006",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "b0875bfe38b7144b0f0c88a4fa50be652c021a5f33b2f53a91f398a362f63023",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "4667037d8ff43500030b3ddab7f2f0c8e3a5bb2cde46c7c4868dc547bcd3bed2",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0008",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "266aa5886067fbbc1a3a39fe432fc5bbf561abc90e4b8a322215ac17df6ce012",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "726f9560f85f62161edfc8cdd3d787501ec55bfe45176ae2e2e686e763cf4b0f",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000d",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a4aab3f1f08004e907d2357fafe74cab56359bcb32e23f52e7eb1d3a9c0a2ad3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000e",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "9c36040e5141b46541ccdc5223cda239086fe5e1fdd26fff90630c3191d9ebe3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0012",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7aab2b02a05b2763b3e055ca7b18c4248899377d2462a624e1c75fe10bf0dbcf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "This is a preserved duplicate MakerNote instance; the independent oracle exposes only the primary instance for this field."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "6472bc32f88c7635437d068ef00cdbd79df67a689ca69279f0a2a6c5779bbadb",
+        "reason": "This is a preserved duplicate MakerNote instance; the independent oracle exposes only the primary instance for this field."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "99a6f2e5733e009a66f7063d92782a855a8f159d8290a97a32c2b24e2759a09a",
+        "reason": "This fixture contains multiple preview resources and the independent oracle selects a different preview than the MakerNote-linked resource; no one-to-one comparison is sound."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0004",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "ec1e20aa58b4cf9aa840d302a3f6be558d0c76ed505d6f83a2eb5d34a9e1dfd9",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0005",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "655f47bbafcedadda8ab9d2db22be84a7c6c36cc80731ddd635bb9d20a3ac0b0",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0006",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "b0875bfe38b7144b0f0c88a4fa50be652c021a5f33b2f53a91f398a362f63023",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "4667037d8ff43500030b3ddab7f2f0c8e3a5bb2cde46c7c4868dc547bcd3bed2",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0008",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "266aa5886067fbbc1a3a39fe432fc5bbf561abc90e4b8a322215ac17df6ce012",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "726f9560f85f62161edfc8cdd3d787501ec55bfe45176ae2e2e686e763cf4b0f",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000d",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a4aab3f1f08004e907d2357fafe74cab56359bcb32e23f52e7eb1d3a9c0a2ad3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000e",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "9c36040e5141b46541ccdc5223cda239086fe5e1fdd26fff90630c3191d9ebe3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0012",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7aab2b02a05b2763b3e055ca7b18c4248899377d2462a624e1c75fe10bf0dbcf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0001",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b",
+        "reason": "This is a preserved duplicate MakerNote instance; the independent oracle exposes only the primary instance for this field."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0002",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "6472bc32f88c7635437d068ef00cdbd79df67a689ca69279f0a2a6c5779bbadb",
+        "reason": "This is a preserved duplicate MakerNote instance; the independent oracle exposes only the primary instance for this field."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0003",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "3fe8a672d15b7142551476d6f9a5e641db7e178b2a68f9ece71b0d96a8d7fd43",
+        "reason": "This fixture contains multiple preview resources and the independent oracle selects a different preview than the MakerNote-linked resource; no one-to-one comparison is sound."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0004",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "bdc3d118dc78f38e0a66203c3451c7f251f52e0435dd7d1dc200f98c7cae8f03",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0005",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "655f47bbafcedadda8ab9d2db22be84a7c6c36cc80731ddd635bb9d20a3ac0b0",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0006",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "b0875bfe38b7144b0f0c88a4fa50be652c021a5f33b2f53a91f398a362f63023",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0007",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "4667037d8ff43500030b3ddab7f2f0c8e3a5bb2cde46c7c4868dc547bcd3bed2",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0008",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "266aa5886067fbbc1a3a39fe432fc5bbf561abc90e4b8a322215ac17df6ce012",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000c",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "726f9560f85f62161edfc8cdd3d787501ec55bfe45176ae2e2e686e763cf4b0f",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000d",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "a4aab3f1f08004e907d2357fafe74cab56359bcb32e23f52e7eb1d3a9c0a2ad3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x000e",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "9c36040e5141b46541ccdc5223cda239086fe5e1fdd26fff90630c3191d9ebe3",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "pentax:0x0012",
+        "oracleKey": null,
+        "status": "non-comparable",
+        "localPresent": true,
+        "referencePresent": false,
+        "localNormalizedSha256": "7aab2b02a05b2763b3e055ca7b18c4248899377d2462a624e1c75fe10bf0dbcf",
+        "reason": "No independent oracle key has been established for this vendor field; local value is retained by hash only."
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "image:dimensions.width",
+        "oracleKey": "ImageWidth",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "0c14f09ad225316762926604fff1140d2728952b4ed08b89080723eef8c95120",
+        "referenceNormalizedSha256": "0c14f09ad225316762926604fff1140d2728952b4ed08b89080723eef8c95120"
+      },
+      {
+        "fixtureId": "pentax-k-1-8552",
+        "producer": "Pentax",
+        "format": "pef",
+        "fieldId": "image:dimensions.height",
+        "oracleKey": "ImageHeight",
+        "status": "matched",
+        "localPresent": true,
+        "referencePresent": true,
+        "localNormalizedSha256": "d7b61edd15c51ce6dff1fb942754bdb03547a69d33bbd97a245cd9f6a82e269d",
+        "referenceNormalizedSha256": "d7b61edd15c51ce6dff1fb942754bdb03547a69d33bbd97a245cd9f6a82e269d"
+      }
+    ]
+  },
+  "packs": [
+    {
+      "id": "org.browser-image-metadata.makernote.apple",
+      "vendor": "Apple",
+      "version": "1.0.0",
+      "registrySha256": "64161f19b6557e552d92985362deb630a91c2f38f3f8d974371749392e15da6f",
+      "sourceCount": 4,
+      "fixtureCount": 2,
+      "comparisonCounts": {
+        "found": 28,
+        "matched": 2,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 26
+      }
+    },
+    {
+      "id": "org.browser-image-metadata.makernote.canon",
+      "vendor": "Canon",
+      "version": "1.0.0",
+      "registrySha256": "a6755fbd4f8ec1b9382c313514eb9603d841f6e297bd3017c87224a9b1d09036",
+      "sourceCount": 4,
+      "fixtureCount": 2,
+      "comparisonCounts": {
+        "found": 18,
+        "matched": 6,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 12
+      }
+    },
+    {
+      "id": "org.browser-image-metadata.makernote.nikon",
+      "vendor": "Nikon",
+      "version": "1.0.0",
+      "registrySha256": "b05f91aad9af915d10cab93848dcf154a6fff8ecece69f5126d31b81775d21f4",
+      "sourceCount": 4,
+      "fixtureCount": 2,
+      "comparisonCounts": {
+        "found": 24,
+        "matched": 8,
+        "normalizedMatch": 6,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 10
+      }
+    },
+    {
+      "id": "org.browser-image-metadata.makernote.sony",
+      "vendor": "Sony",
+      "version": "1.0.0",
+      "registrySha256": "b238f1059bbf355d3ce167e9821b146d18b8789e4eabf8229a66d889f562da24",
+      "sourceCount": 4,
+      "fixtureCount": 2,
+      "comparisonCounts": {
+        "found": 19,
+        "matched": 4,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 15
+      }
+    },
+    {
+      "id": "org.browser-image-metadata.makernote.fujifilm",
+      "vendor": "Fujifilm",
+      "version": "1.0.0",
+      "registrySha256": "1e789d7fd50f81128c46f35b336b38b0029aebcd09276f00d9295e662d637a93",
+      "sourceCount": 4,
+      "fixtureCount": 2,
+      "comparisonCounts": {
+        "found": 46,
+        "matched": 8,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 38
+      }
+    },
+    {
+      "id": "org.browser-image-metadata.makernote.panasonic-leica",
+      "vendor": "Panasonic/Leica",
+      "version": "1.0.0",
+      "registrySha256": "17b6d381f39eedbe935f8384c00c32102c34bd71b1db3f0e841e68b49a0c1c2b",
+      "sourceCount": 4,
+      "fixtureCount": 2,
+      "comparisonCounts": {
+        "found": 30,
+        "matched": 0,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 30
+      }
+    },
+    {
+      "id": "org.browser-image-metadata.makernote.pentax",
+      "vendor": "Pentax",
+      "version": "1.0.0",
+      "registrySha256": "866356b3f7ab47ff20f72e658d27babccb6eb0bf0d9c0f041a2aee5be73000b0",
+      "sourceCount": 4,
+      "fixtureCount": 2,
+      "comparisonCounts": {
+        "found": 52,
+        "matched": 9,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 43
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "apple-iphone-6s-plus",
+      "path": "apple/IMG_0853.DNG",
+      "format": "dng",
+      "model": "iPhone 6s Plus",
+      "bytes": 10227467,
+      "sha256": "845fee4f09c832af3728778737f5ae9b99124debb821b6e2066b94aed1daa91c",
+      "packId": "org.browser-image-metadata.makernote.apple",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 12,
+      "opaqueRangeCount": 3,
+      "diagnosticCodes": [],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "apple-iphone-6s-plus",
+          "sha256": "845fee4f09c832af3728778737f5ae9b99124debb821b6e2066b94aed1daa91c"
+        },
+        {
+          "id": "apple-iphone-7-plus",
+          "sha256": "e8c7ebd8f22f7281d165496b91c8fea8a8e79c8113172fb499e1d66d6045332e"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "apple-iphone-7-plus",
+      "path": "apple/IMG_0739.DNG",
+      "format": "dng",
+      "model": "iPhone 7 Plus",
+      "bytes": 10550105,
+      "sha256": "e8c7ebd8f22f7281d165496b91c8fea8a8e79c8113172fb499e1d66d6045332e",
+      "packId": "org.browser-image-metadata.makernote.apple",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 12,
+      "opaqueRangeCount": 3,
+      "diagnosticCodes": [],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "apple-iphone-6s-plus",
+          "sha256": "845fee4f09c832af3728778737f5ae9b99124debb821b6e2066b94aed1daa91c"
+        },
+        {
+          "id": "apple-iphone-7-plus",
+          "sha256": "e8c7ebd8f22f7281d165496b91c8fea8a8e79c8113172fb499e1d66d6045332e"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "canon-eos-7d-raw",
+      "path": "canon/RAW_CANON_EOS_7D-raw.CR2",
+      "format": "cr2",
+      "model": "Canon EOS 7D",
+      "bytes": 25155690,
+      "sha256": "b5e47c5fcf7332ac03e0134926f17a338a42e68c1fd7f83e16f45f4b767544e8",
+      "packId": "org.browser-image-metadata.makernote.canon",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 7,
+      "opaqueRangeCount": 34,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "canon-eos-7d-raw",
+          "sha256": "b5e47c5fcf7332ac03e0134926f17a338a42e68c1fd7f83e16f45f4b767544e8"
+        },
+        {
+          "id": "canon-eos-7d-image",
+          "sha256": "b303a596a7d8888b56a265d3b9ec78ae4f3fa3dd68c20c8276a50250393fdb39"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "canon-eos-7d-image",
+      "path": "canon/_MG_0001.CR2",
+      "format": "cr2",
+      "model": "Canon EOS 7D",
+      "bytes": 25812218,
+      "sha256": "b303a596a7d8888b56a265d3b9ec78ae4f3fa3dd68c20c8276a50250393fdb39",
+      "packId": "org.browser-image-metadata.makernote.canon",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 7,
+      "opaqueRangeCount": 34,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "canon-eos-7d-raw",
+          "sha256": "b5e47c5fcf7332ac03e0134926f17a338a42e68c1fd7f83e16f45f4b767544e8"
+        },
+        {
+          "id": "canon-eos-7d-image",
+          "sha256": "b303a596a7d8888b56a265d3b9ec78ae4f3fa3dd68c20c8276a50250393fdb39"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "nikon-d3200",
+      "path": "nikon/DSC_0059.NEF",
+      "format": "nef",
+      "model": "NIKON D3200",
+      "bytes": 22582799,
+      "sha256": "91657dd8e9c7a086826683f6d20799685657dd7ca2056702b145851465f57cd3",
+      "packId": "org.browser-image-metadata.makernote.nikon",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 10,
+      "opaqueRangeCount": 49,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "nikon-d3200",
+          "sha256": "91657dd8e9c7a086826683f6d20799685657dd7ca2056702b145851465f57cd3"
+        },
+        {
+          "id": "nikon-1-aw1",
+          "sha256": "519d354ec40907f1cd30329fc1a641ddec5b46e08e88883f3cf2fddc4ddd9974"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "nikon-1-aw1",
+      "path": "nikon/_DSC0521.NEF",
+      "format": "nef",
+      "model": "NIKON 1 AW1",
+      "bytes": 12781061,
+      "sha256": "519d354ec40907f1cd30329fc1a641ddec5b46e08e88883f3cf2fddc4ddd9974",
+      "packId": "org.browser-image-metadata.makernote.nikon",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 10,
+      "opaqueRangeCount": 45,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "nikon-d3200",
+          "sha256": "91657dd8e9c7a086826683f6d20799685657dd7ca2056702b145851465f57cd3"
+        },
+        {
+          "id": "nikon-1-aw1",
+          "sha256": "519d354ec40907f1cd30329fc1a641ddec5b46e08e88883f3cf2fddc4ddd9974"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "sony-nex-6",
+      "path": "sony/DSC07133.ARW",
+      "format": "arw",
+      "model": "NEX-6",
+      "bytes": 16646144,
+      "sha256": "bf4c6d21136aa4fd626212fe72b962b6404e3fca45cdc3b6afbed8e73fee2cf8",
+      "packId": "org.browser-image-metadata.makernote.sony",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 8,
+      "opaqueRangeCount": 81,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "sony-nex-6",
+          "sha256": "bf4c6d21136aa4fd626212fe72b962b6404e3fca45cdc3b6afbed8e73fee2cf8"
+        },
+        {
+          "id": "sony-dsc-hx99",
+          "sha256": "0223d56b8c3af16e6f588b5340275c9bb30bed2cb5a5cafb0f3ffc7ef4da84e4"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "sony-dsc-hx99",
+      "path": "sony/DSC00001.ARW",
+      "format": "arw",
+      "model": "DSC-HX99",
+      "bytes": 19063552,
+      "sha256": "0223d56b8c3af16e6f588b5340275c9bb30bed2cb5a5cafb0f3ffc7ef4da84e4",
+      "packId": "org.browser-image-metadata.makernote.sony",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 7,
+      "opaqueRangeCount": 91,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "sony-nex-6",
+          "sha256": "bf4c6d21136aa4fd626212fe72b962b6404e3fca45cdc3b6afbed8e73fee2cf8"
+        },
+        {
+          "id": "sony-dsc-hx99",
+          "sha256": "0223d56b8c3af16e6f588b5340275c9bb30bed2cb5a5cafb0f3ffc7ef4da84e4"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "fujifilm-x-t3-2720",
+      "path": "fujifilm/AFXT2720.RAF",
+      "format": "raf",
+      "model": "Fujifilm X-T3",
+      "bytes": 56087360,
+      "sha256": "24abd27b4a200f3170ea1579672944b807d0eb35bf21422a3937bb644f27f2eb",
+      "packId": "org.browser-image-metadata.makernote.fujifilm",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 21,
+      "opaqueRangeCount": 44,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "fujifilm-x-t3-2720",
+          "sha256": "24abd27b4a200f3170ea1579672944b807d0eb35bf21422a3937bb644f27f2eb"
+        },
+        {
+          "id": "fujifilm-x-t3-2721",
+          "sha256": "95b33021160b239ceb1a09d46a1b29cb60cb7dd47581feb126b337c219091754"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "fujifilm-x-t3-2721",
+      "path": "fujifilm/AFXT2721.RAF",
+      "format": "raf",
+      "model": "Fujifilm X-T3",
+      "bytes": 27313968,
+      "sha256": "95b33021160b239ceb1a09d46a1b29cb60cb7dd47581feb126b337c219091754",
+      "packId": "org.browser-image-metadata.makernote.fujifilm",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 21,
+      "opaqueRangeCount": 44,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "fujifilm-x-t3-2720",
+          "sha256": "24abd27b4a200f3170ea1579672944b807d0eb35bf21422a3937bb644f27f2eb"
+        },
+        {
+          "id": "fujifilm-x-t3-2721",
+          "sha256": "95b33021160b239ceb1a09d46a1b29cb60cb7dd47581feb126b337c219091754"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "panasonic-dmc-gf6-4x3",
+      "path": "panasonic/P1060736_4x3.RW2",
+      "format": "rw2",
+      "model": "Panasonic DMC-GF6",
+      "bytes": 19607552,
+      "sha256": "dace6b3818f00a5d4f7cc1cfc29744d15dcf7dd8684c882bea4a81c6ef670ad0",
+      "packId": "org.browser-image-metadata.makernote.panasonic-leica",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 13,
+      "opaqueRangeCount": 117,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "panasonic-dmc-gf6-4x3",
+          "sha256": "dace6b3818f00a5d4f7cc1cfc29744d15dcf7dd8684c882bea4a81c6ef670ad0"
+        },
+        {
+          "id": "panasonic-dmc-gf6-3x2",
+          "sha256": "3d839ffdc55819f9b47eaa966f39f60a09616e2c075979d2a479314ff2c41857"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "panasonic-dmc-gf6-3x2",
+      "path": "panasonic/P1060737_3x2.RW2",
+      "format": "rw2",
+      "model": "Panasonic DMC-GF6",
+      "bytes": 17453568,
+      "sha256": "3d839ffdc55819f9b47eaa966f39f60a09616e2c075979d2a479314ff2c41857",
+      "packId": "org.browser-image-metadata.makernote.panasonic-leica",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 13,
+      "opaqueRangeCount": 117,
+      "diagnosticCodes": [
+        "PLUGIN_REJECTED"
+      ],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "panasonic-dmc-gf6-4x3",
+          "sha256": "dace6b3818f00a5d4f7cc1cfc29744d15dcf7dd8684c882bea4a81c6ef670ad0"
+        },
+        {
+          "id": "panasonic-dmc-gf6-3x2",
+          "sha256": "3d839ffdc55819f9b47eaa966f39f60a09616e2c075979d2a479314ff2c41857"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "pentax-k-1-8550",
+      "path": "pentax/IMGP8550.PEF",
+      "format": "pef",
+      "model": "PENTAX K-1",
+      "bytes": 46896111,
+      "sha256": "068c902e7b38ac31c7c6eca5c55f69ca395ec6aa7170489281b692a893d0fee9",
+      "packId": "org.browser-image-metadata.makernote.pentax",
+      "packVersion": "1.0.0",
+      "noteCount": 1,
+      "decodedNoteCount": 1,
+      "fieldCount": 12,
+      "opaqueRangeCount": 0,
+      "diagnosticCodes": [],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "pentax-k-1-8550",
+          "sha256": "068c902e7b38ac31c7c6eca5c55f69ca395ec6aa7170489281b692a893d0fee9"
+        },
+        {
+          "id": "pentax-k-1-8552",
+          "sha256": "aea857a6bd9f2cdf02b3370b0a597f89dd31f567af84b7bc0a770f547d0a0d85"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    },
+    {
+      "id": "pentax-k-1-8552",
+      "path": "pentax/IMGP8552.PEF",
+      "format": "pef",
+      "model": "PENTAX K-1",
+      "bytes": 175828391,
+      "sha256": "aea857a6bd9f2cdf02b3370b0a597f89dd31f567af84b7bc0a770f547d0a0d85",
+      "packId": "org.browser-image-metadata.makernote.pentax",
+      "packVersion": "1.0.0",
+      "noteCount": 3,
+      "decodedNoteCount": 3,
+      "fieldCount": 36,
+      "opaqueRangeCount": 0,
+      "diagnosticCodes": [],
+      "sourceProvenance": [
+        {
+          "id": "raw-pixls-us-filelist",
+          "sha256": "768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8"
+        },
+        {
+          "id": "pentax-k-1-8550",
+          "sha256": "068c902e7b38ac31c7c6eca5c55f69ca395ec6aa7170489281b692a893d0fee9"
+        },
+        {
+          "id": "pentax-k-1-8552",
+          "sha256": "aea857a6bd9f2cdf02b3370b0a597f89dd31f567af84b7bc0a770f547d0a0d85"
+        }
+      ],
+      "controls": {
+        "noPluginRemainedOpaque": true,
+        "crossPackRecognizedOnlyExpectedPack": true,
+        "truncationRemainedIncomplete": true,
+        "entryLimitRemainedBounded": true
+      },
+      "oracle": {
+        "package": "exiftool-vendored",
+        "implementationVersion": "13.42"
+      }
+    }
+  ],
+  "controls": {
+    "noPluginGatePassed": true,
+    "crossPackIsolationPassed": true,
+    "noImagesCopied": true,
+    "malformedAndLimitControlsPassed": true
+  }
+}

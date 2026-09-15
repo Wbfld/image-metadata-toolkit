@@ -16,6 +16,7 @@ function redactionTargetLabel(target: RedactionTarget): string {
     case "field-id": return `field:${selector.fieldId}`;
     case "block": return `block:${selector.blockId}`;
     case "associated-image": return `associated-image:${selector.imageId}`;
+    case "photoshop-resource": return `photoshop-resource:${selector.resourceId}`;
   }
 }
 
@@ -76,7 +77,12 @@ export function completeMetadataResult(
     ...(rangeInfo?.inputBytes === undefined ? {} : { inputBytes: rangeInfo.inputBytes }),
   };
   const blocks = (result.blocks ?? []).map((block) => ({ ...block, coverage: blockCoverage(block.status) }));
-  return { ...result, blocks, coverage: deriveCoverage({ ...result, blocks }, scope, scopeReasons, reasons), completeness, ...(telemetry === undefined ? {} : { telemetry }) };
+  const container = result.container ?? (result.format === "heif" || result.format === "avif" || result.format === "cr3" ? "iso-bmff" : result.format === "tiff" ? "tiff" : result.format === "raf" ? "raf" : result.format);
+  const fileKind = result.fileKind ?? (result.format === "tiff" && container === "bigtiff" ? "bigtiff" : result.format);
+  const raw = result.raw ?? null;
+  const photoshop = result.photoshop ?? null;
+  const makerNotes = result.makerNotes ?? null;
+  return { ...result, container, fileKind, raw, photoshop, makerNotes, blocks, coverage: deriveCoverage({ ...result, blocks, container, fileKind, raw, photoshop, makerNotes }, scope, scopeReasons, reasons), completeness, ...(telemetry === undefined ? {} : { telemetry }) };
 }
 
 /** Add an explicit outcome to container surgery results. */

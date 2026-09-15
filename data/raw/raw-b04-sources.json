@@ -1,0 +1,76 @@
+{
+  "schema": "browser-image-metadata.raw-b04.sources.v1",
+  "source": {
+    "name": "raw.pixls.us public RAW sample repository",
+    "repository": "https://raw.pixls.us/",
+    "license": "CC0-1.0 / public-domain dedication as declared by the contributor",
+    "licenseUrl": "https://creativecommons.org/public-domain/cc0/",
+    "policy": "The seven binaries are downloaded only into temporary runner storage. This checked manifest retains source metadata and hashes, never image bytes."
+  },
+  "retrievedAt": "2026-09-13",
+  "fixtures": [
+    {
+      "fileKind": "dng",
+      "fileName": "dng.DNG",
+      "sourceId": 748,
+      "url": "https://raw.pixls.us/getfile.php/748/nice/Canon - PowerShot SX40 HS - 12bit 12bit CHDK ver. 1.0.0-1925 (4:3).DNG",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "dab360e60b94a3f011dd154577f3e7305febd3d497d47379cc4a64b383c48e1f",
+      "sourceIndexSha256": "dab360e60b94a3f011dd154577f3e7305febd3d497d47379cc4a64b383c48e1f"
+    },
+    {
+      "fileKind": "cr2",
+      "fileName": "cr2.CR2",
+      "sourceId": 129,
+      "url": "https://raw.pixls.us/getfile.php/129/nice/Canon - EOS 7D - sRAW2 (sRAW) (3:2).CR2",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "3789b1ba5d880613104637c40a06619cd9f3b54b0cf62d2d95b9f9e885edcf6e",
+      "sourceIndexSha256": "3789b1ba5d880613104637c40a06619cd9f3b54b0cf62d2d95b9f9e885edcf6e"
+    },
+    {
+      "fileKind": "nef",
+      "fileName": "nef.NEF",
+      "sourceId": 743,
+      "url": "https://raw.pixls.us/getfile.php/743/nice/Nikon - D3200 - 12bit 12bit compressed (Lossy (type 2)) (3:2).NEF",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "91657dd8e9c7a086826683f6d20799685657dd7ca2056702b145851465f57cd3",
+      "sourceIndexSha256": "91657dd8e9c7a086826683f6d20799685657dd7ca2056702b145851465f57cd3"
+    },
+    {
+      "fileKind": "arw",
+      "fileName": "arw.ARW",
+      "sourceId": 782,
+      "url": "https://raw.pixls.us/getfile.php/782/nice/Sony - NEX-6 - 12bit 12bit compressed (3:2).ARW",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "bf4c6d21136aa4fd626212fe72b962b6404e3fca45cdc3b6afbed8e73fee2cf8",
+      "sourceIndexSha256": "bf4c6d21136aa4fd626212fe72b962b6404e3fca45cdc3b6afbed8e73fee2cf8"
+    },
+    {
+      "fileKind": "orf",
+      "fileName": "orf.ORF",
+      "sourceId": 241,
+      "url": "https://raw.pixls.us/getfile.php/241/nice/Olympus - E-P3 - 16bit (4:3).ORF",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "540edabdd9d4e6ef8602f56443730cc3133d714dc4d3d2c607e2f0aa6be5cbcd",
+      "sourceIndexSha256": "540edabdd9d4e6ef8602f56443730cc3133d714dc4d3d2c607e2f0aa6be5cbcd"
+    },
+    {
+      "fileKind": "rw2",
+      "fileName": "rw2.RW2",
+      "sourceId": 739,
+      "url": "https://raw.pixls.us/getfile.php/739/nice/Panasonic - DMC-GF6 - 4:3.RW2",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "dace6b3818f00a5d4f7cc1cfc29744d15dcf7dd8684c882bea4a81c6ef670ad0",
+      "sourceIndexSha256": "dace6b3818f00a5d4f7cc1cfc29744d15dcf7dd8684c882bea4a81c6ef670ad0"
+    },
+    {
+      "fileKind": "iiq",
+      "fileName": "iiq.IIQ",
+      "sourceId": 1972,
+      "url": "https://raw.pixls.us/getfile.php/1972/nice/Leaf - Credo 40 - IIQ L (4:3).IIQ",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "f2b8bb81f2e3cc918cfa91637683e0ca29a79bd77e1394daa5e8868721954d37",
+      "sourceIndexSha256": "f2b8bb81f2e3cc918cfa91637683e0ca29a79bd77e1394daa5e8868721954d37"
+    }
+  ]
+}

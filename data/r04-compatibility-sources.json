@@ -1,0 +1,62 @@
+{
+  "schema": "browser-image-metadata/r04-compatibility-sources@1",
+  "retrievedAt": "2026-09-14",
+  "noCopyHashPolicy": "Official competitor documentation is cited by stable URL and license. The repository retains no copied competitor documentation or implementation source, so no source-byte hash is recorded.",
+  "competitors": [
+    {
+      "id": "exifr",
+      "package": "exifr",
+      "version": "7.1.3",
+      "license": "MIT",
+      "documentationUrl": "https://github.com/MikeKovarik/exifr#readme",
+      "licenseUrl": "https://github.com/MikeKovarik/exifr/blob/master/LICENSE"
+    },
+    {
+      "id": "exifreader",
+      "package": "exifreader",
+      "version": "4.45.0",
+      "license": "MPL-2.0",
+      "documentationUrl": "https://github.com/mattiasw/ExifReader#readme",
+      "licenseUrl": "https://github.com/mattiasw/ExifReader/blob/main/LICENSE"
+    },
+    {
+      "id": "exif-js",
+      "package": "exif-js",
+      "version": "2.3.0",
+      "license": "MIT",
+      "documentationUrl": "https://github.com/exif-js/exif-js#readme",
+      "licenseUrl": "https://github.com/exif-js/exif-js/blob/master/LICENSE.md"
+    },
+    {
+      "id": "piexifjs",
+      "package": "piexifjs",
+      "version": "1.0.6",
+      "license": "MIT",
+      "documentationUrl": "https://github.com/hMatoba/piexifjs#readme",
+      "licenseUrl": "https://github.com/hMatoba/piexifjs/blob/master/LICENSE.txt"
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+      "bytes": 1332,
+      "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e",
+      "provenance": "Repository-authored deterministic structural JPEG; see tests/fixtures/README.md.",
+      "license": "Project MIT fixture policy"
+    },
+    {
+      "path": "tests/fixtures/jpeg-iptc.jpg",
+      "bytes": 1510,
+      "sha256": "4b5a1b54c292ea60c1e5d4e4f66906c445e702c609476541631faecf33ffeaef",
+      "provenance": "Repository-authored deterministic structural JPEG; see tests/fixtures/README.md.",
+      "license": "Project MIT fixture policy"
+    },
+    {
+      "path": "tests/fixtures/jpeg-icc.jpg",
+      "bytes": 1482,
+      "sha256": "c44d2eb179662e35da1a89c6974c3f569421b365871bff21e257e8f978600add",
+      "provenance": "Repository-authored deterministic structural JPEG; see tests/fixtures/README.md.",
+      "license": "Project MIT fixture policy"
+    }
+  ]
+}

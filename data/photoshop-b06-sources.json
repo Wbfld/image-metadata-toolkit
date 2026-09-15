@@ -1,0 +1,24 @@
+{
+  "schema": "browser-image-metadata.photoshop-b06-sources.v1",
+  "sources": [
+    {
+      "id": "adobe-photoshop-file-formats",
+      "title": "Adobe Photoshop File Formats Specification",
+      "version": "retrieved specification; image-resource and TIFF-tag structures used by B06",
+      "url": "https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/",
+      "license": "Adobe copyright; reference-only use. No source text, implementation code, or metadata tables are redistributed.",
+      "retrieved": "2026-09-13",
+      "sha256": "4f9069bb0cb942e31981bcb252ebfdff5ab01848b8101a310c89ceb31c5cfb55",
+      "scope": [
+        "8BIM image-resource signature, resource ID, Pascal name, even-byte name and payload padding",
+        "ResolutionInfo resource 1005",
+        "IPTC-NAA resource 1028",
+        "thumbnail resources 1033 and 1036",
+        "XMP resource 1060 and caption digest resource 1061",
+        "path resources 2000 through 2997 and clipping-path name resource 2999",
+        "TIFF tags 700, 33723, and 34377"
+      ]
+    }
+  ],
+  "implementationPolicy": "The implementation independently parses bounded binary structures. ExifTool is an optional secondary output oracle only; it is not used as the implementation or as a conformance authority."
+}

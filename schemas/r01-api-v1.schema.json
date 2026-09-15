@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Wbfld/image-metadata-toolkit/schemas/r01-api-v1.schema.json",
+  "title": "browser-image-metadata stable JSON API contract",
+  "description": "Versioned JSON-safe result and operation outcomes for browser-image-metadata.",
+  "version": "1.0.0",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/$defs/metadataResult" },
+    { "$ref": "#/$defs/editResult" },
+    { "$ref": "#/$defs/redactionResult" },
+    { "$ref": "#/$defs/sanitizationResult" },
+    { "$ref": "#/$defs/sidecarResult" }
+  ],
+  "$defs": {
+    "jsonValue": {
+      "anyOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "number" },
+        { "type": "string" },
+        { "$ref": "#/$defs/binary" },
+        { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/jsonValue" } }
+      ]
+    },
+    "binary": {
+      "type": "object",
+      "required": ["$binary", "encoding"],
+      "properties": {
+        "$binary": { "type": "string", "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$" },
+        "encoding": { "const": "base64" }
+      },
+      "additionalProperties": false
+    },
+    "warning": {
+      "type": "object",
+      "required": ["code", "message", "severity"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string" },
+        "severity": { "enum": ["warning", "error"] }
+      },
+      "additionalProperties": true
+    },
+    "metadataResult": {
+      "type": "object",
+      "required": ["format", "mimeType", "container", "fileKind", "dimensions", "fields", "exif", "xmp", "iptc", "icc", "jfif", "pngText", "blocks", "coverage", "completeness", "warnings"],
+      "properties": {
+        "format": { "enum": ["jpeg", "png", "tiff", "webp", "gif", "jxl", "heif", "avif", "cr3", "raf", "svg", "unknown"] },
+        "mimeType": { "type": "string", "minLength": 1 },
+        "container": { "type": "string", "minLength": 1 },
+        "fileKind": { "type": "string", "minLength": 1 },
+        "dimensions": { "$ref": "#/$defs/jsonValue" },
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "exif": { "$ref": "#/$defs/jsonValue" },
+        "xmp": { "$ref": "#/$defs/jsonValue" },
+        "iptc": { "$ref": "#/$defs/jsonValue" },
+        "icc": { "$ref": "#/$defs/jsonValue" },
+        "jfif": { "$ref": "#/$defs/jsonValue" },
+        "pngText": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "blocks": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "coverage": { "type": "object", "required": ["requested", "wholeFile", "reasons", "unclassifiedBlockIds"], "properties": { "requested": { "type": "string", "minLength": 1 }, "wholeFile": { "type": "string", "minLength": 1 }, "reasons": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } }, "unclassifiedBlockIds": { "type": "array", "items": { "type": "string" } } }, "additionalProperties": true },
+        "completeness": { "type": "object", "required": ["complete", "scope", "reasons"], "properties": { "complete": { "type": "boolean" }, "scope": { "enum": ["full", "partial"] }, "reasons": { "type": "array", "items": { "type": "string" } } }, "additionalProperties": true },
+        "warnings": { "type": "array", "items": { "$ref": "#/$defs/warning" } }
+      },
+      "additionalProperties": true
+    },
+    "editResult": {
+      "type": "object",
+      "required": ["successful", "status", "data", "input", "operations", "unapplied", "policy", "verification", "diagnostics", "warnings"],
+      "allOf": [
+        { "if": { "required": ["successful"], "properties": { "successful": { "const": true } } }, "then": { "properties": { "status": { "const": "applied" }, "data": { "$ref": "#/$defs/binary" } } } },
+        { "if": { "required": ["successful"], "properties": { "successful": { "const": false } } }, "then": { "properties": { "status": { "enum": ["unsupported", "invalid-value", "unsafe-structure", "policy-failure", "verification-failure", "mixed-failure"] }, "data": { "type": "null" } } } }
+      ],
+      "properties": {
+        "successful": { "type": "boolean" },
+        "status": { "enum": ["applied", "unsupported", "invalid-value", "unsafe-structure", "policy-failure", "verification-failure", "mixed-failure"] },
+        "data": { "anyOf": [{ "$ref": "#/$defs/binary" }, { "type": "null" }] },
+        "input": { "type": "object", "required": ["examined", "sourceMutated"], "properties": { "examined": { "type": "boolean" }, "sourceMutated": { "const": false } }, "additionalProperties": true },
+        "operations": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "unapplied": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "policy": { "$ref": "#/$defs/jsonValue" },
+        "verification": { "$ref": "#/$defs/jsonValue" },
+        "diagnostics": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "warnings": { "type": "array", "items": { "$ref": "#/$defs/warning" } }
+      },
+      "additionalProperties": true
+    },
+    "redactionResult": {
+      "type": "object",
+      "required": ["data", "format", "removed", "outcome", "warnings"],
+      "properties": {
+        "data": { "$ref": "#/$defs/binary" },
+        "format": { "type": "string", "minLength": 1 },
+        "removed": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "outcome": { "type": "object", "required": ["successful", "complete", "unapplied", "reasons"], "properties": { "successful": { "type": "boolean" }, "complete": { "type": "boolean" }, "unapplied": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } }, "reasons": { "type": "array", "items": { "type": "string" } } }, "additionalProperties": true },
+        "warnings": { "type": "array", "items": { "$ref": "#/$defs/warning" } }
+      },
+      "additionalProperties": true
+    },
+    "sanitizationResult": {
+      "type": "object",
+      "required": ["successful", "data", "format", "retained", "warnings", "reasons"],
+      "allOf": [
+        { "if": { "required": ["successful"], "properties": { "successful": { "const": true } } }, "then": { "properties": { "data": { "$ref": "#/$defs/binary" } } } },
+        { "if": { "required": ["successful"], "properties": { "successful": { "const": false } } }, "then": { "properties": { "data": { "type": "null" } } } }
+      ],
+      "properties": {
+        "successful": { "type": "boolean" },
+        "data": { "anyOf": [{ "$ref": "#/$defs/binary" }, { "type": "null" }] },
+        "format": { "type": "string", "minLength": 1 },
+        "retained": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "warnings": { "type": "array", "items": { "$ref": "#/$defs/warning" } },
+        "reasons": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "sidecarResult": {
+      "type": "object",
+      "required": ["source", "block", "packets", "value", "coverage"],
+      "properties": {
+        "source": { "type": "object", "required": ["kind", "id", "byteLength", "sha256"], "properties": { "kind": { "const": "sidecar" }, "id": { "type": "string", "minLength": 1 }, "byteLength": { "type": "integer", "minimum": 0 }, "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" } }, "additionalProperties": true },
+        "block": { "type": "object", "required": ["id", "family", "container", "status", "offset", "length"], "properties": { "id": { "type": "string", "minLength": 1 }, "family": { "const": "XMP" }, "container": { "const": "XMP sidecar" }, "status": { "enum": ["decoded", "malformed", "skipped"] }, "offset": { "const": 0 }, "length": { "type": "integer", "minimum": 0 } }, "additionalProperties": true },
+        "packets": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        "value": { "$ref": "#/$defs/jsonValue" },
+        "coverage": { "type": "object", "required": ["complete", "sourceBytes", "packetCount", "propertyCount", "unknownPropertyCount", "diagnostics"], "properties": { "complete": { "type": "boolean" }, "sourceBytes": { "type": "integer", "minimum": 0 }, "packetCount": { "type": "integer", "minimum": 0 }, "propertyCount": { "type": "integer", "minimum": 0 }, "unknownPropertyCount": { "type": "integer", "minimum": 0 }, "diagnostics": { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } } }, "additionalProperties": true }
+      },
+      "additionalProperties": true
+    }
+  }
+}

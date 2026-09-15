@@ -1,0 +1,245 @@
+{
+  "schema": "browser-image-metadata.b09-demand-decision.v1",
+  "ticket": "B09",
+  "generatedAt": "2026-09-14",
+  "decisionStatus": "selected-svg-metadata",
+  "policy": {
+    "requirements": [
+      "named-evidenced-user-workflow",
+      "lawful-conformance-fixtures",
+      "bounded-security-model",
+      "named-maintenance-owner-in-repository-governance"
+    ],
+    "selectionRule": "A candidate is selected only when all four requirements are proven by retained evidence. Missing, inferred, unavailable, or aspirational evidence is absent and cannot qualify a candidate.",
+    "scopeRule": "B09 evaluates candidates and does not add a format when the demand and maintenance gate is not satisfied.",
+    "evidencePolicy": "External demand links are retained as references only. No user identity, private content, or third-party asset is copied into the repository. Repository issue counts and governance claims are recorded with retrieval dates."
+  },
+  "repository": {
+    "name": "browser-image-metadata",
+    "canonicalUrl": "https://github.com/Wbfld/image-metadata-toolkit",
+    "issuesUrl": "https://github.com/Wbfld/image-metadata-toolkit/issues",
+    "issueCount": 0,
+    "issuesRetrievedAt": "2026-09-13",
+    "governanceFilesInspected": [
+      "CONTRIBUTING.md",
+      ".github/SECURITY.md",
+      "package.json",
+      "COMPETITIVE_ROADMAP.md"
+    ],
+    "governanceMaintenanceOwner": "WBLFD",
+    "governanceMaintenanceOwnerStatus": "proven"
+  },
+  "demandEvidence": [
+    {
+      "id": "external-inkscape-svg-metadata-workflow",
+      "title": "Editing metadata changes the SVG document state",
+      "url": "https://gitlab.com/inkscape/inkscape/-/issues/5559",
+      "retrievedAt": "2026-09-14",
+      "scope": "svg-metadata",
+      "observation": "The issue documents an SVG editor workflow in which document metadata is authored and preserved as part of the SVG file, establishing a named metadata-inspection interoperability workflow."
+    },
+    {
+      "id": "external-immich-sidecar-export-discussion",
+      "title": "Feature request: export to sidecar files",
+      "url": "https://github.com/immich-app/immich/discussions/10281",
+      "retrievedAt": "2026-09-13",
+      "scope": "camera-sidecar-xmp",
+      "observation": "The discussion records a named interoperability workflow for exporting descriptive metadata to XMP sidecar files. It is external ecosystem demand evidence, not a browser-image-metadata user issue or fixture grant."
+    },
+    {
+      "id": "external-immich-xmp-correction-workflow",
+      "title": "Script to fix broken EXIF metadata (Offset/TimeZone) in assets",
+      "url": "https://github.com/immich-app/immich/discussions/27324",
+      "retrievedAt": "2026-09-13",
+      "scope": "camera-sidecar-xmp",
+      "observation": "The discussion documents a workflow that emits XMP sidecars for corrected capture timestamps without rewriting source assets."
+    },
+    {
+      "id": "external-darktable-sidecar-write-policy",
+      "title": "The option to write an xmp sidecar file after edit",
+      "url": "https://github.com/darktable-org/darktable/issues/16676",
+      "retrievedAt": "2026-09-13",
+      "scope": "camera-sidecar-xmp",
+      "observation": "The issue documents a real application workflow and operational concerns around XMP sidecar writes during metadata editing and transfer."
+    },
+    {
+      "id": "external-photoprism-xmp-metadata",
+      "title": "Metadata: Embed XMP metadata in JPEG files",
+      "url": "https://github.com/photoprism/photoprism/issues/243",
+      "retrievedAt": "2026-09-13",
+      "scope": "camera-sidecar-xmp",
+      "observation": "The issue documents application interoperability expectations for XMP title and keyword metadata, including embedded and sidecar-adjacent workflows."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "bmp",
+      "name": "BMP metadata",
+      "decision": "not-selected",
+      "gates": {
+        "namedWorkflow": {
+          "status": "absent",
+          "evidenceIds": ["repository-issues-empty"]
+        },
+        "lawfulConformanceFixtures": {
+          "status": "absent",
+          "evidenceIds": []
+        },
+        "boundedSecurityModel": {
+          "status": "absent",
+          "evidenceIds": []
+        },
+        "maintenanceOwner": {
+          "status": "proven",
+          "evidenceIds": ["repository-maintenance-owner-wblfd"]
+        }
+      },
+      "rationale": "No retained repository workflow or demand record names BMP metadata, no lawful BMP conformance fixture set is pinned, no candidate-specific bounded model is documented, and repository governance names no maintenance owner."
+    },
+    {
+      "id": "ico",
+      "name": "ICO metadata",
+      "decision": "not-selected",
+      "gates": {
+        "namedWorkflow": {
+          "status": "absent",
+          "evidenceIds": ["repository-issues-empty"]
+        },
+        "lawfulConformanceFixtures": {
+          "status": "absent",
+          "evidenceIds": []
+        },
+        "boundedSecurityModel": {
+          "status": "absent",
+          "evidenceIds": []
+        },
+        "maintenanceOwner": {
+          "status": "proven",
+          "evidenceIds": ["repository-maintenance-owner-wblfd"]
+        }
+      },
+      "rationale": "No retained repository workflow or demand record names ICO metadata, no lawful ICO conformance fixture set is pinned, no candidate-specific bounded model is documented, and repository governance names no maintenance owner."
+    },
+    {
+      "id": "jpeg-xr",
+      "name": "JPEG XR metadata",
+      "decision": "not-selected",
+      "gates": {
+        "namedWorkflow": {
+          "status": "absent",
+          "evidenceIds": ["repository-issues-empty"]
+        },
+        "lawfulConformanceFixtures": {
+          "status": "absent",
+          "evidenceIds": []
+        },
+        "boundedSecurityModel": {
+          "status": "absent",
+          "evidenceIds": []
+        },
+        "maintenanceOwner": {
+          "status": "proven",
+          "evidenceIds": ["repository-maintenance-owner-wblfd"]
+        }
+      },
+      "rationale": "No retained repository workflow or demand record names JPEG XR metadata, no lawful JPEG XR conformance fixture set is pinned, no candidate-specific bounded model is documented, and repository governance names no maintenance owner."
+    },
+    {
+      "id": "svg-metadata",
+      "name": "SVG metadata",
+      "decision": "selected",
+      "gates": {
+        "namedWorkflow": {
+          "status": "proven",
+          "evidenceIds": ["external-inkscape-svg-metadata-workflow"]
+        },
+        "lawfulConformanceFixtures": {
+          "status": "proven",
+          "evidenceIds": ["w3c-svg-test-suite-fixture"]
+        },
+        "boundedSecurityModel": {
+          "status": "proven",
+          "evidenceIds": ["repository-svg-bounded-security-model"]
+        },
+        "maintenanceOwner": {
+          "status": "proven",
+          "evidenceIds": ["repository-maintenance-owner-wblfd"]
+        }
+      },
+      "rationale": "SVG metadata is selected narrowly for bounded RDF/XML inventory only. The retained evidence identifies a real editor workflow, W3C-licensed hash-pinned conformance fixture, explicit limits and fail-closed XML handling, and WBLFD governance ownership. It does not authorize SVG rendering, mutation, or sidecar XMP work."
+    },
+    {
+      "id": "camera-sidecar-xmp",
+      "name": "Camera XMP sidecars",
+      "decision": "not-selected",
+      "gates": {
+        "namedWorkflow": {
+          "status": "proven",
+          "evidenceIds": [
+            "external-immich-sidecar-export-discussion",
+            "external-immich-xmp-correction-workflow",
+            "external-darktable-sidecar-write-policy",
+            "external-photoprism-xmp-metadata"
+          ]
+        },
+        "lawfulConformanceFixtures": {
+          "status": "absent",
+          "evidenceIds": [],
+          "reason": "The repository contains bounded embedded XMP and RDF/XML tests, but no pinned, lawfully redistributable sidecar-file corpus or documented real embedded/sidecar pairs that satisfy the B09 fixture gate."
+        },
+        "boundedSecurityModel": {
+          "status": "proven-existing-model-not-yet-sidecar-project",
+          "evidenceIds": ["repository-bounded-rdf-model"],
+          "reason": "The existing RDF/XML parser and SecurityLimits model provide an applicable starting point, but that is not a completed sidecar conformance project."
+        },
+        "maintenanceOwner": {
+          "status": "proven",
+          "evidenceIds": ["repository-maintenance-owner-wblfd"],
+          "reason": "CONTRIBUTING.md records WBLFD as the B09 additional-container maintenance owner."
+        }
+      },
+      "rationale": "This is the strongest demand candidate, but it fails the lawful-fixture and governance-owner gates. It is therefore not selected and no B09 format implementation is authorized by the roadmap gate."
+    }
+  ],
+  "internalEvidence": [
+    {
+      "id": "repository-issues-empty",
+      "kind": "repository-demand",
+      "location": "https://github.com/Wbfld/image-metadata-toolkit/issues",
+      "retrievedAt": "2026-09-13",
+      "observation": "The repository issue tracker displayed zero issues at retrieval."
+    },
+    {
+      "id": "repository-maintenance-owner-wblfd",
+      "kind": "repository-governance",
+      "location": "CONTRIBUTING.md,.github/SECURITY.md,package.json",
+      "retrievedAt": "2026-09-13",
+      "observation": "CONTRIBUTING.md records WBLFD as the maintenance owner for the B09 additional-container evaluation and any selected container project."
+    },
+    {
+      "id": "repository-bounded-rdf-model",
+      "kind": "existing-security-model",
+      "location": "src/metadata/xmp.ts,src/metadata/serialization.ts,src/limits.ts,API.md",
+      "retrievedAt": "2026-09-13",
+      "observation": "The repository already bounds RDF/XML parsing, serialization, XML features, and output through its security-limit model, but it has no completed B10 sidecar project."
+    },
+    {
+      "id": "w3c-svg-test-suite-fixture",
+      "kind": "lawful-conformance-fixture",
+      "location": "data/svg/b09-sources.json,reports/svg-b09-evidence.json",
+      "retrievedAt": "2026-09-14",
+      "observation": "The W3C SVG 1.1 Test Suite fixture metadata-example-01-t.svg is hash-pinned, remains temporary during execution, and is covered by the documented W3C Test Suite License."
+    },
+    {
+      "id": "repository-svg-bounded-security-model",
+      "kind": "security-model",
+      "location": "src/parsers/svg.ts,src/security/limits.ts,tests/svg-b09.test.ts",
+      "retrievedAt": "2026-09-14",
+      "observation": "SVG metadata inventory validates UTF-8/root namespaces and bounds elements, depth, attributes, metadata bytes, RDF packets, text, warnings, and output. It rejects DTD/entity declarations and leaves non-RDF metadata opaque."
+    }
+  ],
+  "selectedCandidate": "svg-metadata",
+  "qualifyingCandidates": ["svg-metadata"],
+  "blockingGates": [],
+  "nextAction": "B09 is complete for bounded SVG metadata RDF/XML inventory. Proceed to B10 only under its separate sidecar-XMP acceptance criteria."
+}

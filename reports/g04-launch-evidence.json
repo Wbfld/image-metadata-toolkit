@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "reportVersion": "g04-launch-audit/1",
+  "status": "passed",
+  "generatedAt": "2026-09-15T04:24:01.535Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "demos": {
+    "metadataRemoval": {
+      "inputSha256": "e46fed422d5b941cb98e710e7afff6f6c8e51aabd1a72b8c2a65ab52cd1a76f3",
+      "outputSha256": "283497b31dcf2a52030d3cc7753b8a75ef95ecbb44c86a92b52bc7edd2c843b5",
+      "orientation": 6,
+      "iccComplete": true,
+      "gpsRemoved": true,
+      "preservationStatus": "passed",
+      "protectedPayloadMatches": 1,
+      "protectedPayloadMismatches": 0
+    },
+    "largeImageMetadataRanges": {
+      "inputBytes": 209715200,
+      "bytesRead": 645,
+      "readRequests": 39,
+      "fullMaterializationRequested": false
+    },
+    "standardsInspection": {
+      "propertyIds": [
+        "iptc:altTextAccessibility",
+        "iptc:aIPromptInformation",
+        "iptc:aISystemUsed",
+        "iptc:dataMining"
+      ],
+      "decodedPropertyCount": 4,
+      "ai2025PropertyCount": 4,
+      "compatibilityViews": [
+        "exifreader",
+        "exifr"
+      ]
+    },
+    "protectedMetadataRefusal": {
+      "c2pa": {
+        "refused": true,
+        "atomic": true
+      },
+      "ultraHdr": {
+        "refused": true,
+        "atomic": true
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "path": "G04_LAUNCH_PLAN.md",
+      "byteLength": 3399,
+      "sha256": "faadee8278272e0a6f9e62a7186a927c3db883a1e9a2f0990c16347be7dab696"
+    },
+    {
+      "path": "G04_TECHNICAL_ARTICLE.md",
+      "byteLength": 3895,
+      "sha256": "13328b517254f07c98dacf6f33957b45218760720b86ad71f7f2753043de14ae"
+    },
+    {
+      "path": "G04_INTEGRATION_EXAMPLES.md",
+      "byteLength": 1533,
+      "sha256": "b5ed22b5eca20d1b440a0f25164b6ee35f4e3025acc20aed5e892dbd7c92db09"
+    },
+    {
+      "path": "docs-site/index.html",
+      "byteLength": 2569,
+      "sha256": "b0455604857d5b883b7eb17f077594e6e4d0a3cd0e960dbc02af75d80a15e8d6"
+    },
+    {
+      "path": "docs-site/playground.html",
+      "byteLength": 1890,
+      "sha256": "0ba0b9bc67ac59a93c766fb271af6580c388f63a8f464ca51a383a95e604c8af"
+    },
+    {
+      "path": "BENCHMARKS.md",
+      "byteLength": 4037,
+      "sha256": "0eda52e0d8362c2403131167c13ede4ddc82401ce3be6aee6f037577aec61dca"
+    },
+    {
+      "path": "reports/g02-comparison.json",
+      "byteLength": 14764,
+      "sha256": "3c86ce3eddd95d4bdd4a29176976a76866223bef70bbd3e2a8f0d03550dfe7ac"
+    },
+    {
+      "path": "examples/integrations/README.md",
+      "byteLength": 813,
+      "sha256": "eab7ca5f2d59092141057055c4fec232d8a82c0329455bec48836b45b3c2a004"
+    },
+    {
+      "path": "examples/integrations/deno.ts",
+      "byteLength": 326,
+      "sha256": "bd5a17a15508d0e1d805e6664b018584b391d018572c935d77bdd69e52c404d9"
+    },
+    {
+      "path": "examples/integrations/next-client.tsx",
+      "byteLength": 451,
+      "sha256": "f8d4147fbfca1a08f8b6591e7156d148d1cfa484888ffdb6c7dd6eee4729cae0"
+    },
+    {
+      "path": "examples/integrations/react.tsx",
+      "byteLength": 447,
+      "sha256": "ee5ca50ad8170dc96a1a5618c2324eae717f0d246726bed8e221aa51a3455aba"
+    },
+    {
+      "path": "examples/integrations/vite.ts",
+      "byteLength": 332,
+      "sha256": "3bb4e1babb02e8d1d6c13401cf7e229c407e0fa03a5bdaa15dc673bbfc2d8e6a"
+    }
+  ],
+  "publication": {
+    "status": "ready-for-operator-publication",
+    "externalPublicationPerformed": false,
+    "reason": "This repository operation does not publish or modify external services."
+  },
+  "normalizationPolicy": [
+    "SHA-256 lowercase hexadecimal",
+    "counts and statuses are derived from executed APIs",
+    "reader compatibility views are only shape smoke checks",
+    "protected encoded payloads are compared by the preservation verifier",
+    "no pixel equivalence is claimed"
+  ]
+}

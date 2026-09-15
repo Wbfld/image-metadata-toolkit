@@ -16,6 +16,7 @@ export const DEFAULT_BASELINE_PATH = "baselines/2.0.0-alpha.3.json";
 const TEST_RESULTS_PATH = join(root, "coverage", "test-results.json");
 const COVERAGE_PATH = join(root, "coverage", "coverage-summary.json");
 const BENCHMARK_READERS = Object.freeze(["toolkit", "exifreader", "exifr"]);
+const childProcessEnvironment = Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== "npm_config_dry_run" && key !== "npm_config_dry-run"));
 
 function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -174,7 +175,7 @@ async function packArtifact() {
   try {
     const { stdout } = await execFileAsync("npm", ["pack", "--json", "--pack-destination", directory], {
       cwd: root,
-      env: { ...process.env, npm_config_cache: join(directory, "npm-cache") },
+      env: { ...childProcessEnvironment, npm_config_cache: join(directory, "npm-cache") },
       maxBuffer: 16 * 1024 * 1024,
     });
     const [packed] = JSON.parse(stdout);
@@ -472,7 +473,7 @@ export function compareStableFields(expected, actual) {
 }
 
 async function run(command, args, options = {}) {
-  return execFileAsync(command, args, { cwd: root, maxBuffer: 32 * 1024 * 1024, ...options });
+  return execFileAsync(command, args, { cwd: root, maxBuffer: 32 * 1024 * 1024, env: childProcessEnvironment, ...options });
 }
 
 async function captureReleaseArtifacts() {

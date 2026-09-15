@@ -64,6 +64,12 @@ type ExactRedactionAddress =
     readonly namespaceUri: string;
     readonly localName: string;
     readonly order: number;
+  }
+  | {
+    readonly kind: "PHOTOSHOP";
+    readonly fieldId: string;
+    readonly blockId: string;
+    readonly resourceId: string;
   };
 
 interface RedactionExactMapping {
@@ -90,6 +96,7 @@ function targetLabel(target: RedactionTarget): string {
     case "field-id": return `field:${selector.fieldId}`;
     case "block": return `block:${selector.blockId}`;
     case "associated-image": return `associated-image:${selector.imageId}`;
+    case "photoshop-resource": return `photoshop-resource:${selector.resourceId}`;
   }
 }
 
@@ -148,6 +155,12 @@ function xmpOrder(fieldId: string): number | null {
 }
 
 function exactAddressesForTarget(result: MetadataResult, target: RedactionTarget): readonly ExactRedactionAddress[] {
+  const photoshopSelector = typeof target === "object" && target.kind === "selector" && target.selector.kind === "photoshop-resource" ? target.selector : null;
+  if (photoshopSelector !== null) {
+    const resource = result.photoshop?.resources.find((candidate) => candidate.id === photoshopSelector.resourceId);
+    if (resource === undefined) return [];
+    return [{ kind: "PHOTOSHOP", fieldId: `Photoshop:${resource.id}`, blockId: `${resource.id}:block`, resourceId: resource.id }];
+  }
   const fieldId = exactFieldRequest(target);
   const namespace = exactNamespaceRequest(target);
   if (fieldId === null && namespace === null) return [];
@@ -189,7 +202,9 @@ function exactAddressesForTarget(result: MetadataResult, target: RedactionTarget
       ? `${address.kind}:${address.blockId}:${address.directoryId ?? ""}:${address.ifd}:${address.tag}`
       : address.kind === "IPTC"
         ? `${address.kind}:${address.blockId}:${address.tag}:${address.occurrence}`
-        : `${address.kind}:${address.blockId}:${address.packetIndex}:${address.namespaceUri}#${address.localName}:${address.order}`;
+        : address.kind === "XMP"
+          ? `${address.kind}:${address.blockId}:${address.packetIndex}:${address.namespaceUri}#${address.localName}:${address.order}`
+          : `${address.kind}:${address.blockId}:${address.resourceId}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -291,6 +306,7 @@ function matchingBlockIds(result: MetadataResult, target: RedactionTarget): read
     const sourceBlockIds = candidates.map((candidate) => candidate.source.blockId);
     return uniqueBlockIds(sourceBlockIds.map((blockId) => blockId === undefined || blockId === null ? undefined : physicalBlockId(result, blockId)));
   }
+  if (selector.kind === "photoshop-resource") return result.photoshop?.resources.some((resource) => resource.id === selector.resourceId) === true ? [`${selector.resourceId}:block`] : [];
   return uniqueBlockIds([
     ...result.fields.filter((field) => fieldMatchesId(field, selector.fieldId)).map((field) => field.source?.blockId),
     ...semanticCandidatesForField(result, selector.fieldId).map((candidate) => candidate.source.blockId),
@@ -300,6 +316,7 @@ function matchingBlockIds(result: MetadataResult, target: RedactionTarget): read
 function exactAddressKey(address: ExactRedactionAddress): string {
   if (address.kind === "EXIF") return `${address.kind}:${address.blockId}:${address.directoryId ?? ""}:${address.ifd}:${address.tag}`;
   if (address.kind === "IPTC") return `${address.kind}:${address.blockId}:${address.tag}:${address.occurrence}`;
+  if (address.kind === "PHOTOSHOP") return `${address.kind}:${address.blockId}:${address.resourceId}`;
   return `${address.kind}:${address.blockId}:${address.packetIndex}:${address.namespaceUri}#${address.localName}:${address.order}`;
 }
 
@@ -424,14 +441,16 @@ export async function redactExactMetadata(bytes: Uint8Array, options: RedactOpti
     }
     const xmp = buildExactXmpEdits(parsed, addresses, limits);
     const iptc = buildExactIptcEdits(parsed, addresses, limits);
+    const photoshop = addresses.filter((address): address is Extract<ExactRedactionAddress, { readonly kind: "PHOTOSHOP" }> => address.kind === "PHOTOSHOP");
     let current = new Uint8Array(bytes);
     const format = detectFormat(bytes).format;
-    if (xmp.edits.length > 0 || iptc.edits.length > 0 || iptc.removeBlocks.length > 0) {
+    if (xmp.edits.length > 0 || iptc.edits.length > 0 || iptc.removeBlocks.length > 0 || photoshop.length > 0) {
       if (format === "jpeg") {
         const blocks = [
           ...xmp.edits.map((edit) => ({ op: "replace" as const, kind: "standard-xmp" as const, blockId: edit.blockId, data: edit.data })),
           ...iptc.edits.map((edit) => ({ op: "replace" as const, kind: "iptc" as const, blockId: edit.blockId, data: edit.data })),
           ...iptc.removeBlocks.map((blockId) => ({ op: "remove" as const, kind: "iptc" as const, blockId })),
+          ...photoshop.map((address) => ({ op: "remove" as const, kind: "photoshop-resource" as const, resourceId: address.resourceId })),
         ];
         current = rewriteJpegMetadata(current, { blocks, duplicatePolicy: "replace-target", verify: true, ...(options.c2pa === undefined ? {} : { c2pa: options.c2pa }) }).data as typeof current;
       } else if (format === "png") {
@@ -440,7 +459,7 @@ export async function redactExactMetadata(bytes: Uint8Array, options: RedactOpti
       } else if (format === "webp") {
         if (iptc.edits.length > 0 || iptc.removeBlocks.length > 0) throw new Error("WebP IPTC field redaction has no WebP IPTC resource writer.");
         current = rewriteWebpMetadata(current, { blocks: xmp.edits.map((edit) => ({ op: "replace" as const, kind: "xmp" as const, blockId: edit.blockId, data: edit.data })), duplicatePolicy: "replace-target", verify: true, preservation: { orientationPolicy: "preserve" }, ...(options.c2pa === undefined ? {} : { c2pa: options.c2pa }) }).data as typeof current;
-      } else if (xmp.edits.length > 0 || iptc.edits.length > 0 || iptc.removeBlocks.length > 0) {
+      } else if (xmp.edits.length > 0 || iptc.edits.length > 0 || iptc.removeBlocks.length > 0 || photoshop.length > 0) {
         throw new Error(`Exact ${format.toUpperCase()} XMP/IPTC redaction is not supported by a lossless container writer.`);
       }
     }
@@ -541,7 +560,7 @@ export async function resolveRedactionOptions(bytes: Uint8Array, options: Redact
   const hasTypedTarget = [...options.remove, ...(options.preserve ?? [])].some((target) => typeof target !== "string");
   if (!hasTypedTarget) return normalizeStatic(options, limits);
   const { parseMetadata } = await import("../index.js");
-  const parsed = await parseMetadata(bytes, { limits, ...(options.registry === undefined ? {} : { registry: options.registry }), select: { groups: ["Dimensions", "EXIF", "XMP", "IPTC", "ICC", "JFIF", "PNGText"] } });
+  const parsed = await parseMetadata(bytes, { limits, ...(options.registry === undefined ? {} : { registry: options.registry }), select: { groups: ["Dimensions", "EXIF", "XMP", "IPTC", "ICC", "JFIF", "PNGText", "Photoshop"] } });
   const requests = [...options.remove, ...(options.preserve ?? [])];
   const exact = requests.map((request) => ({ request, addresses: exactAddressesForTarget(parsed, request) }));
   const mappings = requests.map((request, index) => {

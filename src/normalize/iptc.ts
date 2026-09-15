@@ -11,6 +11,7 @@ import type {
   MetadataBlock,
   MetadataField,
   MetadataResult,
+  ParsedMetadataResult,
   MetadataWarning,
   SecurityLimits,
   Sensitivity,
@@ -349,7 +350,7 @@ export function deriveIptcSemantic(
 }
 
 /** Attach S06 semantics without changing the legacy flattened views. */
-export function attachIptcSemantic(result: MetadataResult | Omit<MetadataResult, "completeness" | "blocks" | "coverage">, limits: SecurityLimits, options: IptcSemanticOptions = {}): MetadataResult | Omit<MetadataResult, "completeness" | "blocks" | "coverage"> {
+export function attachIptcSemantic(result: MetadataResult | ParsedMetadataResult, limits: SecurityLimits, options: IptcSemanticOptions = {}): MetadataResult | ParsedMetadataResult {
   if (result.iptc === null && result.xmp === null) return result;
   const blocks = "blocks" in result ? result.blocks : [];
   const semantic = deriveIptcSemantic(result.iptc, result.xmp, blocks, limits, options);

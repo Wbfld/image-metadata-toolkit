@@ -200,6 +200,7 @@ function supportFor(format: ParsedMetadataResult["format"]): Support {
   if (format === "gif") return { storedDimensions: "supported", displayDimensions: "conditional", bitDepth: "conditional", components: "supported", colorModel: "supported", alpha: "conditional", progressive: "supported", interlaced: "supported", animation: "conditional", relationships: "conditional" };
   if (format === "tiff") return { ...EMPTY_SUPPORT, progressive: "unsupported", interlaced: "unsupported", animation: "unsupported", relationships: "supported" };
   if (format === "heif" || format === "avif") return { ...EMPTY_SUPPORT, progressive: "unsupported", interlaced: "unsupported", animation: "conditional", relationships: "supported" };
+  if (format === "cr3" || format === "raf") return { ...EMPTY_SUPPORT, displayDimensions: "unsupported", progressive: "unsupported", interlaced: "unsupported", animation: "conditional", relationships: "supported" };
   if (format === "jxl") return { storedDimensions: "conditional", displayDimensions: "conditional", bitDepth: "conditional", components: "conditional", colorModel: "conditional", alpha: "conditional", progressive: "conditional", interlaced: "conditional", animation: "conditional", relationships: "conditional" };
   return EMPTY_SUPPORT;
 }
@@ -233,6 +234,59 @@ export function deriveImageDetails(result: ParsedMetadataResult, bytes?: Uint8Ar
   }
   if (raw.animation.length === 0) { const frame = result.fields.find((field) => field.name === "FrameCount"); const loop = result.fields.find((field) => field.name === "LoopCount"); const frames = frame === undefined ? null : numberValue(frame.value); const loopCount = loop === undefined ? null : numberValue(loop.value); if (frames !== null || loopCount !== null) raw.animation.push(candidate({ frames, loopCount }, `${result.format} parsed fields`, frame?.source?.valueOffset ?? null, frame?.source?.blockId ?? null, "valid", "Validated parser animation fields.")); }
   if (result.format === "heif" || result.format === "avif") { raw.formatSpecific = { ...raw.formatSpecific, nclx: result.nclx ?? null, primaryBlocks: (result.blocks ?? []).filter((block) => block.associatedImage?.startsWith("item:") === true).map((block) => ({ id: block.id, associatedImage: block.associatedImage, role: block.role ?? null, offset: block.offset })) }; if (raw.primaryImage.length === 0) { const ids = [...new Set((result.blocks ?? []).map((block) => block.associatedImage).filter((id): id is string => id !== null && id.startsWith("item:")))]; raw.primaryImage.push(...ids.slice(0, effectiveLimits.maxImageDetailCandidates).map((id) => candidate(id, `${result.format} item-properties`, null, null, "valid", "Validated primary item relationship from item properties."))); } }
+  if (result.raw !== undefined && result.raw !== null) {
+    raw.formatSpecific = {
+      ...raw.formatSpecific,
+      raw: {
+        kind: result.raw.kind,
+        container: result.raw.container,
+        detection: result.raw.detection,
+        signature: result.raw.signature,
+        complete: result.raw.complete,
+        rawPayloads: result.raw.rawPayloads,
+        previews: result.raw.previews,
+        thumbnails: result.raw.thumbnails,
+        opaquePayloads: result.raw.opaquePayloads,
+      },
+    };
+  }
+  if (result.cr3 !== undefined) {
+    raw.formatSpecific = {
+      ...raw.formatSpecific,
+      cr3: {
+        container: result.cr3.container,
+        majorBrand: result.cr3.majorBrand,
+        compatibleBrands: result.cr3.compatibleBrands,
+        boxCount: result.cr3.boxes.length,
+        itemGraphCount: result.cr3.itemGraphs.length,
+        sequenceCount: result.cr3.sequences.length,
+        primarySelection: result.cr3.primarySelection,
+        rangeCount: result.cr3.ranges.length,
+        previewRangeCount: result.cr3.previewRanges.length,
+        metadataRangeCount: result.cr3.metadataRanges.length,
+        rawRangeCount: result.cr3.rawRanges.length,
+        opaqueStructureCount: result.cr3.opaqueStructures.length,
+        complete: result.cr3.complete,
+      },
+    };
+  }
+  if (result.raf !== undefined) {
+    raw.formatSpecific = {
+      ...raw.formatSpecific,
+      raf: {
+        container: result.raf.container,
+        version: result.raf.version,
+        camera: result.raf.camera,
+        directory: result.raf.directory,
+        rangeCount: result.raf.ranges.length,
+        previewRangeCount: result.raf.previewRanges.length,
+        metadataRangeCount: result.raf.metadataRanges.length,
+        rawRangeCount: result.raf.rawRanges.length,
+        opaqueStructureCount: result.raf.opaqueStructures.length,
+        complete: result.raf.complete,
+      },
+    };
+  }
   if (result.heifSequences !== undefined) {
     raw.formatSpecific = { ...raw.formatSpecific, sequenceCount: result.heifSequences.length, sequenceTracks: result.heifSequences.flatMap((sequence) => sequence.tracks.map((track) => ({ id: track.id, kind: track.kind, samples: track.samples.length, primary: sequence.primaryTrackId === track.id }))) };
     for (const sequence of result.heifSequences) {
@@ -240,6 +294,29 @@ export function deriveImageDetails(result: ParsedMetadataResult, bytes?: Uint8Ar
       const track = sequence.tracks.find(({ id }) => id === sequence.primaryTrackId);
       if (track !== undefined) raw.animation.push(candidate({ frames: track.samples.length, loopCount: null }, `HEIF sequence:${sequence.sourceOffset}/track:${track.id}`, track.sourceOffset, null, sequence.complete ? "valid" : "unknown", "Count of bounded sequence samples; no pixel frames were decoded."));
     }
+  }
+  if (result.photoshop !== undefined && result.photoshop !== null) {
+    raw.formatSpecific = {
+      ...raw.formatSpecific,
+      photoshop: {
+        resourceCount: result.photoshop.resources.length,
+        decodedResourceCount: result.photoshop.resources.filter((resource) => resource.status === "decoded").length,
+        unknownResourceCount: result.photoshop.resources.filter((resource) => resource.status === "unknown").length,
+        complete: result.photoshop.complete,
+      },
+    };
+  }
+  if (result.makerNotes !== undefined && result.makerNotes !== null) {
+    raw.formatSpecific = {
+      ...raw.formatSpecific,
+      makerNotes: {
+        noteCount: result.makerNotes.notes.length,
+        decodedNoteCount: result.makerNotes.notes.filter((note) => note.status === "detected-decoded").length,
+        fieldCount: result.makerNotes.notes.reduce((count, note) => count + note.fields.length, 0),
+        opaqueRangeCount: result.makerNotes.notes.reduce((count, note) => count + note.opaqueRanges.length, 0),
+        complete: result.makerNotes.complete,
+      },
+    };
   }
   const map = mapOffset ?? ((offset: number): number => offset); const remap = <T>(items: readonly Candidate<T>[]): Candidate<T>[] => items.slice(0, effectiveLimits.maxImageDetailCandidates).map((item) => ({ ...item, offset: item.offset === null ? null : map(item.offset) }));
   const stored = remap(raw.storedDimensions); const display = remap(raw.displayDimensions); const bitDepth = remap(raw.bitDepth); const components = remap(raw.components); const colorModel = remap(raw.colorModel); const alpha = remap(raw.alpha); const progressive = remap(raw.progressive); const interlaced = remap(raw.interlaced); const animation = remap(raw.animation).map((item): Candidate<{ readonly frames: number | null; readonly loopCount: number | null }> => { const value = item.value; if (value === null) return item; return { ...item, value: { ...value, frames: value.frames === null ? null : Math.min(value.frames, effectiveLimits.maxImageDetailFrames) } }; }); const orientation = remap(raw.orientation); const primary = remap(raw.primaryImage); const relationshipsMapped = raw.relationships.slice(0, effectiveLimits.maxImageDetailRelationships).map((item) => ({ ...item, offset: item.offset === null ? null : map(item.offset) }));

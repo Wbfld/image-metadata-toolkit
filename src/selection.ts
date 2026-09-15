@@ -1,6 +1,6 @@
 import type { MetadataGroup, MetadataSelection } from "./types.js";
 
-const GROUPS = new Set<MetadataGroup>(["Dimensions", "EXIF", "XMP", "IPTC", "ICC", "JFIF", "PNGText", "Transform", "Nclx"]);
+const GROUPS = new Set<MetadataGroup>(["Dimensions", "EXIF", "XMP", "IPTC", "ICC", "JFIF", "PNGText", "Photoshop", "MakerNote", "Transform", "Nclx"]);
 
 export interface ResolvedSelection {
   readonly groups: ReadonlySet<MetadataGroup> | null;

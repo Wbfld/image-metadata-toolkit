@@ -1,0 +1,10 @@
+export function sha256(value: Uint8Array | string): string;
+export function stableJson(value: unknown): string;
+export function validateSources(sources: unknown, lockfile: unknown): unknown;
+export function assertFixtureBytes(fixture: { readonly path: string; readonly bytes: number; readonly sha256: string }, bytes: Uint8Array): void;
+export function validatePublicApi(toolkit: Readonly<Record<string, unknown>>): readonly string[];
+export function assertEvidenceEquals(path: string, actual: string, expected: string): void;
+export function extractSnippets(markdown: string): ReadonlyMap<string, string>;
+export function validateDocumentation(markdown: string, codemodDecision: string): ReadonlyMap<string, string>;
+export function createCompatibilityReport(options: { readonly root: string; readonly toolkit: Readonly<Record<string, unknown>> }): Promise<Record<string, unknown>>;
+export function renderCompatibilityMarkdown(report: Record<string, unknown>): string;

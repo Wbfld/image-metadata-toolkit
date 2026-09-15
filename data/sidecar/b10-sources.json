@@ -1,0 +1,27 @@
+{
+  "schema": "browser-image-metadata.b10-sidecar-sources.v1",
+  "ticket": "B10",
+  "sources": [
+    {
+      "id": "w3c-rdf-1.1-xml-syntax",
+      "title": "RDF 1.1 XML Syntax",
+      "version": "RDF 1.1",
+      "url": "https://www.w3.org/TR/rdf-syntax-grammar/",
+      "license": "W3C Document License",
+      "retrieved": "2026-09-14",
+      "sha256": null,
+      "hashStatus": "reference-page-not-archived"
+    },
+    {
+      "id": "adobe-xmp-specifications",
+      "title": "XMP Specifications",
+      "version": "XMP specification Parts 1–3",
+      "url": "https://developer.adobe.com/xmp/docs/xmp-specifications/",
+      "license": "Adobe reference documentation; no source text or implementation code redistributed",
+      "retrieved": "2026-09-14",
+      "sha256": null,
+      "hashStatus": "reference-page-not-archived"
+    }
+  ],
+  "fixturePolicy": "The evidence command uses the repository's redistributable JPEG fixture and deterministic caller-authored XMP packets. It retains only hashes, identities, counts, diagnostics, and policy results; no third-party image or sidecar bytes are copied."
+}

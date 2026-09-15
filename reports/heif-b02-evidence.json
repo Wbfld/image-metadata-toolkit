@@ -1,7 +1,7 @@
 {
   "schema": "browser-image-metadata.heif-b02-evidence.v1",
   "status": "pass",
-  "generatedAt": "2026-09-13T12:33:30.488Z",
+  "generatedAt": "2026-09-15T03:36:47.318Z",
   "package": {
     "name": "browser-image-metadata",
     "version": "2.0.0-alpha.3"

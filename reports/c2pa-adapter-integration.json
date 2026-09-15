@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "passed",
-  "generatedAt": "2026-09-13T10:39:58.712Z",
+  "generatedAt": "2026-09-15T03:35:36.577Z",
   "policy": {
     "remoteManifestFetch": false,
     "cryptographicWork": "delegated exclusively to the official SDK"

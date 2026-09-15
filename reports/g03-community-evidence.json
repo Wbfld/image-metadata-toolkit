@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "reportVersion": "g03-community-program/1",
+  "status": "passed",
+  "generatedAt": "2026-09-15T04:43:10.935Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "scrubber": {
+    "status": "passed",
+    "source": {
+      "file": "base.png",
+      "byteLength": 171,
+      "sha256": "d2eb7e9208ea23ead0947738e379f7d6b356480370e6865960a1751203ad3fc0"
+    },
+    "inspection": {
+      "format": "png",
+      "complete": true,
+      "safe": false,
+      "findingsByCategory": {
+        "metadata-presence": 1
+      },
+      "findingCount": 1,
+      "warningCount": 0,
+      "gapCount": 0
+    },
+    "scrub": {
+      "successful": true,
+      "outputGenerated": true,
+      "outputPathProvided": true,
+      "outputSha256": "d2eb7e9208ea23ead0947738e379f7d6b356480370e6865960a1751203ad3fc0",
+      "reauditComplete": true,
+      "retained": [
+        "ICC",
+        "Orientation"
+      ],
+      "warningCount": 0,
+      "reasonCount": 0
+    },
+    "limitRefusal": true,
+    "reportPrivacy": "Raw metadata values, absolute paths, and fixture bytes are excluded."
+  },
+  "schema": {
+    "path": "schemas/community-tag-data.schema.json",
+    "sha256": "4b2496e0178f6c471a461164c04cbb4830c8404e0dfd772f6acf6414858433f9",
+    "requiredTagFields": [
+      "id",
+      "name",
+      "label",
+      "description",
+      "family",
+      "type",
+      "sensitivity",
+      "rawValueBehavior",
+      "validationRules"
+    ],
+    "boundedTags": 4096
+  },
+  "artifacts": [
+    {
+      "path": "COMMUNITY_PROVENANCE_TEMPLATE.md",
+      "byteLength": 1522,
+      "sha256": "419a1598614e814b718cc322da9f8b3db33a4a14a6d1338072a8fb5f1d7b459e"
+    },
+    {
+      "path": "COMMUNITY_REVIEW_CHECKLIST.md",
+      "byteLength": 2267,
+      "sha256": "121a36635f0cd2b39daa73f12054e8c67f10b738d9e7f4f94398e554f92174da"
+    },
+    {
+      "path": "COMMUNITY_CONTRIBUTOR_TICKETS.md",
+      "byteLength": 1334,
+      "sha256": "48eccfa10d8cfe3eb19baf38f242a11a8e305f44a3a8c96a3c7b4a223b63000d"
+    },
+    {
+      "path": "COMMUNITY_SUPPORT_POLICY.md",
+      "byteLength": 1092,
+      "sha256": "a89d747f4c656953d058d99e0b3fa0a0ee29d4fae355d6e3445a6a0ee1f5419d"
+    },
+    {
+      "path": "community/plugin-template.ts",
+      "byteLength": 3530,
+      "sha256": "2ae37e53a36b457b67804ed40a84d90a2ee7dcd9e479a9545ce5e19023651b79"
+    },
+    {
+      "path": "schemas/community-tag-data.schema.json",
+      "byteLength": 2558,
+      "sha256": "4b2496e0178f6c471a461164c04cbb4830c8404e0dfd772f6acf6414858433f9"
+    },
+    {
+      "path": "scripts/fixture-scrubber.mjs",
+      "byteLength": 6455,
+      "sha256": "8312ae88882ffec88f51c6784c5960f721f529cefb04e76b4e1e2a90a9614508"
+    }
+  ],
+  "acceptance": {
+    "fixtureScrubber": [
+      "bounded input",
+      "safe report",
+      "strict-policy output only after complete audit",
+      "configured-limit refusal"
+    ],
+    "provenanceTemplate": [
+      "source identity",
+      "license and redistribution permission",
+      "retrieval date",
+      "hashes",
+      "privacy review"
+    ],
+    "pluginTemplate": [
+      "versioned HTTPS hashed source",
+      "immutable identity",
+      "explicit per-operation plugin",
+      "no global registration"
+    ],
+    "tagSchema": [
+      "bounded tag count",
+      "physical identity",
+      "sensitivity",
+      "raw-value behavior",
+      "validation rules"
+    ],
+    "contributorProcess": [
+      "isolated ticket labels",
+      "review checklist",
+      "support response targets"
+    ]
+  },
+  "reportPrivacy": "This evidence retains hashes, counts, statuses, and file identities only; it does not retain third-party bytes or raw metadata values."
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "browser-image-metadata.b09-svg-sources.v1",
+  "ticket": "B09",
+  "maintenanceOwner": "WBLFD",
+  "retrievedAt": "2026-09-14",
+  "sources": [
+    {
+      "id": "w3c-svg-11-structure",
+      "url": "https://www.w3.org/TR/SVG/struct.html",
+      "version": "SVG 2 Recommendation",
+      "license": "W3C Document License",
+      "purpose": "Authoritative SVG metadata-element and namespace behavior."
+    },
+    {
+      "id": "w3c-svg-11-test-suite",
+      "url": "https://www.w3.org/Graphics/SVG/Test/Overview.html",
+      "version": "SVG 1.1 Test Suite, 20110816",
+      "license": "W3C Test Suite License",
+      "licenseUrl": "https://www.w3.org/copyright/test-suites-licenses/",
+      "purpose": "Lawful conformance fixture source."
+    }
+  ],
+  "archive": {
+    "url": "https://www.w3.org/Graphics/SVG/Test/20110816/archives/W3C_SVG_11_TestSuite.tar.gz",
+    "sha256": "b5f46cca1ad79b670f9179770b2366c57efd5c671d084144090feab4b7ff1030",
+    "license": "W3C Test Suite License"
+  },
+  "fixtures": [
+    {
+      "id": "w3c-svg-11-metadata-example-01-t",
+      "fileName": "metadata-example-01-t.svg",
+      "sourcePath": "svg/metadata-example-01-t.svg",
+      "bytes": 21675,
+      "sha256": "f5a736e7edbb49597af7681963be983fcc02d8963a67f98ed083a70502c7fac4",
+      "expectedPropertyIdentities": [
+        "http://purl.org/dc/elements/1.1/#description",
+        "http://purl.org/dc/elements/1.1/#format",
+        "http://purl.org/dc/elements/1.1/#subject",
+        "http://purl.org/dc/elements/1.1/#type"
+      ]
+    }
+  ]
+}

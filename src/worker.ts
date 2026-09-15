@@ -1,4 +1,5 @@
 import { MetadataError, parseMetadata, redactMetadata, sanitizeMetadata } from "./index.js";
+import { parseXmpSidecar } from "./sidecar.js";
 import { throwIfAborted } from "./security/abort.js";
 import type {
   MetadataInput,
@@ -9,10 +10,11 @@ import type {
   SanitizeOptions,
   SanitizationResult,
 } from "./types.js";
+import type { XmpSidecarParseOptions, XmpSidecarResult } from "./sidecar.js";
 
-type WorkerOperation = "parse" | "redact" | "sanitize";
-type WorkerResult = MetadataResult | RedactionResult | SanitizationResult;
-type WorkerOptions = ParseOptions | RedactOptions | SanitizeOptions;
+type WorkerOperation = "parse" | "redact" | "sanitize" | "sidecar";
+type WorkerResult = MetadataResult | RedactionResult | SanitizationResult | XmpSidecarResult;
+type WorkerOptions = ParseOptions | RedactOptions | SanitizeOptions | XmpSidecarParseOptions;
 type WorkerInput = ArrayBuffer | Blob;
 
 interface WorkerRequest {
@@ -127,6 +129,9 @@ export function createMetadataWorkerClient(port: MessagePortLike, options: Metad
     if (operation === "parse" && typeof (requestOptions as ParseOptions).jxlBrotliDecompressor === "function") {
       throw new MetadataError("UNSUPPORTED_STRUCTURE", "JxlBrotliDecompressor is a function and cannot be transferred through a structured-clone worker request; configure a decoder inside the worker instead.");
     }
+    if (operation === "parse" && Array.isArray((requestOptions as ParseOptions).makerNotePlugins)) {
+      throw new MetadataError("UNSUPPORTED_STRUCTURE", "MakerNote plugins are functions and cannot be transferred through a structured-clone worker request; install the explicit plugins inside the worker instead.");
+    }
     const data = workerInput(input, requestOptions.signal);
     throwIfAborted(requestOptions.signal);
     const id = nextId++;
@@ -151,6 +156,7 @@ export function createMetadataWorkerClient(port: MessagePortLike, options: Metad
 
   return {
     parse: (input: MetadataInput, requestOptions: ParseOptions = {}) => request<MetadataResult>("parse", input, requestOptions),
+    parseSidecar: (input: MetadataInput, requestOptions: XmpSidecarParseOptions = {}) => request<XmpSidecarResult>("sidecar", input, requestOptions),
     redact: (input: MetadataInput, requestOptions: RedactOptions) => request<RedactionResult>("redact", input, requestOptions),
     sanitize: (input: MetadataInput, requestOptions: SanitizeOptions = {}) => request<SanitizationResult>("sanitize", input, requestOptions),
     close: (): void => {
@@ -181,7 +187,7 @@ export function installMetadataWorker(port: MessagePortLike = self as unknown as
       controllers.get(message.id)?.abort();
       return;
     }
-    if (message.type !== "browser-image-metadata:request" || typeof message.id !== "number" || !isWorkerInput(message.data) || (message.operation !== "parse" && message.operation !== "redact" && message.operation !== "sanitize")) return;
+    if (message.type !== "browser-image-metadata:request" || typeof message.id !== "number" || !isWorkerInput(message.data) || (message.operation !== "parse" && message.operation !== "redact" && message.operation !== "sanitize" && message.operation !== "sidecar")) return;
     const controller = new AbortController();
     controllers.set(message.id, controller);
     try {
@@ -191,7 +197,9 @@ export function installMetadataWorker(port: MessagePortLike = self as unknown as
         ? await parseMetadata(message.data, options)
         : message.operation === "redact"
           ? await redactMetadata(message.data, options as RedactOptions)
-          : await sanitizeMetadata(message.data, options);
+          : message.operation === "sanitize"
+            ? await sanitizeMetadata(message.data, options)
+            : await parseXmpSidecar(message.data, options);
       port.postMessage({ type: "browser-image-metadata:response", id: message.id, result } satisfies WorkerResponse, responseTransfer(result));
     } catch (error) {
       const source = error instanceof Error ? error : new Error("Metadata worker failed.");

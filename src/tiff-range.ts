@@ -2,6 +2,7 @@ import { formatUnknownTag, getTagDefinition } from "./normalize/descriptions.js"
 import type { MetadataMaterialization, BlobReader } from "./input.js";
 import type { ResolvedSelection } from "./selection.js";
 import type { MetadataWarning, SecurityLimits } from "./types.js";
+import { RAW_TIFF_TAGS } from "./raw.js";
 
 interface TiffType {
   readonly size: number;
@@ -141,11 +142,13 @@ function selectedTags(selection: ResolvedSelection): ReadonlySet<string> | null 
   if (selection.groups.has("XMP")) tags.add("IFD0:0x02bc");
   if (selection.groups.has("IPTC")) tags.add("IFD0:0x83bb");
   if (selection.groups.has("ICC")) tags.add("IFD0:0x8773");
+  if (selection.groups.has("Photoshop")) tags.add("IFD0:0x8649");
   return tags;
 }
 
 function selectedEntry(name: string, tag: number, ifd: TiffDirectory["name"], selection: ReadonlySet<string> | null): boolean {
   if (selection === null) return true;
+  if (RAW_TIFF_TAGS.has(tag)) return true;
   const definition = getTagDefinition(ifd, tag) ?? (/^(?:IFD\d+|SubIFD\[\d+\])$/u.test(ifd) ? getTagDefinition("IFD0", tag) : undefined);
   return selection.has(definition?.name ?? (tag === 0x014a ? "SubIFDs" : formatUnknownTag(tag))) || selection.has(`${ifd}:0x${tag.toString(16).padStart(4, "0")}`);
 }
@@ -186,7 +189,9 @@ async function buildTiffPlan(reader: BlobReader, limits: SecurityLimits, selecti
   const bigEndian = header[0] === 0x4d && header[1] === 0x4d;
   if (!littleEndian && !bigEndian) return null;
   if (u16(header, 2, littleEndian) === 43) return buildBigTiffPlan(reader, limits, selection, header);
-  if (u16(header, 2, littleEndian) !== 42) return null;
+  const classicMagic = u16(header, 2, littleEndian);
+  const rawClassicMagic = littleEndian && (classicMagic === 0x4f52 || classicMagic === 0x0055);
+  if (classicMagic !== 42 && !rawClassicMagic) return null;
   const classicHeader = header.subarray(0, 8);
   const firstIfd = u32(header, 4, littleEndian);
   if (firstIfd < 8 || firstIfd >= reader.size) return null;

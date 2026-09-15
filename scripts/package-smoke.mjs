@@ -9,13 +9,14 @@ import { gzipSync } from "node:zlib";
 const execFile = promisify(execFileCallback);
 const root = resolve(import.meta.dirname, "..");
 const stage = await mkdtemp(join(tmpdir(), "browser-image-metadata-package-"));
+const childProcessEnvironment = Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== "npm_config_dry_run" && key !== "npm_config_dry-run"));
 
 async function run(command, args, cwd) {
-  return execFile(command, args, { cwd, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 });
+  return execFile(command, args, { cwd, encoding: "utf8", maxBuffer: 8 * 1024 * 1024, env: childProcessEnvironment });
 }
 
 try {
-  const packed = await run("npm", ["pack", "--json", "--pack-destination", stage], root);
+  const packed = await run("npm", ["pack", "--json", "--cache", join(stage, "npm-cache"), "--pack-destination", stage], root);
   const manifest = JSON.parse(packed.stdout);
   assert.ok(Array.isArray(manifest) && manifest.length === 1, "npm pack did not produce exactly one tarball");
   const tarballName = manifest[0]?.filename;
@@ -23,6 +24,8 @@ try {
   const tarball = join(stage, tarballName);
   const archive = await run("tar", ["-tzf", tarball], root);
   const entries = new Set(archive.stdout.trim().split("\n"));
+  const packedPackage = JSON.parse((await run("tar", ["-xOf", tarball, "package/package.json"], root)).stdout);
+  assert.equal(packedPackage.bin?.["image-metadata"], "./cli/index.mjs", "published package is missing the R03 CLI bin entry");
   for (const required of [
     "package/package.json",
     "package/README.md",
@@ -35,6 +38,29 @@ try {
     "package/W06_IPTC_SERIALIZATION.md",
     "package/W07_REDACTION_SELECTORS.md",
     "package/W08_PRESERVATION_VERIFIER.md",
+    "package/B04_RAW_PHASE_ONE.md",
+    "package/B05_RAW_PHASE_TWO.md",
+    "package/B10_XMP_SIDECAR.md",
+    "package/R01_API_DECISION.md",
+    "package/DEPRECATION_POLICY.md",
+    "package/RUNTIME_SUPPORT.md",
+    "package/schemas/r01-api-v1.schema.json",
+    "package/R02_DOCUMENTATION_SITE.md",
+    "package/R03_CLI.md",
+    "package/R04_MIGRATION_COMPATIBILITY.md",
+    "package/R04_CODEMOD_DECISION.md",
+    "package/R05_EXTERNAL_REVIEW_PACKET.md",
+    "package/R05_COMPATIBILITY_LIMITATIONS.md",
+    "package/reports/r04-compatibility.json",
+    "package/reports/r04-compatibility.md",
+    "package/cli/index.mjs",
+    "package/docs-site/index.html",
+    "package/docs-site/registry.html",
+    "package/docs-site/playground.html",
+    "package/docs-site/generated/site-data.js",
+    "package/docs-site/generated/site-data.json",
+    "package/docs-site/registry-selectors.html",
+    "package/docs-site/registry-capabilities.html",
     "package/CAPABILITIES.md",
     "package/METADATA_REGISTRY.md",
     "package/MIGRATION.md",
@@ -117,6 +143,10 @@ try {
     "package/dist/xmp.cjs",
     "package/dist/xmp-rgrove.js",
     "package/dist/xmp-rgrove.cjs",
+    "package/dist/xmp-sidecar.js",
+    "package/dist/xmp-sidecar.cjs",
+    "package/dist/xmp-sidecar.d.ts",
+    "package/dist/xmp-sidecar.d.cts",
     "package/dist/worker.js",
     "package/dist/worker.cjs",
   ]) assert.ok(entries.has(required), `published tarball is missing ${required}`);
@@ -142,7 +172,7 @@ try {
   const consumer = join(stage, "consumer");
   await mkdir(consumer);
   await writeFile(join(consumer, "package.json"), JSON.stringify({ private: true, type: "module" }));
-  await run("npm", ["install", "--omit=peer", "--ignore-scripts", "--offline", "--no-audit", "--no-fund", tarball], consumer);
+  await run("npm", ["install", "--cache", join(stage, "npm-cache"), "--omit=peer", "--ignore-scripts", "--offline", "--no-audit", "--no-fund", tarball], consumer);
 
   const fixture = new Uint8Array(await readFile(join(root, "tests/fixtures/jpeg-exif-little-endian.jpg")));
   const fixtureLiteral = JSON.stringify([...fixture]);
@@ -150,7 +180,7 @@ try {
   const tiffFixtureLiteral = JSON.stringify([...tiffFixture]);
   await writeFile(join(consumer, "esm-smoke.mjs"), [
     'import assert from "node:assert/strict";',
-    'import { detectFormat, editMetadata, getCapabilities, inventoryC2pa, parseMetadata, readGps, readTags } from "browser-image-metadata";',
+    'import { detectFormat, editMetadata, getCapabilities, inventoryC2pa, parseCr3, parseMetadata, parseRaf, readGps, readTags } from "browser-image-metadata";',
     'import { verifyC2paInBrowser } from "browser-image-metadata/c2pa/browser";',
     'import { detectFormat as detectOnly } from "browser-image-metadata/detect";',
     'import { fetchMetadata } from "browser-image-metadata/fetch";',
@@ -163,10 +193,15 @@ try {
     'import { rewriteJpegMetadata } from "browser-image-metadata/jpeg-writer";',
     'import { verifyPreservation } from "browser-image-metadata/preservation";',
     'import { parseStructuredXmp, serializeStructuredXmp } from "browser-image-metadata/xmp";',
+    'import { parseXmpSidecar, serializeXmpSidecar } from "browser-image-metadata/xmp/sidecar";',
     'import { serializeIptcIim } from "browser-image-metadata/iptc";',
     'import { toJsonSafe } from "browser-image-metadata/adapters";',
     `const bytes = Uint8Array.from(${fixtureLiteral});`,
     `const tiffBytes = Uint8Array.from(${tiffFixtureLiteral});`,
+    'const rafHeader = new Uint8Array(108); rafHeader.set(new TextEncoder().encode("FUJIFILMCCD-RAW "));',
+    'const cr3Header = Uint8Array.from([0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70, 0x63, 0x72, 0x78, 0x20, 0, 0, 0, 0]);',
+    'assert.equal(typeof parseCr3, "function"); assert.equal(typeof parseRaf, "function");',
+    'assert.equal((await parseMetadata(rafHeader)).fileKind, "raf"); assert.equal((await parseMetadata(cr3Header)).fileKind, "cr3");',
     'const jpegWritten = rewriteJpegMetadata(bytes, { blocks: [{ op: "add", kind: "standard-xmp", data: "<x:xmpmeta xmlns:x=\\"adobe\\"/>" }] });',
     'assert.equal(jpegWritten.preservation?.successful, true);',
     'assert.equal((await verifyPreservation(bytes, jpegWritten.data)).successful, true);',
@@ -186,6 +221,8 @@ try {
     'assert.equal(parseStructuredXmp(`<x:xmpmeta xmlns:x="x"/>`)?.properties !== undefined, true);',
     'assert.ok(serializeIptcIim([{ record: 2, dataset: 25, value: "smoke" }]).byteLength > 0);',
     'assert.ok(serializeStructuredXmp({ namespaces: { ex: "https://example.invalid/" }, properties: { "ex:value": "smoke" } }).includes("smoke"));',
+    'assert.equal((await parseXmpSidecar(new TextEncoder().encode("<rdf:RDF xmlns:rdf=\\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\\"/>"))).coverage.complete, true);',
+    'assert.equal((await serializeXmpSidecar({ namespaces: { ex: "https://example.invalid/" }, properties: { "ex:value": "smoke" } })).verified, true);',
     'assert.equal(JSON.stringify(toJsonSafe({ value: 1 })), "{\\"value\\":1}");',
     'assert.equal((await parseMetadata(bytes)).dimensions?.width, 2);',
     'assert.equal((await parseMetadata(jpegWritten.data)).xmp?.packets.includes("<x:xmpmeta xmlns:x=\\"adobe\\"/>") ?? false, true);',

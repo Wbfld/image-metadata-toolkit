@@ -37,6 +37,169 @@ jobs:
           path: artifacts/external-corpus/
           if-no-files-found: error
 
+  raw-b04:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Download and verify hash-pinned RAW fixtures to runner-local storage
+        run: |
+          mkdir -p "$RUNNER_TEMP/raw-b04"
+          node --input-type=module <<'NODE'
+          import { createHash } from "node:crypto";
+          import { readFile, writeFile } from "node:fs/promises";
+          import { join } from "node:path";
+
+          const manifest = JSON.parse(await readFile("data/raw/raw-b04-sources.json", "utf8"));
+          const directory = process.env.RUNNER_TEMP + "/raw-b04";
+          for (const fixture of manifest.fixtures) {
+            const response = await fetch(fixture.url, { redirect: "follow" });
+            if (!response.ok) throw new Error(`RAW fixture download failed (${response.status}): ${fixture.url}`);
+            const bytes = new Uint8Array(await response.arrayBuffer());
+            const hash = createHash("sha256").update(bytes).digest("hex");
+            if (hash !== fixture.sha256) throw new Error(`${fixture.fileName} SHA-256 mismatch: expected ${fixture.sha256}, received ${hash}`);
+            await writeFile(join(directory, fixture.fileName), bytes);
+          }
+          NODE
+      - run: npm run test:raw
+        env:
+          RAW_B04_CORPUS_DIR: ${{ runner.temp }}/raw-b04
+          RAW_B04_OUTPUT_DIR: artifacts/raw-b04
+      - name: Upload RAW B04 differential reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-b04-differential-reports
+          path: artifacts/raw-b04/
+          if-no-files-found: error
+
+  raw-b05:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Download and verify hash-pinned CR3 and RAF fixtures to runner-local storage
+        run: |
+          mkdir -p "$RUNNER_TEMP/raw-b05"
+          node --input-type=module <<'NODE'
+          import { createHash } from "node:crypto";
+          import { readFile, writeFile } from "node:fs/promises";
+          import { join } from "node:path";
+
+          const manifest = JSON.parse(await readFile("data/raw/raw-b05-sources.json", "utf8"));
+          const directory = join(process.env.RUNNER_TEMP, "raw-b05");
+          for (const fixture of manifest.fixtures) {
+            const response = await fetch(fixture.url, { redirect: "follow" });
+            if (!response.ok) throw new Error(`B05 fixture download failed (${response.status}): ${fixture.url}`);
+            const bytes = new Uint8Array(await response.arrayBuffer());
+            const hash = createHash("sha256").update(bytes).digest("hex");
+            if (bytes.length !== fixture.bytes) throw new Error(`${fixture.fileName} byte length mismatch: expected ${fixture.bytes}, received ${bytes.length}`);
+            if (hash !== fixture.sha256) throw new Error(`${fixture.fileName} SHA-256 mismatch: expected ${fixture.sha256}, received ${hash}`);
+            await writeFile(join(directory, fixture.fileName), bytes);
+          }
+          NODE
+      - run: npm run test:raw-b05
+        env:
+          RAW_B05_CORPUS_DIR: ${{ runner.temp }}/raw-b05
+          RAW_B05_OUTPUT_DIR: artifacts/raw-b05
+      - name: Upload RAW B05 differential reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-b05-differential-reports
+          path: artifacts/raw-b05/
+          if-no-files-found: error
+
+  svg-b09:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Download and verify the hash-pinned W3C SVG conformance fixture to runner-local storage
+        run: |
+          mkdir -p "$RUNNER_TEMP/svg-b09"
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/svg-b09/W3C_SVG_11_TestSuite.tar.gz" https://www.w3.org/Graphics/SVG/Test/20110816/archives/W3C_SVG_11_TestSuite.tar.gz
+          node --input-type=module <<'NODE'
+          import { createHash } from "node:crypto";
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("data/svg/b09-sources.json", "utf8"));
+          const archive = new Uint8Array(await readFile(process.env.RUNNER_TEMP + "/svg-b09/W3C_SVG_11_TestSuite.tar.gz"));
+          const hash = createHash("sha256").update(archive).digest("hex");
+          if (hash !== manifest.archive.sha256) throw new Error(`W3C SVG test-suite archive SHA-256 mismatch: expected ${manifest.archive.sha256}, received ${hash}`);
+          NODE
+          tar -xzf "$RUNNER_TEMP/svg-b09/W3C_SVG_11_TestSuite.tar.gz" -C "$RUNNER_TEMP/svg-b09"
+          fixture_path="$(find "$RUNNER_TEMP/svg-b09" -name metadata-example-01-t.svg -type f -print -quit)"
+          test -n "$fixture_path"
+          cp "$fixture_path" "$RUNNER_TEMP/svg-b09/metadata-example-01-t.svg"
+      - run: npm run test:svg-b09
+        env:
+          B09_SVG_CORPUS_DIR: ${{ runner.temp }}/svg-b09
+          B09_SVG_OUTPUT_DIR: artifacts/svg-b09
+      - name: Upload B09 SVG conformance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: svg-b09-conformance-evidence
+          path: artifacts/svg-b09/
+          if-no-files-found: error
+
+  sidecar-b10:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:sidecar-b10
+        env:
+          B10_SIDECAR_OUTPUT_DIR: artifacts/sidecar-b10
+      - name: Upload B10 sidecar evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sidecar-b10-evidence
+          path: artifacts/sidecar-b10/
+          if-no-files-found: error
+
+  photoshop-b06:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:photoshop-b06
+        env:
+          PHOTOSHOP_B06_OUTPUT_DIR: artifacts/photoshop-b06
+      - name: Upload Photoshop B06 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: photoshop-b06-evidence
+          path: artifacts/photoshop-b06/
+          if-no-files-found: error
+
   iptc-reference-images:
     runs-on: ubuntu-latest
     timeout-minutes: 20

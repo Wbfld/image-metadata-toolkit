@@ -24,3 +24,10 @@ The parser is local-only and has no network-capable runtime dependency. Input,
 metadata, segment, IFD, nesting, string, chunk, warning, and decompression
 budgets are enforced before allocation or decoding. JPEG and PNG redaction is
 atomic when the structure needed for safe surgery is malformed.
+
+The stable result and mutation contract is versioned in
+[`R01_API_DECISION.md`](../R01_API_DECISION.md). Security corrections that
+change input acceptance, mutation atomicity, privacy defaults, or result
+discriminants follow the deprecation and semver rules in
+[`DEPRECATION_POLICY.md`](../DEPRECATION_POLICY.md); runtime support claims are
+tracked separately in [`RUNTIME_SUPPORT.md`](../RUNTIME_SUPPORT.md).

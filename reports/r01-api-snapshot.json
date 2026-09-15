@@ -1,0 +1,46 @@
+{
+  "schema": {
+    "id": "https://github.com/Wbfld/image-metadata-toolkit/schemas/r01-api-v1.schema.json",
+    "version": "1.0.0",
+    "sha256": "ce0e378fc3f1c4977137f000455c1d46b193bf7fc10b8bc2e3d707faf3d96ac5"
+  },
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3",
+    "exportsSha256": "16a5673471e9ad3af94182fe1e6bd2ace3c808ca8fa9760143995437180f4189"
+  },
+  "declarations": {
+    "esmSha256": "881d5e202724cff597ef6f71e7803ae8b03f15f74b54ec6b020f28232a2c70da",
+    "commonjsSha256": "36f3c3639585c6e3d0fcd4ea848c63402b3baf47d843fae1ab9f5fab5360b8d7"
+  },
+  "requiredRootExports": [
+    "parseMetadata",
+    "editMetadata",
+    "redactMetadata",
+    "sanitizeMetadata",
+    "toJsonSafeResult",
+    "parseXmpSidecar",
+    "mergeXmpSources",
+    "serializeXmpSidecar"
+  ],
+  "requiredSubpathExports": {
+    "./xmp/sidecar": [
+      "parseXmpSidecar",
+      "mergeXmpSources",
+      "serializeXmpSidecar"
+    ]
+  },
+  "validation": {
+    "representatives": [
+      "metadata",
+      "edit",
+      "redaction",
+      "sanitization",
+      "sidecar"
+    ],
+    "adversarial": [
+      "missing-required-discriminant"
+    ],
+    "validator": "bounded draft-2020-12 subset used by the checked schema"
+  }
+}

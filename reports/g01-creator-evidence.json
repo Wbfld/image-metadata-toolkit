@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "generatedAt": "2026-09-15T04:00:29.235Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "schemaPack": "creator-metadata/1",
+  "parserVersions": [
+    "comfyui-png-convention/1",
+    "comfyui-webp-exif-convention/1",
+    "stable-diffusion-webui-infotext/1",
+    "invokeai-png-convention/1",
+    "creator-xmp-convention/1"
+  ],
+  "cases": [
+    {
+      "id": "comfyui-png-prompt",
+      "format": "png",
+      "byteLength": 437,
+      "sha256": "39ed1630523c815e19a217e48e7d68c0b04d67bd9e67c4390d687b59e81040db",
+      "complete": true,
+      "producers": [
+        "comfyui"
+      ],
+      "parserVersions": [
+        "comfyui-png-convention/1"
+      ],
+      "sourceCount": 1,
+      "fieldCount": 7,
+      "fieldKinds": [
+        "comfyui:model",
+        "comfyui:negative-prompt",
+        "comfyui:prompt",
+        "comfyui:sampler",
+        "comfyui:seed",
+        "comfyui:steps",
+        "comfyui:workflow-reference"
+      ],
+      "workflowReferenceCount": 1,
+      "migratedPropertyIds": [
+        "aIPromptInformation",
+        "aISystemUsed"
+      ],
+      "diagnostics": [],
+      "provenanceComplete": true
+    },
+    {
+      "id": "stable-diffusion-webui-parameters",
+      "format": "png",
+      "byteLength": 181,
+      "sha256": "04ecd53df1c6973cbe4fa7212c7517c083bda29e0c8dc44d24202f426831c282",
+      "complete": true,
+      "producers": [
+        "stable-diffusion-webui"
+      ],
+      "parserVersions": [
+        "stable-diffusion-webui-infotext/1"
+      ],
+      "sourceCount": 1,
+      "fieldCount": 6,
+      "fieldKinds": [
+        "stable-diffusion-webui:model",
+        "stable-diffusion-webui:negative-prompt",
+        "stable-diffusion-webui:prompt",
+        "stable-diffusion-webui:sampler",
+        "stable-diffusion-webui:seed",
+        "stable-diffusion-webui:steps"
+      ],
+      "workflowReferenceCount": 0,
+      "migratedPropertyIds": [
+        "aIPromptInformation",
+        "aISystemUsed"
+      ],
+      "diagnostics": [],
+      "provenanceComplete": true
+    },
+    {
+      "id": "invokeai-json",
+      "format": "png",
+      "byteLength": 242,
+      "sha256": "cb0e699ab1e8ba9bdfcb7d562facce7aa9e0f525a38d39528dd2a420dda5cf12",
+      "complete": true,
+      "producers": [
+        "invokeai"
+      ],
+      "parserVersions": [
+        "invokeai-png-convention/1"
+      ],
+      "sourceCount": 1,
+      "fieldCount": 6,
+      "fieldKinds": [
+        "invokeai:model",
+        "invokeai:negative-prompt",
+        "invokeai:prompt",
+        "invokeai:sampler",
+        "invokeai:seed",
+        "invokeai:steps"
+      ],
+      "workflowReferenceCount": 0,
+      "migratedPropertyIds": [
+        "aIPromptInformation",
+        "aISystemUsed"
+      ],
+      "diagnostics": [],
+      "provenanceComplete": true
+    },
+    {
+      "id": "comfyui-webp-exif",
+      "format": "webp",
+      "byteLength": 438,
+      "sha256": "f11221373e8f9de59de60df0f2bed15126ae9885a46b0b37fa749edcebbd3d9e",
+      "complete": true,
+      "producers": [
+        "comfyui"
+      ],
+      "parserVersions": [
+        "comfyui-webp-exif-convention/1"
+      ],
+      "sourceCount": 2,
+      "fieldCount": 14,
+      "fieldKinds": [
+        "comfyui:model",
+        "comfyui:negative-prompt",
+        "comfyui:prompt",
+        "comfyui:sampler",
+        "comfyui:seed",
+        "comfyui:steps",
+        "comfyui:workflow-reference"
+      ],
+      "workflowReferenceCount": 2,
+      "migratedPropertyIds": [
+        "aIPromptInformation",
+        "aISystemUsed"
+      ],
+      "diagnostics": [],
+      "provenanceComplete": true
+    }
+  ],
+  "negativeCases": {
+    "malformedJson": true,
+    "graphLimit": true,
+    "rawOptOut": true,
+    "explicitMigrationOptIn": true
+  },
+  "checks": [
+    "typed fields",
+    "bounded workflow nodes and edges",
+    "PNG text/custom chunk provenance",
+    "WebP EXIF provenance",
+    "raw retention and opt-out",
+    "IPTC 2025.1 migration opt-in",
+    "malformed JSON",
+    "graph limit"
+  ],
+  "sourceManifest": "data/creator-schema-sources.json",
+  "reportPolicy": "Fixture bytes and creator prompt text are not included; only hashes, dimensions, field kinds, counts, diagnostics, and provenance completeness are retained."
+}

@@ -30,6 +30,25 @@ fixtures, or local credentials.
 3. Review the generated capability matrix and its evidence map. Every
    affirmative capability cell must retain positive, malformed, and selection
    test evidence in `scripts/capabilities-manifest.json`.
+4. Verify the versioned R01 API schema, declaration/export snapshot, and
+   runtime contract before treating the public API as release-ready:
+
+   ```sh
+   npm run r01:check
+   ```
+
+5. Run the fail-closed R05 release audit from the exact clean candidate
+   checkout. It records every required gate and emits redistribution-safe JSON
+   and Markdown evidence; unavailable runtimes, scanners, corpora, or review
+   records remain blockers:
+
+   ```sh
+   npm run r05:audit
+   ```
+
+   Supply temporary, hash-verified corpus/reference directories through the
+   documented environment variables. Review `R05_EXTERNAL_REVIEW_PACKET.md`
+   and retain an actual external review record before calling the candidate GA.
 
 ## Verification
 

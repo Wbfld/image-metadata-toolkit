@@ -54,6 +54,27 @@ test("parses local File and Blob inputs without network access", async ({ page }
   expect(result.avifScope.bytesRead).toBeLessThan(result.avifScope.inputBytes);
 });
 
+test("keeps CR3 and RAF detection and typed results available in browsers", async ({ page }) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const dist = "/dist";
+    const { parseMetadata } = await import(`${dist}/index.js`);
+    const raf = new Uint8Array(16);
+    raf.set(new TextEncoder().encode("FUJIFILMCCD-RAW "));
+    const cr3 = Uint8Array.from([0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70, 0x63, 0x72, 0x78, 0x20, 0, 0, 0, 0]);
+    const rafResult = await parseMetadata(new Blob([raf], { type: "image/x-fuji-raf" }));
+    const cr3Result = await parseMetadata(new Blob([cr3], { type: "image/x-canon-cr3" }));
+    return {
+      raf: { format: rafResult.format, fileKind: rafResult.fileKind, container: rafResult.container },
+      cr3: { format: cr3Result.format, fileKind: cr3Result.fileKind, container: cr3Result.container },
+    };
+  });
+  expect(result).toEqual({
+    raf: { format: "raf", fileKind: "raf", container: "raf" },
+    cr3: { format: "cr3", fileKind: "cr3", container: "iso-bmff" },
+  });
+});
+
 test("uses the module-worker client and honors an aborted request", async ({ page }) => {
   await page.goto("/");
   const result = await page.evaluate(async () => {
@@ -81,6 +102,22 @@ test("uses the module-worker client and honors an aborted request", async ({ pag
   });
 
   expect(result).toEqual({ format: "jpeg", width: 2, abortCode: "ABORTED" });
+});
+
+test("parses standalone XMP sidecars in the browser entry point", async ({ page }) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const dist = "/dist";
+    const { parseXmpSidecar, serializeXmpSidecar } = await import(`${dist}/xmp-sidecar.js`);
+    const bytes = new TextEncoder().encode('<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:ex="urn:browser-sidecar:"><rdf:Description><ex:value>&lt;safe&gt;</ex:value></rdf:Description></rdf:RDF>');
+    const parsed = await parseXmpSidecar(bytes, { id: "browser.xmp" });
+    const serialized = parsed.value === null ? null : await serializeXmpSidecar(parsed.value);
+    return { id: parsed.source.id, complete: parsed.coverage.complete, value: parsed.value?.rdf?.properties[0]?.value, verified: serialized?.verified ?? false };
+  });
+  expect(result.id).toBe("browser.xmp");
+  expect(result.complete).toBe(true);
+  expect(result.value).toMatchObject({ kind: "literal", lexicalValue: "<safe>" });
+  expect(result.verified).toBe(true);
 });
 
 test("creates and idempotently revokes browser thumbnail object URLs", async ({ page }) => {

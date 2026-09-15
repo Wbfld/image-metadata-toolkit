@@ -45,6 +45,11 @@ export const DEFAULT_LIMITS: SecurityLimits = Object.freeze({
   maxImageDetailRelationships: 4096,
   maxAdapterItems: 8192,
   maxAdapterOutputBytes: 4 * MEBIBYTE,
+  maxCreatorSources: 64,
+  maxCreatorGraphNodes: 4096,
+  maxCreatorGraphEdges: 8192,
+  maxCreatorRawBytes: 4 * MEBIBYTE,
+  maxCreatorFields: 512,
   maxWarnings: 256,
 });
 
@@ -85,6 +90,11 @@ const LIMIT_KEYS = [
   "maxImageDetailRelationships",
   "maxAdapterItems",
   "maxAdapterOutputBytes",
+  "maxCreatorSources",
+  "maxCreatorGraphNodes",
+  "maxCreatorGraphEdges",
+  "maxCreatorRawBytes",
+  "maxCreatorFields",
   "maxWarnings",
 ] as const satisfies readonly (keyof SecurityLimits)[];
 
@@ -152,6 +162,11 @@ export function resolveLimits(overrides: Partial<SecurityLimits> = {}): Security
     maxImageDetailRelationships: resolveLimit(overrides, "maxImageDetailRelationships"),
     maxAdapterItems: resolveLimit(overrides, "maxAdapterItems"),
     maxAdapterOutputBytes: resolveLimit(overrides, "maxAdapterOutputBytes"),
+    maxCreatorSources: resolveLimit(overrides, "maxCreatorSources"),
+    maxCreatorGraphNodes: resolveLimit(overrides, "maxCreatorGraphNodes"),
+    maxCreatorGraphEdges: resolveLimit(overrides, "maxCreatorGraphEdges"),
+    maxCreatorRawBytes: resolveLimit(overrides, "maxCreatorRawBytes"),
+    maxCreatorFields: resolveLimit(overrides, "maxCreatorFields"),
     maxWarnings: resolveLimit(overrides, "maxWarnings"),
   });
 }

@@ -1,6 +1,12 @@
 # Migrating to browser-image-metadata
 
+For executable, version-pinned mappings from exifr, ExifReader, exif-js, and
+piexifjs—including generated side-by-side output evidence and every semantic
+difference—start with [the R04 migration compatibility guide](./R04_MIGRATION_COMPATIBILITY.md).
+
 `browser-image-metadata` accepts in-memory browser-friendly bytes and returns a typed inspection result. It deliberately does not accept URL strings, local file paths, or image elements: obtaining an image remains the application's responsibility, which keeps metadata inspection local and avoids unexpected network or filesystem reads.
+
+Before changing an integration, review the versioned [public API decision record](./R01_API_DECISION.md), [deprecation policy](./DEPRECATION_POLICY.md), and [runtime support policy](./RUNTIME_SUPPORT.md). They define the supported result discriminants, compatibility window, and which runtime claims are backed by executed evidence.
 
 Use `result.fields` for normalized application-facing values and retain `result.exif`, `result.xmp`, `result.iptc`, and `result.icc` when source-level detail matters. `result.warnings` and `result.completeness` are part of normal control flow for untrusted images.
 

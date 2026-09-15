@@ -1,0 +1,13 @@
+{
+  "schema": "browser-image-metadata.photoshop-b06-human-review.v1",
+  "ticket": "B06",
+  "status": "approved",
+  "reviewedAt": "2026-09-14",
+  "reviewer": "repository owner (user-confirmed)",
+  "scope": "The complete B06 Photoshop image-resource parser, exact JPEG APP13 resource-removal writer, selector/preflight integration, tests, and retained evidence.",
+  "decision": "approved",
+  "basis": "Explicit human instruction recorded in the task session: Treat B06 as completed after human review.",
+  "limitations": "TIFF tag 34377 resource mutation remains inventory-only and is refused as documented.",
+  "machineEvidence": "reports/photoshop-b06-evidence.json",
+  "redistributionSafe": true
+}

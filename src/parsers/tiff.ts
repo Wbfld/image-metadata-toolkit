@@ -1,10 +1,13 @@
 import { parseBigTiff, parseExif, type ParsedExif } from "../metadata/exif.js";
 import { inspectIccProfile, type IccChunk } from "../metadata/icc.js";
 import { parseIptcMetadata } from "../metadata/iptc.js";
+import { parsePhotoshopResources } from "../metadata/photoshop.js";
+import { inspectMakerNotes, makerNoteFieldsAsMetadataFields } from "../metadata/makernote.js";
 import { extractExifThumbnail } from "../metadata/thumbnail.js";
 import { wantsGroup, type ResolvedSelection } from "../selection.js";
 import { throwIfAborted } from "../security/abort.js";
-import type { ExifData, ExifDirectory, ImageDimensions, MetadataBlock, MetadataField, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
+import { inspectRawTiff, normalizeRawTiffHeader } from "../raw.js";
+import type { ExifData, ExifDirectory, ImageDimensions, MakerNotePlugin, MetadataBlock, MetadataField, ParsedMetadataResult, MetadataWarning, SecurityLimits } from "../types.js";
 import type { MetadataRegistry } from "../registry.js";
 
 /** True for a classic TIFF header in either byte order. */
@@ -12,7 +15,9 @@ export function isTiffHeader(bytes: Uint8Array): boolean {
   if (bytes.byteLength < 4) return false;
   return (
     (bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x2a && bytes[3] === 0x00) ||
-    (bytes[0] === 0x4d && bytes[1] === 0x4d && bytes[2] === 0x00 && bytes[3] === 0x2a)
+    (bytes[0] === 0x4d && bytes[1] === 0x4d && bytes[2] === 0x00 && bytes[3] === 0x2a) ||
+    (bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x52 && bytes[3] === 0x4f) ||
+    (bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x55 && bytes[3] === 0x00)
   );
 }
 
@@ -65,7 +70,11 @@ function mapExifOffsets(exif: ExifData, offsetMap?: (offset: number) => number):
     directories: exif.topology.directories.map((ifd) => byId.get(ifd.id) ?? { ...ifd, offset: offsetMap(ifd.offset) }),
     relations: exif.topology.relations,
   };
-  return { ...exif, fields, ifds, ...(topology === undefined ? {} : { topology }) };
+  const associatedImages = exif.associatedImages?.map((image) => ({
+    ...image,
+    offset: image.offset === null ? null : offsetMap(image.offset),
+  }));
+  return { ...exif, fields, ifds, ...(topology === undefined ? {} : { topology }), ...(associatedImages === undefined ? {} : { associatedImages }) };
 }
 
 function mapFieldOffsets(field: MetadataField, offsetMap?: (offset: number) => number): MetadataField {
@@ -82,7 +91,12 @@ function mapFieldOffsets(field: MetadataField, offsetMap?: (offset: number) => n
 
 /** Parse a standalone classic TIFF through the bounded EXIF/IFD decoder. */
 function tiffSelectionTags(selection: ResolvedSelection | undefined): ReadonlySet<string> | null | undefined {
-  if (selection === undefined || selection.groups === null) return selection?.tags;
+  if (selection === undefined || selection.groups === null) {
+    if (selection?.tags === null || selection?.tags === undefined) return selection?.tags;
+    const tags = new Set(selection.tags);
+    for (const tag of ["Make", "Model", "DNGVersion", "ImageWidth", "ImageLength", "Compression", "PhotometricInterpretation", "StripOffsets", "StripByteCounts", "JPEGInterchangeFormat", "JPEGInterchangeFormatLength", "SubIFDs", "TileOffsets", "TileByteCounts", "MakerNote"]) tags.add(tag);
+    return tags;
+  }
   if (wantsGroup(selection, "EXIF")) {
     if (selection.tags === null) return null;
     const tags = new Set(selection.tags);
@@ -93,6 +107,9 @@ function tiffSelectionTags(selection: ResolvedSelection | undefined): ReadonlySe
     if (wantsGroup(selection, "XMP")) tags.add("IFD0:0x02bc");
     if (wantsGroup(selection, "IPTC")) tags.add("IFD0:0x83bb");
     if (wantsGroup(selection, "ICC")) tags.add("IFD0:0x8773");
+    if (wantsGroup(selection, "Photoshop")) tags.add("IFD0:0x8649");
+    if (wantsGroup(selection, "MakerNote")) { tags.add("ExifIFD:0x927c"); tags.add("IFD0:0x927c"); tags.add("IFD0:0x002e"); }
+    for (const tag of ["Make", "Model", "DNGVersion", "ImageWidth", "ImageLength", "Compression", "PhotometricInterpretation", "StripOffsets", "StripByteCounts", "JPEGInterchangeFormat", "JPEGInterchangeFormatLength", "SubIFDs", "TileOffsets", "TileByteCounts", "MakerNote"]) tags.add(tag);
     return tags;
   }
 
@@ -104,26 +121,33 @@ function tiffSelectionTags(selection: ResolvedSelection | undefined): ReadonlySe
   if (wantsGroup(selection, "XMP")) tags.add("IFD0:0x02bc");
   if (wantsGroup(selection, "IPTC")) tags.add("IFD0:0x83bb");
   if (wantsGroup(selection, "ICC")) tags.add("IFD0:0x8773");
+  if (wantsGroup(selection, "Photoshop")) tags.add("IFD0:0x8649");
+  if (wantsGroup(selection, "MakerNote")) { tags.add("MakerNote"); tags.add("ExifIFD:0x927c"); tags.add("IFD0:0x927c"); tags.add("IFD0:0x002e"); }
+  for (const tag of ["Make", "Model", "DNGVersion", "ImageWidth", "ImageLength", "Compression", "PhotometricInterpretation", "StripOffsets", "StripByteCounts", "JPEGInterchangeFormat", "JPEGInterchangeFormatLength", "SubIFDs", "TileOffsets", "TileByteCounts", "MakerNote"]) tags.add(tag);
   return tags;
 }
 
-export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, selection?: ResolvedSelection, extractThumbnail = true, signal?: AbortSignal, registry?: MetadataRegistry, offsetMap?: (offset: number) => number): ParsedMetadataResult {
+export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, selection?: ResolvedSelection, extractThumbnail = true, signal?: AbortSignal, registry?: MetadataRegistry, offsetMap?: (offset: number) => number, sourceLength = bytes.length, makerNotePlugins?: readonly MakerNotePlugin[]): ParsedMetadataResult {
   throwIfAborted(signal);
-  const littleEndian = bytes[0] === 0x49 && bytes[1] === 0x49;
+  const normalizedBytes = normalizeRawTiffHeader(bytes);
+  const littleEndian = normalizedBytes[0] === 0x49 && normalizedBytes[1] === 0x49;
   const bigTiffMagic = littleEndian
-    ? bytes.length >= 4 && bytes[2] === 0x2b && bytes[3] === 0x00
-    : bytes.length >= 4 && bytes[2] === 0x00 && bytes[3] === 0x2b;
+    ? normalizedBytes.length >= 4 && normalizedBytes[2] === 0x2b && normalizedBytes[3] === 0x00
+    : normalizedBytes.length >= 4 && normalizedBytes[2] === 0x00 && normalizedBytes[3] === 0x2b;
   const includeExif = wantsGroup(selection, "EXIF");
   const includeXmp = wantsGroup(selection, "XMP");
   const includeIptc = wantsGroup(selection, "IPTC");
   const includeIcc = wantsGroup(selection, "ICC");
+  const includePhotoshop = wantsGroup(selection, "Photoshop");
+  const includeMakerNote = wantsGroup(selection, "MakerNote");
   const parsed = bigTiffMagic
-    ? parseBigTiff(bytes, limits, 0, tiffSelectionTags(selection), registry)
-    : parseTiff(bytes, limits, 0, tiffSelectionTags(selection), registry);
+    ? parseBigTiff(normalizedBytes, limits, 0, tiffSelectionTags(selection), registry)
+    : parseTiff(normalizedBytes, limits, 0, tiffSelectionTags(selection), registry);
   throwIfAborted(signal);
+  const raw = inspectRawTiff(bytes, parsed.exif, limits, offsetMap, sourceLength);
   const mappedExif = parsed.exif === null ? null : mapExifOffsets(parsed.exif, offsetMap);
   const exif = !includeExif || mappedExif === null ? null : (() => {
-    const thumbnail = extractThumbnail && offsetMap === undefined ? extractExifThumbnail(bytes, mappedExif, limits) : null;
+    const thumbnail = extractThumbnail && offsetMap === undefined ? extractExifThumbnail(normalizedBytes, mappedExif, limits) : null;
     return thumbnail === null ? mappedExif : { ...mappedExif, thumbnail };
   })();
   const sourceFields = mappedExif?.fields ?? [];
@@ -136,6 +160,7 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, sel
   }
   const iccField = includeIcc ? sourceFields.find(({ tag, raw }) => tag === 34675 && raw instanceof Uint8Array) : undefined;
   const iptcField = includeIptc ? sourceFields.find(({ tag, raw }) => tag === 33723 && raw instanceof Uint8Array) : undefined;
+  const photoshopField = includePhotoshop ? sourceFields.find(({ tag, raw }) => tag === 34377 && raw instanceof Uint8Array) : undefined;
   let icc: ParsedMetadataResult["icc"] = null;
   let iccMalformed = false;
   let iptc: ParsedMetadataResult["iptc"] = null;
@@ -177,9 +202,9 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, sel
     }
   }
   for (const field of sourceFields) {
-    const family = field.tag === 700 ? "XMP" : field.tag === 33723 ? "IPTC" : field.tag === 34675 ? "ICC" : null;
+    const family = field.tag === 700 ? "XMP" : field.tag === 33723 ? "IPTC" : field.tag === 34675 ? "ICC" : field.tag === 34377 ? "Photoshop" : null;
     if (family === null || field.source?.entryOffset === null || field.source?.entryOffset === undefined) continue;
-    const selected = family === "XMP" ? includeXmp : family === "IPTC" ? includeIptc : includeIcc;
+    const selected = family === "XMP" ? includeXmp : family === "IPTC" ? includeIptc : family === "ICC" ? includeIcc : includePhotoshop;
     blocks.push({
       id: `tiff:tag:${field.source.entryOffset}`,
       family,
@@ -188,7 +213,7 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, sel
       offset: field.source.entryOffset,
       length: field.source.entryLength,
       associatedImage: "primary",
-      sensitivity: family === "ICC" ? "low" : "moderate",
+      sensitivity: family === "ICC" ? "low" : family === "Photoshop" ? "high" : "moderate",
       warningCodes: [],
     });
   }
@@ -219,16 +244,61 @@ export function parseTiffMetadata(bytes: Uint8Array, limits: SecurityLimits, sel
     }
     appendWarnings(warnings, parsedIptc.warnings, limits);
   }
+  let photoshop: NonNullable<ParsedMetadataResult["photoshop"]> | null = null;
+  if (photoshopField?.raw instanceof Uint8Array && photoshopField.source?.valueOffset !== null && photoshopField.source?.valueOffset !== undefined) {
+    const blockId = `tiff:tag:${photoshopField.source.entryOffset ?? photoshopField.source.valueOffset}:photoshop`;
+    const sourceLength = photoshopField.source.valueLength ?? photoshopField.raw.length;
+    const inventory = parsePhotoshopResources(photoshopField.raw, limits, { container: "tiff", blockId, sourceOffset: photoshopField.source.valueOffset, sourceLength });
+    if (inventory !== null) {
+      photoshop = inventory;
+      const parentIndex = blocks.findIndex((block) => block.id === `tiff:tag:${photoshopField.source?.entryOffset ?? 0}`);
+      if (parentIndex >= 0) blocks[parentIndex] = { ...(blocks[parentIndex] as MetadataBlock), id: blockId, container: "TIFF tag 34377 Photoshop image resources", family: "Photoshop", sensitivity: "high", status: inventory.complete ? "decoded" : inventory.resources.some((resource) => resource.status === "malformed") ? "malformed" : "partial" };
+      else blocks.push({ id: blockId, family: "Photoshop", container: "TIFF tag 34377 Photoshop image resources", status: inventory.complete ? "decoded" : "partial", offset: photoshopField.source.valueOffset, length: sourceLength, associatedImage: "primary", sensitivity: "high", warningCodes: [] });
+      for (const resource of inventory.resources) {
+        const status: MetadataBlock["status"] = resource.status === "decoded" ? "decoded" : resource.status === "unknown" ? "opaque" : resource.status === "limited" ? "partial" : "malformed";
+        blocks.push({ id: `${resource.id}:block`, family: "Photoshop", container: `TIFF tag 34377 Photoshop resource 0x${resource.resourceId.toString(16).padStart(4, "0")}`, status, offset: resource.offset, length: resource.length, associatedImage: resource.kind === "thumbnail" ? "thumbnail" : "primary", sensitivity: resource.kind === "unknown" || resource.kind === "thumbnail" ? "high" : "moderate", warningCodes: inventory.diagnostics.filter((item) => item.offset >= resource.offset && item.offset < resource.offset + resource.length).map((item) => item.code === "MALFORMED_PHOTOSHOP" ? "MALFORMED_PHOTOSHOP" : item.code), parentBlockId: blockId });
+      }
+      for (const item of inventory.diagnostics) {
+        warnings.push({ code: item.code, message: item.message, severity: item.code === "INVALID_VALUE" ? "warning" : "error", offset: item.offset, ...(item.length === undefined ? {} : { length: item.length }) });
+      }
+    }
+  }
+  let makerNotes: NonNullable<ParsedMetadataResult["makerNotes"]> | null = null;
+  if (includeMakerNote && mappedExif !== null) {
+    const tiffOffset = offsetMap?.(0) ?? 0;
+    const makerInputs = mappedExif.fields.flatMap((field, index) => {
+      const isMakerNoteTag = field.tag === 0x927c || (field.tag === 0x002e && field.type === "UNDEFINED");
+      if (!isMakerNoteTag || !(field.raw instanceof Uint8Array) || field.source?.valueOffset === null || field.source?.valueOffset === undefined) return [];
+      const noteOffset = field.source.valueOffset;
+      const parentBlockId = `tiff:IFD:${mappedExif.ifds.find((ifd) => ifd.id === field.directoryId)?.offset ?? 0}`;
+      const blockId = `${parentBlockId}:makernote:${index}`;
+      return [{ id: blockId, fieldId: field.id, raw: field.raw, noteOffset, sourceLength, tiffOffset, fileOffset: noteOffset, blockId }];
+    });
+    if (makerInputs.length > 0) {
+      makerNotes = inspectMakerNotes(makerInputs, limits, { ...(makerNotePlugins === undefined ? {} : { plugins: makerNotePlugins }), ...(signal === undefined ? {} : { signal }) });
+      fields.push(...makerNoteFieldsAsMetadataFields(makerNotes));
+      for (const note of makerNotes.notes) {
+        const status: MetadataBlock["status"] = note.status === "detected-decoded" ? "decoded" : note.status === "malformed" || note.status === "rejected" ? "malformed" : note.status === "unknown" || note.status === "low-confidence" || note.status === "detected-opaque" || note.status === "encrypted" || note.status === "obfuscated" || note.status === "unsupported" ? "opaque" : "partial";
+        blocks.push({ id: note.provenance.blockId, family: "MakerNote", container: `TIFF MakerNote ${note.plugin?.vendor ?? "unknown"}`, status, offset: note.provenance.noteOffset, length: note.byteLength, associatedImage: "primary", sensitivity: "high", warningCodes: [], parentBlockId: note.provenance.blockId.slice(0, note.provenance.blockId.lastIndexOf(":makernote:")) });
+      }
+      for (const item of makerNotes.diagnostics) warnings.push({ code: item.code === "LIMIT_EXCEEDED" ? "LIMIT_EXCEEDED" : item.code === "MALFORMED_NOTE" || item.code === "PLUGIN_REJECTED" || item.code === "PLUGIN_THROWN" ? "MALFORMED_EXIF" : "UNSUPPORTED_STRUCTURE", message: item.message, severity: item.code === "UNKNOWN_NOTE" || item.code === "LOW_CONFIDENCE" ? "warning" : "error", ...(item.originalFileOffset === null || item.originalFileOffset === undefined ? {} : { offset: item.originalFileOffset }), ...(item.length === undefined ? {} : { length: item.length }) });
+    }
+  }
   return {
     format: "tiff",
     mimeType: "image/tiff",
-    dimensions: tiffDimensions(sourceFields),
+    container: raw?.container ?? (bigTiffMagic ? "bigtiff" : "tiff"),
+    fileKind: raw?.kind ?? (bigTiffMagic ? "bigtiff" : "tiff"),
+    raw,
+    dimensions: raw?.rawPayloads.find(({ dimensions }) => dimensions !== null)?.dimensions ?? tiffDimensions(sourceFields),
     fields,
     exif,
     xmp: xmpText === null ? null : { packets: [xmpText] },
     iptc,
     icc,
     jfif: null,
+    photoshop,
+    makerNotes,
     pngText: [],
     blocks: blocks.map((block) => block.family === "ICC" && iccMalformed ? { ...block, status: "malformed" as const } : block),
     warnings,

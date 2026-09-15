@@ -1,0 +1,320 @@
+{
+  "schema": "browser-image-metadata.photoshop-b06-evidence.v1",
+  "ticket": "B06",
+  "generatedAt": "2026-09-15T03:39:17.727Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "authoritativeSources": {
+    "manifest": "data/photoshop-b06-sources.json",
+    "manifestSha256": "6ea162b6dab365c7065f81ecef4a058721d5663b7afaf19aa062236b7c438d44",
+    "sources": [
+      {
+        "id": "adobe-photoshop-file-formats",
+        "url": "https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/",
+        "retrieved": "2026-09-13",
+        "sha256": "4f9069bb0cb942e31981bcb252ebfdff5ab01848b8101a310c89ceb31c5cfb55",
+        "license": "Adobe copyright; reference-only use. No source text, implementation code, or metadata tables are redistributed."
+      }
+    ]
+  },
+  "fixture": {
+    "path": "temporary/photoshop-b06.jpg",
+    "bytes": 366,
+    "sha256": "5df5228fac96cf2db2b46dca9de55419d0f615a76d22c1d2d56083b3b078328d",
+    "noRepositoryCopy": true
+  },
+  "normalizationPolicy": {
+    "strings": "resource names are bounded Latin-1 presentation; XMP is strict UTF-8; raw payloads are hashed only in evidence",
+    "offsets": "source-relative absolute ranges; output offsets are reparsed and may move",
+    "padding": "name and payload padding must be zero and even-aligned",
+    "duplicates": "source order and duplicate resource IDs are preserved; exact removal addresses one source occurrence"
+  },
+  "inventory": {
+    "complete": true,
+    "resourceCount": 10,
+    "decodedKinds": [
+      "caption-digest",
+      "clipping-path-name",
+      "iptc",
+      "path",
+      "resolution",
+      "thumbnail",
+      "unknown",
+      "xmp"
+    ],
+    "resources": [
+      {
+        "index": 0,
+        "id": "jpeg:APP13:photoshop:2:resource:0",
+        "resourceId": 1005,
+        "nameByteLength": 10,
+        "name": "resolution",
+        "status": "decoded",
+        "kind": "resolution",
+        "offset": 20,
+        "length": 38,
+        "payloadOffset": 42,
+        "payloadLength": 16,
+        "payloadSha256": "ea8a4c5591588509e1cf948fa50b7c74323e1cb62ba8968f04c84a703db16fdd"
+      },
+      {
+        "index": 1,
+        "id": "jpeg:APP13:photoshop:2:resource:1",
+        "resourceId": 1033,
+        "nameByteLength": 5,
+        "name": "thumb",
+        "status": "decoded",
+        "kind": "thumbnail",
+        "offset": 58,
+        "length": 50,
+        "payloadOffset": 74,
+        "payloadLength": 34,
+        "payloadSha256": "d84a8dbe1c46e87e3b6e3cee759d9e6c81f77c28810198521feaea3a603b462b"
+      },
+      {
+        "index": 2,
+        "id": "jpeg:APP13:photoshop:2:resource:2",
+        "resourceId": 1036,
+        "nameByteLength": 9,
+        "name": "thumb-rgb",
+        "status": "decoded",
+        "kind": "thumbnail",
+        "offset": 108,
+        "length": 54,
+        "payloadOffset": 128,
+        "payloadLength": 34,
+        "payloadSha256": "d84a8dbe1c46e87e3b6e3cee759d9e6c81f77c28810198521feaea3a603b462b"
+      },
+      {
+        "index": 3,
+        "id": "jpeg:APP13:photoshop:2:resource:3",
+        "resourceId": 1028,
+        "nameByteLength": 4,
+        "name": "iptc",
+        "status": "decoded",
+        "kind": "iptc",
+        "offset": 162,
+        "length": 24,
+        "payloadOffset": 178,
+        "payloadLength": 8,
+        "payloadSha256": "8847c49397f4dd405e4ae1e263fa70f193982132a9e4e4a46cce68442794a0e4"
+      },
+      {
+        "index": 4,
+        "id": "jpeg:APP13:photoshop:2:resource:4",
+        "resourceId": 1060,
+        "nameByteLength": 3,
+        "name": "xmp",
+        "status": "decoded",
+        "kind": "xmp",
+        "offset": 186,
+        "length": 26,
+        "payloadOffset": 200,
+        "payloadLength": 12,
+        "payloadSha256": "8b5e81287cf0c12f12d7cab9aacf9577b18fd9459af852a02608c2d4a52a2254"
+      },
+      {
+        "index": 5,
+        "id": "jpeg:APP13:photoshop:2:resource:5",
+        "resourceId": 1061,
+        "nameByteLength": 6,
+        "name": "digest",
+        "status": "decoded",
+        "kind": "caption-digest",
+        "offset": 212,
+        "length": 34,
+        "payloadOffset": 230,
+        "payloadLength": 16,
+        "payloadSha256": "be45cb2605bf36bebde684841a28f0fd43c69850a3dce5fedba69928ee3a8991"
+      },
+      {
+        "index": 6,
+        "id": "jpeg:APP13:photoshop:2:resource:6",
+        "resourceId": 2000,
+        "nameByteLength": 4,
+        "name": "path",
+        "status": "decoded",
+        "kind": "path",
+        "offset": 246,
+        "length": 42,
+        "payloadOffset": 262,
+        "payloadLength": 26,
+        "payloadSha256": "659d36ca563ba4622daabb36a71dafaf6060cdcbf89bb12e75426198496d272c"
+      },
+      {
+        "index": 7,
+        "id": "jpeg:APP13:photoshop:2:resource:7",
+        "resourceId": 2999,
+        "nameByteLength": 4,
+        "name": "clip",
+        "status": "decoded",
+        "kind": "clipping-path-name",
+        "offset": 288,
+        "length": 22,
+        "payloadOffset": 304,
+        "payloadLength": 5,
+        "payloadSha256": "dd7e3225bdd83e39c3530111d00fc946f5ea15274fc27f44dc99bc9ef0a70f7e"
+      },
+      {
+        "index": 8,
+        "id": "jpeg:APP13:photoshop:2:resource:8",
+        "resourceId": 4660,
+        "nameByteLength": 3,
+        "name": "odd",
+        "status": "unknown",
+        "kind": "unknown",
+        "offset": 310,
+        "length": 16,
+        "payloadOffset": 324,
+        "payloadLength": 1,
+        "payloadSha256": "2b4c342f5433ebe591a1da77e013d1b72475562d48578dca8b84bac6651c3cb9"
+      },
+      {
+        "index": 9,
+        "id": "jpeg:APP13:photoshop:2:resource:9",
+        "resourceId": 4660,
+        "nameByteLength": 0,
+        "name": "",
+        "status": "unknown",
+        "kind": "unknown",
+        "offset": 326,
+        "length": 12,
+        "payloadOffset": 338,
+        "payloadLength": 0,
+        "payloadSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "diagnostics": []
+  },
+  "writer": {
+    "unrelatedEdit": {
+      "inputSha256": "5df5228fac96cf2db2b46dca9de55419d0f615a76d22c1d2d56083b3b078328d",
+      "outputSha256": "a82fa55eff409ea249c3e4fcedbd709223c359173f3fb4970c99f3040ad37d50",
+      "beforeApp13": {
+        "offset": 2,
+        "length": 336
+      },
+      "afterApp13": {
+        "offset": 2,
+        "length": 336
+      },
+      "app13Preserved": true,
+      "imageScanSha256Before": "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
+      "imageScanSha256After": "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81"
+    },
+    "exactResourceRemoval": {
+      "targetResourceId": "jpeg:APP13:photoshop:2:resource:8",
+      "inputSha256": "5df5228fac96cf2db2b46dca9de55419d0f615a76d22c1d2d56083b3b078328d",
+      "outputSha256": "fd64a67cdfbbf483d0354aec090bb8a1c8ddc285d9e1f55613571c5d6ef7973b",
+      "removedResourceCount": 1,
+      "retainedDuplicateIdCount": 1,
+      "survivingResourceBlocksPreserved": true,
+      "survivingResourceBlockSha256": [
+        {
+          "index": 0,
+          "beforeSha256": "86d00f9d3c6c2e61deea13ff7e9fb05ac65845bd68a7a49a77a7092dc2e6c131",
+          "afterSha256": "86d00f9d3c6c2e61deea13ff7e9fb05ac65845bd68a7a49a77a7092dc2e6c131"
+        },
+        {
+          "index": 1,
+          "beforeSha256": "ccf26dbb0e760463ee4dfcb27d929d870b60b37104cd17e968d7a4f1256ef904",
+          "afterSha256": "ccf26dbb0e760463ee4dfcb27d929d870b60b37104cd17e968d7a4f1256ef904"
+        },
+        {
+          "index": 2,
+          "beforeSha256": "c6518f71e985757a87603e6a773c3d6db1ddb81a3babf0b18788afff714779fb",
+          "afterSha256": "c6518f71e985757a87603e6a773c3d6db1ddb81a3babf0b18788afff714779fb"
+        },
+        {
+          "index": 3,
+          "beforeSha256": "193536cd005948f762cab708a9bce476fc00f25854b7cbe1431c261be2eaa000",
+          "afterSha256": "193536cd005948f762cab708a9bce476fc00f25854b7cbe1431c261be2eaa000"
+        },
+        {
+          "index": 4,
+          "beforeSha256": "33f664f0948cb60047175bd5417b1ff29caa0f8a1c6b9a8a6e2cb9834943f00c",
+          "afterSha256": "33f664f0948cb60047175bd5417b1ff29caa0f8a1c6b9a8a6e2cb9834943f00c"
+        },
+        {
+          "index": 5,
+          "beforeSha256": "acbccd9eae144aa35a87f99a30dbd41eb7eef3618272af76980a71cb09df2f7d",
+          "afterSha256": "acbccd9eae144aa35a87f99a30dbd41eb7eef3618272af76980a71cb09df2f7d"
+        },
+        {
+          "index": 6,
+          "beforeSha256": "167293938c463be586ff5998e38959760c69ecc18f34140fdb28d28113ab1245",
+          "afterSha256": "167293938c463be586ff5998e38959760c69ecc18f34140fdb28d28113ab1245"
+        },
+        {
+          "index": 7,
+          "beforeSha256": "bba37818026b83aba835690b68d48d6dd52a0fb47687076227a752ba43b8cb1d",
+          "afterSha256": "bba37818026b83aba835690b68d48d6dd52a0fb47687076227a752ba43b8cb1d"
+        },
+        {
+          "index": 8,
+          "beforeSha256": "6abc794b178c1f7026dd8717527de62f96b930dd80d237da810f4e15af7cc3cd",
+          "afterSha256": "6abc794b178c1f7026dd8717527de62f96b930dd80d237da810f4e15af7cc3cd"
+        }
+      ],
+      "imageScanPreserved": true,
+      "reparsed": true
+    },
+    "malformedAtomicity": {
+      "refused": true,
+      "outputAllocated": false
+    },
+    "oversizedPayload": {
+      "limitedResourceDetected": true,
+      "rawPayloadOmitted": true
+    }
+  },
+  "secondaryOracle": {
+    "package": "exiftool-vendored",
+    "packageVersion": "33.5.0",
+    "version": "13.42",
+    "license": "ExifTool: Perl Artistic License or GPL-1.0-or-later; exiftool-vendored.js: MIT",
+    "provenance": [
+      "https://exiftool.org/",
+      "https://github.com/photostructure/exiftool-vendored.js"
+    ],
+    "role": "secondary output oracle only",
+    "comparisons": [
+      {
+        "field": "IPTC:ObjectName",
+        "status": "matched",
+        "localPresent": true,
+        "oraclePresent": true,
+        "local": "ABC",
+        "oracle": "ABC"
+      },
+      {
+        "field": "XMP:packet-present",
+        "status": "non-comparable",
+        "localPresent": true,
+        "oraclePresent": false,
+        "reason": "one-oracle-view-does-not-expose-this-semantic"
+      },
+      {
+        "field": "thumbnail-present",
+        "status": "non-comparable",
+        "localPresent": true,
+        "oraclePresent": false,
+        "reason": "one-oracle-view-does-not-expose-this-semantic"
+      }
+    ]
+  },
+  "publicContractChanges": [
+    "MetadataResult.photoshop bounded inventory",
+    "MetadataGroup Photoshop",
+    "parsePhotoshopResources and inspectPhotoshopResourceSpans exports",
+    "photoshop-resource exact JPEG writer/edit/redaction selector"
+  ],
+  "humanReview": {
+    "required": true,
+    "status": "pending",
+    "scope": "every B06 writer change and exact Photoshop resource targeting diff",
+    "selfReviewIsNotApproval": true
+  }
+}

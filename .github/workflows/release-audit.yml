@@ -1,0 +1,78 @@
+name: Release candidate audit
+
+on:
+  schedule:
+    - cron: "17 2 * * 6"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  r05:
+    runs-on: macos-14
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.21"
+      - run: npm ci
+      - run: npx playwright install chromium firefox webkit
+      - name: Check out the pinned external corpus into temporary runner storage
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/ianare/exif-py.git "$RUNNER_TEMP/exif-py"
+          git -C "$RUNNER_TEMP/exif-py" checkout --detach a69bf74770caf6b333221658f5092ed69f99faac
+      - name: Download and verify pinned IPTC reference images into runner-local storage
+        run: |
+          mkdir -p "$RUNNER_TEMP/iptc-reference-images"
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/iptc-reference-images/IPTC-PhotometadataRef-Std2025.1.jpg" https://iptc.org/std/photometadata/examples/IPTC-PhotometadataRef-Std2025.1.jpg
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/iptc-reference-images/IPTC-PhotometadataRef-Std2023.1.jpg" https://iptc.org/std/photometadata/examples/IPTC-PhotometadataRef-Std2023.1.jpg
+          node --input-type=module <<'NODE'
+          import { createHash } from "node:crypto";
+          import { readFile } from "node:fs/promises";
+          import { join } from "node:path";
+          const manifest = JSON.parse(await readFile("data/iptc/reference-images.json", "utf8"));
+          for (const image of manifest.images) {
+            const bytes = await readFile(join(process.env.RUNNER_TEMP, "iptc-reference-images", image.fileName));
+            const hash = createHash("sha256").update(bytes).digest("hex");
+            if (hash !== image.sha256) throw new Error(`${image.fileName} SHA-256 mismatch: expected ${image.sha256}, received ${hash}`);
+          }
+          NODE
+      - name: Prepare all remaining pinned R05 corpora in temporary runner storage
+        run: npm run r05:prepare-corpora -- --root "$RUNNER_TEMP/r05-corpora"
+      - name: Run the same R05 gate used for release candidates
+        run: npm run r05:audit
+        env:
+          EXTERNAL_FIXTURE_ROOT: ${{ runner.temp }}/exif-py/tests/resources
+          EXTERNAL_CORPUS_COMMIT: a69bf74770caf6b333221658f5092ed69f99faac
+          EXTERNAL_CORPUS_OUTPUT_DIR: artifacts/external-corpus
+          IPTC_REFERENCE_CORPUS_DIR: ${{ runner.temp }}/iptc-reference-images
+          IPTC_REFERENCE_REPORT_DIR: artifacts/iptc-reference
+          ICC_REFERENCE_CORPUS_DIR: /System/Library/ColorSync/Profiles
+          ICC_REFERENCE_CORPUS_OUTPUT_DIR: artifacts/icc-reference
+          RAW_B04_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/raw-b04
+          RAW_B05_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/raw-b05
+          MAKERNOTE_B08_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/makernote-b08
+          B09_SVG_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/svg
+          R05_BENCHMARK_OUTPUT: artifacts/r05/benchmark.json
+          R05_REPORT_DIR: artifacts/r05
+      - name: Upload complete R05 and supporting evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r05-release-audit-${{ runner.os }}
+          path: |
+            artifacts/r05/
+            artifacts/external-corpus/
+            artifacts/iptc-reference/
+            artifacts/icc-reference/
+            reports/
+          if-no-files-found: error

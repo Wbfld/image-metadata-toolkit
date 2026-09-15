@@ -103,6 +103,8 @@ export interface CanonicalFamilyGroups {
   readonly iptcSemantic: MetadataResult["iptcSemantic"];
   readonly icc: MetadataResult["icc"];
   readonly jfif: MetadataResult["jfif"];
+  readonly photoshop: MetadataResult["photoshop"];
+  readonly makerNotes: MetadataResult["makerNotes"];
   readonly pngText: MetadataResult["pngText"];
   readonly blocks: MetadataResult["blocks"];
   readonly warnings: MetadataResult["warnings"];
@@ -247,6 +249,8 @@ export function toFlatObject(result: MetadataResult, options: FlatObjectOptions 
       iptcSemantic: result.iptcSemantic ?? null,
       icc: result.icc,
       jfif: result.jfif,
+      photoshop: result.photoshop ?? null,
+      makerNotes: result.makerNotes ?? null,
       pngText: result.pngText,
       blocks: result.blocks,
       coverage: result.coverage,
@@ -283,6 +287,8 @@ export function toLosslessFamilyGroups(result: MetadataResult, options: FamilyGr
     iptcSemantic: result.iptcSemantic,
     icc: result.icc,
     jfif: result.jfif,
+    photoshop: result.photoshop ?? null,
+    makerNotes: result.makerNotes ?? null,
     pngText: result.pngText,
     blocks: result.blocks,
     warnings: result.warnings,
@@ -381,12 +387,17 @@ export function toJsonSafeResult(result: MetadataResult, options: JsonSafeOption
   return toJsonSafe({
     format: result.format,
     mimeType: result.mimeType,
+    container: result.container,
+    fileKind: result.fileKind,
+    raw: result.raw,
     dimensions: result.dimensions,
     displayDimensions: result.displayDimensions,
     transform: result.transform,
     nclx: result.nclx,
     heif: result.heif ?? null,
     heifSequences: result.heifSequences ?? null,
+    cr3: result.cr3 ?? null,
+    raf: result.raf ?? null,
     fields: result.fields,
     composites: result.composites ?? null,
     details: result.details ?? null,
@@ -396,6 +407,8 @@ export function toJsonSafeResult(result: MetadataResult, options: JsonSafeOption
     iptcSemantic: result.iptcSemantic ?? null,
     icc: result.icc,
     jfif: result.jfif,
+    photoshop: result.photoshop ?? null,
+    makerNotes: result.makerNotes ?? null,
     pngText: result.pngText,
     blocks: result.blocks,
     coverage: result.coverage,

@@ -1,0 +1,1296 @@
+{
+  "schema": "browser-image-metadata.raw-b04-evidence.v1",
+  "status": "pass",
+  "generatedAt": "2026-09-15T03:38:01.261Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "corpus": {
+    "directoryPolicy": "temporary-untracked-only",
+    "fixtureCount": 7,
+    "minimumFixtures": 7,
+    "noImagesCopied": true
+  },
+  "sourceManifest": {
+    "path": "data/raw/raw-b04-sources.json",
+    "sha256": "3f8b479de1aa67119576919f558736847dd30105f419a68b50c6753ba3cc797a",
+    "schema": "browser-image-metadata.raw-b04.sources.v1",
+    "retrievedAt": "2026-09-13",
+    "license": "CC0-1.0 / public-domain dedication as declared by the contributor",
+    "repository": "https://raw.pixls.us/"
+  },
+  "independentOracle": {
+    "package": "exiftool-vendored",
+    "packageVersion": "33.5.0",
+    "version": "13.42",
+    "license": "Artistic License 1.0 / GPL-1.0-or-later",
+    "provenance": "https://exiftool.org/ and the pinned exiftool-vendored development dependency; secondary output oracle only"
+  },
+  "implementation": {
+    "containerModel": "TIFF/BigTIFF physical container plus a distinct RAW fileKind; ordinary TIFF remains fileKind=tiff",
+    "recognizedKinds": [
+      "dng",
+      "cr2",
+      "nef",
+      "arw",
+      "orf",
+      "rw2",
+      "iiq"
+    ],
+    "payloadPolicy": "Directory-referenced ranges are indexed with source offsets and lengths; bytes are never retained in RawContainerData and sensor pixels are never decoded.",
+    "normalizationPolicy": "File type is lower-cased; text is NUL-trimmed and whitespace-normalized; dimensions use the common ImageWidth/ImageHeight pair except RW2 sensor dimensions; unavailable vendor ranges are non-comparable, never matches.",
+    "ambiguityPolicy": "A structurally recognized variant with no safe standard RAW range retains an AMBIGUOUS_VARIANT diagnostic and exposes no invented offset."
+  },
+  "thresholds": {
+    "minimumFixtures": 7,
+    "minimumComparableValues": 20,
+    "maximumMismatches": 0,
+    "maximumMissing": 0
+  },
+  "counts": {
+    "found": 35,
+    "matched": 31,
+    "mismatched": 0,
+    "normalized-match": 0,
+    "missing-local": 0,
+    "missing-reference": 0,
+    "non-comparable": 11
+  },
+  "fixtures": [
+    {
+      "fileKind": "dng",
+      "fixture": "temporary/dng.DNG",
+      "sourceId": 748,
+      "sourceUrl": "https://raw.pixls.us/getfile.php/748/nice/Canon - PowerShot SX40 HS - 12bit 12bit CHDK ver. 1.0.0-1925 (4:3).DNG",
+      "bytes": 19206240,
+      "sha256": "dab360e60b94a3f011dd154577f3e7305febd3d497d47379cc4a64b383c48e1f",
+      "sourceIndexSha256": "dab360e60b94a3f011dd154577f3e7305febd3d497d47379cc4a64b383c48e1f",
+      "parser": {
+        "format": "tiff",
+        "container": "tiff",
+        "fileKind": "dng",
+        "dimensions": {
+          "width": 4176,
+          "height": 3060
+        },
+        "rawComplete": true,
+        "rawPayloads": [
+          {
+            "id": "raw:dng:payload:1:38400:19167840",
+            "role": "raw",
+            "format": "raw",
+            "offset": 38400,
+            "length": 19167840,
+            "dimensions": {
+              "width": 4176,
+              "height": 3060
+            },
+            "sourceDirectoryId": "SubIFD[0]@398",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "valid"
+          }
+        ],
+        "previews": [],
+        "thumbnails": [],
+        "opaquePayloads": [
+          {
+            "id": "raw:dng:payload:0:1536:36864",
+            "role": "unknown",
+            "format": "unknown",
+            "offset": 1536,
+            "length": 36864,
+            "dimensions": {
+              "width": 128,
+              "height": 96
+            },
+            "sourceDirectoryId": "IFD0@8",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "unknown"
+          }
+        ],
+        "diagnostics": [],
+        "warningCodes": [
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "INVALID_VALUE"
+        ]
+      },
+      "oracle": {
+        "fileType": "DNG",
+        "imageDimensions": {
+          "width": 4176,
+          "height": 3060
+        },
+        "sensorDimensions": {
+          "width": null,
+          "height": null
+        },
+        "previewRange": null,
+        "thumbnailRange": null,
+        "errors": []
+      },
+      "comparisons": [
+        {
+          "key": "fileKind",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "dng",
+          "reference": "dng"
+        },
+        {
+          "key": "dimensions",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "width": 4176,
+            "height": 3060
+          },
+          "reference": {
+            "width": 4176,
+            "height": 3060
+          }
+        },
+        {
+          "key": "make",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "Canon",
+          "reference": "Canon"
+        },
+        {
+          "key": "model",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "Canon PowerShot SX40 HS",
+          "reference": "Canon PowerShot SX40 HS"
+        },
+        {
+          "key": "preview-range",
+          "status": "non-comparable",
+          "reason": "missing-from-both",
+          "localPresent": false,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        },
+        {
+          "key": "thumbnail-range",
+          "status": "non-comparable",
+          "reason": "DNG independent oracle does not expose the generic TIFF thumbnail range; parser-discovered directory ranges remain retained as provenance",
+          "localPresent": false,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        }
+      ],
+      "counts": {
+        "found": 4,
+        "matched": 4,
+        "mismatched": 0,
+        "normalized-match": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2
+      },
+      "status": "passed"
+    },
+    {
+      "fileKind": "cr2",
+      "fixture": "temporary/cr2.CR2",
+      "sourceId": 129,
+      "sourceUrl": "https://raw.pixls.us/getfile.php/129/nice/Canon - EOS 7D - sRAW2 (sRAW) (3:2).CR2",
+      "bytes": 11062629,
+      "sha256": "3789b1ba5d880613104637c40a06619cd9f3b54b0cf62d2d95b9f9e885edcf6e",
+      "sourceIndexSha256": "3789b1ba5d880613104637c40a06619cd9f3b54b0cf62d2d95b9f9e885edcf6e",
+      "parser": {
+        "format": "tiff",
+        "container": "tiff",
+        "fileKind": "cr2",
+        "dimensions": {
+          "width": 5184,
+          "height": 3456
+        },
+        "rawComplete": true,
+        "rawPayloads": [
+          {
+            "id": "raw:cr2:payload:4:4074196:6988433",
+            "role": "raw",
+            "format": "raw",
+            "offset": 4074196,
+            "length": 6988433,
+            "dimensions": null,
+            "sourceDirectoryId": "IFD3@48966",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "valid"
+          }
+        ],
+        "previews": [
+          {
+            "id": "raw:cr2:payload:0:74276:2263216",
+            "role": "preview",
+            "format": "jpeg",
+            "offset": 74276,
+            "length": 2263216,
+            "dimensions": {
+              "width": 5184,
+              "height": 3456
+            },
+            "sourceDirectoryId": "IFD0@16",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "valid"
+          }
+        ],
+        "thumbnails": [
+          {
+            "id": "raw:cr2:payload:2:57256:17020",
+            "role": "thumbnail",
+            "format": "jpeg",
+            "offset": 57256,
+            "length": 17020,
+            "dimensions": null,
+            "sourceDirectoryId": "IFD1@48752",
+            "sourceTags": [
+              513,
+              514
+            ],
+            "provenance": "tiff-jpeg-offset-length",
+            "status": "valid"
+          }
+        ],
+        "opaquePayloads": [
+          {
+            "id": "raw:cr2:payload:1:984:45494",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 984,
+            "length": 45494,
+            "dimensions": null,
+            "sourceDirectoryId": "ExifIFD@446",
+            "sourceTags": [
+              37500
+            ],
+            "provenance": "directory-only",
+            "status": "unknown"
+          },
+          {
+            "id": "raw:cr2:payload:3:2337492:746496",
+            "role": "unknown",
+            "format": "unknown",
+            "offset": 2337492,
+            "length": 746496,
+            "dimensions": {
+              "width": 432,
+              "height": 288
+            },
+            "sourceDirectoryId": "IFD2@48782",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "unknown"
+          }
+        ],
+        "diagnostics": [],
+        "warningCodes": [
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "UNSUPPORTED_STRUCTURE"
+        ]
+      },
+      "oracle": {
+        "fileType": "CR2",
+        "imageDimensions": {
+          "width": 5184,
+          "height": 3456
+        },
+        "sensorDimensions": {
+          "width": 2592,
+          "height": 1728
+        },
+        "previewRange": {
+          "offset": 74276,
+          "length": 2263216
+        },
+        "thumbnailRange": {
+          "offset": 57256,
+          "length": 17020
+        },
+        "errors": []
+      },
+      "comparisons": [
+        {
+          "key": "fileKind",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "cr2",
+          "reference": "cr2"
+        },
+        {
+          "key": "dimensions",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "width": 5184,
+            "height": 3456
+          },
+          "reference": {
+            "width": 5184,
+            "height": 3456
+          }
+        },
+        {
+          "key": "make",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "Canon",
+          "reference": "Canon"
+        },
+        {
+          "key": "model",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "Canon EOS 7D",
+          "reference": "Canon EOS 7D"
+        },
+        {
+          "key": "preview-range",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "offset": 74276,
+            "length": 2263216
+          },
+          "reference": {
+            "offset": 74276,
+            "length": 2263216
+          }
+        },
+        {
+          "key": "thumbnail-range",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "offset": 57256,
+            "length": 17020
+          },
+          "reference": {
+            "offset": 57256,
+            "length": 17020
+          }
+        }
+      ],
+      "counts": {
+        "found": 6,
+        "matched": 6,
+        "mismatched": 0,
+        "normalized-match": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "status": "passed"
+    },
+    {
+      "fileKind": "nef",
+      "fixture": "temporary/nef.NEF",
+      "sourceId": 743,
+      "sourceUrl": "https://raw.pixls.us/getfile.php/743/nice/Nikon - D3200 - 12bit 12bit compressed (Lossy (type 2)) (3:2).NEF",
+      "bytes": 22582799,
+      "sha256": "91657dd8e9c7a086826683f6d20799685657dd7ca2056702b145851465f57cd3",
+      "sourceIndexSha256": "91657dd8e9c7a086826683f6d20799685657dd7ca2056702b145851465f57cd3",
+      "parser": {
+        "format": "tiff",
+        "container": "tiff",
+        "fileKind": "nef",
+        "dimensions": {
+          "width": 6080,
+          "height": 4012
+        },
+        "rawComplete": true,
+        "rawPayloads": [
+          {
+            "id": "raw:nef:payload:2:3244032:19338767",
+            "role": "raw",
+            "format": "raw",
+            "offset": 3244032,
+            "length": 19338767,
+            "dimensions": {
+              "width": 6080,
+              "height": 4012
+            },
+            "sourceDirectoryId": "SubIFD[1]@172052",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "valid"
+          }
+        ],
+        "previews": [
+          {
+            "id": "raw:nef:payload:1:905216:2338541",
+            "role": "preview",
+            "format": "jpeg",
+            "offset": 905216,
+            "length": 2338541,
+            "dimensions": null,
+            "sourceDirectoryId": "SubIFD[0]@171932",
+            "sourceTags": [
+              513,
+              514
+            ],
+            "provenance": "tiff-jpeg-offset-length",
+            "status": "valid"
+          },
+          {
+            "id": "raw:nef:payload:3:172544:732166",
+            "role": "preview",
+            "format": "jpeg",
+            "offset": 172544,
+            "length": 732166,
+            "dimensions": null,
+            "sourceDirectoryId": "SubIFD[2]@172280",
+            "sourceTags": [
+              513,
+              514
+            ],
+            "provenance": "tiff-jpeg-offset-length",
+            "status": "valid"
+          }
+        ],
+        "thumbnails": [],
+        "opaquePayloads": [
+          {
+            "id": "raw:nef:payload:0:114332:57600",
+            "role": "unknown",
+            "format": "unknown",
+            "offset": 114332,
+            "length": 57600,
+            "dimensions": {
+              "width": 160,
+              "height": 120
+            },
+            "sourceDirectoryId": "IFD0@8",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "unknown"
+          },
+          {
+            "id": "raw:nef:payload:4:2064:112250",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 2064,
+            "length": 112250,
+            "dimensions": null,
+            "sourceDirectoryId": "ExifIFD@1520",
+            "sourceTags": [
+              37500
+            ],
+            "provenance": "directory-only",
+            "status": "unknown"
+          }
+        ],
+        "diagnostics": [],
+        "warningCodes": [
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "UNSUPPORTED_STRUCTURE"
+        ]
+      },
+      "oracle": {
+        "fileType": "NEF",
+        "imageDimensions": {
+          "width": 6080,
+          "height": 4012
+        },
+        "sensorDimensions": {
+          "width": null,
+          "height": null
+        },
+        "previewRange": {
+          "offset": 24076,
+          "length": 90238
+        },
+        "thumbnailRange": null,
+        "errors": []
+      },
+      "comparisons": [
+        {
+          "key": "fileKind",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "nef",
+          "reference": "nef"
+        },
+        {
+          "key": "dimensions",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "width": 6080,
+            "height": 4012
+          },
+          "reference": {
+            "width": 6080,
+            "height": 4012
+          }
+        },
+        {
+          "key": "make",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "NIKON CORPORATION",
+          "reference": "NIKON CORPORATION"
+        },
+        {
+          "key": "model",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "NIKON D3200",
+          "reference": "NIKON D3200"
+        },
+        {
+          "key": "preview-range",
+          "status": "non-comparable",
+          "reason": "NEF independent preview range is vendor-specific or stored in an opaque structure not represented by the standards-based TIFF directory graph",
+          "localPresent": true,
+          "referencePresent": true,
+          "local": null,
+          "reference": null
+        },
+        {
+          "key": "thumbnail-range",
+          "status": "non-comparable",
+          "reason": "NEF independent oracle does not expose the generic TIFF thumbnail range; parser-discovered directory ranges remain retained as provenance",
+          "localPresent": false,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        }
+      ],
+      "counts": {
+        "found": 5,
+        "matched": 4,
+        "mismatched": 0,
+        "normalized-match": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2
+      },
+      "status": "passed"
+    },
+    {
+      "fileKind": "arw",
+      "fixture": "temporary/arw.ARW",
+      "sourceId": 782,
+      "sourceUrl": "https://raw.pixls.us/getfile.php/782/nice/Sony - NEX-6 - 12bit 12bit compressed (3:2).ARW",
+      "bytes": 16646144,
+      "sha256": "bf4c6d21136aa4fd626212fe72b962b6404e3fca45cdc3b6afbed8e73fee2cf8",
+      "sourceIndexSha256": "bf4c6d21136aa4fd626212fe72b962b6404e3fca45cdc3b6afbed8e73fee2cf8",
+      "parser": {
+        "format": "tiff",
+        "container": "tiff",
+        "fileKind": "arw",
+        "dimensions": {
+          "width": 4928,
+          "height": 3276
+        },
+        "rawComplete": true,
+        "rawPayloads": [
+          {
+            "id": "raw:arw:payload:1:481280:16144128",
+            "role": "raw",
+            "format": "raw",
+            "offset": 481280,
+            "length": 16144128,
+            "dimensions": {
+              "width": 4928,
+              "height": 3276
+            },
+            "sourceDirectoryId": "SubIFD[0]@111844",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "valid"
+          }
+        ],
+        "previews": [
+          {
+            "id": "raw:arw:payload:0:112802:366127",
+            "role": "preview",
+            "format": "jpeg",
+            "offset": 112802,
+            "length": 366127,
+            "dimensions": null,
+            "sourceDirectoryId": "IFD0@8",
+            "sourceTags": [
+              513,
+              514
+            ],
+            "provenance": "tiff-jpeg-offset-length",
+            "status": "valid"
+          }
+        ],
+        "thumbnails": [
+          {
+            "id": "raw:arw:payload:3:37066:6936",
+            "role": "thumbnail",
+            "format": "jpeg",
+            "offset": 37066,
+            "length": 6936,
+            "dimensions": null,
+            "sourceDirectoryId": "IFD1@36800",
+            "sourceTags": [
+              513,
+              514
+            ],
+            "provenance": "tiff-jpeg-offset-length",
+            "status": "valid"
+          }
+        ],
+        "opaquePayloads": [
+          {
+            "id": "raw:arw:payload:2:998:35656",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 998,
+            "length": 35656,
+            "dimensions": null,
+            "sourceDirectoryId": "ExifIFD@428",
+            "sourceTags": [
+              37500
+            ],
+            "provenance": "directory-only",
+            "status": "unknown"
+          }
+        ],
+        "diagnostics": [],
+        "warningCodes": [
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "UNSUPPORTED_STRUCTURE"
+        ]
+      },
+      "oracle": {
+        "fileType": "ARW",
+        "imageDimensions": {
+          "width": 4928,
+          "height": 3276
+        },
+        "sensorDimensions": {
+          "width": null,
+          "height": null
+        },
+        "previewRange": {
+          "offset": 112802,
+          "length": 366127
+        },
+        "thumbnailRange": {
+          "offset": 37066,
+          "length": 6936
+        },
+        "errors": []
+      },
+      "comparisons": [
+        {
+          "key": "fileKind",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "arw",
+          "reference": "arw"
+        },
+        {
+          "key": "dimensions",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "width": 4928,
+            "height": 3276
+          },
+          "reference": {
+            "width": 4928,
+            "height": 3276
+          }
+        },
+        {
+          "key": "make",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "SONY",
+          "reference": "SONY"
+        },
+        {
+          "key": "model",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "NEX-6",
+          "reference": "NEX-6"
+        },
+        {
+          "key": "preview-range",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "offset": 112802,
+            "length": 366127
+          },
+          "reference": {
+            "offset": 112802,
+            "length": 366127
+          }
+        },
+        {
+          "key": "thumbnail-range",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "offset": 37066,
+            "length": 6936
+          },
+          "reference": {
+            "offset": 37066,
+            "length": 6936
+          }
+        }
+      ],
+      "counts": {
+        "found": 6,
+        "matched": 6,
+        "mismatched": 0,
+        "normalized-match": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "status": "passed"
+    },
+    {
+      "fileKind": "orf",
+      "fixture": "temporary/orf.ORF",
+      "sourceId": 241,
+      "sourceUrl": "https://raw.pixls.us/getfile.php/241/nice/Olympus - E-P3 - 16bit (4:3).ORF",
+      "bytes": 11863288,
+      "sha256": "540edabdd9d4e6ef8602f56443730cc3133d714dc4d3d2c607e2f0aa6be5cbcd",
+      "sourceIndexSha256": "540edabdd9d4e6ef8602f56443730cc3133d714dc4d3d2c607e2f0aa6be5cbcd",
+      "parser": {
+        "format": "tiff",
+        "container": "tiff",
+        "fileKind": "orf",
+        "dimensions": {
+          "width": 4080,
+          "height": 3040
+        },
+        "rawComplete": true,
+        "rawPayloads": [
+          {
+            "id": "raw:orf:payload:0:1436160:10427128",
+            "role": "raw",
+            "format": "raw",
+            "offset": 1436160,
+            "length": 10427128,
+            "dimensions": {
+              "width": 4080,
+              "height": 3040
+            },
+            "sourceDirectoryId": "IFD0@8",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "valid"
+          }
+        ],
+        "previews": [],
+        "thumbnails": [],
+        "opaquePayloads": [
+          {
+            "id": "raw:orf:payload:1:3160:1433000",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 3160,
+            "length": 1433000,
+            "dimensions": null,
+            "sourceDirectoryId": "ExifIFD@290",
+            "sourceTags": [
+              37500
+            ],
+            "provenance": "directory-only",
+            "status": "unknown"
+          }
+        ],
+        "diagnostics": [],
+        "warningCodes": [
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "UNSUPPORTED_STRUCTURE"
+        ]
+      },
+      "oracle": {
+        "fileType": "ORF",
+        "imageDimensions": {
+          "width": 4080,
+          "height": 3040
+        },
+        "sensorDimensions": {
+          "width": null,
+          "height": null
+        },
+        "previewRange": {
+          "offset": 52224,
+          "length": 1137515
+        },
+        "thumbnailRange": null,
+        "errors": []
+      },
+      "comparisons": [
+        {
+          "key": "fileKind",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "orf",
+          "reference": "orf"
+        },
+        {
+          "key": "dimensions",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "width": 4080,
+            "height": 3040
+          },
+          "reference": {
+            "width": 4080,
+            "height": 3040
+          }
+        },
+        {
+          "key": "make",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "OLYMPUS IMAGING CORP.",
+          "reference": "OLYMPUS IMAGING CORP."
+        },
+        {
+          "key": "model",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "E-P3",
+          "reference": "E-P3"
+        },
+        {
+          "key": "preview-range",
+          "status": "non-comparable",
+          "reason": "ORF independent preview range is vendor-specific or stored in an opaque structure not represented by the standards-based TIFF directory graph",
+          "localPresent": false,
+          "referencePresent": true,
+          "local": null,
+          "reference": null
+        },
+        {
+          "key": "thumbnail-range",
+          "status": "non-comparable",
+          "reason": "ORF independent oracle does not expose the generic TIFF thumbnail range; parser-discovered directory ranges remain retained as provenance",
+          "localPresent": false,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        }
+      ],
+      "counts": {
+        "found": 5,
+        "matched": 4,
+        "mismatched": 0,
+        "normalized-match": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2
+      },
+      "status": "passed"
+    },
+    {
+      "fileKind": "rw2",
+      "fixture": "temporary/rw2.RW2",
+      "sourceId": 739,
+      "sourceUrl": "https://raw.pixls.us/getfile.php/739/nice/Panasonic - DMC-GF6 - 4:3.RW2",
+      "bytes": 19607552,
+      "sha256": "dace6b3818f00a5d4f7cc1cfc29744d15dcf7dd8684c882bea4a81c6ef670ad0",
+      "sourceIndexSha256": "dace6b3818f00a5d4f7cc1cfc29744d15dcf7dd8684c882bea4a81c6ef670ad0",
+      "parser": {
+        "format": "tiff",
+        "container": "tiff",
+        "fileKind": "rw2",
+        "dimensions": {
+          "width": 4816,
+          "height": 3464
+        },
+        "rawComplete": true,
+        "rawPayloads": [
+          {
+            "id": "raw:rw2:payload:1:536576:19070976",
+            "role": "raw",
+            "format": "raw",
+            "offset": 536576,
+            "length": 19070976,
+            "dimensions": {
+              "width": 4816,
+              "height": 3464
+            },
+            "sourceDirectoryId": "IFD0@24",
+            "sourceTags": [
+              280
+            ],
+            "provenance": "directory-only",
+            "status": "valid"
+          }
+        ],
+        "previews": [
+          {
+            "id": "raw:rw2:payload:0:2048:534528",
+            "role": "preview",
+            "format": "jpeg",
+            "offset": 2048,
+            "length": 534528,
+            "dimensions": {
+              "width": 4816,
+              "height": 3464
+            },
+            "sourceDirectoryId": "IFD0@24",
+            "sourceTags": [
+              46
+            ],
+            "provenance": "directory-only",
+            "status": "valid"
+          }
+        ],
+        "thumbnails": [],
+        "opaquePayloads": [],
+        "diagnostics": [],
+        "warningCodes": [
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "INVALID_VALUE",
+          "UNSUPPORTED_STRUCTURE"
+        ]
+      },
+      "oracle": {
+        "fileType": "RW2",
+        "imageDimensions": {
+          "width": 4592,
+          "height": 3448
+        },
+        "sensorDimensions": {
+          "width": 4816,
+          "height": 3464
+        },
+        "previewRange": null,
+        "thumbnailRange": null,
+        "errors": []
+      },
+      "comparisons": [
+        {
+          "key": "fileKind",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "rw2",
+          "reference": "rw2"
+        },
+        {
+          "key": "dimensions",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": {
+            "width": 4816,
+            "height": 3464
+          },
+          "reference": {
+            "width": 4816,
+            "height": 3464
+          }
+        },
+        {
+          "key": "make",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "Panasonic",
+          "reference": "Panasonic"
+        },
+        {
+          "key": "model",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "DMC-GF6",
+          "reference": "DMC-GF6"
+        },
+        {
+          "key": "preview-range",
+          "status": "non-comparable",
+          "reason": "missing-from-both",
+          "localPresent": false,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        },
+        {
+          "key": "thumbnail-range",
+          "status": "non-comparable",
+          "reason": "RW2 independent oracle does not expose the generic TIFF thumbnail range; parser-discovered directory ranges remain retained as provenance",
+          "localPresent": false,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        }
+      ],
+      "counts": {
+        "found": 4,
+        "matched": 4,
+        "mismatched": 0,
+        "normalized-match": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2
+      },
+      "status": "passed"
+    },
+    {
+      "fileKind": "iiq",
+      "fixture": "temporary/iiq.IIQ",
+      "sourceId": 1972,
+      "sourceUrl": "https://raw.pixls.us/getfile.php/1972/nice/Leaf - Credo 40 - IIQ L (4:3).IIQ",
+      "bytes": 35092025,
+      "sha256": "f2b8bb81f2e3cc918cfa91637683e0ca29a79bd77e1394daa5e8868721954d37",
+      "sourceIndexSha256": "f2b8bb81f2e3cc918cfa91637683e0ca29a79bd77e1394daa5e8868721954d37",
+      "parser": {
+        "format": "tiff",
+        "container": "tiff",
+        "fileKind": "iiq",
+        "dimensions": {
+          "width": 608,
+          "height": 456
+        },
+        "rawComplete": true,
+        "rawPayloads": [],
+        "previews": [],
+        "thumbnails": [
+          {
+            "id": "raw:iiq:payload:1:34977452:97344",
+            "role": "thumbnail",
+            "format": "unknown",
+            "offset": 34977452,
+            "length": 97344,
+            "dimensions": {
+              "width": 208,
+              "height": 156
+            },
+            "sourceDirectoryId": "IFD1@35075042",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "unknown"
+          }
+        ],
+        "opaquePayloads": [
+          {
+            "id": "raw:iiq:payload:0:34145708:831744",
+            "role": "unknown",
+            "format": "unknown",
+            "offset": 34145708,
+            "length": 831744,
+            "dimensions": {
+              "width": 608,
+              "height": 456
+            },
+            "sourceDirectoryId": "IFD0@35074796",
+            "sourceTags": [
+              273,
+              279
+            ],
+            "provenance": "tiff-offset-count",
+            "status": "unknown"
+          }
+        ],
+        "diagnostics": [
+          {
+            "code": "AMBIGUOUS_VARIANT",
+            "detail": "Recognized IIQ input has no standard TIFF RAW range; vendor sensor storage remains opaque and no pixel bytes were inferred.",
+            "offset": null
+          }
+        ],
+        "warningCodes": [
+          "LIMIT_EXCEEDED",
+          "INVALID_VALUE",
+          "INVALID_VALUE"
+        ]
+      },
+      "oracle": {
+        "fileType": "IIQ",
+        "imageDimensions": {
+          "width": 7320,
+          "height": 5484
+        },
+        "sensorDimensions": {
+          "width": 7372,
+          "height": 5536
+        },
+        "previewRange": null,
+        "thumbnailRange": null,
+        "errors": []
+      },
+      "comparisons": [
+        {
+          "key": "fileKind",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "iiq",
+          "reference": "iiq"
+        },
+        {
+          "key": "dimensions",
+          "status": "non-comparable",
+          "reason": "independent oracle reports IIQ sensor dimensions from opaque vendor data while the generic TIFF graph reports the addressable IFD dimensions",
+          "localPresent": true,
+          "referencePresent": true,
+          "local": null,
+          "reference": null
+        },
+        {
+          "key": "make",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "Leaf",
+          "reference": "Leaf"
+        },
+        {
+          "key": "model",
+          "status": "matched",
+          "reason": null,
+          "localPresent": true,
+          "referencePresent": true,
+          "local": "Credo 40",
+          "reference": "Credo 40"
+        },
+        {
+          "key": "preview-range",
+          "status": "non-comparable",
+          "reason": "missing-from-both",
+          "localPresent": false,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        },
+        {
+          "key": "thumbnail-range",
+          "status": "non-comparable",
+          "reason": "IIQ independent oracle does not expose the generic TIFF thumbnail range; parser-discovered directory ranges remain retained as provenance",
+          "localPresent": true,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        }
+      ],
+      "counts": {
+        "found": 5,
+        "matched": 3,
+        "mismatched": 0,
+        "normalized-match": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 3
+      },
+      "status": "passed"
+    }
+  ],
+  "complete": true
+}

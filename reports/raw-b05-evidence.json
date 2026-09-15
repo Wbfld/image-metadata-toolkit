@@ -1,0 +1,1375 @@
+{
+  "schema": "browser-image-metadata.raw-b05-evidence.v1",
+  "status": "pass",
+  "generatedAt": "2026-09-15T03:38:39.211Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "corpus": {
+    "directoryPolicy": "temporary-untracked-only",
+    "fixtureCount": 2,
+    "minimumFixtures": 2,
+    "noImagesCopied": true
+  },
+  "sourceManifest": {
+    "path": "data/raw/raw-b05-sources.json",
+    "sha256": "d7a4eb33e001ce308e2132b219bcd97f55470081fdffda125156d2e974441e39",
+    "schema": "browser-image-metadata.raw-b05.sources.v1",
+    "retrievedAt": "2026-09-15",
+    "source": {
+      "name": "raw.pixls.us public RAW sample repository",
+      "repository": "https://raw.pixls.us/",
+      "license": "CC0-1.0 / public-domain dedication as declared by the contributor",
+      "licenseUrl": "https://creativecommons.org/public-domain/cc0/",
+      "policy": "The CR3 and RAF binaries are downloaded only into temporary runner storage. This checked manifest retains source metadata and hashes, never image bytes."
+    },
+    "projects": {
+      "cr3": {
+        "name": "Canon CR3 ISO-BMFF conformance",
+        "format": "cr3",
+        "sourceUrls": [
+          "https://libopenraw.freedesktop.org/formats/cr3/",
+          "https://github.com/lclevy/canon_cr3"
+        ],
+        "sourceLicense": "LibOpenRaw documentation is LGPL-3.0-or-later; canon_cr3 is GPL-3.0; these are format/provenance references only and no implementation code or metadata tables are copied.",
+        "minimumFixtures": 1,
+        "fixtures": [
+          "Canon_EOS_R_RAW_ISO_100.CR3"
+        ]
+      },
+      "raf": {
+        "name": "Fujifilm RAF conformance",
+        "format": "raf",
+        "sourceUrls": [
+          "https://libopenraw.freedesktop.org/formats/raf/"
+        ],
+        "sourceLicense": "LibOpenRaw documentation is LGPL-3.0-or-later; the image is used under the raw.pixls.us public-domain/CC0 contributor policy.",
+        "minimumFixtures": 1,
+        "fixtures": [
+          "AFXT2720.RAF"
+        ]
+      }
+    }
+  },
+  "independentOracle": {
+    "package": "exiftool-vendored",
+    "packageVersion": "33.5.0",
+    "version": "13.42",
+    "license": "Artistic License 1.0 / GPL-1.0-or-later",
+    "provenance": "https://exiftool.org/ and the pinned exiftool-vendored development dependency; secondary output oracle only"
+  },
+  "implementation": {
+    "model": "CR3 keeps an ISO-BMFF item/track graph plus a separate range/UUID inventory; RAF keeps its fixed directory plus separate embedded range inventory. Neither parser decodes sensor pixels or retains payload bytes.",
+    "supportedProjects": [
+      "cr3",
+      "raf"
+    ],
+    "normalizationPolicy": "Text comparisons trim NULs and collapse whitespace; file identity is lower-cased; dimensions and offsets require safe non-negative integers; booleans compare presence only; non-numeric vendor ranges are explicitly non-comparable and never matches.",
+    "provenancePolicy": "Every retained range records source-relative offset, bounded length, role, format, source structure, associated item/track when available, and status. CR3 item/track candidates and primary ambiguity are retained independently rather than merged.",
+    "payloadPolicy": "The parser indexes JPEG preview, TIFF metadata, ISO-BMFF, RAW, and CFA ranges but never decodes RAW mosaics or retains image payload bytes in the CR3/RAF inventories.",
+    "unsupportedPolicy": "Canon UUID/MakerNote data and RAF proprietary metadata remain bounded opaque structures with diagnostics; unknown, contradictory, overlapping, truncated, or over-limit structures fail closed."
+  },
+  "thresholds": {
+    "minimumFixtures": 2,
+    "minimumComparableValues": 12,
+    "maximumMismatches": 0,
+    "maximumMissing": 0
+  },
+  "counts": {
+    "found": 21,
+    "matched": 13,
+    "normalized-match": 6,
+    "mismatched": 0,
+    "missing-local": 0,
+    "missing-reference": 0,
+    "non-comparable": 3,
+    "byField": {
+      "dimensions": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "identity": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "make": {
+        "found": 2,
+        "matched": 0,
+        "normalized-match": 2,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "metadata-range-present": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "model": {
+        "found": 2,
+        "matched": 0,
+        "normalized-match": 2,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "orientation": {
+        "found": 2,
+        "matched": 0,
+        "normalized-match": 2,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "preview-count-positive": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "preview-present": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "preview-range": {
+        "found": 2,
+        "matched": 0,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2
+      },
+      "raw-range-present": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "thumbnail-range": {
+        "found": 1,
+        "matched": 1,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 1
+      }
+    },
+    "byProducer": {
+      "EXIF": {
+        "found": 7,
+        "matched": 1,
+        "normalized-match": 6,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 1
+      },
+      "file-type": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "image-header": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "metadata-inventory": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      },
+      "preview-inventory": {
+        "found": 6,
+        "matched": 4,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2
+      },
+      "raw-inventory": {
+        "found": 2,
+        "matched": 2,
+        "normalized-match": 0,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 0
+      }
+    },
+    "byFormat": {
+      "cr3": {
+        "found": 10,
+        "matched": 6,
+        "normalized-match": 3,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2
+      },
+      "raf": {
+        "found": 11,
+        "matched": 7,
+        "normalized-match": 3,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 1
+      }
+    }
+  },
+  "projects": {
+    "cr3": {
+      "name": "Canon CR3 ISO-BMFF conformance",
+      "fixtureCount": 1,
+      "minimumFixtures": 1,
+      "counts": {
+        "found": 10,
+        "matched": 6,
+        "normalized-match": 3,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2,
+        "byField": {
+          "dimensions": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "identity": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "make": {
+            "found": 1,
+            "matched": 0,
+            "normalized-match": 1,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "metadata-range-present": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "model": {
+            "found": 1,
+            "matched": 0,
+            "normalized-match": 1,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "orientation": {
+            "found": 1,
+            "matched": 0,
+            "normalized-match": 1,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "preview-count-positive": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "preview-present": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "preview-range": {
+            "found": 1,
+            "matched": 0,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 1
+          },
+          "raw-range-present": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "thumbnail-range": {
+            "found": 0,
+            "matched": 0,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 1
+          }
+        },
+        "byProducer": {
+          "EXIF": {
+            "found": 3,
+            "matched": 0,
+            "normalized-match": 3,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 1
+          },
+          "file-type": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "image-header": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "metadata-inventory": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "preview-inventory": {
+            "found": 3,
+            "matched": 2,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 1
+          },
+          "raw-inventory": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          }
+        },
+        "byFormat": {
+          "cr3": {
+            "found": 10,
+            "matched": 6,
+            "normalized-match": 3,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 2
+          }
+        }
+      },
+      "status": "passed"
+    },
+    "raf": {
+      "name": "Fujifilm RAF conformance",
+      "fixtureCount": 1,
+      "minimumFixtures": 1,
+      "counts": {
+        "found": 11,
+        "matched": 7,
+        "normalized-match": 3,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 1,
+        "byField": {
+          "dimensions": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "identity": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "make": {
+            "found": 1,
+            "matched": 0,
+            "normalized-match": 1,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "metadata-range-present": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "model": {
+            "found": 1,
+            "matched": 0,
+            "normalized-match": 1,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "orientation": {
+            "found": 1,
+            "matched": 0,
+            "normalized-match": 1,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "preview-count-positive": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "preview-present": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "preview-range": {
+            "found": 1,
+            "matched": 0,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 1
+          },
+          "raw-range-present": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "thumbnail-range": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          }
+        },
+        "byProducer": {
+          "EXIF": {
+            "found": 4,
+            "matched": 1,
+            "normalized-match": 3,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "file-type": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "image-header": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "metadata-inventory": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          },
+          "preview-inventory": {
+            "found": 3,
+            "matched": 2,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 1
+          },
+          "raw-inventory": {
+            "found": 1,
+            "matched": 1,
+            "normalized-match": 0,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 0
+          }
+        },
+        "byFormat": {
+          "raf": {
+            "found": 11,
+            "matched": 7,
+            "normalized-match": 3,
+            "mismatched": 0,
+            "missing-local": 0,
+            "missing-reference": 0,
+            "non-comparable": 1
+          }
+        }
+      },
+      "status": "passed"
+    }
+  },
+  "fixtures": [
+    {
+      "project": "cr3",
+      "fileKind": "cr3",
+      "fixture": "temporary/Canon_EOS_R_RAW_ISO_100.CR3",
+      "sourceId": "raw-pixls-us:Canon/EOS R/Canon_EOS_R_RAW_ISO_100.CR3",
+      "sourceUrl": "https://raw.pixls.us/data/Canon/EOS%20R/Canon_EOS_R_RAW_ISO_100.CR3",
+      "bytes": 31606200,
+      "sha256": "89bd55532b0cceb5efa360e97827ba35c2076bce0de4675f3a4413a883dac880",
+      "parser": {
+        "format": "cr3",
+        "container": "iso-bmff",
+        "fileKind": "cr3",
+        "dimensions": {
+          "width": 6720,
+          "height": 4480
+        },
+        "completeness": {
+          "complete": true,
+          "scope": "full",
+          "reasons": [],
+          "bytesRead": 31606200,
+          "inputBytes": 31606200
+        },
+        "warningCodes": [
+          "UNSUPPORTED_STRUCTURE",
+          "UNSUPPORTED_STRUCTURE",
+          "UNSUPPORTED_STRUCTURE",
+          "INVALID_ASCII"
+        ],
+        "inventoryComplete": true,
+        "inventoryDiagnostics": [
+          {
+            "code": "AMBIGUOUS_PRIMARY",
+            "detail": "CR3 contains multiple independent primary item or picture-track candidates; none was merged or selected.",
+            "offset": null
+          }
+        ],
+        "previewRanges": [
+          {
+            "id": "cr3:track:1:sample:1",
+            "role": "preview",
+            "format": "jpeg",
+            "offset": 329720,
+            "length": 1503417,
+            "source": "stbl:track:1:sample:1",
+            "dimensions": {
+              "width": 6720,
+              "height": 4480
+            },
+            "associatedItemId": null,
+            "associatedTrackId": 1,
+            "status": "valid"
+          },
+          {
+            "id": "cr3:preview:prvw",
+            "role": "preview",
+            "format": "jpeg",
+            "offset": 96648,
+            "length": 233056,
+            "source": "uuid:eaf42b5e1c984b88b9fbb7dc406e4d16",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          }
+        ],
+        "metadataRanges": [
+          {
+            "id": "cr3:track:4:sample:1",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 31564520,
+            "length": 41680,
+            "source": "stbl:track:4:sample:1",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": 4,
+            "status": "valid"
+          },
+          {
+            "id": "cr3:canon-metadata:32",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 56,
+            "length": 28760,
+            "source": "uuid:85c0b687820f11e08111f4ce462b6a48",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          },
+          {
+            "id": "cr3:xmp:31032",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 31056,
+            "length": 65536,
+            "source": "uuid:be7acfcb97a942e89c71999491e3afac",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          }
+        ],
+        "rawRanges": [
+          {
+            "id": "cr3:track:2:sample:1",
+            "role": "raw",
+            "format": "raw",
+            "offset": 1833144,
+            "length": 1505184,
+            "source": "stbl:track:2:sample:1",
+            "dimensions": {
+              "width": 1624,
+              "height": 1080
+            },
+            "associatedItemId": null,
+            "associatedTrackId": 2,
+            "status": "valid"
+          },
+          {
+            "id": "cr3:track:3:sample:1",
+            "role": "raw",
+            "format": "raw",
+            "offset": 3338328,
+            "length": 28226192,
+            "source": "stbl:track:3:sample:1",
+            "dimensions": {
+              "width": 6888,
+              "height": 4546
+            },
+            "associatedItemId": null,
+            "associatedTrackId": 3,
+            "status": "valid"
+          }
+        ],
+        "opaqueStructures": [
+          {
+            "id": "cr3:opaque:32",
+            "role": "unknown",
+            "format": "unknown",
+            "offset": 40,
+            "length": 28776,
+            "source": "uuid:85c0b687820f11e08111f4ce462b6a48",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          }
+        ],
+        "primarySelection": "ambiguous",
+        "trackCount": 4,
+        "trackKinds": [
+          "picture",
+          "picture",
+          "picture",
+          "metadata"
+        ],
+        "trackStructures": [
+          {
+            "id": 1,
+            "kind": "picture",
+            "dimensions": {
+              "width": 6720,
+              "height": 4480
+            },
+            "transformation": {
+              "matrix": [
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                16384
+              ],
+              "orientation": {
+                "rotation": 0,
+                "mirrored": false
+              }
+            },
+            "sampleDescriptionCount": 1,
+            "sampleCount": 1,
+            "fragmentSampleCount": 0,
+            "referenceCount": 0,
+            "editCount": 0,
+            "associatedTrackIds": [],
+            "metadataTrackIds": [],
+            "complete": true
+          },
+          {
+            "id": 2,
+            "kind": "picture",
+            "dimensions": {
+              "width": 1624,
+              "height": 1080
+            },
+            "transformation": {
+              "matrix": [
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                16384
+              ],
+              "orientation": {
+                "rotation": 0,
+                "mirrored": false
+              }
+            },
+            "sampleDescriptionCount": 1,
+            "sampleCount": 1,
+            "fragmentSampleCount": 0,
+            "referenceCount": 0,
+            "editCount": 0,
+            "associatedTrackIds": [],
+            "metadataTrackIds": [],
+            "complete": true
+          },
+          {
+            "id": 3,
+            "kind": "picture",
+            "dimensions": {
+              "width": 6888,
+              "height": 4546
+            },
+            "transformation": {
+              "matrix": [
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                16384
+              ],
+              "orientation": {
+                "rotation": 0,
+                "mirrored": false
+              }
+            },
+            "sampleDescriptionCount": 1,
+            "sampleCount": 1,
+            "fragmentSampleCount": 0,
+            "referenceCount": 0,
+            "editCount": 0,
+            "associatedTrackIds": [],
+            "metadataTrackIds": [],
+            "complete": true
+          },
+          {
+            "id": 4,
+            "kind": "metadata",
+            "dimensions": null,
+            "transformation": {
+              "matrix": [
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                16384
+              ],
+              "orientation": {
+                "rotation": 0,
+                "mirrored": false
+              }
+            },
+            "sampleDescriptionCount": 1,
+            "sampleCount": 1,
+            "fragmentSampleCount": 0,
+            "referenceCount": 0,
+            "editCount": 0,
+            "associatedTrackIds": [],
+            "metadataTrackIds": [],
+            "complete": true
+          }
+        ]
+      },
+      "oracle": {
+        "FileType": "CR3",
+        "MIMEType": "image/x-canon-cr3",
+        "ImageWidth": 6720,
+        "ImageHeight": 4480,
+        "Make": "Canon",
+        "Model": "Canon EOS R",
+        "Orientation": "Horizontal (normal)",
+        "PreviewImage": {
+          "present": true,
+          "bytes": 233056
+        },
+        "ThumbnailOffset": null,
+        "ThumbnailLength": null,
+        "JpgFromRaw": {
+          "present": true,
+          "bytes": 1503417
+        },
+        "MediaDataSize": 31276480,
+        "MetaFormat": "CTMD",
+        "StripOffsets": null,
+        "StripByteCounts": null,
+        "ExifToolVersion": "13.42"
+      },
+      "comparisons": [
+        {
+          "field": "identity",
+          "producer": "file-type",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": "cr3",
+          "reference": "cr3"
+        },
+        {
+          "field": "dimensions",
+          "producer": "image-header",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": {
+            "width": 6720,
+            "height": 4480
+          },
+          "reference": {
+            "width": 6720,
+            "height": 4480
+          }
+        },
+        {
+          "field": "make",
+          "producer": "EXIF",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "normalized-match",
+          "reason": null,
+          "local": "Canon",
+          "reference": "Canon"
+        },
+        {
+          "field": "model",
+          "producer": "EXIF",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "normalized-match",
+          "reason": null,
+          "local": "Canon EOS R",
+          "reference": "Canon EOS R"
+        },
+        {
+          "field": "orientation",
+          "producer": "EXIF",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "normalized-match",
+          "reason": null,
+          "local": 1,
+          "reference": 1
+        },
+        {
+          "field": "preview-present",
+          "producer": "preview-inventory",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": true,
+          "reference": true
+        },
+        {
+          "field": "raw-range-present",
+          "producer": "raw-inventory",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": true,
+          "reference": true
+        },
+        {
+          "field": "metadata-range-present",
+          "producer": "metadata-inventory",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": true,
+          "reference": true
+        },
+        {
+          "field": "preview-count-positive",
+          "producer": "preview-inventory",
+          "format": "cr3",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": true,
+          "reference": true
+        },
+        {
+          "field": "preview-range",
+          "producer": "preview-inventory",
+          "format": "cr3",
+          "status": "non-comparable",
+          "reason": "ExifTool exposes CR3 preview bytes but does not expose the PRVW/JpgFromRaw source offset and length in its stable output.",
+          "localPresent": true,
+          "referencePresent": true,
+          "local": null,
+          "reference": null
+        },
+        {
+          "field": "thumbnail-range",
+          "producer": "EXIF",
+          "format": "cr3",
+          "status": "non-comparable",
+          "reason": "The CR3 fixture and independent oracle do not expose a stable numeric thumbnail range.",
+          "localPresent": false,
+          "referencePresent": false,
+          "local": null,
+          "reference": null
+        }
+      ],
+      "counts": {
+        "found": 10,
+        "matched": 6,
+        "normalized-match": 3,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 2
+      },
+      "status": "passed"
+    },
+    {
+      "project": "raf",
+      "fileKind": "raf",
+      "fixture": "temporary/AFXT2720.RAF",
+      "sourceId": "raw-pixls-us:Fujifilm/X-T3/AFXT2720.RAF",
+      "sourceUrl": "https://raw.pixls.us/data/Fujifilm/X-T3/AFXT2720.RAF",
+      "bytes": 56087360,
+      "sha256": "24abd27b4a200f3170ea1579672944b807d0eb35bf21422a3937bb644f27f2eb",
+      "parser": {
+        "format": "raf",
+        "container": "raf",
+        "fileKind": "raf",
+        "dimensions": {
+          "width": 4416,
+          "height": 2944
+        },
+        "completeness": {
+          "complete": true,
+          "scope": "full",
+          "reasons": [],
+          "bytesRead": 56087360,
+          "inputBytes": 56087360
+        },
+        "warningCodes": [
+          "UNSUPPORTED_STRUCTURE"
+        ],
+        "inventoryComplete": true,
+        "inventoryDiagnostics": [],
+        "previewRanges": [
+          {
+            "id": "raf:preview",
+            "role": "preview",
+            "format": "jpeg",
+            "offset": 148,
+            "length": 2667229,
+            "source": "RAF directory preview offset/length",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          },
+          {
+            "id": "raf:thumbnail:3920",
+            "role": "thumbnail",
+            "format": "jpeg",
+            "offset": 3920,
+            "length": 8959,
+            "source": "RAF preview EXIF associated-image reference",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          }
+        ],
+        "metadataRanges": [
+          {
+            "id": "raf:metadata",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 2667432,
+            "length": 22104,
+            "source": "RAF directory metadata offset/length",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          }
+        ],
+        "rawRanges": [
+          {
+            "id": "raf:cfa",
+            "role": "cfa",
+            "format": "tiff",
+            "offset": 2689536,
+            "length": 53397824,
+            "source": "RAF directory CFA/RAW offset/length",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          }
+        ],
+        "opaqueStructures": [
+          {
+            "id": "raf:metadata",
+            "role": "metadata",
+            "format": "unknown",
+            "offset": 2667432,
+            "length": 22104,
+            "source": "RAF directory metadata offset/length",
+            "dimensions": null,
+            "associatedItemId": null,
+            "associatedTrackId": null,
+            "status": "valid"
+          }
+        ],
+        "directory": {
+          "offset": 80,
+          "byteLength": 28,
+          "version": "0201",
+          "preview": {
+            "offset": 148,
+            "length": 2667229,
+            "status": "valid"
+          },
+          "metadata": {
+            "offset": 2667432,
+            "length": 22104,
+            "status": "valid"
+          },
+          "raw": {
+            "offset": 2689536,
+            "length": 53397824,
+            "status": "valid"
+          },
+          "complete": true
+        }
+      },
+      "oracle": {
+        "FileType": "RAF",
+        "MIMEType": "image/x-fujifilm-raf",
+        "ImageWidth": 4416,
+        "ImageHeight": 2944,
+        "Make": "FUJIFILM",
+        "Model": "X-T3",
+        "Orientation": "Horizontal (normal)",
+        "PreviewImage": {
+          "present": true,
+          "bytes": 2667229
+        },
+        "ThumbnailOffset": 3920,
+        "ThumbnailLength": 8959,
+        "JpgFromRaw": null,
+        "MediaDataSize": null,
+        "MetaFormat": null,
+        "StripOffsets": 2691584,
+        "StripByteCounts": 53395776,
+        "ExifToolVersion": "13.42"
+      },
+      "comparisons": [
+        {
+          "field": "identity",
+          "producer": "file-type",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": "raf",
+          "reference": "raf"
+        },
+        {
+          "field": "dimensions",
+          "producer": "image-header",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": {
+            "width": 4416,
+            "height": 2944
+          },
+          "reference": {
+            "width": 4416,
+            "height": 2944
+          }
+        },
+        {
+          "field": "make",
+          "producer": "EXIF",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "normalized-match",
+          "reason": null,
+          "local": "FUJIFILM",
+          "reference": "FUJIFILM"
+        },
+        {
+          "field": "model",
+          "producer": "EXIF",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "normalized-match",
+          "reason": null,
+          "local": "X-T3",
+          "reference": "X-T3"
+        },
+        {
+          "field": "orientation",
+          "producer": "EXIF",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "normalized-match",
+          "reason": null,
+          "local": 1,
+          "reference": 1
+        },
+        {
+          "field": "preview-present",
+          "producer": "preview-inventory",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": true,
+          "reference": true
+        },
+        {
+          "field": "raw-range-present",
+          "producer": "raw-inventory",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": true,
+          "reference": true
+        },
+        {
+          "field": "metadata-range-present",
+          "producer": "metadata-inventory",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": true,
+          "reference": true
+        },
+        {
+          "field": "preview-count-positive",
+          "producer": "preview-inventory",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": true,
+          "reference": true
+        },
+        {
+          "field": "preview-range",
+          "producer": "preview-inventory",
+          "format": "raf",
+          "status": "non-comparable",
+          "reason": "ExifTool exposes RAF preview bytes but does not expose the directory range as a numeric field; the standards-based parser retains the exact range.",
+          "localPresent": true,
+          "referencePresent": true,
+          "local": null,
+          "reference": null
+        },
+        {
+          "field": "thumbnail-range",
+          "producer": "EXIF",
+          "format": "raf",
+          "localPresent": true,
+          "referencePresent": true,
+          "status": "matched",
+          "reason": null,
+          "local": {
+            "offset": 3920,
+            "length": 8959
+          },
+          "reference": {
+            "offset": 3920,
+            "length": 8959
+          }
+        }
+      ],
+      "counts": {
+        "found": 11,
+        "matched": 7,
+        "normalized-match": 3,
+        "mismatched": 0,
+        "missing-local": 0,
+        "missing-reference": 0,
+        "non-comparable": 1
+      },
+      "status": "passed"
+    }
+  ],
+  "complete": true
+}

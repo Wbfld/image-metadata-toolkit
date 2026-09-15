@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Wbfld/image-metadata-toolkit/schemas/community-tag-data.schema.json",
+  "title": "browser-image-metadata community tag data",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "plugin", "tags"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "version", "license", "sourceUrl"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "version": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "license": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "sourceUrl": { "type": "string", "format": "uri", "pattern": "^https://" }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "label", "description", "family", "type", "sensitivity", "rawValueBehavior", "validationRules"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{0,255}$" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "label": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "description": { "type": "string", "maxLength": 2048 },
+          "family": { "type": "string", "enum": ["EXIF", "IPTC", "XMP", "ICC", "MakerNote", "Photoshop", "Unknown"] },
+          "type": { "type": "string", "enum": ["string", "integer", "number", "boolean", "bytes", "structured"] },
+          "sensitivity": { "type": "string", "enum": ["none", "low", "moderate", "high"] },
+          "rawValueBehavior": { "type": "string", "minLength": 1, "maxLength": 2048 },
+          "validationRules": { "type": "array", "maxItems": 64, "items": { "type": "string", "minLength": 1, "maxLength": 128 } },
+          "physicalIdentity": { "type": "object", "additionalProperties": false, "properties": { "tag": { "type": "integer", "minimum": 0, "maximum": 65535 }, "record": { "type": "integer", "minimum": 0, "maximum": 255 }, "dataset": { "type": "integer", "minimum": 0, "maximum": 255 }, "namespaceUri": { "type": "string", "format": "uri", "maxLength": 2048 }, "localName": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_.-]{0,127}$" } } }
+        }
+      }
+    }
+  }
+}

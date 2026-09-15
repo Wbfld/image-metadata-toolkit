@@ -1,0 +1,518 @@
+{
+  "schemaVersion": 1,
+  "reportVersion": "g02-comparison/1",
+  "status": "passed",
+  "generatedAt": "2026-09-15T04:04:30.224Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "competitors": {
+    "toolkit": "2.0.0-alpha.3",
+    "exifreader": "4.45.0",
+    "exifr": "7.1.3"
+  },
+  "benchmarkReport": {
+    "path": "reports/g02-benchmark.json",
+    "sha256": "3e699ce97fd9c160c6968846835385f0b082043c17895f89e7a2a3627413abea"
+  },
+  "fixtures": [
+    {
+      "file": "jpeg-exif-little-endian.jpg",
+      "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+    }
+  ],
+  "methodology": {
+    "correctness": "The existing equal-output contracts are reused without changing or weakening them.",
+    "speed": {
+      "percentile": "nearest-rank via floor((n - 1) * ratio) on sorted samples",
+      "sampleCount": {
+        "warm": 5,
+        "cold": 1
+      },
+      "cold": "Fresh child process; process launch and fixture I/O excluded; dynamic reader imports included.",
+      "warm": "Already imported reader modules; fixture I/O excluded; input construction and parsing included.",
+      "semanticGate": "Timing is recorded only when every reader matches the scenario's canonical output contract.",
+      "transport": "Toolkit remote-range uses an instrumented Blob adapter; competitors are measured with a full-input baseline."
+    },
+    "memory": "Process heap deltas are observational only; no performance claim is derived from them.",
+    "malformed": "Malformed behavior is recorded as returned or threw; this probe does not convert either behavior into correctness.",
+    "bundleClosure": "The listed ordinary parser/API bundles must not contain optional C2PA SDK imports.",
+    "winnerPolicy": "A row winner is derived only from comparable measured values. Ties and no-comparable-value rows remain explicit; no superlative is inferred."
+  },
+  "rows": {
+    "semantic": [
+      {
+        "scenario": "detection",
+        "metric": "semantic-contract",
+        "passed": true,
+        "winner": "all-comparable-readers",
+        "failures": []
+      },
+      {
+        "scenario": "orientation",
+        "metric": "semantic-contract",
+        "passed": true,
+        "winner": "all-comparable-readers",
+        "failures": []
+      },
+      {
+        "scenario": "gps",
+        "metric": "semantic-contract",
+        "passed": true,
+        "winner": "all-comparable-readers",
+        "failures": []
+      },
+      {
+        "scenario": "camera-date",
+        "metric": "semantic-contract",
+        "passed": true,
+        "winner": "all-comparable-readers",
+        "failures": []
+      },
+      {
+        "scenario": "all-common-exif",
+        "metric": "semantic-contract",
+        "passed": true,
+        "winner": "all-comparable-readers",
+        "failures": []
+      },
+      {
+        "scenario": "all-documented-metadata",
+        "metric": "semantic-contract",
+        "passed": true,
+        "winner": "all-comparable-readers",
+        "failures": []
+      },
+      {
+        "scenario": "remote-range-simulation",
+        "metric": "semantic-contract",
+        "passed": true,
+        "winner": "all-comparable-readers",
+        "failures": []
+      }
+    ],
+    "speed": [
+      {
+        "scenario": "detection",
+        "metric": "warm-median-ms",
+        "comparable": true,
+        "winner": [
+          "toolkit"
+        ],
+        "values": {
+          "toolkit": 0.019,
+          "exifreader": 0.307,
+          "exifr": 0.26
+        },
+        "reason": "Winner is the measured minimum; ties are retained."
+      },
+      {
+        "scenario": "orientation",
+        "metric": "warm-median-ms",
+        "comparable": true,
+        "winner": [
+          "exifr"
+        ],
+        "values": {
+          "toolkit": 0.867,
+          "exifreader": 0.225,
+          "exifr": 0.092
+        },
+        "reason": "Winner is the measured minimum; ties are retained."
+      },
+      {
+        "scenario": "gps",
+        "metric": "warm-median-ms",
+        "comparable": true,
+        "winner": [
+          "exifr"
+        ],
+        "values": {
+          "toolkit": 0.5,
+          "exifreader": 0.171,
+          "exifr": 0.099
+        },
+        "reason": "Winner is the measured minimum; ties are retained."
+      },
+      {
+        "scenario": "camera-date",
+        "metric": "warm-median-ms",
+        "comparable": true,
+        "winner": [
+          "exifr"
+        ],
+        "values": {
+          "toolkit": 0.255,
+          "exifreader": 0.113,
+          "exifr": 0.092
+        },
+        "reason": "Winner is the measured minimum; ties are retained."
+      },
+      {
+        "scenario": "all-common-exif",
+        "metric": "warm-median-ms",
+        "comparable": true,
+        "winner": [
+          "exifreader",
+          "exifr"
+        ],
+        "values": {
+          "toolkit": 0.483,
+          "exifreader": 0.089,
+          "exifr": 0.089
+        },
+        "reason": "Winner is the measured minimum; ties are retained."
+      },
+      {
+        "scenario": "all-documented-metadata",
+        "metric": "warm-median-ms",
+        "comparable": true,
+        "winner": [
+          "exifreader"
+        ],
+        "values": {
+          "toolkit": 0.836,
+          "exifreader": 0.092,
+          "exifr": 0.123
+        },
+        "reason": "Winner is the measured minimum; ties are retained."
+      },
+      {
+        "scenario": "remote-range-simulation",
+        "metric": "warm-median-ms",
+        "comparable": true,
+        "winner": [
+          "exifr"
+        ],
+        "values": {
+          "toolkit": 0.806,
+          "exifreader": 0.099,
+          "exifr": 0.089
+        },
+        "reason": "Winner is the measured minimum; ties are retained."
+      }
+    ],
+    "transport": [
+      {
+        "scenario": "detection",
+        "metric": "actual-bytes-read-median",
+        "comparable": true,
+        "winner": [
+          "toolkit"
+        ],
+        "values": {
+          "toolkit": 0,
+          "exifreader": 1332,
+          "exifr": 1332
+        },
+        "reason": "Transport is reported separately from elapsed time; unavailable values are not matches."
+      },
+      {
+        "scenario": "orientation",
+        "metric": "actual-bytes-read-median",
+        "comparable": true,
+        "winner": [
+          "toolkit"
+        ],
+        "values": {
+          "toolkit": 0,
+          "exifreader": 1332,
+          "exifr": 1332
+        },
+        "reason": "Transport is reported separately from elapsed time; unavailable values are not matches."
+      },
+      {
+        "scenario": "gps",
+        "metric": "actual-bytes-read-median",
+        "comparable": true,
+        "winner": [
+          "toolkit"
+        ],
+        "values": {
+          "toolkit": 0,
+          "exifreader": 1332,
+          "exifr": 1332
+        },
+        "reason": "Transport is reported separately from elapsed time; unavailable values are not matches."
+      },
+      {
+        "scenario": "camera-date",
+        "metric": "actual-bytes-read-median",
+        "comparable": true,
+        "winner": [
+          "toolkit"
+        ],
+        "values": {
+          "toolkit": 0,
+          "exifreader": 1332,
+          "exifr": 1332
+        },
+        "reason": "Transport is reported separately from elapsed time; unavailable values are not matches."
+      },
+      {
+        "scenario": "all-common-exif",
+        "metric": "actual-bytes-read-median",
+        "comparable": true,
+        "winner": [
+          "toolkit"
+        ],
+        "values": {
+          "toolkit": 0,
+          "exifreader": 1332,
+          "exifr": 1332
+        },
+        "reason": "Transport is reported separately from elapsed time; unavailable values are not matches."
+      },
+      {
+        "scenario": "all-documented-metadata",
+        "metric": "actual-bytes-read-median",
+        "comparable": true,
+        "winner": [
+          "toolkit"
+        ],
+        "values": {
+          "toolkit": 0,
+          "exifreader": 1332,
+          "exifr": 1332
+        },
+        "reason": "Transport is reported separately from elapsed time; unavailable values are not matches."
+      },
+      {
+        "scenario": "remote-range-simulation",
+        "metric": "actual-bytes-read-median",
+        "comparable": true,
+        "winner": [
+          "toolkit"
+        ],
+        "values": {
+          "toolkit": 645,
+          "exifreader": 1332,
+          "exifr": 1332
+        },
+        "reason": "Transport is reported separately from elapsed time; unavailable values are not matches."
+      }
+    ]
+  },
+  "memory": {
+    "fixture": {
+      "file": "jpeg-exif-little-endian.jpg",
+      "byteLength": 1332,
+      "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+    },
+    "readers": {
+      "toolkit": {
+        "runs": 3,
+        "peakRetainedDeltaBytes": 1390448,
+        "samples": [
+          {
+            "before": 12364416,
+            "after": 13754864,
+            "retainedDelta": 1390448
+          },
+          {
+            "before": 13756416,
+            "after": 14179008,
+            "retainedDelta": 422592
+          },
+          {
+            "before": 14179344,
+            "after": 14539512,
+            "retainedDelta": 360168
+          }
+        ]
+      },
+      "exifreader": {
+        "runs": 3,
+        "peakRetainedDeltaBytes": 79608,
+        "samples": [
+          {
+            "before": 14541016,
+            "after": 11450120,
+            "retainedDelta": 0
+          },
+          {
+            "before": 11450608,
+            "after": 11501480,
+            "retainedDelta": 50872
+          },
+          {
+            "before": 11501736,
+            "after": 11581344,
+            "retainedDelta": 79608
+          }
+        ]
+      },
+      "exifr": {
+        "runs": 3,
+        "peakRetainedDeltaBytes": 163280,
+        "samples": [
+          {
+            "before": 11582216,
+            "after": 11745496,
+            "retainedDelta": 163280
+          },
+          {
+            "before": 11746000,
+            "after": 11784768,
+            "retainedDelta": 38768
+          },
+          {
+            "before": 11785120,
+            "after": 11829608,
+            "retainedDelta": 44488
+          }
+        ]
+      }
+    },
+    "policy": "Process heap deltas are observational only; no performance claim is derived from them."
+  },
+  "malformed": {
+    "cases": [
+      {
+        "id": "empty",
+        "byteLength": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outcomes": {
+          "toolkit": {
+            "outcome": "returned",
+            "classified": "result"
+          },
+          "exifreader": {
+            "outcome": "threw",
+            "errorType": "Error"
+          },
+          "exifr": {
+            "outcome": "threw",
+            "errorType": "RangeError"
+          }
+        }
+      },
+      {
+        "id": "truncated-jpeg",
+        "byteLength": 3,
+        "sha256": "6e568e1f67fba258184c78181539e5e8fdee447e49bb706fc0ea34fbf12336a5",
+        "outcomes": {
+          "toolkit": {
+            "outcome": "returned",
+            "classified": "result"
+          },
+          "exifreader": {
+            "outcome": "threw",
+            "errorType": "Error"
+          },
+          "exifr": {
+            "outcome": "returned",
+            "classified": "empty"
+          }
+        }
+      },
+      {
+        "id": "truncated-png",
+        "byteLength": 8,
+        "sha256": "4c4b6a3be1314ab86138bef4314dde022e600960d8689a2c8f8631802d20dab6",
+        "outcomes": {
+          "toolkit": {
+            "outcome": "returned",
+            "classified": "result"
+          },
+          "exifreader": {
+            "outcome": "threw",
+            "errorType": "Error"
+          },
+          "exifr": {
+            "outcome": "returned",
+            "classified": "empty"
+          }
+        }
+      },
+      {
+        "id": "truncated-webp",
+        "byteLength": 12,
+        "sha256": "7364fa23720bd8b75a8b7e930dabdbe221d265921aa88eb672154f092317e4ba",
+        "outcomes": {
+          "toolkit": {
+            "outcome": "returned",
+            "classified": "result"
+          },
+          "exifreader": {
+            "outcome": "threw",
+            "errorType": "Error"
+          },
+          "exifr": {
+            "outcome": "threw",
+            "errorType": "Error"
+          }
+        }
+      }
+    ],
+    "policy": "Malformed behavior is recorded as returned or threw; this probe does not convert either behavior into correctness."
+  },
+  "bundleClosure": {
+    "entries": [
+      {
+        "path": "dist/index.js",
+        "byteLength": 3708,
+        "sha256": "b37e807169d04a508e2d6b5cc8ae87c570efa8ac32d15f4f87a483893323b1bb",
+        "containsC2paSdkImport": false
+      },
+      {
+        "path": "dist/adapters.js",
+        "byteLength": 369,
+        "sha256": "fd935e14d7f1b9c83c79e0f9a260162f42ff6a560926558307666fef19c0b99c",
+        "containsC2paSdkImport": false
+      },
+      {
+        "path": "dist/detect.js",
+        "byteLength": 121,
+        "sha256": "a2b92f3317cc84b39f5bbd613f0770e8294a226d6e03cb15908bff91b4d52e9d",
+        "containsC2paSdkImport": false
+      },
+      {
+        "path": "dist/edit.js",
+        "byteLength": 747,
+        "sha256": "813dc1d3056710376e3ce21cca9914dcda96c4aeba426613b109778216c5a9c6",
+        "containsC2paSdkImport": false
+      },
+      {
+        "path": "dist/jpeg.js",
+        "byteLength": 626,
+        "sha256": "4fa18deabff21ef35e0feb1e052275c399e74dffa03cfe21405093926c09e487",
+        "containsC2paSdkImport": false
+      },
+      {
+        "path": "dist/png-writer.js",
+        "byteLength": 536,
+        "sha256": "6eda4802e05f6575cbc91f19d31110e4364614ab6a47bfd947c3420bf6a383f0",
+        "containsC2paSdkImport": false
+      },
+      {
+        "path": "dist/webp-writer.js",
+        "byteLength": 541,
+        "sha256": "134c200596efc48d1fac33054fe45501e2c93db4dd2734d3a3fa50b045d3cf34",
+        "containsC2paSdkImport": false
+      },
+      {
+        "path": "dist/mini.js",
+        "byteLength": 793,
+        "sha256": "7d9eda96aeb03e7ad26e6047623b437b108e740b6a99c0d82ac3b35416b8005a",
+        "containsC2paSdkImport": false
+      }
+    ],
+    "ordinaryBundleC2paImportCount": 0,
+    "policy": "The listed ordinary parser/API bundles must not contain optional C2PA SDK imports."
+  },
+  "reproduction": {
+    "commands": [
+      "npm ci",
+      "npm run g02:run"
+    ],
+    "scripts": [
+      "scripts/benchmark.mjs",
+      "scripts/benchmark-runner.mjs",
+      "scripts/benchmark-scenarios.mjs",
+      "scripts/g02-comparison.mjs"
+    ],
+    "fixturePolicy": "Only repository fixture paths, byte lengths, and SHA-256 values are retained; no fixture bytes are copied into reports."
+  }
+}

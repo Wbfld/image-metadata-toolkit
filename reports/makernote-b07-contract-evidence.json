@@ -1,0 +1,98 @@
+{
+  "schema": "browser-image-metadata.makernote-b07-contract-evidence.v1",
+  "ticket": "B07",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "fixture": {
+    "kind": "repository-authored-contract-bytes",
+    "bytes": 8,
+    "sha256": "5c1bb6fbb5e2af3cb9ee93f0ffd4d098efb9b66f62b0ee27b1ae7bdf30d0db67",
+    "thirdPartyBytesCopied": false
+  },
+  "limits": {
+    "maxReadRequests": 8,
+    "maxReadBytes": 64,
+    "maxValueBytes": 8388608,
+    "maxIfdDepth": 8,
+    "maxSegments": 4096,
+    "maxAdapterItems": 32
+  },
+  "contract": {
+    "explicitPerOperationPlugins": true,
+    "globalRegistry": false,
+    "pluginArrayDefensivelyCopied": true,
+    "pluginsSortedByStableId": true,
+    "readContextIsNoteBounded": true,
+    "pluginErrorTextSuppressed": true,
+    "unknownAndLowConfidenceOpaque": true,
+    "networkAccess": false,
+    "rawFixtureValuesIncluded": false
+  },
+  "cases": [
+    {
+      "name": "decoded",
+      "status": "detected-decoded",
+      "complete": true,
+      "fieldCount": 1
+    },
+    {
+      "name": "unknown",
+      "status": "unknown",
+      "complete": false,
+      "opaqueRangeCount": 1
+    },
+    {
+      "name": "low-confidence",
+      "status": "low-confidence",
+      "complete": false
+    },
+    {
+      "name": "bounded-read-rejection",
+      "status": "rejected",
+      "diagnosticCodes": [
+        "UNSAFE_RANGE"
+      ]
+    },
+    {
+      "name": "thrown-plugin",
+      "status": "unknown",
+      "diagnosticCodes": [
+        "PLUGIN_THROWN",
+        "UNKNOWN_NOTE"
+      ],
+      "rawErrorSuppressed": true
+    },
+    {
+      "name": "encrypted",
+      "status": "encrypted",
+      "complete": false
+    },
+    {
+      "name": "obfuscated",
+      "status": "obfuscated",
+      "complete": false
+    },
+    {
+      "name": "malformed",
+      "status": "malformed",
+      "complete": false
+    },
+    {
+      "name": "aborted",
+      "status": "aborted",
+      "complete": false
+    },
+    {
+      "name": "limit-exceeded",
+      "status": "limit-exceeded",
+      "complete": false
+    },
+    {
+      "name": "order-independence",
+      "equalResults": true,
+      "suppliedCollectionsUnchanged": true
+    }
+  ]
+}

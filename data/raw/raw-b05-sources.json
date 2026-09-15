@@ -1,0 +1,56 @@
+{
+  "schema": "browser-image-metadata.raw-b05.sources.v1",
+  "source": {
+    "name": "raw.pixls.us public RAW sample repository",
+    "repository": "https://raw.pixls.us/",
+    "license": "CC0-1.0 / public-domain dedication as declared by the contributor",
+    "licenseUrl": "https://creativecommons.org/public-domain/cc0/",
+    "policy": "The CR3 and RAF binaries are downloaded only into temporary runner storage. This checked manifest retains source metadata and hashes, never image bytes."
+  },
+  "retrievedAt": "2026-09-15",
+  "projects": {
+    "cr3": {
+      "name": "Canon CR3 ISO-BMFF conformance",
+      "format": "cr3",
+      "sourceUrls": [
+        "https://libopenraw.freedesktop.org/formats/cr3/",
+        "https://github.com/lclevy/canon_cr3"
+      ],
+      "sourceLicense": "LibOpenRaw documentation is LGPL-3.0-or-later; canon_cr3 is GPL-3.0; these are format/provenance references only and no implementation code or metadata tables are copied.",
+      "minimumFixtures": 1,
+      "fixtures": ["Canon_EOS_R_RAW_ISO_100.CR3"]
+    },
+    "raf": {
+      "name": "Fujifilm RAF conformance",
+      "format": "raf",
+      "sourceUrls": [
+        "https://libopenraw.freedesktop.org/formats/raf/"
+      ],
+      "sourceLicense": "LibOpenRaw documentation is LGPL-3.0-or-later; the image is used under the raw.pixls.us public-domain/CC0 contributor policy.",
+      "minimumFixtures": 1,
+      "fixtures": ["AFXT2720.RAF"]
+    }
+  },
+  "fixtures": [
+    {
+      "project": "cr3",
+      "fileKind": "cr3",
+      "fileName": "Canon_EOS_R_RAW_ISO_100.CR3",
+      "sourceId": "raw-pixls-us:Canon/EOS R/Canon_EOS_R_RAW_ISO_100.CR3",
+      "url": "https://raw.pixls.us/data/Canon/EOS%20R/Canon_EOS_R_RAW_ISO_100.CR3",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "89bd55532b0cceb5efa360e97827ba35c2076bce0de4675f3a4413a883dac880",
+      "bytes": 31606200
+    },
+    {
+      "project": "raf",
+      "fileKind": "raf",
+      "fileName": "AFXT2720.RAF",
+      "sourceId": "raw-pixls-us:Fujifilm/X-T3/AFXT2720.RAF",
+      "url": "https://raw.pixls.us/data/Fujifilm/X-T3/AFXT2720.RAF",
+      "sourcePage": "https://raw.pixls.us/",
+      "sha256": "24abd27b4a200f3170ea1579672944b807d0eb35bf21422a3937bb644f27f2eb",
+      "bytes": 56087360
+    }
+  ]
+}

@@ -18,12 +18,18 @@
     "maxAdapterItems": 8192,
     "maxAdapterOutputBytes": 4194304
   },
+  "makerNotePlugins": {
+    "contract": "B07_MAKERNOTE_PLUGIN_CONTRACT.md",
+    "evidence": "tests/makernote-b07.test.ts; reports/makernote-b07-contract-evidence.json",
+    "registration": "explicit-per-operation",
+    "globalRegistry": false
+  },
   "formats": [
     {
       "format": "JPEG",
       "code": "jpeg",
-      "read": "Dimensions and image details, EXIF, XMP, IPTC-IIM, decoded common ICC tags, JFIF",
-      "selectiveDecode": "EXIF tags and metadata groups",
+      "read": "Dimensions and image details, EXIF, XMP, IPTC-IIM, decoded common ICC tags, JFIF, bounded Photoshop 8BIM image resources",
+      "selectiveDecode": "EXIF tags and metadata groups, including Photoshop resources",
       "jpegHeaderBlobRead": "Yes",
       "metadataBlobFileRead": "Yes",
       "losslessRemoval": "EXIF, XMP, IPTC, ICC, JFIF, recognized EXIF fields",
@@ -33,7 +39,8 @@
       "evidence": {
         "positive": "tests/integration.test.ts#parses the real JPEG fixture and all first-pass normalized fields",
         "malformed": "tests/integration.test.ts#warns for truncated scan data, missing frames, invalid frames, and duplicate SOI",
-        "selection": "tests/integration.test.ts#supports selective JPEG metadata and Blob-backed header-only reads"
+        "selection": "tests/integration.test.ts#supports selective JPEG metadata and Blob-backed header-only reads",
+        "photoshop": "tests/photoshop-b06.test.ts#indexes every resource in source order and decodes all high-value resources; reports/photoshop-b06-evidence.json"
       }
     },
     {
@@ -56,8 +63,8 @@
     {
       "format": "TIFF / BigTIFF",
       "code": "tiff",
-      "read": "Dimensions and image details, EXIF, XMP, IPTC-IIM, decoded common ICC tags",
-      "selectiveDecode": "EXIF tags and metadata groups",
+      "read": "Dimensions and image details, EXIF, XMP, IPTC-IIM, decoded common ICC tags, bounded TIFF tag 34377 Photoshop 8BIM image resources",
+      "selectiveDecode": "EXIF tags and metadata groups, including Photoshop resources",
       "jpegHeaderBlobRead": "No",
       "metadataBlobFileRead": "Yes (classic TIFF and BigTIFF)",
       "losslessRemoval": "No",
@@ -67,7 +74,8 @@
       "evidence": {
         "positive": "tests/integration.test.ts#parses TIFF XMP and ICC tags with bounded values",
         "malformed": "tests/integration.test.ts#reports truncated standalone TIFF data without throwing",
-        "selection": "tests/integration.test.ts#applies selection while decoding TIFF metadata families"
+        "selection": "tests/integration.test.ts#applies selection while decoding TIFF metadata families",
+        "photoshop": "tests/photoshop-b06.test.ts#supports TIFF tag 33723-style image-resource containers through tag 34377; reports/photoshop-b06-evidence.json"
       }
     },
     {
@@ -154,6 +162,131 @@
         "malformed": "tests/heif-b03.test.ts#fails closed for duplicate tracks, unsafe sample offsets, missing tables, and sample limits",
         "selection": "tests/heif-b03.test.ts#keeps sequence fields available through the bounded JSON result adapter"
       }
+    },
+    {
+      "format": "Canon CR3",
+      "code": "cr3",
+      "read": "CR3 ISO-BMFF dimensions, bounded item/track graphs, preview and RAW range inventory, EXIF, XMP, and container provenance",
+      "selectiveDecode": "EXIF and XMP metadata groups",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "Yes",
+      "losslessRemoval": "No",
+      "strictSanitization": "No",
+      "positiveFixture": "temporary hash-pinned Canon CR3 fixture",
+      "malformedFixture": "tests/raw-b05.test.ts#keeps malformed offsets, overlaps, truncation, limits, cancellation, and Blob scope fail-closed",
+      "evidence": {
+        "positive": "tests/raw-b05.test.ts#detects and inventories CR3 without decoding RAW payloads",
+        "malformed": "tests/raw-b05.test.ts#keeps malformed offsets, overlaps, truncation, limits, cancellation, and Blob scope fail-closed",
+        "selection": "tests/raw-b05.test.ts#keeps public result serialization bounded and retains both distinct inventories"
+      }
+    },
+    {
+      "format": "Fujifilm RAF",
+      "code": "raf",
+      "read": "RAF dimensions, fixed directory, embedded preview/thumbnail, metadata and CFA range inventory, EXIF, XMP, and container provenance",
+      "selectiveDecode": "EXIF and XMP metadata groups",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "Yes",
+      "losslessRemoval": "No",
+      "strictSanitization": "No",
+      "positiveFixture": "temporary hash-pinned Fujifilm RAF fixture",
+      "malformedFixture": "tests/raw-b05.test.ts#keeps malformed offsets, overlaps, truncation, limits, cancellation, and Blob scope fail-closed",
+      "evidence": {
+        "positive": "tests/raw-b05.test.ts#detects RAF through its fixed identity and preserves exact preview, metadata, and CFA ranges",
+        "malformed": "tests/raw-b05.test.ts#keeps malformed offsets, overlaps, truncation, limits, cancellation, and Blob scope fail-closed",
+        "selection": "tests/raw-b05.test.ts#keeps public result serialization bounded and retains both distinct inventories"
+      }
+    },
+    {
+      "format": "SVG",
+      "code": "svg",
+      "read": "Bounded SVG metadata-element RDF/XML XMP inventory with source byte provenance; non-RDF metadata remains opaque",
+      "selectiveDecode": "XMP packets only",
+      "jpegHeaderBlobRead": "No",
+      "metadataBlobFileRead": "No",
+      "losslessRemoval": "No",
+      "strictSanitization": "No",
+      "positiveFixture": "W3C SVG 1.1 metadata-example-01-t.svg downloaded only into the hash-pinned temporary B09 corpus",
+      "malformedFixture": "generated bounded SVG malformed and limit fixtures",
+      "evidence": {
+        "positive": "tests/svg-b09.test.ts#detects an SVG root and retains decoded RDF/XML with byte provenance",
+        "malformed": "tests/svg-b09.test.ts#rejects malformed XML, unsafe declarations, invalid UTF-8, and unclosed elements",
+        "selection": "tests/svg-b09.test.ts#records XMP selection skipping without inspecting an RDF packet"
+      }
+    }
+  ],
+  "rawVariants": [
+    {
+      "fileKind": "dng",
+      "container": "tiff",
+      "detection": "DNGVersion tag 50706 in the bounded TIFF directory graph",
+      "positive": "tests/raw-b04.test.ts#recognizes every B04 RAW file kind through a structural signature or directory marker",
+      "malformed": "tests/raw-b04.test.ts#keeps malformed and out-of-bounds RAW payload references fail-closed",
+      "selection": "tests/raw-b04.test.ts#retains RAW identity and payload provenance for Blob metadata scope"
+    },
+    {
+      "fileKind": "cr2",
+      "container": "tiff",
+      "detection": "CR2 marker at TIFF offset 8",
+      "positive": "tests/raw-b04.test.ts#recognizes every B04 RAW file kind through a structural signature or directory marker",
+      "malformed": "tests/raw-b04.test.ts#keeps malformed and out-of-bounds RAW payload references fail-closed",
+      "selection": "tests/raw-b04.test.ts#retains RAW identity and payload provenance for Blob metadata scope"
+    },
+    {
+      "fileKind": "nef",
+      "container": "tiff",
+      "detection": "Nikon TIFF Make with a bounded RAW directory",
+      "positive": "tests/raw-b04.test.ts#recognizes every B04 RAW file kind through a structural signature or directory marker",
+      "malformed": "tests/raw-b04.test.ts#keeps malformed and out-of-bounds RAW payload references fail-closed",
+      "selection": "tests/raw-b04.test.ts#retains RAW identity and payload provenance for Blob metadata scope"
+    },
+    {
+      "fileKind": "arw",
+      "container": "tiff",
+      "detection": "Sony TIFF Make with a bounded RAW directory",
+      "positive": "tests/raw-b04.test.ts#recognizes every B04 RAW file kind through a structural signature or directory marker",
+      "malformed": "tests/raw-b04.test.ts#keeps malformed and out-of-bounds RAW payload references fail-closed",
+      "selection": "tests/raw-b04.test.ts#retains RAW identity and payload provenance for Blob metadata scope"
+    },
+    {
+      "fileKind": "orf",
+      "container": "tiff",
+      "detection": "IIRO vendor TIFF signature",
+      "positive": "tests/raw-b04.test.ts#recognizes every B04 RAW file kind through a structural signature or directory marker",
+      "malformed": "tests/raw-b04.test.ts#keeps malformed and out-of-bounds RAW payload references fail-closed",
+      "selection": "tests/raw-b04.test.ts#retains RAW identity and payload provenance for Blob metadata scope"
+    },
+    {
+      "fileKind": "rw2",
+      "container": "tiff",
+      "detection": "IIU\\0 vendor TIFF signature",
+      "positive": "tests/raw-b04.test.ts#recognizes every B04 RAW file kind through a structural signature or directory marker",
+      "malformed": "tests/raw-b04.test.ts#keeps malformed and out-of-bounds RAW payload references fail-closed",
+      "selection": "tests/raw-b04.test.ts#retains RAW identity and payload provenance for Blob metadata scope"
+    },
+    {
+      "fileKind": "iiq",
+      "container": "tiff",
+      "detection": "IIII/CwaR vendor TIFF signature",
+      "positive": "tests/raw-b04.test.ts#recognizes every B04 RAW file kind through a structural signature or directory marker",
+      "malformed": "tests/raw-b04.test.ts#keeps malformed and out-of-bounds RAW payload references fail-closed",
+      "selection": "tests/raw-b04.test.ts#retains RAW identity and payload provenance for Blob metadata scope"
+    },
+    {
+      "fileKind": "cr3",
+      "container": "iso-bmff",
+      "detection": "ISO-BMFF ftyp major or compatible brand crx plus bounded CR3 box/track inventory",
+      "positive": "tests/raw-b05.test.ts#detects and inventories CR3 without decoding RAW payloads",
+      "malformed": "tests/raw-b05.test.ts#keeps malformed offsets, overlaps, truncation, limits, cancellation, and Blob scope fail-closed",
+      "selection": "tests/raw-b05.test.ts#keeps public result serialization bounded and retains both distinct inventories"
+    },
+    {
+      "fileKind": "raf",
+      "container": "raf",
+      "detection": "FUJIFILMCCD-RAW fixed identity and bounded directory offsets",
+      "positive": "tests/raw-b05.test.ts#detects RAF through its fixed identity and preserves exact preview, metadata, and CFA ranges",
+      "malformed": "tests/raw-b05.test.ts#keeps malformed offsets, overlaps, truncation, limits, cancellation, and Blob scope fail-closed",
+      "selection": "tests/raw-b05.test.ts#keeps public result serialization bounded and retains both distinct inventories"
     }
   ],
   "notes": [
@@ -170,6 +303,8 @@
     "T03 inventoryC2pa()/inventoryJumbfC2pa() structurally inventory C2PA/JUMBF carrier ranges in JPEG, PNG, WebP, and ISO-BMFF without cryptographic verification or remote fetches. Applicable writers refuse detected C2PA-bearing input by default unless an explicit mutation policy is selected.",
     "T04 is an optional integration layer exposed only from browser-image-metadata/c2pa/browser and browser-image-metadata/c2pa/node. Exact optional official SDK peers are isolated from core bundles; npm run test:c2pa runs the pinned real browser and Node adapters and retains redistribution-safe evidence in reports/c2pa-adapter-integration.{json,md}.",
     "B01 parses JPEG XL codestream and container dimensions, complete and partial codestream boxes, and bounded uncompressed or Brotli-compressed Exif/XML metadata. Raw codestream metadata is not inferred as container metadata; Brotli support is explicit through an injected decoder or the runtime platform stream.",
-    "B02 exposes bounded HEIF/AVIF item graphs through result.heif: iloc construction methods 0, 1, and 2, multiple extents, self-contained data references, ordered thmb/auxl/dimg/cdsc/iloc relationships, ispe/auxC/irot/imir/colr properties, and grid/iovl/iden derived descriptors. It never decodes pixels or dereferences external data references; malformed, cyclic, unsupported, or over-limit structures remain typed diagnostics. Blob/File metadata scope uses the same bounded method-aware resolver and falls back to a full read when the layout cannot be reconstructed safely."
+    "B02 exposes bounded HEIF/AVIF item graphs through result.heif: iloc construction methods 0, 1, and 2, multiple extents, self-contained data references, ordered thmb/auxl/dimg/cdsc/iloc relationships, ispe/auxC/irot/imir/colr properties, and grid/iovl/iden derived descriptors. It never decodes pixels or dereferences external data references; malformed, cyclic, unsupported, or over-limit structures remain typed diagnostics. Blob/File metadata scope uses the same bounded method-aware resolver and falls back to a full read when the layout cannot be reconstructed safely.",
+    "B05 exposes separate bounded CR3 ISO-BMFF and Fujifilm RAF inventories with source-relative preview, thumbnail, metadata, RAW/CFA, item, track, UUID, and directory provenance. Canon/RAF vendor structures remain explicit opaque risks; no RAW pixels are decoded or retained. The real lawful fixtures and secondary ExifTool 13.42 evidence are retained in reports/raw-b05-evidence.{json,md}, and npm run test:raw-b05 fails when either project is absent, incomplete, or mismatching.",
+    "G01 adds an optional bounded creator-metadata schema pack for ComfyUI, Stable Diffusion WebUI, InvokeAI, and common XMP conventions with producer-versioned provenance, raw-data opt-out, graph limits, and explicit IPTC 2025.1 migration. G02 retains reproducible semantic, transport, speed, memory, malformed-input, and ordinary-bundle comparison evidence. G03 provides the bounded fixture scrubber, provenance/tag-data/plugin templates, isolated contributor tickets, review checklist, and support response targets. G04 retains a launch packet with executable GPS/orientation/ICC, large-image range-read, IPTC AI/accessibility, protected-structure refusal, and compatibility-view demos; external publication remains an operator action and is not claimed by repository evidence."
   ]
 }

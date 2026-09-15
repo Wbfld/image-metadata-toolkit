@@ -8,6 +8,9 @@ const GIF: FormatDetection = Object.freeze({ format: "gif", mimeType: "image/gif
 const JXL: FormatDetection = Object.freeze({ format: "jxl", mimeType: "image/jxl" });
 const HEIF: FormatDetection = Object.freeze({ format: "heif", mimeType: "image/heif" });
 const AVIF: FormatDetection = Object.freeze({ format: "avif", mimeType: "image/avif" });
+const CR3: FormatDetection = Object.freeze({ format: "cr3", mimeType: "image/x-canon-cr3" });
+const RAF: FormatDetection = Object.freeze({ format: "raf", mimeType: "image/x-fuji-raf" });
+const SVG: FormatDetection = Object.freeze({ format: "svg", mimeType: "image/svg+xml" });
 const UNKNOWN: FormatDetection = Object.freeze({
   format: "unknown",
   mimeType: "application/octet-stream",
@@ -30,6 +33,11 @@ const HEIF_BRANDS = new Set([
   "mif2",
   "msf1",
 ]);
+const CR3_BRANDS = new Set(["crx "]);
+const RAF_SIGNATURE = [
+  0x46, 0x55, 0x4a, 0x49, 0x46, 0x49, 0x4c, 0x4d,
+  0x43, 0x43, 0x44, 0x2d, 0x52, 0x41, 0x57, 0x20,
+] as const;
 
 function hasBytes(bytes: Uint8Array, expected: readonly number[], offset = 0): boolean {
   if (!Number.isSafeInteger(offset) || offset < 0 || expected.length > bytes.byteLength - offset) {
@@ -130,6 +138,9 @@ function detectIsoBmff(bytes: Uint8Array): FormatDetection | null {
     }
 
     const brand = brandAt(bytes, offset);
+    if (brand !== null && CR3_BRANDS.has(brand)) {
+      return CR3;
+    }
     if (brand !== null && AVIF_BRANDS.has(brand)) {
       return AVIF;
     }
@@ -139,6 +150,27 @@ function detectIsoBmff(bytes: Uint8Array): FormatDetection | null {
   }
 
   return sawHeif ? HEIF : null;
+}
+
+/** A deliberately conservative SVG recognizer.  XML is not a magic-number
+ * format, so the parser independently validates the root and namespace before
+ * it accepts any metadata.  This detector only routes plausible UTF-8 SVG.
+ */
+function looksLikeSvg(bytes: Uint8Array): boolean {
+  const inspected = bytes.subarray(0, Math.min(bytes.byteLength, 64 * 1024));
+  if (inspected.includes(0)) return false;
+  let text: string;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true }).decode(inspected);
+  } catch {
+    return false;
+  }
+  const withoutBom = text.startsWith("\uFEFF") ? text.slice(1) : text;
+  const root = withoutBom.match(/^\s*(?:<\?xml\s+[^>]*\?>\s*)?(?:<!DOCTYPE[\s\S]{0,4096}?>\s*)?<((?:[A-Za-z_][\w.-]*:)?svg)(?=\s|\/?>)/u);
+  if (root === null) return false;
+  const prefix = root[1]?.includes(":") ? root[1].split(":")[0] : "";
+  const namespace = prefix === "" ? "xmlns" : `xmlns:${prefix}`;
+  return new RegExp(`\\b${namespace}\\s*=\\s*(["'])http://www\\.w3\\.org/2000/svg\\1`, "u").test(withoutBom.slice(0, 4096));
 }
 
 /** Detect a supported image container using only validated file signatures. */
@@ -155,9 +187,18 @@ export function detectFormat(bytes: Uint8Array): FormatDetection {
     return JXL;
   }
 
+  if (hasBytes(bytes, RAF_SIGNATURE)) {
+    return RAF;
+  }
+
   if (
     hasBytes(bytes, [0x49, 0x49, 0x2a, 0x00]) ||
     hasBytes(bytes, [0x4d, 0x4d, 0x00, 0x2a]) ||
+    // ORF and RW2 retain the classic little-endian TIFF layout but use a
+    // vendor file signature in place of the 42 magic value. Their directory
+    // graph is parsed only after the variant is structurally identified.
+    hasBytes(bytes, [0x49, 0x49, 0x52, 0x4f]) ||
+    hasBytes(bytes, [0x49, 0x49, 0x55, 0x00]) ||
     hasBytes(bytes, [0x49, 0x49, 0x2b, 0x00, 0x08, 0x00, 0x00, 0x00]) ||
     hasBytes(bytes, [0x4d, 0x4d, 0x00, 0x2b, 0x00, 0x08, 0x00, 0x00])
   ) {
@@ -175,6 +216,8 @@ export function detectFormat(bytes: Uint8Array): FormatDetection {
   if (hasBytes(bytes, [0x47, 0x49, 0x46, 0x38, 0x37, 0x61]) || hasBytes(bytes, [0x47, 0x49, 0x46, 0x38, 0x39, 0x61])) {
     return GIF;
   }
+
+  if (looksLikeSvg(bytes)) return SVG;
 
   return detectIsoBmff(bytes) ?? UNKNOWN;
 }

@@ -1,6 +1,8 @@
 import { inspectIccProfile, parseIccChunk, type IccChunk } from "../metadata/icc.js";
 import { parseExif } from "../metadata/exif.js";
 import { parseIptcMetadata } from "../metadata/iptc.js";
+import { parsePhotoshopResources } from "../metadata/photoshop.js";
+import { inspectMakerNotes, makerNoteFieldsAsMetadataFields } from "../metadata/makernote.js";
 import { parseJfif } from "../metadata/jfif.js";
 import { extractExifThumbnail } from "../metadata/thumbnail.js";
 import { extendedXmpGuid, parseExtendedXmpChunk, parseXmpPacket, reassembleExtendedXmp, type ExtendedXmpChunk } from "../metadata/xmp.js";
@@ -12,6 +14,8 @@ import type {
   MetadataBlock,
   ParsedMetadataResult,
   MetadataWarning,
+  MakerNotePlugin,
+  PhotoshopContainerData,
   SecurityLimits,
 } from "../types.js";
 import { WarningCollector } from "../security/warnings.js";
@@ -90,10 +94,12 @@ export interface JpegParseOptions {
   readonly byteView?: JpegByteView;
   readonly signal?: AbortSignal;
   readonly registry?: MetadataRegistry;
+  readonly makerNotePlugins?: readonly MakerNotePlugin[];
 }
 
 export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: JpegParseOptions = {}): ParsedMetadataResult {
   throwIfAborted(options.signal);
+  const mapOffset = options.offsetMap ?? ((offset: number): number => offset);
   const source: JpegByteView = options.byteView ?? {
     length: bytes.length,
     byteAt: (offset) => bytes[offset],
@@ -111,6 +117,8 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
   let jfif: JfifData | null = null;
   let iptcBytes = 0;
   let iptcCharacterSet: "latin1" | "utf-8" | "unknown" | undefined;
+  let photoshop: PhotoshopContainerData | null = null;
+  let makerNotes: ParsedMetadataResult["makerNotes"] = null;
   let dimensions: ImageDimensions | null = null;
   let metadataBytes = 0;
   let segmentCount = 0;
@@ -329,7 +337,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
       if (marker === 0xe0 && hasPrefix(payload, JFIF_IDENTIFIER) && !wantsGroup(options.selection, "JFIF")) skippedBlock("JFIF", "APP0 JFIF", "low");
       else if (marker === 0xe1 && hasPrefix(payload, EXIF_IDENTIFIER) && !wantsGroup(options.selection, "EXIF")) skippedBlock("EXIF", "APP1 Exif", "moderate");
       else if (marker === 0xe2 && parseIccChunk(payload) !== null && !wantsGroup(options.selection, "ICC")) skippedBlock("ICC", "APP2 ICC", "low");
-      else if (marker === 0xed && !wantsGroup(options.selection, "IPTC")) skippedBlock("IPTC", "APP13 Photoshop", "moderate");
+      else if (marker === 0xed && !wantsGroup(options.selection, "IPTC") && !wantsGroup(options.selection, "Photoshop")) skippedBlock("Photoshop", "APP13 Photoshop image resources", "high");
       else if (marker === 0xe1 && !hasPrefix(payload, EXIF_IDENTIFIER) && !wantsGroup(options.selection, "XMP")) {
         const extended = parseExtendedXmpChunk(payload);
         if (extended !== null || parseXmpPacket(payload, 0).matched) skippedBlock("XMP", extended === null ? "APP1 XMP" : "APP1 Extended XMP", "moderate");
@@ -353,7 +361,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
         } else if (jfif === null) {
           jfif = parsedJfif;
         }
-      } else if (wantsGroup(options.selection, "EXIF") && marker === 0xe1 && hasPrefix(payload, EXIF_IDENTIFIER)) {
+      } else if ((wantsGroup(options.selection, "EXIF") || wantsGroup(options.selection, "MakerNote")) && marker === 0xe1 && hasPrefix(payload, EXIF_IDENTIFIER)) {
         const block = { id: `jpeg:APP1:${markerStart}`, family: "EXIF", container: "APP1 Exif", status: "decoded", offset: markerStart, length: segmentEnd - markerStart, associatedImage: null, sensitivity: "moderate", warningCodes: [] } satisfies MetadataBlock;
         blocks.push(block);
         if (exif !== null) {
@@ -369,7 +377,15 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
           if (parsed.exif !== null) {
             const tiff = payload.subarray(EXIF_IDENTIFIER.length);
             const thumbnail = extractExifThumbnail(tiff, parsed.exif, limits);
-            exif = thumbnail === null ? parsed.exif : { ...parsed.exif, thumbnail };
+            const associatedImages = parsed.exif.associatedImages?.map((image) => ({
+              ...image,
+              offset: image.offset === null ? null : mapOffset(dataStart + EXIF_IDENTIFIER.length + image.offset),
+            }));
+            exif = {
+              ...parsed.exif,
+              ...(associatedImages === undefined ? {} : { associatedImages }),
+              ...(thumbnail === null ? {} : { thumbnail }),
+            };
             // Keep the physical APP1 block as the compatibility source for
             // existing fields, while exposing each non-root TIFF directory as
             // an additive block with stable topology provenance.
@@ -424,6 +440,23 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
                     valueOffset: field.source.valueOffset === null ? null : dataStart + EXIF_IDENTIFIER.length + field.source.valueOffset,
                   },
             })));
+            if (wantsGroup(options.selection, "MakerNote")) {
+              const tiffOffset = mapOffset(dataStart + EXIF_IDENTIFIER.length);
+              const makerInputs = parsed.exif.fields.flatMap((field, index) => {
+                if (field.tag !== 0x927c || !(field.raw instanceof Uint8Array) || field.source?.valueOffset === null || field.source?.valueOffset === undefined) return [];
+                const noteOffset = mapOffset(dataStart + EXIF_IDENTIFIER.length + field.source.valueOffset);
+                return [{ id: `${block.id}:makernote:${index}`, fieldId: field.id, raw: field.raw, noteOffset, sourceLength: source.length, tiffOffset, fileOffset: noteOffset, blockId: `${block.id}:makernote:${index}` }];
+              });
+              if (makerInputs.length > 0) {
+                makerNotes = inspectMakerNotes(makerInputs, limits, { ...(options.makerNotePlugins === undefined ? {} : { plugins: options.makerNotePlugins }), ...(options.signal === undefined ? {} : { signal: options.signal }) });
+                normalizedFields.push(...makerNoteFieldsAsMetadataFields(makerNotes));
+                for (const note of makerNotes.notes) {
+                  const status: MetadataBlock["status"] = note.status === "detected-decoded" ? "decoded" : note.status === "malformed" || note.status === "rejected" ? "malformed" : note.status === "unknown" || note.status === "low-confidence" || note.status === "detected-opaque" || note.status === "encrypted" || note.status === "obfuscated" || note.status === "unsupported" ? "opaque" : "partial";
+                  blocks.push({ id: note.provenance.blockId, family: "MakerNote", container: `APP1 Exif MakerNote ${note.plugin?.vendor ?? "unknown"}`, status, offset: note.provenance.noteOffset, length: note.byteLength, associatedImage: null, sensitivity: "high", warningCodes: [], parentBlockId: block.id });
+                }
+                for (const item of makerNotes.diagnostics) warning(warnings, limits, { code: item.code === "LIMIT_EXCEEDED" ? "LIMIT_EXCEEDED" : item.code === "MALFORMED_NOTE" || item.code === "PLUGIN_REJECTED" || item.code === "PLUGIN_THROWN" ? "MALFORMED_EXIF" : "UNSUPPORTED_STRUCTURE", message: item.message, severity: item.code === "UNKNOWN_NOTE" || item.code === "LOW_CONFIDENCE" ? "warning" : "error", ...(item.originalFileOffset === null || item.originalFileOffset === undefined ? {} : { offset: item.originalFileOffset }), ...(item.length === undefined ? {} : { length: item.length }) });
+              }
+            }
           }
         }
       } else if (wantsGroup(options.selection, "XMP") && marker === 0xe1) {
@@ -458,29 +491,59 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
           blocks.push({ id: `jpeg:APP2:${markerStart}`, family: "ICC", container: "APP2 ICC", status: "decoded", offset: markerStart, length: segmentEnd - markerStart, associatedImage: null, sensitivity: "low", warningCodes: [] });
           iccChunks.push(chunk);
         }
-      } else if (wantsGroup(options.selection, "IPTC") && marker === 0xed) {
-        const blockId = `jpeg:APP13:${markerStart}`;
-        blocks.push({ id: blockId, family: "IPTC", container: "APP13 Photoshop", status: "decoded", offset: markerStart, length: segmentEnd - markerStart, associatedImage: null, sensitivity: "moderate", warningCodes: [] });
-        const parsedIptc = parseIptcMetadata(payload, limits, dataStart);
-        if (parsedIptc.data !== null) {
-          iptcBytes += parsedIptc.data.byteLength;
-          iptcCharacterSet = parsedIptc.data.characterSet;
-          normalizedFields.push(...parsedIptc.fields.map((field) => field.source === undefined
-            ? { ...field, source: { blockId, entryOffset: null, entryLength: null, valueOffset: null, valueLength: null } }
-            : { ...field, source: { ...field.source, blockId } }));
+      } else if (marker === 0xed && (wantsGroup(options.selection, "IPTC") || wantsGroup(options.selection, "Photoshop"))) {
+        const photoshopBlockId = `jpeg:APP13:photoshop:${markerStart}`;
+        const iptcBlockId = `jpeg:APP13:${markerStart}`;
+        if (wantsGroup(options.selection, "Photoshop")) {
+          const inventory = parsePhotoshopResources(payload, limits, { container: "app13", blockId: photoshopBlockId, sourceOffset: dataStart, sourceLength: segmentEnd - markerStart });
+          if (inventory !== null) {
+            if (photoshop === null) photoshop = inventory;
+            else {
+              photoshop = {
+                identifier: photoshop.identifier,
+                source: photoshop.source,
+                resources: [...photoshop.resources, ...inventory.resources],
+                diagnostics: [...photoshop.diagnostics, ...inventory.diagnostics],
+                complete: photoshop.complete && inventory.complete,
+              };
+            }
+            const resourceBlockStatus = (status: typeof inventory.resources[number]["status"]): MetadataBlock["status"] => status === "decoded" ? "decoded" : status === "unknown" ? "opaque" : status === "limited" ? "partial" : "malformed";
+            const parentStatus: MetadataBlock["status"] = inventory.complete ? "decoded" : inventory.resources.some((resource) => resource.status === "malformed") ? "malformed" : "partial";
+            blocks.push({ id: photoshopBlockId, family: "Photoshop", container: "APP13 Photoshop image resources", status: parentStatus, offset: markerStart, length: segmentEnd - markerStart, associatedImage: null, sensitivity: "high", warningCodes: [] });
+            for (const resource of inventory.resources) {
+              const resourceBlockId = `${resource.id}:block`;
+              blocks.push({ id: resourceBlockId, family: "Photoshop", container: `APP13 Photoshop resource 0x${resource.resourceId.toString(16).padStart(4, "0")}`, status: resourceBlockStatus(resource.status), offset: resource.offset, length: resource.length, associatedImage: resource.kind === "thumbnail" ? "thumbnail" : null, sensitivity: resource.kind === "unknown" || resource.kind === "thumbnail" ? "high" : "moderate", warningCodes: inventory.diagnostics.filter((item) => item.offset >= resource.offset && item.offset < resource.offset + resource.length).map((item) => item.code === "MALFORMED_PHOTOSHOP" ? "MALFORMED_PHOTOSHOP" : item.code), parentBlockId: photoshopBlockId });
+              if (resource.kind === "xmp" && resource.decoded?.kind === "xmp") {
+                xmpPackets.push(resource.decoded.packet);
+                blocks.push({ id: `${resourceBlockId}:xmp`, family: "XMP", container: "APP13 Photoshop XMP resource", status: "decoded", offset: resource.payloadOffset, length: resource.payloadLength, associatedImage: null, sensitivity: "moderate", warningCodes: [], parentBlockId: resourceBlockId });
+              }
+              for (const item of inventory.diagnostics.filter((candidate) => candidate.offset >= resource.offset && candidate.offset < resource.offset + resource.length)) warning(warnings, limits, { code: item.code, message: item.message, severity: item.code === "INVALID_VALUE" ? "warning" : "error", offset: item.offset, ...(item.length === undefined ? {} : { length: item.length }), ...(item.resourceId === undefined ? {} : { tag: item.resourceId }) });
+            }
+          }
         }
-        for (const item of parsedIptc.warnings) {
-          warning(
-            warnings,
-            limits,
-            item.code === "MALFORMED_IPTC"
-              ? {
-                  ...item,
-                  code: "INVALID_VALUE",
-                  message: "Photoshop APP13 image-resource data is malformed or truncated; IPTC was not accepted.",
-                }
-              : item,
-          );
+        if (wantsGroup(options.selection, "IPTC")) {
+          blocks.push({ id: iptcBlockId, family: "IPTC", container: "APP13 Photoshop IPTC resource", status: "decoded", offset: markerStart, length: segmentEnd - markerStart, associatedImage: null, sensitivity: "moderate", warningCodes: [] });
+          const parsedIptc = parseIptcMetadata(payload, limits, dataStart);
+          if (parsedIptc.data !== null) {
+            iptcBytes += parsedIptc.data.byteLength;
+            iptcCharacterSet = parsedIptc.data.characterSet;
+            normalizedFields.push(...parsedIptc.fields.map((field) => field.source === undefined
+              ? { ...field, source: { blockId: iptcBlockId, entryOffset: null, entryLength: null, valueOffset: null, valueLength: null } }
+              : { ...field, source: { ...field.source, blockId: iptcBlockId } }));
+          }
+          for (const item of parsedIptc.warnings) {
+            warning(
+              warnings,
+              limits,
+              item.code === "MALFORMED_IPTC"
+                ? {
+                    ...item,
+                    code: "INVALID_VALUE",
+                    message: "Photoshop APP13 image-resource data is malformed or truncated; IPTC was not accepted.",
+                  }
+                : item,
+            );
+          }
         }
       }
 
@@ -551,25 +614,35 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
     };
   });
 
-  const mapOffset = options.offsetMap ?? ((offset: number): number => offset);
   const blockIdMap = new Map(resolvedBlocks.map((block) => {
-    const match = /^(jpeg:[^:]+:)(\d+)$/.exec(block.id);
+    const match = /^(jpeg:[^:]+(?::photoshop)?:)(\d+)$/.exec(block.id);
     return [block.id, match === null ? block.id : `${match[1]}${mapOffset(Number(match[2]))}`] as const;
   }));
+  const remapBlockId = (id: string): string => {
+    const direct = blockIdMap.get(id);
+    if (direct !== undefined) return direct;
+    for (const [sourceId, mappedId] of blockIdMap) {
+      if (id.startsWith(`${sourceId}:`)) return `${mappedId}${id.slice(sourceId.length)}`;
+    }
+    return id;
+  };
   const remappedBlocks = resolvedBlocks.map((block) => {
-    const relatedBlockIds = block.relatedBlockIds?.map((id) => blockIdMap.get(id) ?? id);
+    const relatedBlockIds = block.relatedBlockIds?.map(remapBlockId);
+    const parentBlockId = block.parentBlockId === undefined || block.parentBlockId === null ? block.parentBlockId : remapBlockId(block.parentBlockId);
+    const mappedId = remapBlockId(block.id);
     return {
       ...block,
-      id: blockIdMap.get(block.id) ?? block.id,
+      id: mappedId,
       offset: block.offset === null ? null : mapOffset(block.offset),
+      ...(parentBlockId === undefined ? {} : { parentBlockId }),
       ...(relatedBlockIds === undefined ? {} : { relatedBlockIds }),
     };
   });
   const remapField = (field: MetadataField): MetadataField => field.source === undefined ? field : ({
-    ...field,
-    source: {
-      ...field.source,
-      blockId: blockIdMap.get(field.source.blockId) ?? field.source.blockId,
+      ...field,
+      source: {
+        ...field.source,
+      blockId: remapBlockId(field.source.blockId),
       entryOffset: field.source.entryOffset === null ? null : mapOffset(field.source.entryOffset),
       valueOffset: field.source.valueOffset === null ? null : mapOffset(field.source.valueOffset),
     },
@@ -577,6 +650,24 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
   const remappedFields = normalizedFields.map(remapField);
   const remappedExif = exif === null ? null : { ...exif, fields: exif.fields.map(remapField) };
   const remappedWarnings = collectedWarnings.map((item) => item.offset === undefined ? item : { ...item, offset: mapOffset(item.offset) });
+  const remappedPhotoshop = photoshop === null ? null : {
+    ...photoshop,
+    source: { ...photoshop.source, blockId: remapBlockId(photoshop.source.blockId), offset: mapOffset(photoshop.source.offset) },
+    resources: photoshop.resources.map((resource) => {
+      const mappedParent = remapBlockId(resource.parentBlockId);
+      return { ...resource, id: resource.id.startsWith(`${resource.parentBlockId}:`) ? `${mappedParent}${resource.id.slice(resource.parentBlockId.length)}` : resource.id, parentBlockId: mappedParent, offset: mapOffset(resource.offset), payloadOffset: mapOffset(resource.payloadOffset) };
+    }),
+  } satisfies NonNullable<ParsedMetadataResult["photoshop"]>;
+  const remappedMakerNotes = makerNotes === null ? null : {
+    ...makerNotes,
+    notes: makerNotes.notes.map((note) => ({
+      ...note,
+      id: note.id,
+      provenance: { ...note.provenance, blockId: remapBlockId(note.provenance.blockId) },
+      fields: note.fields.map((field) => ({ ...field, provenance: { ...field.provenance, blockId: remapBlockId(field.provenance.blockId) } })),
+      opaqueRanges: note.opaqueRanges.map((range) => ({ ...range, provenance: { ...range.provenance, blockId: remapBlockId(range.provenance.blockId) } })),
+    })),
+  } satisfies NonNullable<ParsedMetadataResult["makerNotes"]>;
 
   return {
     format: "jpeg",
@@ -595,6 +686,8 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
       : null,
     icc,
     jfif,
+    photoshop: remappedPhotoshop,
+    makerNotes: remappedMakerNotes,
     pngText: [],
     blocks: remappedBlocks,
     warnings: remappedWarnings,

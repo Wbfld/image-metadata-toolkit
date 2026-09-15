@@ -56,10 +56,16 @@ import { chunkExtendedXmp, serializeStructuredXmp, serializeXmp, XmpSerializatio
 import { IptcSerializationError, IptcSynchronizationError, serializeIptcIim, serializePhotoshopIptcResources, synchronizeIptcXmp } from "./metadata/serialization.js";
 import { verifyPreservation, verifyPreservationSync } from "./preservation.js";
 import { evaluatePrivacyPolicy, getPrivacyPolicy, policyRemovalTargets } from "./privacy/policies.js";
+export { inspectMakerNotes, makerNoteFieldsAsMetadataFields } from "./metadata/makernote.js";
+export { parsePhotoshopResources, inspectPhotoshopResourceSpans, PHOTOSHOP_IDENTIFIER, PHOTOSHOP_RESOURCE_SIGNATURE, PHOTOSHOP_RESOURCE_IDS } from "./metadata/photoshop.js";
 
 export { detectFormat, editMetadata, parseTiffGraph, rewriteTiff, serializeTiff, tiffEvidence, TiffSerializationError, rewriteJpegMetadata, JpegWriterError, rewritePngMetadata, PngWriterError, rewriteWebpMetadata, WebpWriterError, verifyPreservation, verifyPreservationSync, chunkExtendedXmp, serializeStructuredXmp, serializeXmp, XmpSerializationError, serializeIptcIim, serializePhotoshopIptcResources, synchronizeIptcXmp, IptcSerializationError, IptcSynchronizationError, DEFAULT_LIMITS, getCapabilities, getCaptureTime, getGps, getMetadataSummary, getOrientation, getRotation, getThumbnail, getImageDetails, fromJsonSafe, queryIccTags, queryImageDetails, queryIptcSemantic, queryMetadata, queryStructuredXmp, toExifReaderCompatible, toExifrCompatible, toFamilyGroups, toFlatObject, toJsonSafe, toJsonSafeResult, toLosslessFamilyGroups, MetadataError };
 export { PRIVACY_POLICY_PRESETS, evaluatePrivacyPolicy, getPrivacyPolicy, getPrivacyPolicyRegistryCoverage } from "./privacy/policies.js";
 export { inventoryC2pa, inventoryJumbfC2pa } from "./trust/jumbf.js";
+export { classifyRawTiff, inspectRawTiff } from "./raw.js";
+export { parseCr3, parseRaf } from "./parsers/raw-phase-two.js";
+export type { RawContainerData, RawPayloadFormat, RawPayloadReference, RawPayloadRole } from "./types.js";
+export type { Cr3BoxReference, Cr3ContainerData, RafContainerData, RafDirectory, RafDirectoryRange, RawPhaseTwoDiagnostic, RawPhaseTwoRange, RawPhaseTwoRangeFormat, RawPhaseTwoRangeRole, RawPhaseTwoRangeStatus } from "./types.js";
 export type { C2paInventoryContainer, C2paInventoryDiagnostic, C2paInventoryOptions, C2paInventoryRelationship, C2paInventoryResult, C2paInventoryStatus, C2paInventoryStore, C2paMutationPolicy } from "./trust/jumbf.js";
 export type { AdapterBudgetOptions, CanonicalFamilyGroups, ExifReaderDuplicatePolicy, ExifReaderMigrationOptions, FamilyGroupOptions, FlatCollisionPolicy, FlatObjectOptions, IccTagQuery, ImageDetailQuery, IptcSemanticQuery, JsonSafeOptions, MetadataQuery, MigrationOptions, XmpPropertyQuery } from "./adapters.js";
 export type { TiffEditEvidence, TiffEditTransaction, TiffTransactionOperation } from "./tiff.js";
@@ -72,6 +78,10 @@ export { attachIptcSemantic, deriveIptcSemantic } from "./normalize/iptc.js";
 export { IPTC_IIM_DATASETS } from "./metadata/iptc.js";
 export { IPTC_TECHREFERENCE_PREVIOUS_PROPERTIES, IPTC_TECHREFERENCE_PROPERTIES, IPTC_TECHREFERENCE_SOURCE, IPTC_TECHREFERENCE_STRUCTURES, IPTC_TECHREFERENCE_VERSION_DELTA } from "./generated/iptc-pmd.js";
 export { mergeStructuredXmp, parseStructuredXmp, parseStructuredXmpBytes, parseStructuredXmpBytesDetailed, parseStructuredXmpDetailed, parseStructuredXmpDocuments, parseStructuredXmpWithDecoder, parseStructuredXmpWithDecoderDetailed, parseStructuredXmpBytesWithDecoder, parseStructuredXmpBytesWithDecoderDetailed, validateStructuredXmpPacket } from "./metadata/xmp.js";
+export { mergeMetadataWithXmpSidecar, mergeXmpSources, parseXmpSidecar, serializeXmpSidecar } from "./sidecar.js";
+export type { XmpSidecarCoverage, XmpSidecarMergeInput, XmpSidecarMergeOptions, XmpSidecarMergePolicy, XmpSidecarMergeResult, XmpSidecarPacket, XmpSidecarParseOptions, XmpSidecarResult, XmpSidecarSerializationOptions, XmpSidecarSerializationResult, XmpSidecarSourceIdentity } from "./sidecar.js";
+export { CREATOR_PARSER_VERSIONS, CREATOR_SCHEMA_VERSION, inspectCreatorMetadata, inspectCreatorMetadataResult, migrateCreatorMetadataToIptc } from "./creator.js";
+export type { CreatorDiagnostic, CreatorDiagnosticCode, CreatorFieldKind, CreatorGraphKind, CreatorIptcMigration, CreatorIptcMigrationField, CreatorIptcMigrationOptions, CreatorJsonValue, CreatorMetadataField, CreatorMetadataInspection, CreatorMetadataOptions, CreatorProducer, CreatorSource, CreatorSourceProvenance, CreatorWorkflowEdge, CreatorWorkflowNode, CreatorWorkflowReference } from "./creator.js";
 export type { StructuredXmpDecoder, StructuredXmpOptions, StructuredXmpPacket, StructuredXmpParseResult, XmpAliasDefinition, XmpArrayValue, XmpConflict, XmpDescription, XmpDiagnostic, XmpDiagnosticCode, XmpLiteralValue, XmpMergedDocument, XmpNamespaceBinding, XmpProperty, XmpPropertyCandidate, XmpPropertyValue, XmpQualifiedName, XmpQualifier, XmpRdfDocument, XmpResourceValue, XmpValue } from "./metadata/xmp.js";
 export type { ExtendedXmpChunkOptions, ExtendedXmpSerialization, IptcIimEncoding, IptcIimFieldInput, IptcIimSerializeOptions, IptcInvalidValuePolicy, IptcSynchronizationConflict, IptcSynchronizationPolicy, IptcXmpSynchronizationInput, IptcXmpSynchronizationOptions, IptcXmpSynchronizationResult, PhotoshopIptcResourceOptions, XmpSerializeOptions } from "./metadata/serialization.js";
 export { createByteSource } from "./io/byte-source.js";
@@ -80,6 +90,8 @@ export type { FormatCapabilities, MetadataCapability, MetadataReadScope } from "
 export type { MetadataSummary, MetadataConflict, CameraSummary, LensSummary, ExposureSummary, CaptureSummary, LocationSummary } from "./summary.js";
 export type { CaptureTimeSummary, ExifOrientation, GpsSummary, OrientationSummary, RotationSummary } from "./convenience.js";
 export type { CaptureTimeValue, CompositeCandidate, CompositeConflict, CompositeKind, CompositePayload, CompositeUncertainty, Equivalence35mmValue, ExifComposite, ExifCompositeSet, ExposureValueValue, FieldOfViewValue, GpsTimeValue, NormalizationMode, OrientationValue, PrimaryDisplayDimensionsValue } from "./types.js";
+export type { PhotoshopContainerData, PhotoshopResource, PhotoshopResourceDecoded, PhotoshopResourceDiagnostic, PhotoshopResourceKind, PhotoshopResourceStatus } from "./types.js";
+export type { MakerNoteByteOrder, MakerNoteBaseOffsetRule, MakerNoteNestedIfdBehavior, MakerNoteEncryptionStatus, MakerNoteStatus, MakerNoteDiagnosticCode, MakerNoteDetectionEvidence, MakerNoteDetection, MakerNoteTagDefinition, MakerNoteSourceReference, MakerNotePluginIdentity, MakerNoteProvenance, MakerNoteField, MakerNoteOpaqueRange, MakerNoteDiagnostic, MakerNoteNote, MakerNoteContainerData, MakerNoteReadContext, MakerNotePluginInput, MakerNotePluginResult, MakerNotePlugin, MakerNoteInput, MakerNoteInspectionOptions } from "./types.js";
 export type { PrivacyAuditResult, PrivacyFinding, PrivacyOpaqueBlock } from "./privacy/audit.js";
 export type { PrivacyPolicy, PrivacyPolicyFinding, PrivacyPolicyRegistryCoverage, PrivacyPolicyReport } from "./privacy/policies.js";
 export { createMetadataRegistry, DEFAULT_METADATA_REGISTRY, METADATA_REGISTRY_SIZE, resolveMetadataRegistry } from "./registry.js";
@@ -128,7 +140,7 @@ const PRESET_SELECTIONS: Readonly<Record<Exclude<MetadataPreset, "all">, Metadat
   essential: { groups: ["Dimensions", "EXIF"], tags: ["Make", "Model", "Orientation", "DateTimeOriginal"] },
   camera: { groups: ["Dimensions", "EXIF"], tags: ["Make", "Model", "LensMake", "LensModel", "LensSpecification", "FocalLength", "FNumber", "ExposureTime", "ISOSpeedRatings", "Flash"] },
   location: { groups: ["EXIF"], tags: ["GPSLatitude", "GPSLatitudeRef", "GPSLongitude", "GPSLongitudeRef", "GPSAltitude", "GPSAltitudeRef"] },
-  privacy: { groups: ["EXIF", "XMP", "IPTC", "ICC", "JFIF", "PNGText"] },
+  privacy: { groups: ["EXIF", "XMP", "IPTC", "ICC", "JFIF", "PNGText", "Photoshop", "MakerNote"] },
 };
 
 const GPS_TAGS = ["GPSLatitude", "GPSLatitudeRef", "GPSLongitude", "GPSLongitudeRef", "GPSAltitude", "GPSAltitudeRef"] as const;
@@ -172,12 +184,15 @@ function applySelection(result: ParsedMetadataResult, selection: ResolvedSelecti
   const includeExif = wantsGroup(selection, "EXIF");
   const includeIptc = wantsGroup(selection, "IPTC");
   const includeIcc = wantsGroup(selection, "ICC");
+  const includePhotoshop = wantsGroup(selection, "Photoshop");
+  const includeMakerNote = wantsGroup(selection, "MakerNote");
   const exif = includeExif && result.exif !== null
     ? { ...result.exif, fields: selectedExif(result.exif.fields, selection) }
     : null;
   const fields = result.fields.filter((field) =>
     (includeIcc && field.ifd === "ICC") ||
     (includeIptc && field.ifd === "IPTC") ||
+    (includeMakerNote && field.ifd.startsWith("MakerNote:")) ||
     (includeExif && field.ifd !== "ICC" && field.ifd !== "IPTC" && (selection.tags === null || selection.tags.has(field.name) || selection.tags.has(field.id))),
   );
   const { displayDimensions, transform, nclx, ...base } = result;
@@ -192,6 +207,8 @@ function applySelection(result: ParsedMetadataResult, selection: ResolvedSelecti
     ...(wantsGroup(selection, "XMP") ? {} : { xmp: null }),
     ...(includeIptc ? {} : { iptc: null }),
     ...(includeIcc ? {} : { icc: null }),
+    photoshop: includePhotoshop ? result.photoshop ?? null : null,
+    makerNotes: includeMakerNote ? result.makerNotes ?? null : null,
     ...(wantsGroup(selection, "JFIF") ? {} : { jfif: null }),
     ...(wantsGroup(selection, "PNGText") ? {} : { pngText: [] }),
   };
@@ -232,7 +249,7 @@ function unsupportedResult(bytes: Uint8Array, limits: SecurityLimits): ParsedMet
           }
         : {
             code: "UNKNOWN_FORMAT",
-            message: "Input does not have a recognized JPEG, PNG, TIFF, WebP, GIF, JPEG XL, HEIF, or AVIF signature.",
+            message: "Input does not have a recognized JPEG, PNG, TIFF, WebP, GIF, JPEG XL, HEIF, AVIF, CR3, RAF, or SVG signature.",
             severity: "warning",
           },
     );
@@ -253,6 +270,7 @@ function unsupportedResult(bytes: Uint8Array, limits: SecurityLimits): ParsedMet
     iptc: null,
     icc: null,
     jfif: null,
+    photoshop: null,
     pngText: [],
     warnings: warnings.slice(0, limits.maxWarnings),
   };
@@ -284,25 +302,34 @@ export async function parseMetadata(input: MetadataInput, options: ParseOptions 
   const headerOnly = (options.scope === "jpeg-header" || options.scope === "metadata") && detection.format === "jpeg";
   if (detection.format === "jpeg") {
     const { parseJpeg } = await import("./parsers/jpeg.js");
-    result = parseJpeg(bytes, limits, { selection, headerOnly, registry, ...(materialization.mapOffset === undefined ? {} : { offsetMap: materialization.mapOffset }), ...(materialization.jpegView === undefined ? {} : { byteView: materialization.jpegView }), ...(options.signal === undefined ? {} : { signal: options.signal }) });
+    result = parseJpeg(bytes, limits, { selection, headerOnly, registry, ...(options.makerNotePlugins === undefined ? {} : { makerNotePlugins: options.makerNotePlugins }), ...(materialization.mapOffset === undefined ? {} : { offsetMap: materialization.mapOffset }), ...(materialization.jpegView === undefined ? {} : { byteView: materialization.jpegView }), ...(options.signal === undefined ? {} : { signal: options.signal }) });
   } else if (detection.format === "png") {
     const { parsePng } = await import("./parsers/png.js");
     result = await parsePng(bytes, limits, selection, options.signal, registry);
   } else if (detection.format === "tiff") {
     const { parseTiffMetadata } = await import("./parsers/tiff.js");
-    result = parseTiffMetadata(bytes, limits, selection, true, options.signal, registry, materialization.mapOffset);
+    result = parseTiffMetadata(bytes, limits, selection, true, options.signal, registry, materialization.mapOffset, materialization.inputBytes ?? bytes.length, options.makerNotePlugins);
   } else if (detection.format === "webp") {
     const { parseWebp } = await import("./parsers/webp.js");
     result = parseWebp(bytes, limits, selection, options.signal, registry);
   } else if (detection.format === "gif") {
     const { parseGif } = await import("./parsers/gif.js");
     result = parseGif(bytes, limits, selection, options.signal);
+  } else if (detection.format === "svg") {
+    const { parseSvg } = await import("./parsers/svg.js");
+    result = parseSvg(bytes, limits, selection, options.signal);
   } else if (detection.format === "jxl") {
     const { parseJxl } = await import("./parsers/jxl.js");
     result = await parseJxl(bytes, limits, selection, options.signal, registry, options.jxlBrotliDecompressor);
   } else if (detection.format === "heif" || detection.format === "avif") {
     const { parseHeif } = await import("./parsers/heif.js");
     result = parseHeif(bytes, limits, detection.format, selection, options.signal, registry);
+  } else if (detection.format === "cr3") {
+    const { parseCr3 } = await import("./parsers/raw-phase-two.js");
+    result = parseCr3(bytes, limits, selection, options.signal, registry, options.makerNotePlugins);
+  } else if (detection.format === "raf") {
+    const { parseRaf } = await import("./parsers/raw-phase-two.js");
+    result = parseRaf(bytes, limits, selection, options.signal, registry, options.makerNotePlugins);
   }
   else result = unsupportedResult(bytes, limits);
   throwIfAborted(options.signal);
@@ -327,7 +354,7 @@ export async function parseMetadata(input: MetadataInput, options: ParseOptions 
     partial
       ? [headerOnly ? "JPEG scan data was intentionally not read." : "Image payload ranges were intentionally not read."]
       : [],
-    partial && materialization.bytesRead !== undefined
+    materialization.bytesRead !== undefined
       ? { bytesRead: materialization.bytesRead, ...(materialization.inputBytes === undefined ? {} : { inputBytes: materialization.inputBytes }) }
       : undefined,
     materialization.telemetry,

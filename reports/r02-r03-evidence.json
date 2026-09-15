@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "r02": {
+    "generatedArtifacts": {
+      "siteDataJson": { "path": "docs-site/generated/site-data.json", "sha256": "aa2a8921895074f0057356e43590a1861a6dc73453ace8fcc38e1ee3e6d1fe0b" },
+      "siteDataJavaScript": { "path": "docs-site/generated/site-data.js", "sha256": "f009279e734fe6a3a177c0468e93677f4fd0c9caa7181c9cb8b01f683e08aa7e" },
+      "manifest": { "path": "docs-site/generated/MANIFEST.md", "sha256": "993300659770962963c85967aae86523039d5978605ee32bb995d1e85c6e26b4" }
+    },
+    "entryCounts": { "exif": 165, "iptcPropertiesAndStructures": 165, "xmp": 66, "icc": 19, "policies": 7, "selectors": 7, "capabilities": 9, "formats": 11 },
+    "sourceProvenance": ["data/metadata-registry.json", "data/iptc/iptc-pmd-techreference_2025.1.json", "data/iptc/iptc-pmd-techreference_2023.1.json", "scripts/capabilities-manifest.json", "src/metadata/icc.ts", "src/privacy/policies.ts"],
+    "checks": [
+      { "command": "node scripts/generate-docs-site.mjs --check", "status": "passed" },
+      { "command": "npm run test -- tests/docs-site.test.ts", "status": "passed", "tests": 3 },
+      { "command": "npx playwright test tests/browser/docs-site.spec.ts --project=chromium --project=firefox", "status": "passed", "tests": 6 },
+      { "command": "npm run docs:serve; curl loopback /docs-site/index.html and /docs-site/registry-selectors.html", "status": "passed", "csp": "connect-src 'none' on local pages" },
+      { "command": "npm run package:smoke", "status": "passed" }
+    ],
+    "networkPolicy": { "localPages": "no connections, uploads, telemetry, analytics, remote fonts, CDN assets, or object URLs", "fetchDemo": "separate conspicuous route with explicit HTTPS connect policy" },
+    "runtimeMatrix": { "chromium": "passed", "firefox": "passed", "webkit": "unavailable: installed Playwright WebKit rejects PushAPIEnabled during context setup" }
+  },
+  "r03": {
+    "commands": ["inspect", "audit", "sanitize", "edit", "verify", "benchmark-file"],
+    "exitCodes": { "success": 0, "usage": 2, "unsupported": 3, "incomplete": 4, "policyRefusal": 5, "malformed": 6, "verification": 7, "io": 8, "internal": 9 },
+    "checks": [
+      { "command": "npm run test -- tests/cli.test.ts", "status": "passed", "tests": 3 },
+      { "command": "npm run cli:check", "status": "passed" },
+      { "command": "npm run package:smoke", "status": "passed", "bin": "./cli/index.mjs" }
+    ],
+    "safety": ["JSON is default", "table mode sanitizes terminal controls", "audit raw values require --raw-values", "source and aliases are never overwritten", "destination writes use private sibling temporary files and atomic rename", "binary --output - is separated from stderr diagnostics", "operation JSON and input bytes are bounded"]
+  },
+  "integrated": {
+    "npmRunCheck": "passed: 51 test files, 554 tests, coverage, build, generated checks, CLI isolation, R01 baseline, publint, package smoke, and examples",
+    "gitDiffCheck": "passed"
+  }
+}

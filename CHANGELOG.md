@@ -2,6 +2,59 @@
 
 ## 2.0.0-alpha.3 — unreleased
 
+- added the post-R05 growth packet: bounded producer-specific creator metadata
+  inspection and explicit IPTC 2025.1 migration (G01), reproducible comparison
+  reports with semantic/transport/speed/memory/malformed-input evidence (G02),
+  a privacy scrubber and isolated community fixture/tag-data/plugin program
+  (G03), and an executable launch packet with retained redistribution-safe
+  evidence (G04); external publication remains an explicit operator action;
+
+- added the fail-closed R05 release-candidate audit, redistribution-safe
+  compatibility/limitations report, and external TIFF/writer review packet;
+  unavailable automation, publication provenance, and governance approval are
+  reported as blockers rather than treated as successful evidence;
+
+- added R04 executable migration mappings, pinned competitor output evidence,
+  packed-package snippet checks, and a no-codemod decision for exifr,
+  ExifReader, exif-js, and piexifjs;
+
+- added the deterministic R02 static documentation site with generated
+  searchable registries, source-hash provenance, local-only playground, strict
+  CSP, separate fetch demonstration, runtime recipes, and Chromium/Firefox
+  browser evidence;
+
+- added the isolated R03 Node `image-metadata` CLI with inspect, audit,
+  sanitize, edit, verify, and benchmark-file commands, safe JSON/table output,
+  stable exit codes, bounded stdin, atomic distinct-destination writes, and
+  packed-tarball coverage;
+
+- added the R01 versioned public API contract, deprecation and runtime support
+  policies, JSON Schema, declaration/export snapshot gate, and type/runtime
+  contract checks;
+
+- added B09 bounded SVG metadata inventory: namespace-validated UTF-8 SVG
+  roots, RDF/XML XMP packet and byte-range provenance, DTD/entity refusal,
+  opaque fail-closed non-RDF metadata, a hash-pinned temporary W3C Test Suite
+  conformance run, and redistribution-safe evidence in
+  `reports/svg-b09-evidence.{json,md}`;
+
+- added B10's explicit bounded XMP sidecar API and package entry point, with
+  URI/local-name RDF preservation, source provenance, explicit merge precedence
+  and conflict refusal, worker/browser coverage, semantic serialization
+  reparse verification, and redistribution-safe evidence in
+  `reports/sidecar-b10-evidence.{json,md}`;
+
+- added bounded, read-only inventory and structural identity for DNG, CR2, NEF,
+  ARW, ORF, RW2, and IIQ TIFF-derived RAW files, with source-range provenance,
+  preview/thumbnail separation, typed RAW-write refusal, and hash-pinned
+  redistribution-safe corpus evidence in `reports/raw-b04-evidence.{json,md}`;
+
+- added bounded Photoshop `8BIM` image-resource inventories for JPEG APP13 and
+  TIFF tag 34377, including source-order duplicate/unknown preservation,
+  fixed-structure resolution/thumbnail/path/XMP/IPTC-link/digest summaries,
+  exact JPEG resource targeting, atomic malformed-input refusal, and retained
+  evidence in `reports/photoshop-b06-evidence.{json,md}`;
+
 - added T01 bounded semantic privacy inspection with stable finding states and
   categories, safe-by-default report serialization, and immutable T02 policy
   presets with strict exact-field preflight;
@@ -26,6 +79,11 @@
   redistribution-safe structural evidence in
   `reports/heif-b03-evidence.{json,md}`; sequence sample payloads remain
   undecoded and HEIF/AVIF writing remains unsupported;
+- added B05 read-only CR3 and RAF phase-two RAW inventories with separate
+  ISO-BMFF/RAF result models, bounded preview/metadata/RAW range provenance,
+  embedded EXIF parsing, explicit opaque vendor structures, no sensor-pixel
+  decoding, and real hash-pinned CR3/RAF evidence in
+  `reports/raw-b05-evidence.{json,md}`;
 
 - added W08 public preservation verification for independently hashed JPEG
   scans, PNG IDAT/fdAT ranges, and WebP image chunks, with dimensions,

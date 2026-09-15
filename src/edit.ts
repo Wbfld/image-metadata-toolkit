@@ -2,6 +2,8 @@ import { throwIfAborted } from "./security/abort.js";
 import { DEFAULT_LIMITS, resolveLimits } from "./security/limits.js";
 import { detectFormat } from "./detect-format.js";
 import { materializeInput } from "./input.js";
+import { parseExif } from "./metadata/exif.js";
+import { classifyRawTiff, normalizeRawTiffHeader } from "./raw.js";
 import { applyTiffEditTransaction, tiffEvidence, type TiffEditTransaction } from "./tiff.js";
 import { applyJpegEditTransaction, type JpegEditTransaction } from "./jpeg-writer.js";
 import { applyPngEditTransaction, type PngEditTransaction } from "./png-writer.js";
@@ -162,6 +164,8 @@ function validateSelector(value: unknown): value is EditSelector {
       return isAbsoluteUri(value.namespaceUri) && isSafeText(value.localName);
     case "field-id":
       return isCanonicalFieldId(value.fieldId);
+    case "photoshop-resource":
+      return isSafeText(value.resourceId);
     case "policy":
       return isSafeText(value.policyId);
     default:
@@ -191,6 +195,8 @@ function copyTarget(target: EditTarget): EditTarget {
       return { kind: "selector", selector: { kind: "namespace-property", namespaceUri: selector.namespaceUri, localName: selector.localName } };
     case "field-id":
       return { kind: "selector", selector: { kind: "field-id", fieldId: selector.fieldId } };
+    case "photoshop-resource":
+      return { kind: "selector", selector: { kind: "photoshop-resource", resourceId: selector.resourceId } };
     case "policy":
       return { kind: "selector", selector: { kind: "policy", policyId: selector.policyId } };
   }
@@ -212,6 +218,8 @@ function targetKey(target: EditTarget): string {
       return `selector:namespace-property:${selector.namespaceUri}#${selector.localName}`;
     case "field-id":
       return `field:${selector.fieldId}`;
+    case "photoshop-resource":
+      return `selector:photoshop-resource:${selector.resourceId}`;
     case "policy":
       return `selector:policy:${selector.policyId}`;
   }
@@ -735,9 +743,16 @@ export async function editMetadata(input: MetadataInput, options: EditMetadataOp
       examinedFormat = detection.format === "png" && examinedBytes.length < 33 ? "unknown" : detection.format;
       if (detection.format === "tiff") {
         examinedSha256 = await sha256Hex(examinedBytes);
-        transaction = applyTiffEditTransaction(examinedBytes, operationValues as readonly EditOperation[], policyValidation.policy, limits);
-        const completedTransaction = transaction;
-        evidence = validations.map((validation) => operationEvidenceForTiff(validation, policyValidation.policy, completedTransaction));
+        const signatureKind = classifyRawTiff(examinedBytes, null);
+        const parsedKind = signatureKind ?? classifyRawTiff(examinedBytes, parseExif(normalizeRawTiffHeader(examinedBytes), limits).exif);
+        if (parsedKind !== null) {
+          transactionFailure = failure("UNSUPPORTED_OPERATION", `RAW ${parsedKind.toUpperCase()} writing is intentionally unsupported; metadata inspection is read-only.`);
+          evidence = validations.map((validation) => operationEvidence(validation, policyValidation.policy));
+        } else {
+          transaction = applyTiffEditTransaction(examinedBytes, operationValues as readonly EditOperation[], policyValidation.policy, limits);
+          const completedTransaction = transaction;
+          evidence = validations.map((validation) => operationEvidenceForTiff(validation, policyValidation.policy, completedTransaction));
+        }
       } else if (detection.format === "jpeg") {
         examinedSha256 = await sha256Hex(examinedBytes);
         jpegTransaction = applyJpegEditTransaction(examinedBytes, operationValues as readonly EditOperation[], policyValidation.policy, limits);

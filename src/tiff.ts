@@ -24,10 +24,11 @@ import type {
 } from "./types.js";
 import type { MetadataField } from "./types.js";
 import { parseExif, parseBigTiff } from "./metadata/exif.js";
+import { classifyRawTiff, normalizeRawTiffHeader } from "./raw.js";
 
 /** Typed failure from graph parsing, planning, layout, or verification. */
 export class TiffSerializationError extends Error {
-  public readonly code: "INVALID_VALUE" | "UNSAFE_STRUCTURE" | "LIMIT_EXCEEDED" | "VERIFICATION_FAILURE";
+  public readonly code: "INVALID_VALUE" | "UNSAFE_STRUCTURE" | "LIMIT_EXCEEDED" | "UNSUPPORTED_STRUCTURE" | "VERIFICATION_FAILURE";
 
   public constructor(code: TiffSerializationError["code"], message: string) {
     super(message);
@@ -756,6 +757,8 @@ function sameBytes(left: Uint8Array, right: Uint8Array): boolean {
 /** Apply bounded entry edits transactionally and verify the rewritten graph. */
 export function rewriteTiff(input: Uint8Array, options: TiffRewriteOptions): Uint8Array {
   const limits = resolveLimits(options.limits);
+  const rawKind = classifyRawTiff(input, null) ?? classifyRawTiff(input, parseExif(normalizeRawTiffHeader(input), limits).exif);
+  if (rawKind !== null) throw new TiffSerializationError("UNSUPPORTED_STRUCTURE", `RAW ${rawKind.toUpperCase()} writing is intentionally unsupported; use metadata inspection APIs for read-only access.`);
   const original = parseGraph(input, limits);
   if (!Array.isArray(options.edits) || options.edits.length > limits.maxAdapterItems) limited("TIFF edits exceed the configured operation limit.");
   const duplicatePolicy = options.duplicatePolicy ?? "replace-target";

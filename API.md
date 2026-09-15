@@ -1,5 +1,20 @@
 # browser-image-metadata API reference
 
+The stable public contract is version 1.0.0. Naming, discriminated result
+outcomes, deprecations, runtime boundaries, and compatibility rules are
+recorded in [`R01_API_DECISION.md`](./R01_API_DECISION.md),
+[`DEPRECATION_POLICY.md`](./DEPRECATION_POLICY.md), and
+[`RUNTIME_SUPPORT.md`](./RUNTIME_SUPPORT.md). The versioned JSON Schema is
+[`schemas/r01-api-v1.schema.json`](./schemas/r01-api-v1.schema.json); its
+checked declaration and export snapshot is retained in
+[`reports/r01-api-snapshot.json`](./reports/r01-api-snapshot.json).
+
+The static documentation site and local-only playground are described in
+[`R02_DOCUMENTATION_SITE.md`](./R02_DOCUMENTATION_SITE.md). The Node-only
+command-line surface is described in [`R03_CLI.md`](./R03_CLI.md); it uses the
+same public parser, privacy, policy, mutation, and preservation APIs and is not
+part of the browser/core dependency graph.
+
 ## `parseMetadata(input, options?)`
 
 ```ts
@@ -7,7 +22,8 @@ parseMetadata(input: MetadataInput, options?: ParseOptions): Promise<MetadataRes
 ```
 
 Parses an `ArrayBuffer`, `ArrayBufferView`, `Blob`, or browser `File` entirely
-locally. It returns a stable result with `format`, `mimeType`, `dimensions`,
+locally. It returns a stable result with `format`, `mimeType`, `container`,
+`fileKind`, `dimensions`,
 normalized `fields`, typed EXIF `composites`, raw `exif`, `xmp`, `iptc`, `icc`, `jfif`, `pngText`, and
 bounded `warnings`. `result.completeness` explicitly records whether the full
 requested inspection completed without error warnings. `ParseOptions.signal`
@@ -32,7 +48,9 @@ has a normalized `coverage` state (`complete`, `partial`, `skipped-by-selection`
 `malformed`, or `opaque`).
 
 Supported metadata readers are JPEG EXIF/JFIF/XMP/IPTC/ICC, PNG EXIF/text/XMP/
-ICC, classic TIFF EXIF/XMP/IPTC/ICC, WebP EXIF/XMP/ICC, and bounded HEIF/AVIF
+ICC, classic TIFF EXIF/XMP/IPTC/ICC, WebP EXIF/XMP/ICC, bounded SVG RDF/XML XMP
+inside namespace-validated SVG `metadata` elements, separate CR3 and RAF
+RAW container inventories with embedded supported metadata, and bounded HEIF/AVIF
 EXIF/XMP/primary dimensions/ICC/`nclx` inspection. HEIF and AVIF additionally
 expose `result.heif`, a bounded per-`meta` item graph retaining `pitm`, `iinf`,
 `iloc` construction methods 0/1/2, multiple extents, self-contained `dref`
@@ -40,7 +58,27 @@ entries, `ipco`/`ipma` properties, and ordered `thmb`, `auxl`, `dimg`, `cdsc`,
 and item-offset relationships. Grid, overlay, and identity derived descriptors
 are structural only; no item pixels are decoded and external data references
 are never fetched. Unknown EXIF tags remain in
-`result.exif.fields`.
+`result.exif.fields`. TIFF-derived DNG, CR2, NEF, ARW, ORF, RW2, and IIQ inputs
+retain `format: "tiff"` and `container: "tiff"` (or `"bigtiff"` where
+applicable), with the camera variant in `fileKind`. Their bounded `result.raw`
+inventory retains source ranges and provenance for RAW data, previews,
+thumbnails, and opaque vendor payloads without copying or decoding sensor
+pixels; RAW writing is unsupported.
+
+SVG inventory accepts only valid UTF-8 documents with an SVG-namespace root.
+DTD/entity declarations and malformed nesting are rejected; limits cover XML
+elements, attributes, depth, packet count, metadata bytes, text, and warnings.
+Non-RDF SVG metadata remains an opaque, high-sensitivity block. SVG rendering,
+pixel decoding, and writing are outside the API surface.
+
+CR3 exposes `result.cr3` with its ISO-BMFF boxes, retained B02/B03 item and
+track candidates, transformations, sample ranges, metadata associations,
+preview/RAW ranges, primary-selection ambiguity, and opaque Canon UUID
+structures. RAF exposes `result.raf` with its validated fixed directory,
+source-relative preview/thumbnail, proprietary metadata, and CFA/RAW ranges.
+Both models are read-only inventories: they do not decode RAW pixels or fetch
+network resources. See [B05_RAW_PHASE_TWO.md](./B05_RAW_PHASE_TWO.md) and the
+hash-pinned evidence reports for the real CR3 and RAF corpus run.
 
 HEIF and AVIF sequence-bearing ISO-BMFF inputs additionally expose
 `result.heifSequences`. Each sequence retains its source range, timescale,
@@ -267,6 +305,21 @@ closed without exposing partial bytes. See
 [`W03_JPEG_WRITING.md`](./W03_JPEG_WRITING.md) for the complete boundary and
 operation model.
 
+JPEG APP13 Photoshop resources are available through `result.photoshop` as a
+bounded, source-ordered `8BIM` inventory. The root package exports
+`parsePhotoshopResources()` and `inspectPhotoshopResourceSpans()` for direct
+inspection; TIFF tag 34377 is inventoried using the same model. Each resource
+retains its exact ID, Pascal name bytes and padding, payload range and padding,
+parent block, duplicate position, bounded payload copy, and decoded resolution,
+thumbnail, path, clipping-name, XMP, IPTC-link, or caption-digest facts where
+the fixed structure is recognized. Unknown and malformed resources remain
+explicit and do not count as complete inspection. The only Photoshop write
+operation currently supported is exact removal of one or more selected JPEG
+resources through the `photoshop-resource` selector; it preserves unrelated
+resource bytes and refuses malformed or over-limit structures atomically.
+There is no TIFF Photoshop-resource writer claim. See
+[`B06_PHOTOSHOP_RESOURCES.md`](./B06_PHOTOSHOP_RESOURCES.md).
+
 ## WebP metadata writing
 
 ```ts
@@ -478,6 +531,19 @@ projection policies, while `reject-conflict` throws before output is emitted.
 The standards sources and focused evidence are documented in
 [`W06_IPTC_SERIALIZATION.md`](./W06_IPTC_SERIALIZATION.md).
 
+The explicit `browser-image-metadata/xmp/sidecar` entry point (also exported
+from the root) provides `parseXmpSidecar()`, `mergeMetadataWithXmpSidecar()`,
+`mergeXmpSources()`, and `serializeXmpSidecar()`. Sidecar bytes are
+caller-supplied and are never fetched from a path or URL. Parsing returns a
+stable SHA-256 source identity, a standalone XMP block range, packet
+provenance, bounded RDF values, unknown properties, coverage, and typed
+diagnostics. `preserve-all` is the default merge policy;
+`embedded-first`, `sidecar-first`, and `reject-conflicts` are explicit. The
+serializer returns new XMP bytes and reparses them for semantic equivalence by
+default; it never changes source image bytes. See
+[`B10_XMP_SIDECAR.md`](./B10_XMP_SIDECAR.md) and the retained
+[`reports/sidecar-b10-evidence.md`](./reports/sidecar-b10-evidence.md).
+
 `getIptcSemantic()` and `readIptcSemantic()` expose the additive IPTC Photo
 Metadata Standard 2025.1 view. It is generated from the pinned official
 TechReference and maps IPTC-IIM plus URI/local-name XMP properties from IPTC
@@ -566,6 +632,30 @@ statuses. The browser entry requires a version-matched `wasmSrc`; the Node
 entry loads the official native binding. See
 [`T04_C2PA_ADAPTERS.md`](./T04_C2PA_ADAPTERS.md).
 
+## Optional creator metadata and launch evidence
+
+The optional `browser-image-metadata/creator` entry point exposes bounded
+producer-convention inspection for ComfyUI, Stable Diffusion WebUI, InvokeAI,
+and common XMP creator metadata. `inspectCreatorMetadata()` returns typed
+model, sampler, seed, steps, prompt, negative-prompt, and workflow-reference
+fields with producer parser versions, source ranges, block identities, and
+diagnostics. Raw source data is retained only when the caller leaves the
+explicit `includeRawData` option enabled. Graph nodes, edges, source bytes,
+fields, and JSON nesting use the normal security-limit model.
+
+`migrateCreatorMetadataToIptc()` is a data-only migration helper. It requires
+`{ confirm: true }`, targets the generated IPTC Photo Metadata 2025.1 AI
+properties, and never writes an image or silently discards unsupported creator
+fields. See [`G01_CREATOR_METADATA.md`](./G01_CREATOR_METADATA.md).
+
+The repository retains reproducible comparison, community-program, and launch
+artifacts in `reports/g02-comparison.{json,md}`,
+`reports/g03-community-evidence.{json,md}`, and
+`reports/g04-launch-evidence.{json,md}`. Their commands fail on missing or
+stale evidence; none of these reports contains third-party image bytes or raw
+sensitive values. G04 records repository readiness for publication, not an
+unsupported claim that external publication has occurred.
+
 ## Focused entry points
 
 `browser-image-metadata/detect` contains signature detection only.
@@ -647,7 +737,9 @@ denominator), non-finite numbers, BigInt, and unsafe integer64 values and is
 bounded by `maxAdapterItems` and `maxAdapterOutputBytes`.
 `toExifrCompatible()` and `toExifReaderCompatible()` are documented lossy
 migration helpers with explicit caller-selectable duplicate policies;
-`MIGRATION.md` contains the conversion/loss matrix. `queryMetadata()` supports
+`MIGRATION.md` contains the conversion/loss matrix and
+`R04_MIGRATION_COMPATIBILITY.md` contains pinned, executable incumbent
+mappings. `queryMetadata()` supports
 stable field, family, directory, block, tag, and source-offset identities;
 `queryImageDetails()`, `queryIptcSemantic()`, and `queryIccTags()` cover the
 other canonical families. `queryStructuredXmp()` filters the RDF property

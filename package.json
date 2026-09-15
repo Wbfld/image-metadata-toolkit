@@ -28,6 +28,9 @@
     "url": "git+https://github.com/Wbfld/image-metadata-toolkit.git"
   },
   "type": "module",
+  "bin": {
+    "image-metadata": "cli/index.mjs"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -44,6 +47,20 @@
       "require": {
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
+      }
+    },
+    "./creator": {
+      "browser": {
+        "types": "./dist/creator.d.ts",
+        "default": "./dist/creator.js"
+      },
+      "import": {
+        "types": "./dist/creator.d.ts",
+        "default": "./dist/creator.js"
+      },
+      "require": {
+        "types": "./dist/creator.d.cts",
+        "default": "./dist/creator.cjs"
       }
     },
     "./c2pa/browser": {
@@ -300,6 +317,20 @@
         "default": "./dist/xmp.cjs"
       }
     },
+    "./xmp/sidecar": {
+      "browser": {
+        "types": "./dist/xmp-sidecar.d.ts",
+        "default": "./dist/xmp-sidecar.js"
+      },
+      "import": {
+        "types": "./dist/xmp-sidecar.d.ts",
+        "default": "./dist/xmp-sidecar.js"
+      },
+      "require": {
+        "types": "./dist/xmp-sidecar.d.cts",
+        "default": "./dist/xmp-sidecar.cjs"
+      }
+    },
     "./xmp/rgrove": {
       "import": {
         "types": "./dist/xmp-rgrove.d.ts",
@@ -308,6 +339,104 @@
       "require": {
         "types": "./dist/xmp-rgrove.d.cts",
         "default": "./dist/xmp-rgrove.cjs"
+      }
+    },
+    "./makernote/apple": {
+      "browser": {
+        "types": "./dist/makernote/apple.d.ts",
+        "default": "./dist/makernote/apple.js"
+      },
+      "import": {
+        "types": "./dist/makernote/apple.d.ts",
+        "default": "./dist/makernote/apple.js"
+      },
+      "require": {
+        "types": "./dist/makernote/apple.d.cts",
+        "default": "./dist/makernote/apple.cjs"
+      }
+    },
+    "./makernote/canon": {
+      "browser": {
+        "types": "./dist/makernote/canon.d.ts",
+        "default": "./dist/makernote/canon.js"
+      },
+      "import": {
+        "types": "./dist/makernote/canon.d.ts",
+        "default": "./dist/makernote/canon.js"
+      },
+      "require": {
+        "types": "./dist/makernote/canon.d.cts",
+        "default": "./dist/makernote/canon.cjs"
+      }
+    },
+    "./makernote/nikon": {
+      "browser": {
+        "types": "./dist/makernote/nikon.d.ts",
+        "default": "./dist/makernote/nikon.js"
+      },
+      "import": {
+        "types": "./dist/makernote/nikon.d.ts",
+        "default": "./dist/makernote/nikon.js"
+      },
+      "require": {
+        "types": "./dist/makernote/nikon.d.cts",
+        "default": "./dist/makernote/nikon.cjs"
+      }
+    },
+    "./makernote/sony": {
+      "browser": {
+        "types": "./dist/makernote/sony.d.ts",
+        "default": "./dist/makernote/sony.js"
+      },
+      "import": {
+        "types": "./dist/makernote/sony.d.ts",
+        "default": "./dist/makernote/sony.js"
+      },
+      "require": {
+        "types": "./dist/makernote/sony.d.cts",
+        "default": "./dist/makernote/sony.cjs"
+      }
+    },
+    "./makernote/fujifilm": {
+      "browser": {
+        "types": "./dist/makernote/fujifilm.d.ts",
+        "default": "./dist/makernote/fujifilm.js"
+      },
+      "import": {
+        "types": "./dist/makernote/fujifilm.d.ts",
+        "default": "./dist/makernote/fujifilm.js"
+      },
+      "require": {
+        "types": "./dist/makernote/fujifilm.d.cts",
+        "default": "./dist/makernote/fujifilm.cjs"
+      }
+    },
+    "./makernote/panasonic-leica": {
+      "browser": {
+        "types": "./dist/makernote/panasonic-leica.d.ts",
+        "default": "./dist/makernote/panasonic-leica.js"
+      },
+      "import": {
+        "types": "./dist/makernote/panasonic-leica.d.ts",
+        "default": "./dist/makernote/panasonic-leica.js"
+      },
+      "require": {
+        "types": "./dist/makernote/panasonic-leica.d.cts",
+        "default": "./dist/makernote/panasonic-leica.cjs"
+      }
+    },
+    "./makernote/pentax": {
+      "browser": {
+        "types": "./dist/makernote/pentax.d.ts",
+        "default": "./dist/makernote/pentax.js"
+      },
+      "import": {
+        "types": "./dist/makernote/pentax.d.ts",
+        "default": "./dist/makernote/pentax.js"
+      },
+      "require": {
+        "types": "./dist/makernote/pentax.d.cts",
+        "default": "./dist/makernote/pentax.cjs"
       }
     },
     "./worker": {
@@ -340,14 +469,46 @@
     "B01_JPEG_XL.md",
     "B02_HEIF_AVIF.md",
     "B03_HEIF_AVIF_SEQUENCES.md",
+    "B04_RAW_PHASE_ONE.md",
+    "B05_RAW_PHASE_TWO.md",
+    "B06_PHOTOSHOP_RESOURCES.md",
+    "B07_MAKERNOTE_PLUGIN_CONTRACT.md",
+    "B08_MAKERNOTE_VENDOR_PACKS.md",
+    "B10_XMP_SIDECAR.md",
+    "R01_API_DECISION.md",
+    "DEPRECATION_POLICY.md",
+    "RUNTIME_SUPPORT.md",
+    "R02_DOCUMENTATION_SITE.md",
+    "R03_CLI.md",
+    "R04_MIGRATION_COMPATIBILITY.md",
+    "R04_CODEMOD_DECISION.md",
+    "R05_EXTERNAL_REVIEW_PACKET.md",
+    "R05_COMPATIBILITY_LIMITATIONS.md",
+    "schemas/r01-api-v1.schema.json",
+    "schemas/community-tag-data.schema.json",
+    "community",
+    "docs-site",
+    "cli",
     "T01_PRIVACY_INSPECTION.md",
     "T02_PRIVACY_POLICIES.md",
     "T03_C2PA_INVENTORY.md",
     "T03_C2PA_TERMINOLOGY_REVIEW.md",
     "T04_C2PA_ADAPTERS.md",
+    "G01_CREATOR_METADATA.md",
+    "G02_COMPARISON_REPORTS.md",
+    "G03_COMMUNITY_PROGRAM.md",
+    "G04_LAUNCH_PLAN.md",
+    "G04_TECHNICAL_ARTICLE.md",
+    "G04_INTEGRATION_EXAMPLES.md",
+    "COMMUNITY_PROVENANCE_TEMPLATE.md",
+    "COMMUNITY_REVIEW_CHECKLIST.md",
+    "COMMUNITY_CONTRIBUTOR_TICKETS.md",
+    "COMMUNITY_SUPPORT_POLICY.md",
     "CAPABILITIES.md",
     "METADATA_REGISTRY.md",
     "data",
+    "reports/r04-compatibility.json",
+    "reports/r04-compatibility.md",
     "MIGRATION.md",
     "CONTRIBUTING.md",
     "PUBLISHING.md",
@@ -392,8 +553,27 @@
     "test:jxl": "npm run build && node scripts/jxl-b01-evidence.mjs",
     "test:heif": "npm run build && node scripts/heif-b02-evidence.mjs",
     "test:heif-sequences": "npm run build && node scripts/heif-b03-evidence.mjs",
+    "test:raw": "npm run build && node scripts/raw-b04-evidence.mjs",
+    "test:raw-b05": "npm run build && node scripts/raw-b05-evidence.mjs",
+    "test:photoshop-b06": "npm run build && vitest run tests/photoshop-b06.test.ts && node scripts/photoshop-b06-evidence.mjs",
+    "test:makernote-b07": "npm run build && vitest run tests/makernote-b07.test.ts && node scripts/makernote-b07-evidence.mjs",
+    "test:makernote-b08": "npm run build && vitest run tests/makernote-b08.test.ts && node scripts/makernote-b08-evidence.mjs",
+    "test:svg-b09": "npm run build && vitest run tests/svg-b09.test.ts && node scripts/svg-b09-evidence.mjs",
+    "test:sidecar-b10": "npm run build && vitest run tests/sidecar-b10.test.ts tests/worker.test.ts && node scripts/sidecar-b10-evidence.mjs",
+    "test:r01": "npm run build && vitest run tests/r01-api.test.ts && node scripts/r01-api-contract.mjs",
+    "r01:check": "node scripts/r01-api-contract.mjs --check",
+    "docs:generate": "npm run build && node scripts/generate-docs-site.mjs",
+    "docs:check": "node scripts/generate-docs-site.mjs --check",
+    "docs:serve": "node docs-site/server.mjs",
+    "cli:check": "node scripts/cli-contract.mjs",
+    "test:cli": "npm run build && vitest run tests/cli.test.ts",
+    "compatibility:generate": "npm run build && node scripts/r04-compatibility.mjs",
+    "compatibility:check": "npm run build && node scripts/r04-compatibility.mjs --check",
+    "test:r04": "npm run build && vitest run tests/r04-compatibility.test.ts",
+    "b09:check": "node scripts/b09-demand-decision.mjs",
     "c2pa:terminology": "node scripts/c2pa-terminology-audit.mjs",
     "test:deno": "deno check src/index.ts && npm run build && deno test --no-check --allow-read tests/deno-smoke.ts",
+    "test:bun": "bun run build && bun scripts/bun-smoke.mjs",
     "test:corpus": "npm run build && node scripts/external-corpus.mjs",
     "benchmark": "npm run build && node scripts/benchmark.mjs",
     "capabilities:generate": "node scripts/generate-capabilities.mjs",
@@ -404,13 +584,24 @@
     "iptc:check": "node scripts/generate-iptc-semantic.mjs --check",
     "icc:reference": "node scripts/icc-reference-corpus.mjs",
     "iptc:reference": "npm run build && node scripts/iptc-reference-corpus.mjs",
+    "creator:g01": "npm run build && node scripts/creator-g01-evidence.mjs",
+    "creator:g01:check": "node scripts/creator-g01-evidence.mjs --check",
+    "g02:run": "npm run build && node scripts/g02-comparison.mjs",
+    "g02:check": "node scripts/g02-comparison.mjs --check",
+    "community:scrub": "npm run build && node scripts/fixture-scrubber.mjs",
+    "community:check": "node scripts/g03-community-evidence.mjs --check",
+    "g04:run": "npm run build && node scripts/g04-launch-audit.mjs",
+    "g04:check": "node scripts/g04-launch-audit.mjs --check",
+    "r05:audit": "node scripts/r05-release-audit.mjs",
+    "r05:prepare-corpora": "node scripts/prepare-r05-corpora.mjs",
+    "r05:verify": "node -e \"import('./reports/r05-release-audit.json',{with:{type:'json'}}).then(({default:report})=>import('./scripts/r05-release-audit.mjs').then(({validateReport})=>{validateReport(report); if(report.gate?.passed!==true) throw new Error('R05 report is blocked.'); console.log('R05 release audit verified.');}))\"",
     "release:check": "node scripts/release-check.mjs",
     "baseline": "node scripts/baseline.mjs --output baselines/2.0.0-alpha.3.json",
     "baseline:verify": "node scripts/baseline.mjs --verify baselines/2.0.0-alpha.3.json",
     "examples": "npm run build && node examples/node.mjs tests/fixtures/jpeg-exif-little-endian.jpg && node examples/built-api-smoke.mjs && node examples/worker-smoke.mjs",
     "package:smoke": "node scripts/package-smoke.mjs",
     "publint": "publint",
-    "check": "npm run capabilities:check && npm run registry:check && npm run iptc:check && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run baseline:verify && npm run publint && npm run package:smoke && npm run examples",
+    "check": "npm run capabilities:check && npm run registry:check && npm run iptc:check && npm run b09:check && npm run docs:check && npm run compatibility:check && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run creator:g01:check && npm run g02:check && npm run community:check && npm run g04:check && npm run cli:check && npm run r01:check && npm run baseline:verify && npm run publint && npm run package:smoke && npm run examples",
     "prepublishOnly": "npm run check"
   },
   "devDependencies": {
@@ -422,10 +613,12 @@
     "@types/node": "^22.18.0",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.35.0",
+    "exif-js": "2.3.0",
     "exifr": "7.1.3",
     "exifreader": "4.45.0",
     "exiftool-vendored": "33.5.0",
     "fast-check": "4.10.0",
+    "piexifjs": "1.0.6",
     "publint": "^0.3.24",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",

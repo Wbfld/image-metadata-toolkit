@@ -273,6 +273,9 @@ describe("public parsing API", () => {
     const result = {
       format: "heif",
       mimeType: "image/heif",
+      container: "iso-bmff",
+      fileKind: "heif",
+      raw: null,
       dimensions: { width: 10, height: 20 },
       fields: [],
       exif: null,
@@ -297,6 +300,9 @@ describe("public parsing API", () => {
     const result = {
       format: "jpeg",
       mimeType: "image/jpeg",
+      container: "jpeg",
+      fileKind: "jpeg",
+      raw: null,
       dimensions: null,
       fields: [],
       exif: { byteOrder: "little-endian", fields: [], ifds: [], thumbnail: { data: thumbnail.slice(), mimeType: "image/jpeg" } },
@@ -366,6 +372,9 @@ describe("public parsing API", () => {
     const result = {
       format: "jpeg",
       mimeType: "image/jpeg",
+      container: "jpeg",
+      fileKind: "jpeg",
+      raw: null,
       dimensions: null,
       fields: [],
       exif: null,

@@ -39,3 +39,12 @@ Record the same provenance in `tests/fixtures/README.md`. Keep fixtures small un
 ## Reporting problems
 
 Use the bug report form for reproducible parser, API, documentation, or performance problems. Use the fixture form for a legally shareable interoperability sample. Report potential vulnerabilities privately according to [SECURITY.md](.github/SECURITY.md), never in a public issue.
+
+## Feature maintenance ownership
+
+WBLFD is the recorded maintenance owner for the B09 additional-container
+evaluation and any container project selected through that gate. This ownership
+means reviewing security reports, fixture provenance, conformance evidence,
+compatibility regressions, documentation, and any later deprecation decision
+for the selected scope. It does not itself approve a candidate: the B09 demand,
+lawful-fixture, and bounded-security-model requirements remain mandatory.

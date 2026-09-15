@@ -1,0 +1,31 @@
+:root { color-scheme: light dark; --bg: #f7f8fa; --panel: #fff; --text: #17202a; --muted: #53606d; --link: #075985; --border: #d5dbe1; --focus: #d97706; }
+@media (prefers-color-scheme: dark) { :root { --bg: #11161b; --panel: #1b232b; --text: #eef2f5; --muted: #b5c0c9; --link: #7dd3fc; --border: #43505c; } }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, sans-serif; margin: 0; }
+a { color: var(--link); }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+header, main, footer { margin: auto; max-width: 78rem; padding: 1rem; }
+header { align-items: baseline; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+nav { display: flex; flex-wrap: wrap; gap: .8rem; }
+h1, h2, h3 { line-height: 1.2; }
+.lede { color: var(--muted); font-size: 1.1rem; max-width: 60rem; }
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); }
+.panel, article { background: var(--panel); border: 1px solid var(--border); border-radius: .5rem; padding: 1rem; }
+.panel h2, article h2 { margin-top: 0; }
+label { display: block; font-weight: 650; margin-bottom: .4rem; }
+input, select, button { border: 1px solid var(--border); border-radius: .35rem; font: inherit; padding: .55rem .7rem; }
+button { background: var(--link); color: white; cursor: pointer; }
+button[disabled] { cursor: not-allowed; opacity: .55; }
+.search { display: flex; gap: .6rem; margin: 1rem 0; }
+.search input { flex: 1; min-width: 12rem; }
+.result-count { color: var(--muted); }
+.registry-list { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); list-style: none; padding: 0; }
+.registry-list li { border: 1px solid var(--border); border-radius: .35rem; padding: .7rem; }
+dl { display: grid; gap: .35rem 1rem; grid-template-columns: minmax(9rem, 14rem) 1fr; }
+dt { color: var(--muted); font-weight: 650; }
+dd { margin: 0; overflow-wrap: anywhere; }
+pre { background: color-mix(in srgb, var(--panel) 75%, #64748b 25%); border: 1px solid var(--border); border-radius: .35rem; max-height: 28rem; overflow: auto; padding: .8rem; white-space: pre-wrap; word-break: break-word; }
+.status { min-height: 2rem; }
+.warning { border-left: .3rem solid #d97706; padding-left: .7rem; }
+.sr-only { clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
+footer { color: var(--muted); }

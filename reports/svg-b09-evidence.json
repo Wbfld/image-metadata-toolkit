@@ -1,0 +1,94 @@
+{
+  "schema": "browser-image-metadata.b09-svg-evidence.v1",
+  "ticket": "B09",
+  "generatedAt": "2026-09-15T03:41:14.234Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "maintenanceOwner": "WBLFD",
+  "sources": [
+    {
+      "id": "w3c-svg-11-structure",
+      "url": "https://www.w3.org/TR/SVG/struct.html",
+      "version": "SVG 2 Recommendation",
+      "license": "W3C Document License"
+    },
+    {
+      "id": "w3c-svg-11-test-suite",
+      "url": "https://www.w3.org/Graphics/SVG/Test/Overview.html",
+      "version": "SVG 1.1 Test Suite, 20110816",
+      "license": "W3C Test Suite License"
+    }
+  ],
+  "archive": {
+    "url": "https://www.w3.org/Graphics/SVG/Test/20110816/archives/W3C_SVG_11_TestSuite.tar.gz",
+    "sha256": "b5f46cca1ad79b670f9179770b2366c57efd5c671d084144090feab4b7ff1030",
+    "license": "W3C Test Suite License"
+  },
+  "normalization": "SHA-256 over whitespace-normalized serialized structured XMP values; reports never retain lexical metadata values.",
+  "thresholds": {
+    "minimumFixtures": 1,
+    "minimumDecodedPackets": 1,
+    "maximumDiagnostics": 0,
+    "maximumMismatches": 0
+  },
+  "results": {
+    "fixtureCount": 1,
+    "decodedPacketCount": 1,
+    "mismatches": 0,
+    "diagnostics": 0,
+    "rows": [
+      {
+        "fixture": "temporary/metadata-example-01-t.svg",
+        "bytes": 21675,
+        "sha256": "f5a736e7edbb49597af7681963be983fcc02d8963a67f98ed083a70502c7fac4",
+        "format": "svg",
+        "container": "svg",
+        "completeness": {
+          "complete": true,
+          "scope": "full",
+          "reasons": []
+        },
+        "packetCount": 1,
+        "propertyIdentities": [
+          "http://purl.org/dc/elements/1.1/#description",
+          "http://purl.org/dc/elements/1.1/#format",
+          "http://purl.org/dc/elements/1.1/#subject",
+          "http://purl.org/dc/elements/1.1/#type"
+        ],
+        "propertyValueHashes": [
+          {
+            "identity": "http://purl.org/dc/elements/1.1/#description",
+            "hash": "58161d546453ea874788c8f0184f341a37511674fa8c60d11241c88a0e5df9af"
+          },
+          {
+            "identity": "http://purl.org/dc/elements/1.1/#format",
+            "hash": "a9bbb31ae30d22a956e9f013dd505ec14aa96761fe1260a69ec0301cc447c602"
+          },
+          {
+            "identity": "http://purl.org/dc/elements/1.1/#subject",
+            "hash": "49fb80fe2b4eb771e79c2c8cd2d70f1b505aef4e0375ec4121283e6e4496df89"
+          },
+          {
+            "identity": "http://purl.org/dc/elements/1.1/#type",
+            "hash": "2db270c7cb40071f565525e64a92309b3d879993c3588baef178e6d60ceb9b93"
+          },
+          {
+            "identity": "http://purl.org/dc/elements/1.1/#type",
+            "hash": "269bb3cca9c4b23a0e5f2a84319203e1fc398e1ef7e6760bb496cb0965d63727"
+          }
+        ],
+        "blockRanges": [
+          {
+            "id": "svg:XMP:2433",
+            "offset": 2433,
+            "length": 912,
+            "status": "decoded"
+          }
+        ],
+        "warningCodes": []
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 import type { ImageFormat, RedactionTarget } from "./types.js";
 
-export type MetadataCapability = "EXIF" | "XMP" | "IPTC" | "ICC" | "JFIF" | "PNGText" | "Dimensions" | "Transform" | "Nclx";
+export type MetadataCapability = "EXIF" | "XMP" | "IPTC" | "ICC" | "JFIF" | "PNGText" | "Photoshop" | "Dimensions" | "Transform" | "Nclx";
 export type MetadataReadScope = "full" | "jpeg-header" | "metadata";
 
 export interface FormatCapabilities {
@@ -15,7 +15,7 @@ export interface FormatCapabilities {
 const CAPABILITIES: Readonly<Record<ImageFormat, FormatCapabilities>> = {
   jpeg: {
     format: "jpeg",
-    metadata: ["Dimensions", "EXIF", "XMP", "IPTC", "ICC", "JFIF"],
+    metadata: ["Dimensions", "EXIF", "XMP", "IPTC", "ICC", "JFIF", "Photoshop"],
     readScopes: ["full", "jpeg-header", "metadata"],
     redaction: ["AllMetadata", "EXIF", "XMP", "IPTC", "ICC", "JFIF", "GPS", "SerialNumber", "Make", "Model", "Orientation", "DateTime", "DateTimeOriginal", "ExposureTime", "FNumber", "ISOSpeedRatings", "Flash", "FocalLength", "GPSLatitude", "GPSLongitude", "GPSAltitude", "Copyright", "Artist", "Software"],
     losslessRedaction: true,
@@ -29,7 +29,7 @@ const CAPABILITIES: Readonly<Record<ImageFormat, FormatCapabilities>> = {
   },
   tiff: {
     format: "tiff",
-    metadata: ["Dimensions", "EXIF", "XMP", "IPTC", "ICC"],
+    metadata: ["Dimensions", "EXIF", "XMP", "IPTC", "ICC", "Photoshop"],
     readScopes: ["full", "metadata"],
     redaction: [],
     losslessRedaction: false,
@@ -66,6 +66,27 @@ const CAPABILITIES: Readonly<Record<ImageFormat, FormatCapabilities>> = {
     format: "avif",
     metadata: ["Dimensions", "EXIF", "XMP", "ICC", "Transform", "Nclx"],
     readScopes: ["full", "metadata"],
+    redaction: [],
+    losslessRedaction: false,
+  },
+  cr3: {
+    format: "cr3",
+    metadata: ["Dimensions", "EXIF", "XMP", "Transform"],
+    readScopes: ["full", "metadata"],
+    redaction: [],
+    losslessRedaction: false,
+  },
+  raf: {
+    format: "raf",
+    metadata: ["Dimensions", "EXIF", "XMP"],
+    readScopes: ["full", "metadata"],
+    redaction: [],
+    losslessRedaction: false,
+  },
+  svg: {
+    format: "svg",
+    metadata: ["XMP"],
+    readScopes: ["full"],
     redaction: [],
     losslessRedaction: false,
   },

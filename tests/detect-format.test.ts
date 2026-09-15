@@ -41,6 +41,8 @@ describe("detectFormat", () => {
     ["GIF89a", [...ascii("GIF89a")], "gif", "image/gif"],
     ["JPEG XL codestream", [0xff, 0x0a], "jxl", "image/jxl"],
     ["JPEG XL container", [0, 0, 0, 12, ...ascii("JXL "), 0x0d, 0x0a, 0x87, 0x0a], "jxl", "image/jxl"],
+    ["RAF", [...ascii("FUJIFILMCCD-RAW ")], "raf", "image/x-fuji-raf"],
+    ["SVG", [...ascii('<svg xmlns="http://www.w3.org/2000/svg"/>')], "svg", "image/svg+xml"],
   ])("detects %s", (_name, signature, format, mimeType) => {
     expect(detectFormat(Uint8Array.from(signature))).toEqual({ format, mimeType });
   });
@@ -53,6 +55,7 @@ describe("detectFormat", () => {
     ["mif2", [], "heif", "image/heif"],
     ["mif1", ["avif"], "avif", "image/avif"],
     ["heic", ["avif"], "avif", "image/avif"],
+    ["crx ", [], "cr3", "image/x-canon-cr3"],
   ])("detects BMFF brand %s with compatibility %j", (major, compatible, format, mimeType) => {
     expect(detectFormat(ftyp(major, compatible))).toEqual({ format, mimeType });
   });
@@ -95,6 +98,7 @@ describe("detectFormat", () => {
     ["near-miss WebP", [...ascii("RIFF"), 4, 0, 0, 0, ...ascii("WEPB")]],
     ["truncated WebP", [...ascii("RIFF"), 4, 0, 0, 0, 0x57, 0x45, 0x42]],
     ["unrelated BMFF brand", Array.from(ftyp("isom", ["mp42"]))],
+    ["HTML with an SVG-looking child", [...ascii('<html><svg xmlns="http://www.w3.org/2000/svg"/></html>')]],
   ])("leaves %s unknown", (_name, bytes) => {
     expect(detectFormat(Uint8Array.from(bytes))).toEqual({
       format: "unknown",

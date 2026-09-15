@@ -21,6 +21,7 @@ interface CapabilityManifest {
   packageName: string;
   matrixColumns: readonly { key: string; label: string }[];
   formats: readonly CapabilityFormat[];
+  rawVariants: readonly { fileKind: string; container: string; detection: string; positive: string; malformed: string; selection: string }[];
 }
 
 const manifestUrl = new URL("../scripts/capabilities-manifest.json", import.meta.url);
@@ -40,7 +41,18 @@ describe("capability manifest", () => {
     expect(manifest.schema).toBe("browser-image-metadata.capabilities.v1");
     expect(manifest.brand).toBe("browser-image-metadata");
     expect(manifest.packageName).toBe("browser-image-metadata");
-    expect(manifest.formats).toHaveLength(8);
+    expect(manifest.formats).toHaveLength(11);
+    expect(manifest.rawVariants.map(({ fileKind }) => fileKind)).toEqual(["dng", "cr2", "nef", "arw", "orf", "rw2", "iiq", "cr3", "raf"]);
+    for (const variant of manifest.rawVariants) {
+      expect(["tiff", "iso-bmff", "raf"]).toContain(variant.container);
+      for (const reference of [variant.positive, variant.malformed, variant.selection]) {
+        expect(reference).toMatch(/^tests\/[^#]+#/);
+        const [file, anchor] = reference.split("#");
+        const evidenceUrl = new URL(`../${file}`, import.meta.url);
+        await access(evidenceUrl);
+        expect(await readFile(evidenceUrl, "utf8")).toContain(anchor);
+      }
+    }
 
     for (const entry of manifest.formats) {
       const runtime = getCapabilities(entry.code as Parameters<typeof getCapabilities>[0]);

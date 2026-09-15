@@ -1,0 +1,4 @@
+/* global document */
+import { fetchMetadata } from "../dist/fetch.js";
+const url = document.querySelector("#fetch-url"); const button = document.querySelector("#fetch-button"); const status = document.querySelector("#fetch-status"); const output = document.querySelector("#fetch-result");
+button.addEventListener("click", async () => { if (!url.value) { status.textContent = "Enter a URL."; return; } button.disabled = true; status.textContent = "Fetching with the explicit opt-in adapter…"; try { const result = await fetchMetadata(url.value); output.textContent = JSON.stringify({ format: result.format, dimensions: result.dimensions, completeness: result.completeness, coverage: result.coverage, warnings: result.warnings }, null, 2); status.textContent = "Fetch completed."; } catch (error) { status.textContent = error instanceof Error ? error.message : "Fetch failed."; output.textContent = "No metadata result was produced."; } finally { button.disabled = false; } });

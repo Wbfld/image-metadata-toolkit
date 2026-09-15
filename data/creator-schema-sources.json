@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "retrievedDate": "2026-09-15",
+  "sources": [
+    {
+      "producer": "comfyui",
+      "conventionVersion": "comfyui-png-convention/1",
+      "url": "https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_api/latest/_ui.py",
+      "license": "GPL-3.0",
+      "evidence": "ImageSaveHelper writes a JSON prompt under PNG text keyword prompt, extra PNG info under caller-selected keywords, and serializes WebP metadata through EXIF Make/Model fields.",
+      "scope": ["PNG tEXt/iTXt prompt and extra-info JSON", "PNG comf prompt records", "WebP EXIF prompt and extra-info records"]
+    },
+    {
+      "producer": "stable-diffusion-webui",
+      "conventionVersion": "stable-diffusion-webui-infotext/1",
+      "url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features/d4e20177f725f4f6698a0af4818777c64f0f1767",
+      "license": "AGPL-3.0",
+      "evidence": "The pinned wiki revision documents generation parameters stored in PNG text metadata and the parameter names used by the filename/info workflow.",
+      "scope": ["PNG parameters text", "Prompt and Negative prompt sections", "Steps, Sampler, Seed, and Model parameters"]
+    },
+    {
+      "producer": "invokeai",
+      "conventionVersion": "invokeai-png-convention/1",
+      "url": "https://github.com/invoke-ai/InvokeAI/blob/main/invokeai/frontend/install/import_images.py",
+      "license": "Apache-2.0",
+      "evidence": "The official importer documents invokeai_metadata, sd-metadata, invokeai, dream, and Dream PNG metadata variants and their typed fields.",
+      "scope": ["invokeai_metadata JSON", "sd-metadata JSON", "invokeai JSON", "legacy dream seed and prompt"]
+    }
+  ]
+}

@@ -8,6 +8,8 @@ const t04FixturePath = globalThis.process?.env.C2PA_T04_FIXTURE;
 const contentTypes = new Map([
   [".html", "text/html; charset=utf-8"],
   [".js", "text/javascript; charset=utf-8"],
+  [".css", "text/css; charset=utf-8"],
+  [".json", "application/json; charset=utf-8"],
   [".mjs", "text/javascript; charset=utf-8"],
   [".map", "application/json; charset=utf-8"],
   [".jpg", "image/jpeg"],
@@ -40,7 +42,9 @@ const server = createServer(async (request, response) => {
   }
   try {
     if (!(await stat(target)).isFile()) throw new Error("not a file");
-    response.writeHead(200, { "content-type": contentTypes.get(extname(target)) ?? "application/octet-stream" });
+    const headers = { "content-type": contentTypes.get(extname(target)) ?? "application/octet-stream" };
+    if (pathname.startsWith("/docs-site/")) headers["content-security-policy"] = pathname.includes("/fetch-demo.") ? "default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'; connect-src 'self' https:; img-src 'self' blob:; script-src 'self'; style-src 'self';" : "default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'; connect-src 'none'; img-src 'self' blob:; script-src 'self'; style-src 'self';";
+    response.writeHead(200, headers);
     createReadStream(target).pipe(response);
   } catch {
     response.writeHead(404).end();

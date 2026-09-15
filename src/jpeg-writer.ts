@@ -2,6 +2,7 @@ import { parseIccChunk } from "./metadata/icc.js";
 import { extendedXmpGuid, parseExtendedXmpChunk, reassembleExtendedXmp, type ExtendedXmpChunk } from "./metadata/xmp.js";
 import { applyTiffEditTransaction, serializeTiff, type TiffEditTransaction } from "./tiff.js";
 import { parseJpeg } from "./parsers/jpeg.js";
+import { inspectPhotoshopResourceSpans } from "./metadata/photoshop.js";
 import { resolveLimits } from "./security/limits.js";
 import { verifyPreservationSync, type PreservationReport, type PreservationVerifierOptions } from "./preservation.js";
 import type {
@@ -83,6 +84,8 @@ interface SegmentWork {
   readonly originalBytes: Uint8Array;
   bytes: Uint8Array;
   removed: boolean;
+  /** Source-order Photoshop resources already removed from this segment. */
+  removedPhotoshopResourceIndices?: Set<number>;
 }
 
 interface InsertedSegment {
@@ -105,7 +108,7 @@ interface PlannedOutput {
   readonly placedSegments: readonly { readonly id: string; readonly outputStart: number; readonly outputEnd: number }[];
 }
 
-export type JpegBlockKind = "standard-xmp" | "extended-xmp" | "icc" | "iptc";
+export type JpegBlockKind = "standard-xmp" | "extended-xmp" | "icc" | "iptc" | "photoshop-resource";
 
 /** A raw, format-aware JPEG metadata block edit. XMP data is the logical
  * packet bytes (with the Adobe identifier also accepted); ICC data is the
@@ -119,6 +122,8 @@ export interface JpegBlockEdit {
   readonly blockId?: string;
   /** Required for extended XMP. It is the 32-hex-character XMP GUID. */
   readonly guid?: string;
+  /** Exact source-order Photoshop 8BIM resource identity. Only removal is supported. */
+  readonly resourceId?: string;
   readonly data?: string | Uint8Array;
 }
 
@@ -397,6 +402,9 @@ function parsePhotoshop(payload: Uint8Array): ParsedPhotoshop | null {
     const dataEnd = checkedSum(dataStart, size, "Photoshop resource end", sizeOffset);
     const end = checkedSum(dataEnd, size & 1, "Photoshop resource padding", dataEnd);
     if (end > payload.length) return null;
+    const namePaddingStart = cursor + 7 + nameLength;
+    const namePaddingEnd = cursor + 6 + paddedNameBytes;
+    if (payload.subarray(namePaddingStart, namePaddingEnd).some((value) => value !== 0) || payload.subarray(dataEnd, end).some((value) => value !== 0)) return null;
     resources.push({ id, start: cursor, end, dataStart, dataEnd });
     cursor = end;
   }
@@ -559,8 +567,8 @@ function rawSegmentPayload(segmentBytes: Uint8Array): Uint8Array {
   return segmentBytes.subarray(4).slice();
 }
 
-function blockKey(kind: JpegBlockKind, guid?: string, blockId?: string): string {
-  return `${kind}:${guid ?? ""}:${blockId ?? "all"}`;
+function blockKey(kind: JpegBlockKind, guid?: string, blockId?: string, resourceId?: string): string {
+  return `${kind}:${guid ?? ""}:${blockId ?? resourceId ?? "all"}`;
 }
 
 function targetKey(target: EditTarget): string {
@@ -573,6 +581,7 @@ function targetKey(target: EditTarget): string {
     case "field-id": return `field:${selector.fieldId}`;
     case "associated-image": return `associated:${selector.imageId}`;
     case "sensitivity": return `sensitivity:${selector.sensitivity}`;
+    case "photoshop-resource": return `photoshop-resource:${selector.resourceId}`;
     case "policy": return `policy:${selector.policyId}`;
   }
 }
@@ -601,7 +610,8 @@ function targetField(target: EditTarget): string | null {
   return null;
 }
 
-function blockTarget(target: EditTarget, index?: JpegIndex): { readonly kind: JpegBlockKind; readonly guid?: string; readonly blockId?: string } | null {
+function blockTarget(target: EditTarget, index?: JpegIndex): { readonly kind: JpegBlockKind; readonly guid?: string; readonly blockId?: string; readonly resourceId?: string } | null {
+  if (target.kind === "selector" && target.selector.kind === "photoshop-resource") return { kind: "photoshop-resource", resourceId: target.selector.resourceId };
   const field = targetField(target);
   const blockId = targetBlockId(target) ?? undefined;
   const family = targetFamily(target);
@@ -705,6 +715,7 @@ function buildBlockSegments(edit: JpegBlockEdit, limits: SecurityLimits): Uint8A
     case "extended-xmp": return extendedXmpSegments(edit.data, edit.guid, limits);
     case "icc": return buildIccSegments(edit.data, limits);
     case "iptc": return [buildIptcSegment(edit.data, limits)];
+    case "photoshop-resource": throw new JpegWriterError("INVALID_VALUE", "Photoshop resource edits only support exact removal and do not create serialized segments.");
   }
 }
 
@@ -720,7 +731,12 @@ function validateBlockEdit(edit: unknown): asserts edit is JpegBlockEdit {
   const op = candidate.op;
   const kind = candidate.kind;
   if (op !== "add" && op !== "replace" && op !== "remove") throw new JpegWriterError("INVALID_VALUE", "JPEG block edit operation is not supported.");
-  if (kind !== "standard-xmp" && kind !== "extended-xmp" && kind !== "icc" && kind !== "iptc") throw new JpegWriterError("INVALID_VALUE", "JPEG block edit kind is not supported.");
+  if (kind !== "standard-xmp" && kind !== "extended-xmp" && kind !== "icc" && kind !== "iptc" && kind !== "photoshop-resource") throw new JpegWriterError("INVALID_VALUE", "JPEG block edit kind is not supported.");
+  if (kind === "photoshop-resource") {
+    if (op !== "remove" || typeof candidate.resourceId !== "string" || candidate.resourceId.length === 0 || candidate.resourceId.length > 512) throw new JpegWriterError("INVALID_VALUE", "Photoshop resource edits require a bounded exact resourceId and only support remove.");
+    if (candidate.blockId !== undefined || candidate.guid !== undefined || candidate.data !== undefined) throw new JpegWriterError("INVALID_VALUE", "Photoshop resource removal cannot include a blockId, GUID, or replacement data.");
+    return;
+  }
   if (kind !== "extended-xmp" && candidate.guid !== undefined) throw new JpegWriterError("INVALID_VALUE", "Only Extended XMP block edits may include a GUID.");
   if (candidate.guid !== undefined && typeof candidate.guid !== "string") throw new JpegWriterError("INVALID_VALUE", "JPEG block GUID must be a string.");
   if (candidate.blockId !== undefined && (typeof candidate.blockId !== "string" || candidate.blockId.length === 0 || candidate.blockId.length > 512)) throw new JpegWriterError("INVALID_VALUE", "JPEG blockId is empty or exceeds the bounded identity limit.");
@@ -794,6 +810,71 @@ function removeIptcPayload(payload: Uint8Array, limits: SecurityLimits): Uint8Ar
   return result;
 }
 
+function removeExactPhotoshopResources(work: SegmentWork, resourceIndices: ReadonlySet<number>, limits: SecurityLimits): void {
+  const originalPayload = rawSegmentPayload(work.originalBytes);
+  const originalSpans = inspectPhotoshopResourceSpans(originalPayload, "app13", limits);
+  const payload = rawSegmentPayload(work.bytes);
+  const spans = inspectPhotoshopResourceSpans(payload, "app13", limits);
+  if (originalSpans === null || !originalSpans.complete || spans === null || !spans.complete) throw new JpegWriterError("UNSAFE_STRUCTURE", "Exact Photoshop resource removal encountered malformed image-resource data.", work.original.start);
+  const removedIndices = work.removedPhotoshopResourceIndices ?? new Set<number>();
+  if (spans.spans.length !== originalSpans.spans.length - removedIndices.size) throw new JpegWriterError("UNSAFE_STRUCTURE", "The current Photoshop resource sequence no longer has a safe source-order mapping.", work.original.start);
+  if (resourceIndices.size === 0 || [...resourceIndices].some((index) => !Number.isSafeInteger(index) || index < 0 || index >= originalSpans.spans.length || removedIndices.has(index))) throw new JpegWriterError("INVALID_VALUE", "Exact Photoshop resource selection did not resolve to an available source resource.");
+  const selectedCurrentIndices = new Set<number>();
+  for (const originalIndex of resourceIndices) {
+    const removedBefore = [...removedIndices].filter((index) => index < originalIndex).length;
+    const currentIndex = originalIndex - removedBefore;
+    if (currentIndex < 0 || currentIndex >= spans.spans.length || selectedCurrentIndices.has(currentIndex)) throw new JpegWriterError("INVALID_VALUE", "Exact Photoshop resource selection did not resolve uniquely to the current resource sequence.");
+    selectedCurrentIndices.add(currentIndex);
+  }
+  const selected = spans.spans.filter((span) => selectedCurrentIndices.has(span.index));
+  if (selected.length !== resourceIndices.size) throw new JpegWriterError("INVALID_VALUE", "Exact Photoshop resource selection did not resolve uniquely to the current resource sequence.");
+  const nextLength = payload.length - selected.reduce((sum, span) => checkedSum(sum, span.end - span.start, "Photoshop resource size"), 0);
+  if (!Number.isSafeInteger(nextLength) || nextLength < PHOTOSHOP_IDENTIFIER.length) throw new JpegWriterError("UNSAFE_STRUCTURE", "Exact Photoshop resource removal produced an invalid payload length.", work.original.start);
+  for (const index of resourceIndices) removedIndices.add(index);
+  work.removedPhotoshopResourceIndices = removedIndices;
+  if (nextLength === PHOTOSHOP_IDENTIFIER.length) {
+    work.removed = true;
+    return;
+  }
+  const output = new Uint8Array(nextLength);
+  let sourceOffset = 0;
+  let outputOffset = 0;
+  for (const span of spans.spans) {
+    if (selectedCurrentIndices.has(span.index)) {
+      output.set(payload.subarray(sourceOffset, span.start), outputOffset);
+      outputOffset += span.start - sourceOffset;
+      sourceOffset = span.end;
+    }
+  }
+  output.set(payload.subarray(sourceOffset), outputOffset);
+  checkedSegmentLength(output.length, limits);
+  work.bytes = makeSegment(APP13, output, limits);
+}
+
+function markRemovedPhotoshopResourceIndices(work: SegmentWork, currentIndices: ReadonlySet<number>, limits: SecurityLimits): void {
+  const originalSpans = inspectPhotoshopResourceSpans(rawSegmentPayload(work.originalBytes), "app13", limits);
+  const currentSpans = inspectPhotoshopResourceSpans(rawSegmentPayload(work.bytes), "app13", limits);
+  if (originalSpans === null || !originalSpans.complete || currentSpans === null || !currentSpans.complete) throw new JpegWriterError("UNSAFE_STRUCTURE", "Photoshop resource removal encountered malformed image-resource data.", work.original.start);
+  const removedIndices = work.removedPhotoshopResourceIndices ?? new Set<number>();
+  const activeIndices = originalSpans.spans.map((span) => span.index).filter((index) => !removedIndices.has(index));
+  if (currentSpans.spans.length !== activeIndices.length) throw new JpegWriterError("UNSAFE_STRUCTURE", "The current Photoshop resource sequence no longer has a safe source-order mapping.", work.original.start);
+  for (const currentIndex of currentIndices) {
+    const originalIndex = activeIndices[currentIndex];
+    if (originalIndex === undefined || removedIndices.has(originalIndex)) throw new JpegWriterError("UNSAFE_STRUCTURE", "Photoshop resource removal did not map to a source-order resource.", work.original.start);
+    removedIndices.add(originalIndex);
+  }
+  work.removedPhotoshopResourceIndices = removedIndices;
+}
+
+function exactPhotoshopSegmentIds(input: Uint8Array, index: JpegIndex, resourceId: string, limits: SecurityLimits): readonly string[] {
+  return index.segments.filter((segment) => {
+    if (segment.marker !== APP13) return false;
+    const spans = inspectPhotoshopResourceSpans(input.subarray(segment.payloadStart, segment.payloadEnd), "app13", limits);
+    const photoshopId = segment.id.replace(/^jpeg:APP13:/u, "jpeg:APP13:photoshop:");
+    return spans?.complete === true && spans.spans.some((span) => `${segment.id}:resource:${span.index}` === resourceId || `${photoshopId}:resource:${span.index}` === resourceId);
+  }).map((segment) => segment.id);
+}
+
 function outputForBlocks(input: Uint8Array, index: JpegIndex, blocks: readonly JpegBlockEdit[], limits: SecurityLimits, options: Pick<JpegRewriteOptions, "duplicatePolicy" | "verify" | "preservation" | "c2pa"> = {}): JpegRewriteResult {
   findUnsupportedStructure(input, index, limits, options.c2pa);
   const works: SegmentWork[] = index.segments.map((segment) => ({ original: segment, originalBytes: input.subarray(segment.start, segment.end).slice(), bytes: input.subarray(segment.start, segment.end).slice(), removed: false }));
@@ -850,8 +931,35 @@ function applyBlockEditsToWorks(
   let insertedCount = inserted.length;
   const anchor = index.segments.findIndex((segment) => isStartOfFrame(segment.marker));
   const insertionAnchor = anchor < 0 ? 0 : anchor;
+  const exactSelections = new Map<SegmentWork, Set<number>>();
   for (const edit of blocks) {
     validateBlockEdit(edit);
+    if (edit.kind !== "photoshop-resource") continue;
+    const matches = works.filter((work) => {
+      if (work.removed || work.original.marker !== APP13 || !startsWith(rawSegmentPayload(work.originalBytes), PHOTOSHOP_IDENTIFIER)) return false;
+      const spans = inspectPhotoshopResourceSpans(rawSegmentPayload(work.originalBytes), "app13", limits);
+      if (spans?.complete !== true) throw new JpegWriterError("UNSAFE_STRUCTURE", "Exact Photoshop resource removal encountered malformed image-resource data.", work.original.start);
+      const photoshopId = work.original.id.replace(/^jpeg:APP13:/u, "jpeg:APP13:photoshop:");
+      return spans.spans.some((span) => `${work.original.id}:resource:${span.index}` === edit.resourceId || `${photoshopId}:resource:${span.index}` === edit.resourceId);
+    });
+    if (matches.length !== 1) throw new JpegWriterError("INVALID_VALUE", `Exact Photoshop resource ${edit.resourceId ?? ""} was not found uniquely in the JPEG.`);
+    const work = matches[0] as SegmentWork;
+    const spans = inspectPhotoshopResourceSpans(rawSegmentPayload(work.originalBytes), "app13", limits);
+    if (spans === null || !spans.complete) throw new JpegWriterError("UNSAFE_STRUCTURE", "Exact Photoshop resource removal encountered malformed image-resource data.", work.original.start);
+    const photoshopId = work.original.id.replace(/^jpeg:APP13:/u, "jpeg:APP13:photoshop:");
+    const span = spans.spans.find((candidate) => `${work.original.id}:resource:${candidate.index}` === edit.resourceId || `${photoshopId}:resource:${candidate.index}` === edit.resourceId);
+    if (span === undefined) throw new JpegWriterError("INVALID_VALUE", `Exact Photoshop resource ${edit.resourceId ?? ""} was not found in its source APP13 block.`);
+    const selected = exactSelections.get(work) ?? new Set<number>();
+    if (selected.has(span.index)) throw new JpegWriterError("INVALID_VALUE", `Exact Photoshop resource ${edit.resourceId ?? ""} was selected more than once.`);
+    selected.add(span.index);
+    exactSelections.set(work, selected);
+  }
+  for (const [work, resourceIndices] of exactSelections) removeExactPhotoshopResources(work, resourceIndices, limits);
+  for (const edit of blocks) {
+    validateBlockEdit(edit);
+    if (edit.kind === "photoshop-resource") {
+      continue;
+    }
     const target = { kind: edit.kind, ...(edit.guid === undefined ? {} : { guid: normalizedGuid(edit.guid) }), ...(edit.blockId === undefined ? {} : { blockId: edit.blockId }) };
     const matches = works.filter((work) => !work.removed && segmentMatches(work.original, target));
     const logicalSequence = edit.kind === "icc" || edit.kind === "extended-xmp";
@@ -861,6 +969,11 @@ function applyBlockEditsToWorks(
       const selected = logicalSequence ? works.filter((work) => !work.removed && segmentMatches(work.original, target)) : edit.blockId === undefined && duplicatePolicy === "replace-target" ? matches.slice(0, 1) : matches;
       for (const work of selected) {
         if (edit.kind === "iptc") {
+          const parsedPhotoshop = parsePhotoshop(rawSegmentPayload(work.bytes));
+          const removedPhotoshopIndices = parsedPhotoshop === null || parsedPhotoshop.rawIim
+            ? new Set<number>()
+            : new Set(parsedPhotoshop.resources.flatMap((resource, index) => resource.id === IPTC_RESOURCE_ID ? [index] : []));
+          if (removedPhotoshopIndices.size > 0) markRemovedPhotoshopResourceIndices(work, removedPhotoshopIndices, limits);
           const remaining = removeIptcPayload(rawSegmentPayload(work.bytes), limits);
           if (remaining === null) work.removed = true;
           else work.bytes = makeSegment(APP13, remaining, limits);
@@ -1023,7 +1136,7 @@ function blockEditForOperation(operation: EditOperation, limits: SecurityLimits,
   if (operation.op === "delete") {
     const target = blockTarget(operation.target, index);
     if (target === null) return null;
-    return { op: "remove", kind: target.kind, ...(target.guid === undefined ? {} : { guid: target.guid }), ...(target.blockId === undefined ? {} : { blockId: target.blockId }) };
+    return { op: "remove", kind: target.kind, ...(target.guid === undefined ? {} : { guid: target.guid }), ...(target.blockId === undefined ? {} : { blockId: target.blockId }), ...(target.resourceId === undefined ? {} : { resourceId: target.resourceId }) };
   }
   if (operation.op === "remove-group") {
     const family = familyTarget(operation.target);
@@ -1158,7 +1271,7 @@ export function applyJpegEditTransaction(input: Uint8Array, operations: readonly
         else results.push(unsupportedOperation(operation, "This operation is not supported by the JPEG W03 writer."));
         continue;
       }
-      const key = blockKey(blockEdit.kind, blockEdit.guid, blockEdit.blockId);
+      const key = blockKey(blockEdit.kind, blockEdit.guid, blockEdit.blockId, blockEdit.resourceId);
       if (blockEdit.op !== "remove" && seenBlockKeys.has(key) && policy.conflicts === "reject") throw new JpegWriterError("INVALID_VALUE", `Conflicting JPEG writes target ${key} under reject conflict policy.`);
       seenBlockKeys.add(key);
       blockEdits.push({ operation, edit: blockEdit });
@@ -1202,10 +1315,12 @@ export function applyJpegEditTransaction(input: Uint8Array, operations: readonly
     if (preservation !== undefined && !preservation.successful) throw new JpegWriterError("VERIFICATION_FAILURE", `Independent JPEG preservation verification failed: ${preservation.diagnostics.join(" ")}`);
     const byOperationId = new Map(results.map((result) => [result.operationId, result]));
     for (const { operation, edit } of blockEdits) {
-      const matches = before.segments.filter((segment) => segmentMatches(segment, { kind: edit.kind, ...(edit.guid === undefined ? {} : { guid: edit.guid }), ...(edit.blockId === undefined ? {} : { blockId: edit.blockId }) }));
+      const matches = edit.kind === "photoshop-resource"
+        ? exactPhotoshopSegmentIds(input, before, edit.resourceId ?? "", limits)
+        : before.segments.filter((segment) => segmentMatches(segment, { kind: edit.kind, ...(edit.guid === undefined ? {} : { guid: edit.guid }), ...(edit.blockId === undefined ? {} : { blockId: edit.blockId }) })).map((segment) => segment.id);
       const prior = byOperationId.get(operation.operationId);
       const operationCount = edit.op === "add" ? 1 : matches.length;
-      const next = operationResult(operation, null, prior?.appliedCount === undefined ? operationCount : prior.appliedCount + operationCount, [], [...new Set([...(prior?.matchedBlockIds ?? []), ...matches.map((segment) => segment.id)])], null);
+      const next = operationResult(operation, null, prior?.appliedCount === undefined ? operationCount : prior.appliedCount + operationCount, [], [...new Set([...(prior?.matchedBlockIds ?? []), ...matches])], null);
       byOperationId.set(operation.operationId, next);
     }
     const finalResults = operations.map((operation: EditOperation) => byOperationId.get(operation.operationId) ?? unsupportedOperation(operation, "The JPEG operation was not included in the transaction plan."));

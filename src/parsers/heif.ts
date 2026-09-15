@@ -1377,7 +1377,7 @@ function inspectItemMetadata(
 }
 
 /** Inspect bounded HEIF/AVIF metadata boxes and common Exif/XMP item locations. */
-export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "heif" | "avif", selection?: ResolvedSelection, signal?: AbortSignal, registry?: MetadataRegistry): ParsedMetadataResult {
+export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "heif" | "avif" | "cr3", selection?: ResolvedSelection, signal?: AbortSignal, registry?: MetadataRegistry): ParsedMetadataResult {
   throwIfAborted(signal);
   const warnings: MetadataWarning[] = [];
   const fields: MetadataField[] = [];
@@ -1563,7 +1563,7 @@ export function parseHeif(bytes: Uint8Array, limits: SecurityLimits, format: "he
   });
   return {
     format,
-    mimeType: format === "avif" ? "image/avif" : "image/heif",
+    mimeType: format === "avif" ? "image/avif" : format === "cr3" ? "image/x-canon-cr3" : "image/heif",
     dimensions: storedDimensions,
     heif: itemMetadata.graphs,
     ...(sequenceMetadata.sequences.length === 0 ? {} : { heifSequences: sequenceMetadata.sequences }),

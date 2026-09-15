@@ -4,7 +4,15 @@ import type { PrivacyPolicyReport } from "./privacy/policies.js";
 
 export type MetadataInput = ArrayBuffer | ArrayBufferView | Blob;
 
-export type ImageFormat = "jpeg" | "png" | "tiff" | "webp" | "gif" | "jxl" | "heif" | "avif" | "unknown";
+export type ImageFormat = "jpeg" | "png" | "tiff" | "webp" | "gif" | "jxl" | "heif" | "avif" | "cr3" | "raf" | "svg" | "unknown";
+
+/** Physical container identity. A TIFF-derived RAW file remains a TIFF
+ * container while its camera-file kind is retained separately. */
+export type ImageContainer = "jpeg" | "png" | "tiff" | "bigtiff" | "webp" | "gif" | "jxl" | "iso-bmff" | "raf" | "svg" | "unknown";
+
+/** Recognized TIFF-derived camera-file variants. `tiff` and `bigtiff` retain
+ * the compatibility identity for ordinary TIFF inputs. */
+export type ImageFileKind = ImageFormat | "dng" | "cr2" | "nef" | "arw" | "orf" | "rw2" | "iiq" | "bigtiff";
 
 export type ImageMimeType =
   | "image/jpeg"
@@ -15,6 +23,9 @@ export type ImageMimeType =
   | "image/jxl"
   | "image/heif"
   | "image/avif"
+  | "image/x-canon-cr3"
+  | "image/x-fuji-raf"
+  | "image/svg+xml"
   | "application/octet-stream";
 
 export interface FormatDetection {
@@ -286,6 +297,103 @@ export interface HeifSequence {
   readonly complete: boolean;
 }
 
+/** A bounded source range in a non-TIFF RAW container. The payload is never
+ * decoded here; only its validated identity, range, role, and associations
+ * are retained. */
+export type RawPhaseTwoRangeRole = "preview" | "thumbnail" | "metadata" | "raw" | "cfa" | "image" | "unknown";
+export type RawPhaseTwoRangeFormat = "jpeg" | "tiff" | "iso-bmff" | "raw" | "unknown";
+export type RawPhaseTwoRangeStatus = "valid" | "malformed" | "out-of-bounds" | "overlap" | "unsupported" | "truncated";
+
+export interface RawPhaseTwoRange {
+  readonly id: string;
+  readonly role: RawPhaseTwoRangeRole;
+  readonly format: RawPhaseTwoRangeFormat;
+  readonly offset: number | null;
+  readonly length: number | null;
+  readonly source: string;
+  readonly dimensions: ImageDimensions | null;
+  readonly associatedItemId: number | null;
+  readonly associatedTrackId: number | null;
+  readonly status: RawPhaseTwoRangeStatus;
+}
+
+export type RawPhaseTwoDiagnosticCode = "MALFORMED_STRUCTURE" | "UNSAFE_RANGE" | "LIMIT_EXCEEDED" | "AMBIGUOUS_PRIMARY" | "DUPLICATE_RANGE" | "OVERLAPPING_RANGE" | "TRUNCATED_DATA" | "UNSUPPORTED_STRUCTURE";
+
+export interface RawPhaseTwoDiagnostic {
+  readonly code: RawPhaseTwoDiagnosticCode;
+  readonly detail: string;
+  readonly offset: number | null;
+  readonly length?: number;
+}
+
+/** A CR3 ISO-BMFF box identity retained independently from generic HEIF item
+ * metadata. UUID payloads are indexed but not interpreted as a complete Canon
+ * private schema. */
+export interface Cr3BoxReference {
+  readonly id: string;
+  readonly type: string;
+  readonly offset: number;
+  readonly length: number;
+  readonly payloadOffset: number;
+  readonly parentOffset: number | null;
+  readonly uuid: string | null;
+  readonly status: "valid" | "truncated" | "unsupported";
+}
+
+export interface Cr3ContainerData {
+  readonly kind: "cr3";
+  readonly container: "iso-bmff";
+  readonly signature: "crx";
+  readonly majorBrand: string;
+  readonly compatibleBrands: readonly string[];
+  readonly boxes: readonly Cr3BoxReference[];
+  /** Full B02/B03 graphs are retained rather than reduced to one primary. */
+  readonly itemGraphs: readonly HeifItemGraph[];
+  readonly sequences: readonly HeifSequence[];
+  readonly primaryItemCandidates: readonly number[];
+  readonly primaryTrackCandidates: readonly number[];
+  readonly primarySelection: "unambiguous" | "ambiguous" | "none";
+  readonly ranges: readonly RawPhaseTwoRange[];
+  readonly metadataRanges: readonly RawPhaseTwoRange[];
+  readonly previewRanges: readonly RawPhaseTwoRange[];
+  readonly rawRanges: readonly RawPhaseTwoRange[];
+  readonly opaqueStructures: readonly RawPhaseTwoRange[];
+  readonly complete: boolean;
+  readonly diagnostics: readonly RawPhaseTwoDiagnostic[];
+}
+
+export interface RafDirectoryRange {
+  readonly offset: number | null;
+  readonly length: number | null;
+  readonly status: RawPhaseTwoRangeStatus;
+}
+
+export interface RafDirectory {
+  readonly offset: number;
+  readonly byteLength: number;
+  readonly version: string | null;
+  readonly preview: RafDirectoryRange;
+  readonly metadata: RafDirectoryRange;
+  readonly raw: RafDirectoryRange;
+  readonly complete: boolean;
+}
+
+export interface RafContainerData {
+  readonly kind: "raf";
+  readonly container: "raf";
+  readonly signature: "FUJIFILMCCD-RAW ";
+  readonly version: string | null;
+  readonly camera: string | null;
+  readonly directory: RafDirectory | null;
+  readonly ranges: readonly RawPhaseTwoRange[];
+  readonly previewRanges: readonly RawPhaseTwoRange[];
+  readonly metadataRanges: readonly RawPhaseTwoRange[];
+  readonly rawRanges: readonly RawPhaseTwoRange[];
+  readonly opaqueStructures: readonly RawPhaseTwoRange[];
+  readonly complete: boolean;
+  readonly diagnostics: readonly RawPhaseTwoDiagnostic[];
+}
+
 export type WarningSeverity = "warning" | "error";
 
 export type WarningCode =
@@ -299,6 +407,9 @@ export type WarningCode =
   | "MALFORMED_GIF"
   | "MALFORMED_JXL"
   | "MALFORMED_HEIF"
+  | "MALFORMED_CR3"
+  | "MALFORMED_RAF"
+  | "MALFORMED_PHOTOSHOP"
   | "MALFORMED_IPTC"
   | "MALFORMED_EXIF"
   | "UNSAFE_OFFSET"
@@ -624,6 +735,211 @@ export interface ExifData {
   readonly thumbnail?: ExifThumbnail;
 }
 
+/** Stable byte-order declarations used by explicit MakerNote plugins. */
+export type MakerNoteByteOrder = "little-endian" | "big-endian" | "from-note" | "unknown";
+
+/** The coordinate system a plugin uses when resolving an embedded offset. */
+export type MakerNoteBaseOffsetRule = "note-start" | "tiff-start" | "file-start" | "absolute" | "declared-by-detection";
+
+export type MakerNoteNestedIfdBehavior = "none" | "bounded" | "vendor-defined";
+export type MakerNoteEncryptionStatus = "none" | "encrypted" | "obfuscated" | "conditionally-protected" | "unknown";
+
+export type MakerNoteStatus =
+  | "detected-decoded"
+  | "detected-opaque"
+  | "low-confidence"
+  | "unknown"
+  | "encrypted"
+  | "obfuscated"
+  | "malformed"
+  | "unsupported"
+  | "rejected"
+  | "aborted"
+  | "limit-exceeded";
+
+export type MakerNoteDiagnosticCode =
+  | "PLUGIN_INVALID"
+  | "PLUGIN_THROWN"
+  | "PLUGIN_REJECTED"
+  | "LOW_CONFIDENCE"
+  | "UNKNOWN_NOTE"
+  | "AMBIGUOUS_DETECTION"
+  | "UNSAFE_RANGE"
+  | "UNSAFE_BASE_OFFSET"
+  | "MALFORMED_NOTE"
+  | "ENCRYPTED_NOTE"
+  | "OBFUSCATED_NOTE"
+  | "UNSUPPORTED_NOTE"
+  | "LIMIT_EXCEEDED"
+  | "ABORTED"
+  | "DUPLICATE_DEFINITION"
+  | "CONTRADICTORY_DEFINITION";
+
+export interface MakerNoteDetectionEvidence {
+  readonly kind: "signature" | "structure" | "byte-order" | "base-offset" | "vendor-marker";
+  readonly offset: number;
+  readonly length: number;
+  readonly description: string;
+}
+
+export interface MakerNoteDetection {
+  readonly confidence: number;
+  readonly evidence: readonly MakerNoteDetectionEvidence[];
+  readonly byteOrder: MakerNoteByteOrder;
+  readonly baseOffsetRule: MakerNoteBaseOffsetRule;
+  readonly status?: "detected" | "low-confidence" | "opaque";
+}
+
+export interface MakerNoteTagDefinition {
+  readonly id: string;
+  readonly tag: number;
+  readonly name: string;
+  readonly label: string;
+  readonly description: string;
+  readonly type: ExifDataType;
+  readonly unit?: string;
+  readonly enumValues?: Readonly<Record<string, string>>;
+  readonly repeatable: boolean;
+  readonly applicableModels?: readonly string[];
+  readonly applicableVersions?: readonly string[];
+  readonly sensitivity: Sensitivity;
+  readonly validation?: string;
+  readonly rawValueBehavior: "retain" | "opaque" | "omit";
+  readonly source?: string;
+}
+
+/** A pinned, human-auditable source used to derive one explicit MakerNote pack. */
+export interface MakerNoteSourceReference {
+  readonly id: string;
+  readonly url: string;
+  readonly version: string;
+  readonly license: string;
+  readonly retrievedAt: string;
+  readonly sha256: string;
+  readonly role: "format" | "vendor" | "fixture" | "oracle";
+}
+
+export interface MakerNotePluginIdentity {
+  readonly id: string;
+  readonly version: string;
+  readonly vendor: string;
+  readonly noteFamily: string;
+  readonly supportedModels?: readonly string[];
+  readonly supportedVersions?: readonly string[];
+  readonly minimumConfidence: number;
+  readonly signatureTests: readonly string[];
+  readonly byteOrder: MakerNoteByteOrder;
+  readonly baseOffsetRule: MakerNoteBaseOffsetRule;
+  readonly nestedIfd: MakerNoteNestedIfdBehavior;
+  readonly encryption: MakerNoteEncryptionStatus;
+  readonly tagRegistry: readonly MakerNoteTagDefinition[];
+  readonly securityRequirements: readonly string[];
+  readonly sources?: readonly MakerNoteSourceReference[];
+}
+
+export interface MakerNoteProvenance {
+  readonly noteOffset: number;
+  readonly noteLength: number;
+  readonly sourceLength: number;
+  readonly blockId: string;
+  readonly fieldId: string;
+  readonly noteRelativeOffset: number;
+  /** Length of the specific field/range represented by this provenance. */
+  readonly rangeLength: number;
+  readonly originalFileOffset: number | null;
+  readonly originalFileLength: number;
+  readonly offsetBase: MakerNoteBaseOffsetRule;
+}
+
+export interface MakerNoteField {
+  readonly id: string;
+  readonly tag: number;
+  readonly name: string;
+  readonly label: string;
+  readonly description: string;
+  readonly type: ExifDataType;
+  readonly raw: MetadataValue;
+  readonly value: MetadataValue;
+  readonly display: string;
+  readonly sensitivity: Sensitivity;
+  readonly count: number;
+  readonly known: boolean;
+  readonly unit?: string;
+  readonly enumName?: string;
+  readonly provenance: MakerNoteProvenance;
+}
+
+export interface MakerNoteOpaqueRange {
+  readonly id: string;
+  readonly noteRelativeOffset: number;
+  readonly originalFileOffset: number | null;
+  readonly length: number;
+  readonly reason: "unknown" | "encrypted" | "obfuscated" | "unsupported" | "malformed" | "limit-exceeded";
+  readonly provenance: MakerNoteProvenance;
+}
+
+export interface MakerNoteDiagnostic {
+  readonly code: MakerNoteDiagnosticCode;
+  readonly message: string;
+  readonly pluginId?: string;
+  readonly noteId?: string;
+  readonly noteRelativeOffset?: number;
+  readonly originalFileOffset?: number | null;
+  readonly length?: number;
+}
+
+export interface MakerNoteNote {
+  readonly id: string;
+  readonly fieldId: string;
+  readonly byteLength: number;
+  readonly status: MakerNoteStatus;
+  readonly plugin: MakerNotePluginIdentity | null;
+  readonly detection: MakerNoteDetection | null;
+  readonly provenance: MakerNoteProvenance;
+  readonly fields: readonly MakerNoteField[];
+  readonly opaqueRanges: readonly MakerNoteOpaqueRange[];
+  readonly diagnostics: readonly MakerNoteDiagnostic[];
+}
+
+export interface MakerNoteContainerData {
+  readonly notes: readonly MakerNoteNote[];
+  readonly complete: boolean;
+  readonly diagnostics: readonly MakerNoteDiagnostic[];
+}
+
+export type RawPayloadFormat = "raw" | "jpeg" | "tiff" | "bigtiff" | "unknown";
+export type RawPayloadRole = "raw" | "preview" | "thumbnail" | "metadata" | "unknown";
+
+/** One bounded source range belonging to a RAW or embedded image payload.
+ * The bytes themselves are intentionally not retained or decoded. */
+export interface RawPayloadReference {
+  readonly id: string;
+  readonly role: RawPayloadRole;
+  readonly format: RawPayloadFormat;
+  readonly offset: number | null;
+  readonly length: number | null;
+  readonly dimensions: ImageDimensions | null;
+  readonly sourceDirectoryId: string | null;
+  readonly sourceTags: readonly number[];
+  readonly provenance: "tiff-offset-count" | "tiff-jpeg-offset-length" | "directory-only";
+  readonly status: "valid" | "malformed" | "unknown" | "out-of-bounds";
+}
+
+/** Bounded, provenance-preserving RAW container inventory. This is metadata
+ * inspection only: no sensor samples or compressed RAW pixels are decoded. */
+export interface RawContainerData {
+  readonly kind: Exclude<ImageFileKind, ImageFormat | "bigtiff">;
+  readonly container: Extract<ImageContainer, "tiff" | "bigtiff">;
+  readonly detection: "structural-signature" | "structural-directory";
+  readonly signature: string;
+  readonly rawPayloads: readonly RawPayloadReference[];
+  readonly previews: readonly RawPayloadReference[];
+  readonly thumbnails: readonly RawPayloadReference[];
+  readonly opaquePayloads: readonly RawPayloadReference[];
+  readonly complete: boolean;
+  readonly diagnostics: readonly { readonly code: "MALFORMED_STRUCTURE" | "UNSAFE_RANGE" | "LIMIT_EXCEEDED" | "AMBIGUOUS_VARIANT"; readonly detail: string; readonly offset: number | null }[];
+}
+
 export interface ExifThumbnail {
   readonly data: Uint8Array;
   readonly mimeType: "image/jpeg" | "application/octet-stream";
@@ -912,6 +1228,10 @@ export interface PngTextEntry {
   readonly compressed: boolean;
   /** Encoded text bytes from the chunk; zTXt/iTXt retains compressed bytes. */
   readonly raw: Uint8Array;
+  /** Source-relative evidence for creator-schema consumers. */
+  readonly sourceOffset?: number;
+  readonly sourceLength?: number;
+  readonly blockId?: string;
 }
 
 export interface JfifData {
@@ -919,6 +1239,96 @@ export interface JfifData {
   readonly densityUnits: "none" | "dpi" | "dpcm" | "unknown";
   readonly xDensity: number;
   readonly yDensity: number;
+}
+
+/** Standards-derived semantic facts decoded from one Photoshop image resource.
+ * The exact resource bytes remain available separately on the containing
+ * inventory; these values are intentionally bounded summaries. */
+export type PhotoshopResourceDecoded =
+  | {
+    readonly kind: "resolution";
+    readonly horizontalResolution: number;
+    readonly verticalResolution: number;
+    readonly horizontalUnit: "pixels-per-inch" | "pixels-per-centimeter" | "unknown";
+    readonly verticalUnit: "pixels-per-inch" | "pixels-per-centimeter" | "unknown";
+    readonly widthUnit: "inches" | "centimeters" | "points" | "picas" | "columns" | "unknown";
+    readonly heightUnit: "inches" | "centimeters" | "points" | "picas" | "columns" | "unknown";
+  }
+  | {
+    readonly kind: "thumbnail";
+    readonly format: "raw-rgb" | "jpeg-rgb" | "unknown";
+    readonly channelOrder: "rgb" | "bgr" | "unknown";
+    readonly width: number;
+    readonly height: number;
+    readonly widthBytes: number;
+    readonly totalBytes: number;
+    readonly compressedBytes: number;
+    readonly bitsPerPixel: number;
+    readonly planes: number;
+    readonly imageDataOffset: number;
+    readonly imageDataLength: number;
+  }
+  | {
+    readonly kind: "iptc";
+    readonly byteLength: number;
+  }
+  | {
+    readonly kind: "xmp";
+    readonly packet: string;
+  }
+  | {
+    readonly kind: "caption-digest";
+    readonly algorithm: "MD5";
+    readonly hex: string;
+  }
+  | {
+    readonly kind: "path";
+    readonly recordCount: number;
+    readonly selectors: readonly number[];
+  }
+  | {
+    readonly kind: "clipping-path-name";
+    readonly name: string;
+  };
+
+export type PhotoshopResourceKind = PhotoshopResourceDecoded["kind"] | "unknown";
+export type PhotoshopResourceStatus = "decoded" | "unknown" | "malformed" | "limited";
+
+export interface PhotoshopResourceDiagnostic {
+  readonly code: "MALFORMED_PHOTOSHOP" | "TRUNCATED_DATA" | "LIMIT_EXCEEDED" | "INVALID_VALUE" | "UNSAFE_OFFSET";
+  readonly message: string;
+  readonly offset: number;
+  readonly length?: number;
+  readonly resourceId?: number;
+}
+
+/** One Photoshop 8BIM resource, retained in source order including duplicates. */
+export interface PhotoshopResource {
+  readonly id: string;
+  readonly signature: "8BIM";
+  readonly resourceId: number;
+  readonly nameBytes: Uint8Array;
+  readonly name: string;
+  readonly namePadding: Uint8Array;
+  readonly offset: number;
+  readonly length: number;
+  readonly payloadOffset: number;
+  readonly payloadLength: number;
+  readonly payloadPadding: Uint8Array;
+  readonly parentBlockId: string;
+  readonly status: PhotoshopResourceStatus;
+  readonly kind: PhotoshopResourceKind;
+  readonly decoded: PhotoshopResourceDecoded | null;
+  /** Exact payload copy when it fits the configured value budget. */
+  readonly rawPayload: Uint8Array | null;
+}
+
+export interface PhotoshopContainerData {
+  readonly identifier: "Photoshop 3.0" | null;
+  readonly source: { readonly blockId: string; readonly offset: number; readonly length: number };
+  readonly resources: readonly PhotoshopResource[];
+  readonly complete: boolean;
+  readonly diagnostics: readonly PhotoshopResourceDiagnostic[];
 }
 
 export type MetadataBlockFamily = "EXIF" | "XMP" | "IPTC" | "ICC" | "JFIF" | "PNGText" | "MakerNote" | "Photoshop" | "MPF" | "Unknown";
@@ -984,6 +1394,12 @@ export interface MetadataBlock {
 export interface MetadataResult {
   readonly format: ImageFormat;
   readonly mimeType: ImageMimeType;
+  /** Physical bytes-on-disk container, independent of camera-file variant. */
+  readonly container: ImageContainer;
+  /** Stable variant identity; ordinary TIFF remains `tiff`. */
+  readonly fileKind: ImageFileKind;
+  /** Non-null only for structurally recognized TIFF-derived RAW variants. */
+  readonly raw: RawContainerData | null;
   readonly dimensions: ImageDimensions | null;
   /** Additive, provenance-preserving common image/container detail view. */
   readonly details?: ImageDetails;
@@ -997,6 +1413,10 @@ export interface MetadataResult {
   readonly heif?: readonly HeifItemGraph[];
   /** Bounded HEIF/AVIF movie and image-sequence tracks; item graphs remain separate in `heif`. */
   readonly heifSequences?: readonly HeifSequence[];
+  /** CR3-specific ISO-BMFF inventory; generic HEIF views remain separate. */
+  readonly cr3?: Cr3ContainerData;
+  /** RAF-specific directory and embedded-range inventory. */
+  readonly raf?: RafContainerData;
   /** Common, normalized fields. Raw EXIF entries remain in `exif.fields`. */
   readonly fields: readonly MetadataField[];
   /** Typed EXIF interpretations derived from one or more retained fields. */
@@ -1008,6 +1428,10 @@ export interface MetadataResult {
   readonly iptcSemantic?: IptcSemanticData;
   readonly icc: IccData | null;
   readonly jfif: JfifData | null;
+  /** Bounded Photoshop image-resource inventory for APP13 and TIFF tag 34377. */
+  readonly photoshop?: PhotoshopContainerData | null;
+  /** Explicitly supplied MakerNote plugin results; absent plugins leave notes opaque. */
+  readonly makerNotes?: MakerNoteContainerData | null;
   /** Bounded PNG textual chunks, when parsing a PNG input. */
   readonly pngText: readonly PngTextEntry[];
   /** Recognized metadata sources with family-level provenance and inspection status. */
@@ -1081,7 +1505,12 @@ export interface ParseCompleteness {
 /** Internal parser result before the public completeness annotation is added. */
 /** Parser result before common completeness is attached. Parsers may provide
  * source-level provenance while older container readers are migrated. */
-export type ParsedMetadataResult = Omit<MetadataResult, "completeness" | "blocks" | "coverage"> & {
+export type ParsedMetadataResult = Omit<MetadataResult, "completeness" | "blocks" | "coverage" | "container" | "fileKind" | "raw"> & {
+  readonly photoshop?: PhotoshopContainerData | null;
+  readonly makerNotes?: MakerNoteContainerData | null;
+  readonly container?: ImageContainer;
+  readonly fileKind?: ImageFileKind;
+  readonly raw?: RawContainerData | null;
   readonly blocks?: readonly MetadataBlock[];
 };
 
@@ -1148,11 +1577,76 @@ export interface SecurityLimits {
   readonly maxAdapterItems: number;
   /** Maximum estimated bytes retained by one output adapter result. */
   readonly maxAdapterOutputBytes: number;
+  /** Maximum creator-convention metadata sources inspected in one input. */
+  readonly maxCreatorSources: number;
+  /** Maximum workflow/prompt graph nodes retained from one creator source. */
+  readonly maxCreatorGraphNodes: number;
+  /** Maximum workflow/prompt graph edges retained from one creator source. */
+  readonly maxCreatorGraphEdges: number;
+  /** Maximum raw creator-convention bytes retained in one inspection. */
+  readonly maxCreatorRawBytes: number;
+  /** Maximum typed creator fields retained in one inspection. */
+  readonly maxCreatorFields: number;
   readonly maxWarnings: number;
 }
 
+/** A bounded read capability handed to one plugin for one MakerNote. */
+export interface MakerNoteReadContext {
+  readonly noteLength: number;
+  readonly noteOffset: number;
+  readonly sourceLength: number;
+  readonly fieldId: string;
+  readonly blockId: string;
+  readonly tiffOffset: number | null;
+  readonly fileOffset: number | null;
+  readonly byteOrder: MakerNoteByteOrder;
+  readonly baseOffsetRule: MakerNoteBaseOffsetRule;
+  readonly read: (noteRelativeOffset: number, length: number) => Uint8Array;
+  readonly readUint8: (noteRelativeOffset: number) => number;
+  readonly readUint16: (noteRelativeOffset: number, byteOrder?: "little-endian" | "big-endian") => number;
+  readonly readUint32: (noteRelativeOffset: number, byteOrder?: "little-endian" | "big-endian") => number;
+  readonly resolveOffset: (offset: number, rule?: MakerNoteBaseOffsetRule) => number | null;
+}
+
+export interface MakerNotePluginInput {
+  readonly context: MakerNoteReadContext;
+  readonly detection: MakerNoteDetection;
+  readonly limits: SecurityLimits;
+  readonly signal?: AbortSignal;
+}
+
+export interface MakerNotePluginResult {
+  readonly status: MakerNoteStatus;
+  readonly fields?: readonly MakerNoteField[];
+  readonly opaqueRanges?: readonly MakerNoteOpaqueRange[];
+  readonly diagnostics?: readonly MakerNoteDiagnostic[];
+}
+
+/** Explicit per-operation MakerNote plugin. It has no registration side effect. */
+export interface MakerNotePlugin {
+  readonly identity: MakerNotePluginIdentity;
+  readonly detect: (context: MakerNoteReadContext) => MakerNoteDetection | null;
+  readonly parse: (input: MakerNotePluginInput) => MakerNotePluginResult;
+}
+
+export interface MakerNoteInput {
+  readonly id: string;
+  readonly fieldId: string;
+  readonly raw: Uint8Array;
+  readonly noteOffset: number;
+  readonly sourceLength: number;
+  readonly tiffOffset?: number | null;
+  readonly fileOffset?: number | null;
+  readonly blockId: string;
+}
+
+export interface MakerNoteInspectionOptions {
+  readonly plugins?: readonly MakerNotePlugin[];
+  readonly signal?: AbortSignal;
+}
+
 /** Metadata families that can be requested independently during parsing. */
-export type MetadataGroup = "Dimensions" | "EXIF" | "XMP" | "IPTC" | "ICC" | "JFIF" | "PNGText" | "Transform" | "Nclx";
+export type MetadataGroup = "Dimensions" | "EXIF" | "XMP" | "IPTC" | "ICC" | "JFIF" | "PNGText" | "Photoshop" | "MakerNote" | "Transform" | "Nclx";
 
 /**
  * Limits decoding work to requested metadata families. `tags` applies to EXIF
@@ -1187,6 +1681,8 @@ export interface ParseOptions {
   readonly scope?: "full" | "jpeg-header" | "metadata";
   /** Immutable field vocabulary used for EXIF names, descriptions, and sensitivity. */
   readonly registry?: MetadataRegistry | readonly MetadataRegistryFieldInput[] | { readonly fields: readonly MetadataRegistryFieldInput[]; readonly sources?: readonly MetadataRegistrySource[] };
+  /** Explicit MakerNote plugins for this parse operation. No global plugin registry exists. */
+  readonly makerNotePlugins?: readonly MakerNotePlugin[];
   /** Controls whether ambiguous or invalid composite derivations are withheld. */
   readonly normalization?: NormalizationMode;
   /** Optional bounded Brotli implementation for JPEG XL `brob` metadata boxes. Not transferable through the structured-clone worker API. */
@@ -1235,7 +1731,8 @@ export type RedactionSelector =
   | { readonly kind: "sensitivity"; readonly sensitivity: Sensitivity }
   | { readonly kind: "field-id"; readonly fieldId: EditCanonicalFieldId }
   | { readonly kind: "block"; readonly blockId: string }
-  | { readonly kind: "associated-image"; readonly imageId: string };
+  | { readonly kind: "associated-image"; readonly imageId: string }
+  | { readonly kind: "photoshop-resource"; readonly resourceId: string };
 
 export type RedactionTarget =
   | LegacyRedactionTarget
@@ -1252,6 +1749,7 @@ export type EditSelector =
   | { readonly kind: "sensitivity"; readonly sensitivity: Sensitivity }
   | { readonly kind: "namespace-property"; readonly namespaceUri: string; readonly localName: string }
   | { readonly kind: "field-id"; readonly fieldId: EditCanonicalFieldId }
+  | { readonly kind: "photoshop-resource"; readonly resourceId: string }
   | { readonly kind: "policy"; readonly policyId: string };
 
 /** An operation address is either a canonical registry field or an explicit selector. */
@@ -1607,6 +2105,8 @@ export interface SanitizeOptions {
 export interface PrivacyAuditOptions {
   readonly limits?: Partial<SecurityLimits>;
   readonly signal?: AbortSignal;
+  /** Explicit MakerNote plugins used only for this audit operation. */
+  readonly makerNotePlugins?: readonly MakerNotePlugin[];
   /** Include decoded sensitive lexical values only when explicitly requested. */
   readonly includeRawValues?: boolean;
 }
