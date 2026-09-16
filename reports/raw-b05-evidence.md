@@ -3,7 +3,7 @@
 - Status: **pass**
 - Package: `browser-image-metadata@2.0.0-alpha.3`
 - Projects: CR3 1/1; RAF 1/1; total 2/2
-- Independent oracle: `exiftool-vendored@33.5.0`, ExifTool 13.42
+- Independent oracle: `exiftool-vendored@38.1.0`, ExifTool 13.59
 - Comparable values: 19; non-comparable: 3; mismatched: 0
 - Normalization policy: Text comparisons trim NULs and collapse whitespace; file identity is lower-cased; dimensions and offsets require safe non-negative integers; booleans compare presence only; non-numeric vendor ranges are explicitly non-comparable and never matches.
 - Thresholds: at least 2 fixtures and 12 comparable values; at most 0 mismatches and 0 missing values

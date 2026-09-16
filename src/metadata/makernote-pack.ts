@@ -253,11 +253,11 @@ function parseIfd(context: MakerNotePluginInput["context"], input: MakerNotePlug
       : typeInfo === undefined || byteLength === null || !inRange(context.noteLength, entryOffset + 8, 4)
         ? null
         : safeAdd(valueOrigin, context.readUint32(entryOffset + 8, layout.byteOrder));
-    if (typeInfo === undefined || byteLength === null || byteLength > input.limits.maxValueBytes || countValue > input.limits.maxAdapterItems || valueStartValue === null || !inRange(context.noteLength, valueStartValue, byteLength)) {
+    if (typeInfo === undefined || byteLength === null || countValue === 0 || byteLength > input.limits.maxValueBytes || countValue > input.limits.maxAdapterItems || valueStartValue === null || !inRange(context.noteLength, valueStartValue, byteLength)) {
       if (opaqueRanges.length < input.limits.maxSegments) opaqueRanges.push(opaque(context, typeInfo === undefined ? "unsupported" : byteLength !== null && byteLength > input.limits.maxValueBytes ? "limit-exceeded" : "malformed", entryOffset, entrySize));
       if (typeInfo === undefined) diagnostics.push({ code: "UNSUPPORTED_NOTE" as const, message: "MakerNote tag type is not supported by this pack." });
       else if (byteLength !== null && byteLength > input.limits.maxValueBytes) diagnostics.push({ code: "LIMIT_EXCEEDED" as const, message: "MakerNote tag value exceeds the configured limit." });
-      else diagnostics.push({ code: "MALFORMED_NOTE" as const, message: "MakerNote tag value range is malformed." });
+      else diagnostics.push({ code: "MALFORMED_NOTE" as const, message: countValue === 0 ? "MakerNote tag has an invalid zero value count." : "MakerNote tag value range is malformed." });
       continue;
     }
     const definition = map.get(tag);

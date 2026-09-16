@@ -53,11 +53,11 @@ function hasPrefix(bytes: Uint8Array, prefix: Uint8Array, offset = 0): boolean {
 }
 
 function be16(bytes: Uint8Array, offset: number): number {
-  return ((bytes[offset] ?? 0) << 8) | (bytes[offset + 1] ?? 0);
+  return ((bytes[offset] as number) << 8) | (bytes[offset + 1] as number);
 }
 
 function be32(bytes: Uint8Array, offset: number): number {
-  return (bytes[offset] ?? 0) * 0x1000000 + ((bytes[offset + 1] ?? 0) << 16) + ((bytes[offset + 2] ?? 0) << 8) + (bytes[offset + 3] ?? 0);
+  return (bytes[offset] as number) * 0x1000000 + ((bytes[offset + 1] as number) << 16) + ((bytes[offset + 2] as number) << 8) + (bytes[offset + 3] as number);
 }
 
 function safeAdd(left: number, right: number): number | null {
@@ -149,7 +149,7 @@ function bytesToHex(payload: Uint8Array): string {
 
 function decodeClippingPathName(payload: Uint8Array): PhotoshopResourceDecoded | null {
   if (payload.length < 1) return null;
-  const length = payload[0] ?? 0;
+  const length = payload[0] as number;
   if (length > payload.length - 1) return null;
   return { kind: "clipping-path-name", name: new TextDecoder("latin1").decode(payload.subarray(1, 1 + length)) };
 }
@@ -235,7 +235,7 @@ export function inspectPhotoshopResourceSpans(bytes: Uint8Array, container: "app
       break;
     }
     const resourceId = be16(bytes, cursor + 4);
-    const nameLength = bytes[cursor + 6] ?? 0;
+    const nameLength = bytes[cursor + 6] as number;
     const nameFieldLength = safeAdd(1, nameLength);
     const paddedNameLength = nameFieldLength === null ? null : (nameFieldLength + 1) & ~1;
     const sizeOffset = paddedNameLength === null ? null : safeAdd(cursor, 6 + paddedNameLength);
@@ -277,7 +277,7 @@ export function parsePhotoshopResources(bytes: Uint8Array, limits: SecurityLimit
   const resources: PhotoshopResource[] = [];
   let retainedBytes = 0;
   for (const span of spans.spans) {
-    const nameLength = bytes[span.start + 6] ?? 0;
+    const nameLength = bytes[span.start + 6] as number;
     const nameStart = span.start + 7;
     const paddedNameLength = ((1 + nameLength + 1) & ~1);
     const nameEnd = span.start + 6 + paddedNameLength;

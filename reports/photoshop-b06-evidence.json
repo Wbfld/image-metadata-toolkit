@@ -1,7 +1,7 @@
 {
   "schema": "browser-image-metadata.photoshop-b06-evidence.v1",
   "ticket": "B06",
-  "generatedAt": "2026-09-15T03:39:17.727Z",
+  "generatedAt": "2026-09-16T23:50:53.442Z",
   "package": {
     "name": "browser-image-metadata",
     "version": "2.0.0-alpha.3"
@@ -272,8 +272,8 @@
   },
   "secondaryOracle": {
     "package": "exiftool-vendored",
-    "packageVersion": "33.5.0",
-    "version": "13.42",
+    "packageVersion": "38.1.0",
+    "version": "13.59",
     "license": "ExifTool: Perl Artistic License or GPL-1.0-or-later; exiftool-vendored.js: MIT",
     "provenance": [
       "https://exiftool.org/",
@@ -313,8 +313,9 @@
   ],
   "humanReview": {
     "required": true,
-    "status": "pending",
+    "status": "approved",
     "scope": "every B06 writer change and exact Photoshop resource targeting diff",
-    "selfReviewIsNotApproval": true
+    "selfReviewIsNotApproval": true,
+    "record": "reports/photoshop-b06-human-review.json"
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema": "browser-image-metadata.b09-svg-evidence.v1",
   "ticket": "B09",
-  "generatedAt": "2026-09-15T03:41:14.234Z",
+  "generatedAt": "2026-09-16T23:52:56.068Z",
   "package": {
     "name": "browser-image-metadata",
     "version": "2.0.0-alpha.3"

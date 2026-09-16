@@ -6,6 +6,7 @@ import type { MetadataWarning, SecurityLimits } from "./types.js";
 const EXIF_IDENTIFIER = Uint8Array.of(0x45, 0x78, 0x69, 0x66, 0x00, 0x00);
 const JFIF_IDENTIFIER = Uint8Array.of(0x4a, 0x46, 0x49, 0x46, 0x00);
 const ICC_IDENTIFIER = Uint8Array.from("ICC_PROFILE\0", (character) => character.charCodeAt(0));
+const MPF_IDENTIFIER = Uint8Array.from("MPF\0", (character) => character.charCodeAt(0));
 const XMP_IDENTIFIER = Uint8Array.from("http://ns.adobe.com/xap/1.0/\0", (character) => character.charCodeAt(0));
 const EXTENDED_XMP_IDENTIFIER = Uint8Array.from("http://ns.adobe.com/xmp/extension/\0", (character) => character.charCodeAt(0));
 const CLASSIFICATION_BYTES = EXTENDED_XMP_IDENTIFIER.length + 40;
@@ -57,6 +58,7 @@ function shouldMaterialize(marker: number, prefix: Uint8Array, selection: Resolv
   if (marker === 0xe0) return wantsGroup(selection, "JFIF") && hasPrefix(prefix, JFIF_IDENTIFIER);
   if (marker === 0xe1 && hasPrefix(prefix, EXIF_IDENTIFIER)) return wantsGroup(selection, "EXIF");
   if (marker === 0xe1 && isXmp(prefix)) return wantsGroup(selection, "XMP");
+  if (marker === 0xe2 && hasPrefix(prefix, MPF_IDENTIFIER)) return wantsGroup(selection, "MPF");
   if (marker === 0xe2) return wantsGroup(selection, "ICC") && isIcc(prefix);
   if (marker === 0xed) return wantsGroup(selection, "IPTC");
   return false;

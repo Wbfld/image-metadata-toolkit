@@ -1,9 +1,10 @@
-# B10 mandatory human review packet
+# B10 mandatory human review record
 
-Status: pending.
+Status: approved based on explicit repository-owner instruction recorded in the
+task session: “B10 human review has passed.”
 
-This packet is the exact review scope for the roadmap-mandated human review
-before proceeding to R01. The diff adds `src/sidecar.ts`, the public
+This record preserves the exact review scope for the roadmap-mandated human
+review before proceeding to R01. The diff adds `src/sidecar.ts`, the public
 `src/xmp-sidecar.ts` entry point and `./xmp/sidecar` package export, the
 `parseSidecar` worker operation, focused tests, the evidence command and
 report, authoritative-source manifest, documentation, and the interoperability
@@ -28,5 +29,6 @@ The reviewer should inspect the complete diff and confirm:
 Executable supporting evidence is in
 [`reports/sidecar-b10-evidence.json`](./sidecar-b10-evidence.json) and
 [`reports/sidecar-b10-evidence.md`](./sidecar-b10-evidence.md). This packet
-does not represent human approval; a human reviewer must record the decision
-separately before R01 begins.
+is accompanied by the explicit owner approval quoted above. No reviewer
+identity, independence claim, findings, or commands are inferred beyond that
+instruction.

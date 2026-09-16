@@ -409,6 +409,8 @@ export type WarningCode =
   | "MALFORMED_HEIF"
   | "MALFORMED_CR3"
   | "MALFORMED_RAF"
+  | "MALFORMED_MPF"
+  | "MALFORMED_ULTRA_HDR"
   | "MALFORMED_PHOTOSHOP"
   | "MALFORMED_IPTC"
   | "MALFORMED_EXIF"
@@ -1028,6 +1030,190 @@ export interface XmpData {
   readonly packetProvenance?: readonly XmpPacketProvenance[];
 }
 
+/** A bounded MPF index or attribute IFD entry. Raw image bytes are never
+ * retained by the metadata result. */
+export interface MpfIfdEntry {
+  readonly tag: number;
+  readonly type: number;
+  readonly count: number;
+  readonly valueOffset: number;
+  readonly valueLength: number;
+  readonly sourceOffset: number;
+}
+
+export interface MpfIfd {
+  readonly kind: "index" | "attribute";
+  readonly sourceOffset: number;
+  readonly relativeOffset: number;
+  readonly byteLength: number;
+  readonly entries: readonly MpfIfdEntry[];
+  readonly nextIfdOffset: number;
+}
+
+export type MpfImageFormat = "jpeg" | "unsupported";
+
+export type MpfImageType =
+  | "undefined"
+  | "large-thumbnail-vga"
+  | "large-thumbnail-full-hd"
+  | "large-thumbnail-4k"
+  | "large-thumbnail-8k"
+  | "large-thumbnail-16k"
+  | "multi-frame-panorama"
+  | "multi-frame-disparity"
+  | "multi-angle"
+  | "baseline-primary"
+  | "original-preservation"
+  | "gain-map"
+  | "other";
+
+export interface MpfEmbeddedMetadataInventory {
+  readonly complete: boolean;
+  readonly format: "jpeg" | "unknown";
+  readonly dimensions: ImageDimensions | null;
+  readonly fieldIds: readonly string[];
+  readonly metadataFamilies: readonly MetadataBlockFamily[];
+  readonly xmpPacketCount: number;
+  readonly diagnostics: readonly MetadataWarning[];
+}
+
+export interface MpfImageEntry {
+  readonly id: string;
+  readonly index: number;
+  readonly attributes: number;
+  readonly imageFormat: MpfImageFormat;
+  readonly imageFormatCode: number;
+  readonly imageType: MpfImageType;
+  readonly imageTypeCode: number;
+  readonly representative: boolean;
+  readonly dependentChild: boolean;
+  readonly dependentParent: boolean;
+  readonly size: number;
+  /** CIPA stored offset: zero for the first image, otherwise relative to the MP Endian field. */
+  readonly offset: number;
+  readonly absoluteOffset: number | null;
+  readonly rangeLength: number | null;
+  readonly dependentImage1: number | null;
+  readonly dependentImage2: number | null;
+  readonly status: "decoded" | "partial" | "malformed" | "opaque";
+  readonly metadata: MpfEmbeddedMetadataInventory | null;
+}
+
+export interface MpfSegment {
+  readonly id: string;
+  readonly sourceOffset: number;
+  readonly byteLength: number;
+  readonly indexIfd: MpfIfd | null;
+  readonly attributeIfds: readonly MpfIfd[];
+  readonly mpfVersion: string | null;
+  readonly numberOfImages: number | null;
+  readonly images: readonly MpfImageEntry[];
+  readonly complete: boolean;
+  readonly diagnostics: readonly MpfDiagnostic[];
+}
+
+export interface MpfDiagnostic {
+  readonly code: "MALFORMED_MPF" | "MALFORMED_ULTRA_HDR" | "TRUNCATED_DATA" | "UNSAFE_OFFSET" | "LIMIT_EXCEEDED" | "INVALID_VALUE" | "UNSUPPORTED_STRUCTURE" | "DUPLICATE_MPF";
+  readonly message: string;
+  readonly severity: "warning" | "error";
+  readonly offset?: number;
+  readonly length?: number;
+}
+
+export interface MpfRelationship {
+  readonly type: "dependent-image" | "representative-image" | "primary-image" | "gain-map-image";
+  readonly sourceImageId: string;
+  readonly targetImageId: string | null;
+}
+
+export interface MpfData {
+  readonly standard: "CIPA DC-X007:2025";
+  readonly segments: readonly MpfSegment[];
+  readonly images: readonly MpfImageEntry[];
+  readonly relationships: readonly MpfRelationship[];
+  readonly complete: boolean;
+  readonly diagnostics: readonly MpfDiagnostic[];
+}
+
+export interface UltraHdrGainMapProperty {
+  readonly namespaceUri: "http://ns.adobe.com/hdr-gain-map/1.0/";
+  readonly localName: string;
+  readonly sourcePacketIndex: number;
+  readonly lexicalValues: readonly string[];
+  readonly numericValues: readonly (number | null)[];
+}
+
+export interface GContainerItem {
+  readonly index: number;
+  readonly semantic: "Primary" | "GainMap" | "Other";
+  readonly mime: string | null;
+  readonly length: number | null;
+  readonly padding: number;
+  readonly uri: string | null;
+  readonly sourcePacketIndex: number;
+  readonly mpfImageId: string | null;
+  readonly status: "decoded" | "malformed" | "ambiguous";
+}
+
+export interface UltraHdrData {
+  readonly standard: "Android Ultra HDR v1.1";
+  readonly namespaceUri: "http://ns.adobe.com/hdr-gain-map/1.0/";
+  readonly gContainerNamespaceUri: "http://ns.google.com/photos/1.0/container/";
+  readonly sourcePacketIndices: readonly number[];
+  readonly sourceBlockIds: readonly string[];
+  readonly version: string | null;
+  readonly gainMapProperties: readonly UltraHdrGainMapProperty[];
+  readonly directory: readonly GContainerItem[];
+  readonly primaryImageId: string | null;
+  readonly gainMapImageId: string | null;
+  readonly status: "decoded" | "partial" | "malformed" | "ambiguous" | "unsupported";
+  readonly complete: boolean;
+  readonly diagnostics: readonly MpfDiagnostic[];
+}
+
+/** Explicit opt-in for transactional MPF metadata rewrites. The default is
+ * refusal because offset-bearing associated-image structures must never be
+ * rewritten accidentally. Ultra HDR relationships are preserved, not
+ * regenerated, by this policy. */
+export interface JpegMpfMutationPolicy {
+  readonly mode: "preserve";
+  /** Required when an Ultra HDR gain-map relationship is present. */
+  readonly ultraHdr?: "preserve";
+}
+
+export interface JpegEncodedPayloadRangeEvidence {
+  readonly offset: number;
+  readonly length: number;
+  readonly sha256: string;
+}
+
+export interface JpegMpfImageWriteEvidence {
+  readonly id: string;
+  readonly index: number;
+  readonly imageType: MpfImageType;
+  readonly inputOffset: number;
+  readonly inputSize: number;
+  readonly outputOffset: number;
+  readonly outputSize: number;
+  readonly encodedPayloads: readonly {
+    readonly id: string;
+    readonly before: JpegEncodedPayloadRangeEvidence;
+    readonly after: JpegEncodedPayloadRangeEvidence;
+    readonly status: "matched";
+  }[];
+}
+
+/** Redistribution-safe evidence returned for an opted-in MPF rewrite. */
+export interface JpegMpfWriteEvidence {
+  readonly schema: "browser-image-metadata.jpeg-mpf-write.v1";
+  readonly policy: "preserve";
+  readonly mpfSegmentId: string;
+  readonly relationshipsVerified: boolean;
+  readonly ultraHdr: "not-present" | "preserved";
+  readonly images: readonly JpegMpfImageWriteEvidence[];
+  readonly diagnostics: readonly string[];
+}
+
 export type XmpPacketSourceKind = "embedded" | "extended-embedded" | "sidecar";
 
 /** Source evidence for one retained XMP packet. */
@@ -1423,6 +1609,10 @@ export interface MetadataResult {
   readonly composites?: ExifCompositeSet;
   readonly exif: ExifData | null;
   readonly xmp: XmpData | null;
+  /** CIPA MPF index/attribute IFD and bounded secondary-image inventory. */
+  readonly mpf?: MpfData | null;
+  /** Android Ultra HDR gain-map and GContainer relationship inventory. */
+  readonly ultraHdr?: UltraHdrData | null;
   readonly iptc: IptcData | null;
   /** IPTC Photo Metadata semantic view, including XMP-only candidates. */
   readonly iptcSemantic?: IptcSemanticData;
@@ -1646,7 +1836,7 @@ export interface MakerNoteInspectionOptions {
 }
 
 /** Metadata families that can be requested independently during parsing. */
-export type MetadataGroup = "Dimensions" | "EXIF" | "XMP" | "IPTC" | "ICC" | "JFIF" | "PNGText" | "Photoshop" | "MakerNote" | "Transform" | "Nclx";
+export type MetadataGroup = "Dimensions" | "EXIF" | "XMP" | "IPTC" | "ICC" | "JFIF" | "PNGText" | "Photoshop" | "MakerNote" | "MPF" | "Transform" | "Nclx";
 
 /**
  * Limits decoding work to requested metadata families. `tags` applies to EXIF
@@ -1878,6 +2068,8 @@ export interface EditPolicy {
   readonly verification?: EditVerificationPolicy;
   /** Orientation metadata is preserved unless an intentional change is explicit. */
   readonly orientation?: EditOrientationPolicy;
+  /** Explicit opt-in for safe MPF/Ultra HDR offset preservation on JPEG. */
+  readonly mpf?: JpegMpfMutationPolicy;
 }
 
 export interface EditMetadataOptions {
@@ -1950,6 +2142,9 @@ export interface EditOutputEvidence {
   readonly sha256: string | null;
   readonly byteChanges: readonly EditByteRange[];
   readonly payloads: readonly EditPayloadEvidence[];
+  /** MPF relationship and associated-image preservation evidence when the
+   * explicit JPEG MPF policy was used. */
+  readonly mpf?: JpegMpfWriteEvidence;
 }
 
 export interface EditVerificationEvidence {
@@ -1969,6 +2164,8 @@ export interface EditPolicyEvidence {
   readonly conflicts: EditConflictPolicy;
   readonly verification: EditVerificationPolicy;
   readonly orientation: EditOrientationPolicy;
+  /** Explicit opt-in for safe MPF/Ultra HDR offset preservation on JPEG. */
+  readonly mpf?: JpegMpfMutationPolicy;
   readonly overlappingTargets: readonly EditTarget[];
 }
 

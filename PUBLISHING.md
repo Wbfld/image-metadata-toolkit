@@ -17,14 +17,17 @@ Grant the workflow `id-token: write` permission. Keep npm publishing out of pull
 
 Follow [`RELEASE_CHECKLIST.md`](./RELEASE_CHECKLIST.md) from a clean checkout. In particular, confirm `CHANGELOG.md`, the version in `package.json`, capability documentation, and examples describe the shipped behavior. The release tag must be exactly `v<package-version>`; the workflow verifies this before running its package gate.
 
-The scheduled and release workflows also run the fail-closed R05 audit. It
-retains redistribution-safe evidence for clean-clone CI, corpora and reference
-assets, runtime checks, package contents, provenance, dependency/license scans,
-benchmarks, and documentation. An external review of TIFF offset handling and
-all writers is a separate mandatory gate; the packet in
+The scheduled and release workflows also run the fail-closed R05 audit. The
+prepublication phase gates every executable check while leaving registry
+provenance explicitly pending; the postpublication phase verifies the exact
+registry version, dist-tag, tarball integrity, npm signatures, and SLSA
+provenance attestation. It retains redistribution-safe evidence for clean-clone
+CI, corpora and reference assets, runtime checks, package contents,
+dependency/license scans, benchmarks, and documentation. An external review of
+TIFF offset handling and all writers is a separate mandatory gate; the packet in
 [`R05_EXTERNAL_REVIEW_PACKET.md`](./R05_EXTERNAL_REVIEW_PACKET.md) is not an
 approval.
 
-The workflow intentionally has no fallback npm token. If trusted publishing is not configured, it fails before publication rather than silently using a maintainer credential.
+The workflow intentionally has no fallback npm token. If trusted publishing is not configured, it fails before publication rather than silently using a maintainer credential. Prerelease versions are published under their prerelease identifier (for example, `alpha` for `2.0.0-alpha.3`); stable versions use `latest`.
 
 See npm's [trusted publishing documentation](https://docs.npmjs.com/trusted-publishers/) for current registry-side setup and supported GitHub Actions requirements.

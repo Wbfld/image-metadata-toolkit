@@ -51,6 +51,7 @@ try {
     "package/R04_CODEMOD_DECISION.md",
     "package/R05_EXTERNAL_REVIEW_PACKET.md",
     "package/R05_COMPATIBILITY_LIMITATIONS.md",
+    "package/COMPARISON.md",
     "package/reports/r04-compatibility.json",
     "package/reports/r04-compatibility.md",
     "package/cli/index.mjs",

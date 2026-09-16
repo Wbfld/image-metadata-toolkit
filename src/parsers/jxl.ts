@@ -34,7 +34,7 @@ interface JxlpFragment {
 }
 
 function uint32(bytes: Uint8Array, offset: number): number {
-  return ((bytes[offset] ?? 0) * 0x1000000) + ((bytes[offset + 1] ?? 0) << 16) + ((bytes[offset + 2] ?? 0) << 8) + (bytes[offset + 3] ?? 0);
+  return ((bytes[offset] as number) * 0x1000000) + ((bytes[offset + 1] as number) << 16) + ((bytes[offset + 2] as number) << 8) + (bytes[offset + 3] as number);
 }
 
 function uint64(bytes: Uint8Array, offset: number): number | null {
@@ -45,7 +45,7 @@ function uint64(bytes: Uint8Array, offset: number): number | null {
 }
 
 function boxType(bytes: Uint8Array, offset: number): string {
-  return String.fromCharCode(bytes[offset] ?? 0, bytes[offset + 1] ?? 0, bytes[offset + 2] ?? 0, bytes[offset + 3] ?? 0);
+  return String.fromCharCode(bytes[offset] as number, bytes[offset + 1] as number, bytes[offset + 2] as number, bytes[offset + 3] as number);
 }
 
 function isTiffHeader(bytes: Uint8Array): boolean {
@@ -74,8 +74,7 @@ class BitReader {
     let value = 0;
     for (let index = 0; index < bits; index += 1) {
       const offset = this.bitOffset + index;
-      const byte = this.bytes[Math.floor(offset / 8)];
-      if (byte === undefined) return null;
+      const byte = this.bytes[Math.floor(offset / 8)] as number;
       value += ((byte >>> (offset % 8)) & 1) * (2 ** index);
     }
     this.bitOffset += bits;
@@ -86,8 +85,7 @@ class BitReader {
 function readSizeValue(reader: BitReader): number | null {
   const selector = reader.read(2);
   if (selector === null) return null;
-  const extraBits = [9, 13, 18, 30][selector];
-  if (extraBits === undefined) return null;
+  const extraBits = [9, 13, 18, 30][selector] as number;
   const value = reader.read(extraBits);
   return value === null ? null : value + 1;
 }

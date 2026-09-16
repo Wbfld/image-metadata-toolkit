@@ -68,7 +68,7 @@ await writeFile(markdownPath, [
   "",
   "## Checked source surfaces",
   "",
-  ...sourceResults.map((entry) => `- \`${entry.file}\`: ${entry.publicInventoryLines} public inventory lines checked; forbidden terms: ${entry.forbiddenTerms}`),
+  ...sourceResults.map((entry) => `- \`${entry.file}\`: ${entry.reviewedStatements} public inventory lines checked; forbidden terms: ${entry.forbiddenTerms}`),
   "",
   "The JSON artifact is redistribution-safe and contains no image or profile payload.",
   "",

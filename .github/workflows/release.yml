@@ -11,7 +11,7 @@ permissions:
 jobs:
   publish:
     if: startsWith(github.event.release.tag_name, 'v')
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,7 +22,7 @@ jobs:
           registry-url: https://registry.npmjs.org
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.x
+          deno-version: v2.9.6
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.2.21"
@@ -54,7 +54,8 @@ jobs:
           NODE
       - name: Prepare all remaining pinned R05 corpora in temporary runner storage
         run: npm run r05:prepare-corpora -- --root "$RUNNER_TEMP/r05-corpora"
-      - run: npm run r05:audit
+      - name: Run the prepublication R05 gate
+        run: npm run r05:audit -- --phase prepublication
         env:
           EXTERNAL_FIXTURE_ROOT: ${{ runner.temp }}/exif-py/tests/resources
           EXTERNAL_CORPUS_COMMIT: a69bf74770caf6b333221658f5092ed69f99faac
@@ -69,20 +70,43 @@ jobs:
           B09_SVG_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/svg
           R05_BENCHMARK_OUTPUT: artifacts/r05/benchmark.json
           R05_REPORT_DIR: artifacts/r05
-      - name: Upload R05 release audit
+          R05_CLEAN_CHECKOUT: ${{ github.workspace }}
+          R05_CANDIDATE_TAG: ${{ github.event.release.tag_name }}
+      - run: npm run check
+      - run: npm run test:fuzz
+      - run: npm run test:deno
+      - run: npm run test:bun
+      - run: npm run test:browser
+      - id: npm-dist-tag
+        run: npm run release:dist-tag
+      - name: Publish through npm trusted publishing
+        run: npm publish --provenance --tag "${{ steps.npm-dist-tag.outputs.tag }}"
+      - name: Run the postpublication R05 registry gate
+        if: success()
+        run: npm run r05:postpublish
+        env:
+          EXTERNAL_FIXTURE_ROOT: ${{ runner.temp }}/exif-py/tests/resources
+          EXTERNAL_CORPUS_COMMIT: a69bf74770caf6b333221658f5092ed69f99faac
+          EXTERNAL_CORPUS_OUTPUT_DIR: artifacts/postpublication/external-corpus
+          IPTC_REFERENCE_CORPUS_DIR: ${{ runner.temp }}/iptc-reference-images
+          IPTC_REFERENCE_REPORT_DIR: artifacts/postpublication/iptc-reference
+          ICC_REFERENCE_CORPUS_DIR: /System/Library/ColorSync/Profiles
+          ICC_REFERENCE_CORPUS_OUTPUT_DIR: artifacts/postpublication/icc-reference
+          RAW_B04_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/raw-b04
+          RAW_B05_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/raw-b05
+          MAKERNOTE_B08_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/makernote-b08
+          B09_SVG_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/svg
+          R05_BENCHMARK_OUTPUT: artifacts/postpublication/benchmark.json
+          R05_REPORT_DIR: artifacts/postpublication/r05
+          R05_CLEAN_CHECKOUT: ${{ github.workspace }}
+          R05_CANDIDATE_TAG: ${{ github.event.release.tag_name }}
+          R05_EXPECTED_DIST_TAG: ${{ steps.npm-dist-tag.outputs.tag }}
+      - name: Upload complete R05 release evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: r05-release-audit
           path: |
-            artifacts/r05/
-            artifacts/external-corpus/
-            artifacts/iptc-reference/
-            artifacts/icc-reference/
+            artifacts/
             reports/
           if-no-files-found: error
-      - run: npm run check
-      - run: npm run test:fuzz
-      - run: npm run test:deno
-      - run: npm run test:browser
-      - run: npm publish --provenance

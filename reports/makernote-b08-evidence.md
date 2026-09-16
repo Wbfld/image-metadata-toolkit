@@ -12,7 +12,7 @@
 
 - Format reference: https://www.exiv2.org/makernote.html (retrieved-2026-09-13; SHA-256 `166c17756e3dcc5b501eb57adea9541ccd154d3ee125c8d237ba41d20f55cba4`)
 - Fixture index: https://raw.pixls.us/data/filelist.sha256 (2026-09-13 index; SHA-256 `768df432528714bc7e2d66666e4cb2ef33e8ba66b0f5d7408cb54fad94f028d8`)
-- Independent oracle: exiftool-vendored 33.5.0, bundled ExifTool 13.42; MIT wrapper; bundled ExifTool is Artistic License 2.0 / GPL-1.0-or-later
+- Independent oracle: exiftool-vendored 38.1.0, bundled ExifTool 13.59; MIT wrapper; bundled ExifTool is Artistic License 2.0 / GPL-1.0-or-later
 
 ## Comparison normalization
 

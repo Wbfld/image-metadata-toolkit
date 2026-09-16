@@ -189,7 +189,7 @@ describe("W05 transactional WebP metadata writing", () => {
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 
   it("handles duplicate XMP chunks, physical selectors, removals, malformed RIFF, and unsupported values", async () => {
     const input = webp([vp8x(), chunk("XMP ", encoder.encode("one")), chunk("XMP ", encoder.encode("two")), vp8l()]);

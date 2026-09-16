@@ -27,7 +27,7 @@ assert.match(readme, new RegExp(`from ["']${brand.replace(/[.*+?^${}()|[\]\\]/g,
 assert.ok(readme.indexOf("> **Support boundaries:**") >= 0 && readme.indexOf("> **Support boundaries:**") < 1000, "README must expose unsupported and partial behavior above the fold.");
 assert.doesNotMatch(readme, /2\.0\.0-alpha\.2/, "README examples must not reference an older unreleased package version.");
 
-for (const document of ["API.md", "CAPABILITIES.md", "METADATA_REGISTRY.md", "MIGRATION.md", "R04_MIGRATION_COMPATIBILITY.md", "CONTRIBUTING.md", "PUBLISHING.md", "BENCHMARKS.md", "EXTERNAL_CORPORA.md"]) {
+for (const document of ["API.md", "CAPABILITIES.md", "METADATA_REGISTRY.md", "MIGRATION.md", "R04_MIGRATION_COMPATIBILITY.md", "COMPARISON.md", "CONTRIBUTING.md", "PUBLISHING.md", "BENCHMARKS.md", "EXTERNAL_CORPORA.md"]) {
   assert.match(await text(document), new RegExp(brand), `${document} must use the public package brand.`);
 }
 

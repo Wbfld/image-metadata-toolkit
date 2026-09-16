@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { TextDecoder, TextEncoder } from "node:util";
 
 export const REPORT_SCHEMA = "browser-image-metadata.external-report.v2";
-export const METRIC_KEYS = ["found", "matched", "normalizedMatch", "mismatched", "missingLocal", "missingReference"];
+export const METRIC_KEYS = ["found", "matched", "normalizedMatch", "mismatched", "missingLocal", "missingReference", "nonComparable"];
 export const NORMALIZATION_POLICY = Object.freeze({
   id: "browser-image-metadata.external-normalization.v1",
   description: "Compare JSON-safe values exactly first, then apply only the documented scalar, rational, date, whitespace, byte-string, and ExifTool-display normalizations.",
@@ -12,9 +12,13 @@ export const NORMALIZATION_POLICY = Object.freeze({
     "Rational strings and rational objects are compared by numeric value.",
     "NUL-terminated and printable byte strings are trimmed and decoded as UTF-8 where valid.",
     "Whitespace is collapsed in strings; EXIF YYYY:MM:DD dates are compared as ISO-like dates without inferring a timezone.",
-    "ExifTool date objects use their rawValue; binary-data placeholders are accepted as normalized matches for bounded opaque payloads.",
+    "ExifTool date objects use their rawValue; binary-data placeholders are recorded as non-comparable because an opaque oracle value is never a semantic match.",
     "The EXIF UserComment ASCII encoding prefix is removed before printable byte-string comparison.",
     "GPS degree/minute/second arrays may be compared with their absolute decimal-degree value; no sign is inferred without its reference tag.",
+    "Undefined and legacy byte strings are compared to their byte-preserving lexical form after removing only NUL padding; non-printable bytes are not discarded.",
+    "CFAPattern accepts both TIFF byte-order interpretations because the decoded public value does not retain the source byte order.",
+    "Clock values are compared as seconds since midnight after lexical parsing; invalid clock values remain mismatches or non-comparable diagnostics.",
+    "A field with a direct typed local INVALID_VALUE or INVALID_DATE diagnostic is non-comparable rather than being counted as a semantic match; malformed block absence with typed parser diagnostics is likewise non-comparable.",
   ],
 });
 
@@ -89,14 +93,21 @@ function normalizedValue(value) {
   if (value instanceof Uint8Array) {
     const asciiUserCommentPrefix = [0x41, 0x53, 0x43, 0x49, 0x49, 0x00, 0x00, 0x00];
     if (asciiUserCommentPrefix.every((byte, index) => value[index] === byte)) return normalizedValue(value.subarray(asciiUserCommentPrefix.length));
-    const withoutNul = [...value].filter((byte, index, bytes) => byte !== 0 || index < bytes.findLastIndex((candidate) => candidate !== 0));
-    if (withoutNul.length > 0 && withoutNul.every((byte) => byte >= 0x20 && byte <= 0x7e)) return normalizedValue(String.fromCharCode(...withoutNul).trim());
+    const withoutNul = [...value].filter((byte) => byte !== 0);
+    if (withoutNul.length > 0) return normalizedValue(String.fromCharCode(...withoutNul).trim());
     return normalizedValue([...value]);
   }
   if (typeof value === "bigint") return Number.isSafeInteger(Number(value)) ? Number(value) : value.toString();
   if (typeof value === "number") return Number.isFinite(value) ? Math.round(value * 1e8) / 1e8 : String(value);
   if (typeof value === "string") {
     const trimmed = value.split("\0", 1)[0].trim();
+    const clock = /^(\d{1,2}):(\d{2}):(\d{2})(?:\.(\d+))?(?:Z|[+-]\d{2}:?\d{2})?$/u.exec(trimmed);
+    if (clock !== null) {
+      const hour = Number(clock[1]);
+      const minute = Number(clock[2]);
+      const second = Number(`${clock[3]}${clock[4] === undefined ? "" : `.${clock[4]}`}`);
+      if (hour < 24 && minute < 60 && second < 60) return hour * 3600 + minute * 60 + second;
+    }
     if (/(?:fired|did not fire)/i.test(trimmed) && /(?:auto|compulsory|suppression)/i.test(trimmed)) return {
       fired: /fired/i.test(trimmed) && !/did not fire/i.test(trimmed),
       mode: /auto/i.test(trimmed) ? "auto" : /suppression/i.test(trimmed) ? "compulsory-suppression" : "compulsory-firing",
@@ -219,14 +230,26 @@ function fieldValues(result, name, family) {
     for (const value of [...values]) {
       if (!(value instanceof Uint8Array) || value.length < 4) continue;
       values.push([(value[0] << 8) | value[1], (value[2] << 8) | value[3], ...value.subarray(4)]);
+      values.push([(value[1] << 8) | value[0], (value[3] << 8) | value[2], ...value.subarray(4)]);
     }
   }
-  if (["JPEGInterchangeFormat", "StripOffsets"].includes(name) && result.format === "jpeg") {
+  if (["ComponentsConfiguration", "GPSVersionID"].includes(name)) {
+    for (const value of [...values]) {
+      if (value instanceof Uint8Array) values.push([...value].join(" "));
+    }
+  }
+  if (["FileSource", "SceneType"].includes(name)) {
+    for (const value of [...values]) {
+      if (value instanceof Uint8Array && value.length === 1) values.push(value[0]);
+    }
+  }
+  if (["JPEGInterchangeFormat", "StripOffsets"].includes(name) && ["jpeg", "heif", "avif"].includes(result.format)) {
     const exifOffset = result.blocks.find((block) => block.family === "EXIF")?.offset;
     if (typeof exifOffset === "number") {
+      const containerPrefix = ["heif", "avif"].includes(result.format) ? 4 : 10;
       for (const value of [...values]) {
-        if (typeof value === "number") values.push(value + exifOffset + 10);
-        else if (Array.isArray(value) && value.every((part) => typeof part === "number")) values.push(value.map((part) => part + exifOffset + 10));
+        if (typeof value === "number") values.push(value + exifOffset + containerPrefix);
+        else if (Array.isArray(value) && value.every((part) => typeof part === "number")) values.push(value.map((part) => part + exifOffset + containerPrefix));
       }
     }
   }
@@ -322,7 +345,7 @@ function compareValues(locals, reference) {
   if (locals.length === 0 && !hasValue(reference)) return "not-observed";
   if (locals.length === 0) return "missing-local";
   if (!hasValue(reference)) return "missing-reference";
-  if (reference !== null && typeof reference === "object" && typeof reference.rawValue === "string" && /^\(Binary data \d+ bytes?/.test(reference.rawValue)) return "normalized-match";
+  if (reference !== null && typeof reference === "object" && typeof reference.rawValue === "string" && /^\(Binary data \d+ bytes?/.test(reference.rawValue)) return "non-comparable";
   if (locals.some((local) => stable(local) === stable(reference))) return "matched";
   const normalizedReference = normalizedValue(reference);
   if (normalizedReference === "" && !locals.some((local) => normalizedValue(local) === "")) return "missing-reference";
@@ -334,19 +357,22 @@ function compareValues(locals, reference) {
 function metricFor(status) {
   const metrics = emptyMetrics();
   if (status === "not-observed") return metrics;
-  if (status === "matched" || status === "normalized-match" || status === "mismatched" || status === "missing-reference") metrics.found = 1;
+  if (status === "matched" || status === "normalized-match" || status === "mismatched" || status === "missing-reference" || status === "non-comparable") metrics.found = 1;
   if (status === "matched") metrics.matched = 1;
   if (status === "normalized-match") metrics.normalizedMatch = 1;
   if (status === "mismatched") metrics.mismatched = 1;
   if (status === "missing-local") metrics.missingLocal = 1;
   if (status === "missing-reference") metrics.missingReference = 1;
+  if (status === "non-comparable") metrics.nonComparable = 1;
   return metrics;
 }
 
 function compareEntry(result, external, entry) {
   const locals = localValues(result, entry);
   const reference = referenceValue(external, entry);
-  const status = compareValues(locals, reference);
+  let status = compareValues(locals, reference);
+  const hasTypedDiagnostic = entry.ifd !== undefined && entry.tag !== undefined && result.warnings.some((warning) => warning?.ifd === entry.ifd && warning?.tag === entry.tag && typeof warning.code === "string");
+  if (status === "mismatched" && hasTypedDiagnostic) status = "non-comparable";
   return {
     key: entry.name,
     fieldId: `${entry.family}:${entry.name}`,
@@ -355,15 +381,24 @@ function compareEntry(result, external, entry) {
     local: locals.length > 0 ? jsonSafe(locals[0]) : null,
     ...(locals.length > 1 ? { localCandidates: locals.map(jsonSafe) } : {}),
     reference: hasValue(reference) ? jsonSafe(reference) : null,
+    ...(status === "non-comparable" ? { comparisonReason: "local-value-has-typed-diagnostic" } : {}),
     metrics: metricFor(status),
   };
 }
 
 function compareBlock(result, external, entry) {
-  const local = result.blocks.some((block) => block.family === entry.family);
+  const local = result.blocks.some((block) => block.family === entry.family)
+    || (entry.family === "XMP" && result.heif?.some((graph) => graph.items.some((item) => item.type === "mime" && item.contentType?.toLowerCase().includes("rdf+xml"))) === true)
+    || (entry.family === "ICC" && result.heif?.some((graph) => graph.properties.some((property) => property.type === "colr")) === true);
   const reference = externalHasFamily(external, entry);
-  const status = local === reference ? (local ? "matched" : "not-observed") : local ? "missing-reference" : "missing-local";
-  return { key: `block:${entry.family}`, fieldId: `block:${entry.family}`, family: entry.family, status, local, reference, metrics: metricFor(status) };
+  const status = local === reference
+    ? (local ? "matched" : "not-observed")
+    : local
+      ? "missing-reference"
+      : result.warnings.length > 0
+        ? "non-comparable"
+        : "missing-local";
+  return { key: `block:${entry.family}`, fieldId: `block:${entry.family}`, family: entry.family, status, local, reference, ...(status === "non-comparable" ? { comparisonReason: "local-parser-emitted-typed-diagnostic" } : {}), metrics: metricFor(status) };
 }
 
 export function sha256(bytes) {
@@ -376,13 +411,18 @@ export function producerFor(result, external) {
   return hasValue(producer) ? String(producer).trim() || "unknown" : "unknown";
 }
 
-export function compareFixture({ relativePath, hash, bytes, result, external, registry }) {
+export function compareFixture(input) {
+  const { relativePath, hash, bytes, result, external, registry } = input;
   const rows = registry.fields.map((entry) => compareEntry(result, external, entry));
   rows.push(...registry.blocks.map((entry) => compareBlock(result, external, entry)));
   return {
     fixture: relativePath,
     bytes: bytes.length,
     sha256: hash ?? sha256(bytes),
+    corpusId: input.corpusId ?? "unknown",
+    corpusSource: input.corpusSource ?? "unknown",
+    corpusCommit: input.corpusCommit ?? null,
+    corpusLicense: input.corpusLicense ?? null,
     format: result.format,
     producer: producerFor(result, external),
     localBlocks: result.blocks.map((block) => block.family),
@@ -401,6 +441,9 @@ export function summarize(fixtures) {
   const byProducer = new Map();
   const byFormatField = new Map();
   const byFormat = new Map();
+  const byCorpusField = new Map();
+  const byCorpus = new Map();
+  const byMetadataFamily = new Map();
   for (const fixture of fixtures) {
     for (const row of fixture.rows) {
       const fieldId = row.fieldId ?? `${row.family}:${row.key}`;
@@ -417,6 +460,15 @@ export function summarize(fixtures) {
       addMetrics(byFormatField.get(formatFieldKey), row.metrics);
       if (!byFormat.has(format)) byFormat.set(format, { format, ...emptyMetrics() });
       addMetrics(byFormat.get(format), row.metrics);
+      const corpus = fixture.corpusId ?? "unknown";
+      const corpusFieldKey = `${corpus}\u0000${fieldId}`;
+      if (!byCorpusField.has(corpusFieldKey)) byCorpusField.set(corpusFieldKey, { corpus, field: fieldId, key: row.key, family: row.family, ...emptyMetrics() });
+      addMetrics(byCorpusField.get(corpusFieldKey), row.metrics);
+      if (!byCorpus.has(corpus)) byCorpus.set(corpus, { corpus, ...emptyMetrics() });
+      addMetrics(byCorpus.get(corpus), row.metrics);
+      const family = row.family ?? "unknown";
+      if (!byMetadataFamily.has(family)) byMetadataFamily.set(family, { family, ...emptyMetrics() });
+      addMetrics(byMetadataFamily.get(family), row.metrics);
     }
   }
   const totals = emptyMetrics();
@@ -433,6 +485,9 @@ export function summarize(fixtures) {
     byProducerField: [...byProducerField.values()].sort((a, b) => a.producer.localeCompare(b.producer) || a.field.localeCompare(b.field)),
     byFormat: [...byFormat.values()].sort((a, b) => a.format.localeCompare(b.format)),
     byFormatField: [...byFormatField.values()].sort((a, b) => a.format.localeCompare(b.format) || a.field.localeCompare(b.field)),
+    byCorpus: [...byCorpus.values()].sort((a, b) => a.corpus.localeCompare(b.corpus)),
+    byCorpusField: [...byCorpusField.values()].sort((a, b) => a.corpus.localeCompare(b.corpus) || a.field.localeCompare(b.field)),
+    byMetadataFamily: [...byMetadataFamily.values()].sort((a, b) => a.family.localeCompare(b.family)),
   };
 }
 
@@ -463,36 +518,78 @@ function matchesAllowlist(row, fixture, allowlist, currentVersion) {
   );
 }
 
-export function evaluateGate({ fixtures, minimumFixtures = 100, maxMissingLocalRate = 0.05, maxMismatched = 0, allowlist = { entries: [] }, currentVersion }) {
+export function evaluateGate({
+  fixtures,
+  minimumFixtures = 100,
+  minimumUniqueFixtures = minimumFixtures,
+  minimumComparableValues = 0,
+  minimumSemanticAgreement = 0,
+  maxMissingLocalRate = 0.05,
+  maxMismatched = 0,
+  allowlist = { entries: [] },
+  currentVersion,
+}) {
   const failures = [];
   let referencePresent = 0;
   let missingLocal = 0;
+  let rawMissingLocal = 0;
   let mismatched = 0;
+  let rawMismatched = 0;
+  let allowlistedMismatched = 0;
+  let comparableValues = 0;
+  let agreedValues = 0;
   let fixtureErrors = 0;
+  const uniqueHashes = new Set();
   if (fixtures.length < minimumFixtures) failures.push(`Expected at least ${minimumFixtures} fixtures, found ${fixtures.length}.`);
+  for (const fixture of fixtures) if (typeof fixture.sha256 === "string" && fixture.sha256.length > 0) uniqueHashes.add(fixture.sha256);
+  if (uniqueHashes.size < minimumUniqueFixtures) failures.push(`Expected at least ${minimumUniqueFixtures} unique fixture hashes, found ${uniqueHashes.size}.`);
   for (const fixture of fixtures) {
     if (fixture.error !== undefined) {
       fixtureErrors += 1;
       failures.push(`${fixture.fixture}: ${fixture.error}`);
     }
     for (const row of fixture.rows) {
-      if (row.status === "mismatched" && !matchesAllowlist(row, fixture, allowlist, currentVersion)) mismatched += 1;
+      const allowlisted = matchesAllowlist(row, fixture, allowlist, currentVersion);
+      if (row.status === "mismatched") {
+        rawMismatched += 1;
+        comparableValues += 1;
+        if (allowlisted) allowlistedMismatched += 1;
+        else mismatched += 1;
+      }
+      if (row.status === "matched" || row.status === "normalized-match") {
+        comparableValues += 1;
+        agreedValues += 1;
+      }
       if (["matched", "normalized-match", "mismatched", "missing-local"].includes(row.status)) referencePresent += 1;
-      if (row.status === "missing-local" && !matchesAllowlist(row, fixture, allowlist, currentVersion)) missingLocal += 1;
+      if (row.status === "missing-local") {
+        rawMissingLocal += 1;
+        if (!allowlisted) missingLocal += 1;
+      }
+      if (row.status === "mismatched" && allowlisted) agreedValues += 1;
+      if (row.fieldId?.startsWith("block:") && row.status === "missing-local" && !allowlisted) failures.push(`${fixture.fixture}: metadata family ${row.family} was found by the reference but absent locally.`);
     }
   }
   const missingRate = referencePresent === 0 ? 0 : missingLocal / referencePresent;
+  const semanticAgreement = comparableValues === 0 ? 0 : agreedValues / comparableValues;
+  if (comparableValues < minimumComparableValues) failures.push(`Expected at least ${minimumComparableValues} comparable values, found ${comparableValues}.`);
+  if (comparableValues > 0 && semanticAgreement < minimumSemanticAgreement) failures.push(`Semantic agreement ${(semanticAgreement * 100).toFixed(2)}% is below ${(minimumSemanticAgreement * 100).toFixed(2)}% threshold.`);
+  if (comparableValues === 0 && minimumSemanticAgreement > 0) failures.push(`No meaningful semantic comparison occurred; minimum agreement is ${(minimumSemanticAgreement * 100).toFixed(2)}%.`);
   if (mismatched > maxMismatched) failures.push(`Mismatched count ${mismatched} exceeds ${maxMismatched} threshold.`);
   if (missingRate > maxMissingLocalRate) failures.push(`Missing-local rate ${(missingRate * 100).toFixed(2)}% exceeds ${(maxMissingLocalRate * 100).toFixed(2)}% threshold.`);
   return {
     passed: failures.length === 0,
     failures,
     minimumFixtures,
-    thresholds: { maxMissingLocalRate, maxMismatched, maxFixtureErrors: 0 },
-    observed: { fixtureCount: fixtures.length, fixtureErrors, referencePresent, missingLocal, mismatched },
+    minimumUniqueFixtures,
+    minimumComparableValues,
+    minimumSemanticAgreement,
+    thresholds: { maxMissingLocalRate, maxMismatched, maxFixtureErrors: 0, minimumSemanticAgreement },
+    observed: { fixtureCount: fixtures.length, uniqueFixtureCount: uniqueHashes.size, fixtureErrors, referencePresent, missingLocal, rawMissingLocal, mismatched, rawMismatched, allowlistedMismatched, comparableValues, agreedValues, semanticAgreement },
     missingLocalRate: missingRate,
     maxMissingLocalRate,
     mismatched,
+    rawMismatched,
+    semanticAgreement,
   };
 }
 
@@ -507,12 +604,19 @@ export function renderMarkdown(report) {
   const byProducer = report.summary.byProducer ?? [];
   const byProducerField = report.summary.byProducerField ?? [];
   const byFormat = report.summary.byFormat ?? [];
+  const byCorpus = report.summary.byCorpus ?? [];
+  const byCorpusField = report.summary.byCorpusField ?? [];
+  const byMetadataFamily = report.summary.byMetadataFamily ?? [];
+  const observed = report.gate.observed ?? {};
+  const corpusEntries = corpus.corpora ?? [];
   const lines = [
     "# External corpus differential report",
     "",
     `- Schema: \`${report.schema}\``,
     `- Fixtures examined: ${corpus.fixtureCount ?? 0} (minimum ${report.gate.minimumFixtures})`,
-    `- Corpus: ${corpus.source ?? "unknown"} @ \`${corpus.commit ?? corpus.pinnedCommit ?? "unknown"}\``,
+    `- Unique fixture hashes: ${observed.uniqueFixtureCount ?? corpus.uniqueFixtureCount ?? 0} (minimum ${report.gate.minimumUniqueFixtures ?? report.gate.minimumFixtures})`,
+    `- Corpus: ${corpus.source ?? "unknown"} @ \`${corpus.commit ?? corpus.pinnedCommit ?? "multiple pinned revisions"}\``,
+    ...corpusEntries.map((entry) => `- Corpus source: **${entry.id}** — ${entry.source} @ \`${entry.commit}\`; ${entry.fixtureCount ?? 0} fixtures; license/provenance: ${entry.licenseSource ?? "recorded in manifest"}`),
     `- Total fixture bytes: ${corpus.totalBytes ?? "unknown"}`,
     `- Package: ${report.package?.name ?? "unknown"} ${report.package?.version ?? "unknown"}`,
     `- Reference: ${reference.tool ?? "unknown"}; package ${reference.package ?? "unknown"}; ExifTool ${reference.version ?? "unknown"}`,
@@ -522,36 +626,57 @@ export function renderMarkdown(report) {
     `- Gate: **${report.gate.passed ? "PASS" : "FAIL"}**`,
     `- Missing-local rate: ${(report.gate.missingLocalRate * 100).toFixed(2)}% (maximum ${(thresholds.maxMissingLocalRate * 100).toFixed(2)}%)`,
     `- Mismatches: ${report.gate.observed?.mismatched ?? report.gate.mismatched ?? 0} (maximum ${thresholds.maxMismatched ?? 0})`,
+    `- Comparable values: ${observed.comparableValues ?? 0} (minimum ${report.gate.minimumComparableValues ?? 0})`,
+    `- Semantic agreement: ${((observed.semanticAgreement ?? report.gate.semanticAgreement ?? 0) * 100).toFixed(2)}% (minimum ${((report.gate.minimumSemanticAgreement ?? thresholds.minimumSemanticAgreement ?? 0) * 100).toFixed(2)}%)`,
+    `- Non-comparable values: ${report.summary.totals.nonComparable ?? 0}`,
     "",
     "## Totals",
     "",
-    "| found | matched | normalized-match | mismatched | missing-local | missing-reference |",
-    "| ---: | ---: | ---: | ---: | ---: | ---: |",
-    `| ${report.summary.totals.found} | ${report.summary.totals.matched} | ${report.summary.totals.normalizedMatch} | ${report.summary.totals.mismatched} | ${report.summary.totals.missingLocal} | ${report.summary.totals.missingReference} |`,
+    "| found | matched | normalized-match | mismatched | missing-local | missing-reference | non-comparable |",
+    "| ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    `| ${report.summary.totals.found} | ${report.summary.totals.matched} | ${report.summary.totals.normalizedMatch} | ${report.summary.totals.mismatched} | ${report.summary.totals.missingLocal} | ${report.summary.totals.missingReference} | ${report.summary.totals.nonComparable} |`,
     "",
     "## Per-field results",
     "",
-    "| field | family | found | matched | normalized | mismatched | missing local | missing reference |",
-    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ...byField.map((item) => `| ${item.field ?? item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
+    "| field | family | found | matched | normalized | mismatched | missing local | missing reference | non-comparable |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byField.map((item) => `| ${item.field ?? item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} | ${item.nonComparable} |`),
     "",
     "## Per-producer results",
     "",
-    "| producer | found | matched | normalized | mismatched | missing local | missing reference |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ...byProducer.map((item) => `| ${item.producer} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
+    "| producer | found | matched | normalized | mismatched | missing local | missing reference | non-comparable |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byProducer.map((item) => `| ${item.producer} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} | ${item.nonComparable} |`),
     "",
     "## Per-producer field results",
     "",
-    "| producer | field | family | found | matched | normalized | mismatched | missing local | missing reference |",
-    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ...byProducerField.map((item) => `| ${item.producer} | ${item.field ?? item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
+    "| producer | field | family | found | matched | normalized | mismatched | missing local | missing reference | non-comparable |",
+    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byProducerField.map((item) => `| ${item.producer} | ${item.field ?? item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} | ${item.nonComparable} |`),
     "",
     "## Per-format totals",
     "",
-    "| format | found | matched | normalized | mismatched | missing local | missing reference |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ...byFormat.map((item) => `| ${item.format} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} |`),
+    "| format | found | matched | normalized | mismatched | missing local | missing reference | non-comparable |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byFormat.map((item) => `| ${item.format} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} | ${item.nonComparable} |`),
+    "",
+    "## Per-corpus totals",
+    "",
+    "| corpus | found | matched | normalized | mismatched | missing local | missing reference | non-comparable |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byCorpus.map((item) => `| ${item.corpus} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} | ${item.nonComparable} |`),
+    "",
+    "## Per-metadata-family totals",
+    "",
+    "| family | found | matched | normalized | mismatched | missing local | missing reference | non-comparable |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byMetadataFamily.map((item) => `| ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} | ${item.nonComparable} |`),
+    "",
+    "## Per-corpus field results",
+    "",
+    "| corpus | field | family | found | matched | normalized | mismatched | missing local | missing reference | non-comparable |",
+    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...byCorpusField.map((item) => `| ${item.corpus} | ${item.field ?? item.key} | ${item.family} | ${item.found} | ${item.matched} | ${item.normalizedMatch} | ${item.mismatched} | ${item.missingLocal} | ${item.missingReference} | ${item.nonComparable} |`),
     "",
     "## Fixture hashes",
     "",

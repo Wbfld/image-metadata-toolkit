@@ -72,7 +72,7 @@ file is absent or changed. It records only paths, lengths, hashes, decoded
 identities, normalized value hashes, counts, and diagnostics; it does not copy
 image bytes into reports.
 
-The secondary oracle is `exiftool-vendored` 33.5.0 with bundled ExifTool 13.42
+The secondary oracle is `exiftool-vendored` 38.1.0 with bundled ExifTool 13.59
 (MIT wrapper; Artistic License 2.0/GPL-1.0-or-later tool). It is used only to
 compare output values and presence after the B08 pack has independently parsed
 the source. A null or unavailable oracle value is explicitly non-comparable,

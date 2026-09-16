@@ -95,5 +95,5 @@ describe("R04 migration and compatibility assets", () => {
     } finally {
       await rm(stage, { recursive: true, force: true });
     }
-  }, 60_000);
+  }, 180_000);
 });

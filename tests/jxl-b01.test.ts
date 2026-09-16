@@ -4,6 +4,16 @@ import { parseMetadata, type JxlBrotliDecompressor } from "../src/index.js";
 
 const SIGNATURE = Uint8Array.of(0, 0, 0, 12, 0x4a, 0x58, 0x4c, 0x20, 0x0d, 0x0a, 0x87, 0x0a);
 
+function concat(...parts: readonly Uint8Array[]): Uint8Array {
+  const output = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    output.set(part, offset);
+    offset += part.length;
+  }
+  return output;
+}
+
 function appendBits(output: number[], value: number, count: number): void {
   for (let index = 0; index < count; index += 1) output.push((value >>> index) & 1);
 }
@@ -41,6 +51,36 @@ function codestream(width: number, height: number): Uint8Array {
   return output;
 }
 
+function codestreamLayout(height: number, ratio: number, width?: number): Uint8Array {
+  const bits: number[] = [];
+  const small = width !== undefined && width <= 256 && height <= 256 && width % 8 === 0 && height % 8 === 0;
+  bits.push(small ? 1 : 0);
+  if (small) appendBits(bits, height / 8 - 1, 5);
+  else {
+    const [, selector, value, count] = sizeValue(height);
+    appendBits(bits, selector, 2);
+    appendBits(bits, value, count);
+  }
+  appendBits(bits, ratio, 3);
+  if (ratio === 0) {
+    if (small) {
+      appendBits(bits, width / 8 - 1, 5);
+    }
+    else {
+      const [, selector, value, count] = sizeValue(width ?? 8);
+      appendBits(bits, selector, 2);
+      appendBits(bits, value, count);
+    }
+  }
+  const output = new Uint8Array(2 + Math.ceil(bits.length / 8));
+  output.set([0xff, 0x0a]);
+  bits.forEach((bit, index) => {
+    const offset = 2 + Math.floor(index / 8);
+    output[offset] = (output[offset] ?? 0) | (bit << (index % 8));
+  });
+  return output;
+}
+
 function box(type: string, payload: Uint8Array, extended = false): Uint8Array {
   const headerLength = extended ? 16 : 8;
   const output = new Uint8Array(headerLength + payload.length);
@@ -51,6 +91,12 @@ function box(type: string, payload: Uint8Array, extended = false): Uint8Array {
   } else view.setUint32(0, output.length);
   output.set(new TextEncoder().encode(type), 4);
   output.set(payload, headerLength);
+  return output;
+}
+
+function zeroSizedBox(type: string, payload: Uint8Array): Uint8Array {
+  const output = box(type, payload);
+  new DataView(output.buffer).setUint32(0, 0);
   return output;
 }
 
@@ -116,6 +162,30 @@ describe("B01 JPEG XL dimensions and compressed metadata", () => {
     const partial = await parseMetadata(container(box("jxlp", second), box("jxlp", first)));
     expect(partial.dimensions).toEqual({ width: 640, height: 480 });
     expect(partial.warnings).toEqual([]);
+  });
+
+  it("covers every codestream ratio and non-small size selector", async () => {
+    for (const ratio of [1, 2, 3, 4, 5, 6, 7]) {
+      const result = await parseMetadata(codestreamLayout(16, ratio, 16));
+      expect(result.dimensions).toEqual({ width: Math.floor(16 * ([1, 1.2, 4 / 3, 1.5, 16 / 9, 1.25, 2][ratio - 1] ?? 1)), height: 16 });
+      expect(result.warnings).toContainEqual(expect.objectContaining({ code: "UNSUPPORTED_STRUCTURE" }));
+    }
+
+    for (const size of [512, 8192, 262144, 262145]) {
+      const result = await parseMetadata(codestreamLayout(size, 0, size));
+      expect(result.dimensions).toEqual({ width: size, height: size });
+    }
+
+    for (const truncated of [
+      Uint8Array.of(0xff, 0x0a, 0x00),
+      Uint8Array.of(0xff, 0x0a, 0x01),
+      Uint8Array.of(0xff, 0x0a, 0x02, 0x00),
+      codestreamLayout(16, 0, 16).slice(0, 3),
+    ]) {
+      const result = await parseMetadata(truncated);
+      expect(result.dimensions).toBeNull();
+      expect(result.warnings).toContainEqual(expect.objectContaining({ code: "TRUNCATED_DATA" }));
+    }
   });
 
   it("decodes Brotli-compressed XMP and Exif through the injected implementation", async () => {
@@ -207,5 +277,53 @@ describe("B01 JPEG XL dimensions and compressed metadata", () => {
     const contradictory = await parseMetadata(container(box("jxlc", codestream(100, 100)), box("jxlp", fragment)));
     expect(contradictory.dimensions).toBeNull();
     expect(contradictory.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_JXL" }));
+  });
+
+  it("covers extended and zero-sized boxes plus every partial-stream topology failure", async () => {
+    const stream = codestream(320, 240);
+    expect((await parseMetadata(container(zeroSizedBox("jxlc", stream)))).dimensions).toEqual({ width: 320, height: 240 });
+    expect((await parseMetadata(container(box("jxlc", stream, true)))).dimensions).toEqual({ width: 320, height: 240 });
+
+    const oversized = new Uint8Array(SIGNATURE.length + 16);
+    oversized.set(SIGNATURE);
+    const oversizedView = new DataView(oversized.buffer);
+    oversizedView.setUint32(SIGNATURE.length, 1);
+    oversized.set(new TextEncoder().encode("jxlc"), SIGNATURE.length + 4);
+    oversizedView.setBigUint64(SIGNATURE.length + 8, 0xffffffffffffffffn);
+    const oversizedResult = await parseMetadata(oversized);
+    expect(oversizedResult.warnings).toContainEqual(expect.objectContaining({ code: "UNSAFE_OFFSET" }));
+
+    const shortExtended = new Uint8Array(SIGNATURE.length + 12);
+    shortExtended.set(SIGNATURE);
+    new DataView(shortExtended.buffer).setUint32(SIGNATURE.length, 1);
+    shortExtended.set(new TextEncoder().encode("jxlc"), SIGNATURE.length + 4);
+    expect((await parseMetadata(shortExtended)).warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_JXL" }));
+
+    const fragment = (sequence: number, last: boolean, payload: Uint8Array): Uint8Array => {
+      const word = (last ? 0x80000000 : 0) | sequence;
+      const sequenceBytes = new Uint8Array(4);
+      new DataView(sequenceBytes.buffer).setUint32(0, word >>> 0);
+      return box("jxlp", concat(sequenceBytes, payload));
+    };
+    const missingSequence = await parseMetadata(container(box("jxlp", Uint8Array.of(1, 2, 3))));
+    expect(missingSequence.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_JXL" }));
+    const gap = await parseMetadata(container(fragment(1, true, stream)));
+    expect(gap.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_JXL" }));
+    const twoFinal = await parseMetadata(container(fragment(0, true, stream.subarray(0, 4)), fragment(1, true, stream.subarray(4))));
+    expect(twoFinal.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_JXL" }));
+    const tooMany = await parseMetadata(container(fragment(0, false, stream.subarray(0, 4)), fragment(1, true, stream.subarray(4))), { limits: { maxSegments: 1 } });
+    expect(tooMany.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_JXL" }));
+  });
+
+  it("rejects custom decompressor return shapes, thrown errors, and aborts", async () => {
+    const packet = new TextEncoder().encode("<x:xmpmeta/>");
+    const input = container(compressedBox("xml ", packet));
+    const invalidView = await parseMetadata(input, { jxlBrotliDecompressor: () => new DataView(new ArrayBuffer(2)) as never });
+    expect(invalidView.warnings).toContainEqual(expect.objectContaining({ code: "INVALID_VALUE" }));
+    const thrown = await parseMetadata(input, { jxlBrotliDecompressor: () => { throw new Error("decoder failure"); } });
+    expect(thrown.warnings).toContainEqual(expect.objectContaining({ code: "INVALID_VALUE" }));
+    const controller = new AbortController();
+    controller.abort();
+    await expect(parseMetadata(input, { signal: controller.signal, jxlBrotliDecompressor: () => packet })).rejects.toMatchObject({ code: "ABORTED" });
   });
 });

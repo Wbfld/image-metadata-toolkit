@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseMetadata } from "../src/index.js";
 import { toJsonSafeResult } from "../src/adapters.js";
+import { parseHeifDimensions } from "../src/parsers/heif.js";
 import { parseHeifSequences } from "../src/heif-sequences.js";
 import { resolveLimits } from "../src/security/limits.js";
 import type { HeifItemGraph } from "../src/types.js";
@@ -85,7 +86,7 @@ function hdlr(handlerType: string, name: string): Uint8Array {
   return box("hdlr", full(0, 0, new Uint8Array(4), text(handlerType), new Uint8Array(12), text(name), Uint8Array.of(0)));
 }
 
-function visualSampleEntry(format: string, width: number, height: number): Uint8Array {
+function visualSampleEntry(format: string, width: number, height: number, children: readonly Uint8Array[] = []): Uint8Array {
   const payload = new Uint8Array(78);
   payload.set(new Uint8Array(6), 0);
   payload.set(u16(1), 6);
@@ -96,7 +97,7 @@ function visualSampleEntry(format: string, width: number, height: number): Uint8
   payload.set(u16(1), 40);
   payload.set(u16(0x0018), 72);
   payload.set(u16(0xffff), 76);
-  return box(format, payload);
+  return box(format, payload, ...children);
 }
 
 function metadataSampleEntry(format = "mett"): Uint8Array {
@@ -138,6 +139,10 @@ function stco(offset: number): Uint8Array {
   return box("stco", full(0, 0, u32(1), u32(offset)));
 }
 
+function co64(offset: number): Uint8Array {
+  return box("co64", full(0, 0, u32(1), u64(offset)));
+}
+
 function stss(samples: readonly number[]): Uint8Array {
   return box("stss", full(0, 0, u32(samples.length), ...samples.map(u32)));
 }
@@ -150,13 +155,13 @@ function trackReference(type: string, targetIds: readonly number[]): Uint8Array 
   return box(type, ...targetIds.map(u32));
 }
 
-function track(options: { id: number; handler: string; width?: number; height?: number; sampleSizes: readonly number[]; sampleOffset: number; reference?: Uint8Array; fragmented?: boolean; matrix?: readonly number[]; compactSampleSize?: 4 | 8 | 16; version?: 0 | 1; editList?: Uint8Array }): Uint8Array {
+function track(options: { id: number; handler: string; width?: number; height?: number; sampleSizes: readonly number[]; sampleOffset: number; reference?: Uint8Array; fragmented?: boolean; matrix?: readonly number[]; compactSampleSize?: 4 | 8 | 16; version?: 0 | 1; editList?: Uint8Array; sampleChildren?: readonly Uint8Array[]; offsetKind?: "stco" | "co64" }): Uint8Array {
   const width = options.width ?? 0;
   const height = options.height ?? 0;
-  const entry = options.handler === "pict" ? visualSampleEntry("av01", width, height) : metadataSampleEntry();
+  const entry = options.handler === "pict" ? visualSampleEntry("av01", width, height, options.sampleChildren) : metadataSampleEntry();
   const sampleTable = options.fragmented
     ? box("stbl", stsd(entry), stsz([]))
-    : box("stbl", stsd(entry), stts(options.sampleSizes.length, 1000), ctts(options.sampleSizes.length, -100), stsc(options.sampleSizes.length), options.compactSampleSize === undefined ? stsz(options.sampleSizes) : stz2(options.compactSampleSize, options.sampleSizes), stco(options.sampleOffset), stss([1, options.sampleSizes.length]));
+    : box("stbl", stsd(entry), stts(options.sampleSizes.length, 1000), ctts(options.sampleSizes.length, -100), stsc(options.sampleSizes.length), options.compactSampleSize === undefined ? stsz(options.sampleSizes) : stz2(options.compactSampleSize, options.sampleSizes), options.offsetKind === "co64" ? co64(options.sampleOffset) : stco(options.sampleOffset), stss([1, options.sampleSizes.length]));
   const media = box("mdia", mdhd(1000, options.sampleSizes.length * 1000, "eng", options.version ?? 0), hdlr(options.handler, options.handler === "pict" ? "picture sequence" : "metadata sequence"), box("minf", sampleTable));
   return box("trak", tkhd(options.id, width, height, options.sampleSizes.length * 1000, options.matrix, options.version ?? 0), options.reference === undefined ? new Uint8Array(0) : box("tref", options.reference), options.editList ?? new Uint8Array(0), media);
 }
@@ -170,6 +175,11 @@ function tfhd(trackId: number, size: number, duration: number, defaultBaseIsMoof
   return box("tfhd", full(0, flags, u32(trackId), u32(1), u32(duration), u32(size)));
 }
 
+function tfhdWithExplicitBase(trackId: number, size: number, duration: number): Uint8Array {
+  const flags = 0x000001 | 0x000002 | 0x000008 | 0x000010 | 0x000020;
+  return box("tfhd", full(0, flags, u32(trackId), u64(0), u32(1), u32(duration), u32(size), u32(0)));
+}
+
 function tfdt(value: number): Uint8Array {
   return box("tfdt", full(0, 0, u32(value)));
 }
@@ -177,6 +187,11 @@ function tfdt(value: number): Uint8Array {
 function trun(samples: readonly { readonly size: number; readonly duration: number; readonly flags: number; readonly offset: number }[], dataOffset: number): Uint8Array {
   const flags = 0x000001 | 0x000100 | 0x000200 | 0x000400 | 0x000800;
   return box("trun", full(1, flags, u32(samples.length), i32(dataOffset), ...samples.flatMap((sample) => [u32(sample.duration), u32(sample.size), u32(sample.flags), i32(sample.offset)])));
+}
+
+function trunWithFirstFlags(samples: readonly { readonly size: number; readonly duration: number; readonly offset: number }[], dataOffset: number, firstFlags: number): Uint8Array {
+  const flags = 0x000001 | 0x000004 | 0x000100 | 0x000200 | 0x000800;
+  return box("trun", full(1, flags, u32(samples.length), i32(dataOffset), u32(firstFlags), ...samples.flatMap((sample) => [u32(sample.duration), u32(sample.size), i32(sample.offset)])));
 }
 
 function fragmentedMovie(trackId: number, sampleSizes: readonly number[], defaultBaseIsMoof = true, dataOffsetAdjustment = 0): { readonly movie: Uint8Array; readonly media: Uint8Array } {
@@ -188,26 +203,41 @@ function fragmentedMovie(trackId: number, sampleSizes: readonly number[], defaul
   return { movie: Uint8Array.from([...movie, ...moof]), media: box("mdat", media) };
 }
 
-function sequenceFixture(options: { readonly brand?: string; readonly pictureTracks?: number; readonly fragmented?: boolean; readonly unsafeOffset?: boolean; readonly unresolvedFragmentOffset?: boolean; readonly fragmentDataOffsetAdjustment?: number; readonly duplicateTrackId?: boolean; readonly compactSampleSize?: 4 | 8 | 16; readonly version?: 0 | 1; readonly matrix?: readonly number[]; readonly edits?: boolean } = {}): Uint8Array {
+function explicitBaseFragmentedMovie(trackId: number, sampleSizes: readonly number[]): { readonly movie: Uint8Array; readonly media: Uint8Array } {
+  const movie = box("moov", mvhd(), box("trak", tkhd(trackId, 320, 240, 3000), box("mdia", mdhd(), hdlr("pict", "explicit base picture"), box("minf", box("stbl", stsd(visualSampleEntry("av01", 320, 240)), stsz([]))))), box("mvex", trex(trackId, sampleSizes[0] ?? 0, 1000)));
+  const samples = sampleSizes.map((size, index) => ({ size, duration: 1000, offset: index === 0 ? 0 : -10 }));
+  const provisionalMoof = box("moof", box("traf", tfhdWithExplicitBase(trackId, sampleSizes[0] ?? 0, 1000), tfdtVersion1(0), trunWithFirstFlags(samples, 0, 0)));
+  const ftypBytes = ftyp("heic");
+  const dataOffset = ftypBytes.length + movie.length + provisionalMoof.length + 8;
+  const moof = box("moof", box("traf", tfhdWithExplicitBase(trackId, sampleSizes[0] ?? 0, 1000), tfdtVersion1(0), trunWithFirstFlags(samples, dataOffset, 0)));
+  const media = Uint8Array.from(Array.from({ length: sampleSizes.reduce((sum, size) => sum + size, 0) }, (_, index) => index & 0xff));
+  return { movie: Uint8Array.from([...ftypBytes, ...movie, ...moof]), media: box("mdat", media) };
+}
+
+function tfdtVersion1(value: number): Uint8Array {
+  return box("tfdt", full(1, 0, u64(value)));
+}
+
+function sequenceFixture(options: { readonly brand?: string; readonly pictureTracks?: number; readonly fragmented?: boolean; readonly unsafeOffset?: boolean; readonly unresolvedFragmentOffset?: boolean; readonly fragmentDataOffsetAdjustment?: number; readonly duplicateTrackId?: boolean; readonly compactSampleSize?: 4 | 8 | 16; readonly version?: 0 | 1; readonly matrix?: readonly number[]; readonly edits?: boolean; readonly sampleChildren?: readonly Uint8Array[]; readonly offsetKind?: "stco" | "co64" } = {}): Uint8Array {
   if (options.fragmented) {
     const parts = fragmentedMovie(1, [5, 5], !options.unresolvedFragmentOffset, options.fragmentDataOffsetAdjustment ?? 0);
     return Uint8Array.from([...ftyp(options.brand ?? "heic"), ...parts.movie, ...parts.media]);
   }
   const pictureTrackCount = options.pictureTracks ?? 1;
   const sampleData = Uint8Array.from({ length: pictureTrackCount * 15 + 3 }, (_, index) => index + 1);
-  const sizingTracks = Array.from({ length: pictureTrackCount }, (_, index) => track({ id: options.duplicateTrackId ? 1 : index + 1, handler: "pict", width: 320 + index, height: 240, sampleSizes: [4, 5, 6], sampleOffset: 0, ...(options.compactSampleSize === undefined ? {} : { compactSampleSize: options.compactSampleSize }), ...(options.version === undefined ? {} : { version: options.version }), ...(options.edits && index === 0 ? { editList: editList() } : {}), ...(index === 0 ? { matrix: options.matrix ?? [0, 1, 0, -1, 0, 0, 0, 0, 1] } : {}) }));
+  const sizingTracks = Array.from({ length: pictureTrackCount }, (_, index) => track({ id: options.duplicateTrackId ? 1 : index + 1, handler: "pict", width: 320 + index, height: 240, sampleSizes: [4, 5, 6], sampleOffset: 0, ...(options.compactSampleSize === undefined ? {} : { compactSampleSize: options.compactSampleSize }), ...(options.version === undefined ? {} : { version: options.version }), ...(options.edits && index === 0 ? { editList: editList() } : {}), ...(options.offsetKind === undefined ? {} : { offsetKind: options.offsetKind }), ...(index === 0 ? { matrix: options.matrix ?? [0, 1, 0, -1, 0, 0, 0, 0, 1], sampleChildren: options.sampleChildren } : {}) }));
   const metadataTrackId = pictureTrackCount + 1;
-  const metadataTrack = track({ id: metadataTrackId, handler: "meta", sampleSizes: [3], sampleOffset: 0, reference: trackReference("cdsc", [pictureTrackCount === 1 ? 1 : 2]), ...(options.version === undefined ? {} : { version: options.version }) });
+  const metadataTrack = track({ id: metadataTrackId, handler: "meta", sampleSizes: [3], sampleOffset: 0, reference: trackReference("cdsc", [pictureTrackCount === 1 ? 1 : 2]), ...(options.version === undefined ? {} : { version: options.version }), ...(options.offsetKind === undefined ? {} : { offsetKind: options.offsetKind }) });
   const movieWithoutOffsets = box("moov", mvhd(1000, 3000, options.version ?? 0), ...sizingTracks, metadataTrack);
   const firstPayloadOffset = ftyp(options.brand ?? "heic").length + movieWithoutOffsets.length + 8;
   let cursor = firstPayloadOffset;
   const pictureTracks = Array.from({ length: pictureTrackCount }, (_, index) => {
     const sizes = [4, 5, 6];
-    const value = track({ id: options.duplicateTrackId ? 1 : index + 1, handler: "pict", width: 320 + index, height: 240, sampleSizes: sizes, sampleOffset: options.unsafeOffset ? 0xfffffff0 : cursor, ...(options.compactSampleSize === undefined ? {} : { compactSampleSize: options.compactSampleSize }), ...(options.version === undefined ? {} : { version: options.version }), ...(options.edits && index === 0 ? { editList: editList() } : {}), ...(index === 0 ? { matrix: options.matrix ?? [0, 1, 0, -1, 0, 0, 0, 0, 1] } : {}) });
+    const value = track({ id: options.duplicateTrackId ? 1 : index + 1, handler: "pict", width: 320 + index, height: 240, sampleSizes: sizes, sampleOffset: options.unsafeOffset ? 0xfffffff0 : cursor, ...(options.compactSampleSize === undefined ? {} : { compactSampleSize: options.compactSampleSize }), ...(options.version === undefined ? {} : { version: options.version }), ...(options.edits && index === 0 ? { editList: editList() } : {}), ...(options.offsetKind === undefined ? {} : { offsetKind: options.offsetKind }), ...(index === 0 ? { matrix: options.matrix ?? [0, 1, 0, -1, 0, 0, 0, 0, 1], sampleChildren: options.sampleChildren } : {}) });
     cursor += sizes.reduce((sum, size) => sum + size, 0);
     return value;
   });
-  const metadata = track({ id: metadataTrackId, handler: "meta", sampleSizes: [3], sampleOffset: options.unsafeOffset ? 0xfffffff0 : cursor, reference: trackReference("cdsc", [pictureTrackCount === 1 ? 1 : 2]), ...(options.version === undefined ? {} : { version: options.version }) });
+  const metadata = track({ id: metadataTrackId, handler: "meta", sampleSizes: [3], sampleOffset: options.unsafeOffset ? 0xfffffff0 : cursor, reference: trackReference("cdsc", [pictureTrackCount === 1 ? 1 : 2]), ...(options.version === undefined ? {} : { version: options.version }), ...(options.offsetKind === undefined ? {} : { offsetKind: options.offsetKind }) });
   const movie = box("moov", mvhd(1000, 3000, options.version ?? 0), ...pictureTracks, metadata);
   return Uint8Array.from([...ftyp(options.brand ?? "heic"), ...movie, ...box("mdat", sampleData)]);
 }
@@ -257,6 +287,7 @@ function setByteInBox(bytes: Uint8Array, type: string, relativeOffset: number, v
   }
   throw new Error(`Fixture box ${type} occurrence ${occurrence} was not found`);
 }
+
 
 function setBoxSize(bytes: Uint8Array, type: string, size: number, occurrence = 0): Uint8Array {
   const output = bytes.slice();
@@ -509,10 +540,233 @@ describe("B03 HEIF/AVIF sequences and multi-image results", () => {
     expect(parseHeifSequences(auxiliary, resolveLimits()).sequences[0]?.tracks[1]?.kind).toBe("auxiliary");
   });
 
+  it("covers unfragmented sample-table branches and fragmented default failures", () => {
+    const tableCases = [
+      setByteInBox(sequenceFixture({ edits: true }), "elst", 0, 2),
+      setBoxPayloadU32(sequenceFixture(), "stts", 8, 0),
+      setBoxPayloadU32(sequenceFixture(), "stts", 4, 0xffffffff),
+      setBoxPayloadU32(sequenceFixture(), "stsc", 8, 0),
+      setBoxPayloadU32(sequenceFixture(), "stsc", 12, 0),
+      setBoxPayloadU32(sequenceFixture(), "stsc", 16, 0),
+      setBoxPayloadU32(sequenceFixture(), "stsc", 4, 0xffffffff),
+      setBoxPayloadU32(sequenceFixture(), "stco", 8, 0xffffffff),
+      replaceBoxType(sequenceFixture(), "stco", "co64"),
+      setBoxPayloadU32(sequenceFixture(), "stsz", 4, 7),
+      setBoxPayloadU32(sequenceFixture(), "stsz", 8, 0xffffffff),
+      setBoxPayloadU32(sequenceFixture(), "stss", 4, 0xffffffff),
+      setBoxPayloadU32(sequenceFixture(), "stss", 8, 0),
+      setByteInBox(sequenceFixture({ compactSampleSize: 4 }), "stz2", 8, 0xff),
+      replaceBoxType(sequenceFixture(), "tkhd", "free"),
+      setBoxSize(sequenceFixture(), "stsd", 16),
+      setByteInBox(sequenceFixture(), "hdlr", 24, 0xff),
+    ];
+    for (const value of tableCases) expect(parseHeifSequences(value, resolveLimits()).warnings.length).toBeGreaterThan(0);
+
+    const codecConfig = parseHeifSequences(sequenceFixture({ sampleChildren: [box("av1C", Uint8Array.of(1, 2, 3)), box("colr", Uint8Array.of(4, 5))] }), resolveLimits());
+    expect(codecConfig.sequences[0]?.tracks[0]?.sampleDescriptions[0]?.codecConfigurationTypes).toEqual(["av1C", "colr"]);
+
+    expect(parseHeifSequences(setBoxPayloadU32(sequenceFixture({ fragmented: true }), "trex", 4, 0), resolveLimits()).warnings.length).toBeGreaterThan(0);
+    expect(parseHeifSequences(setBoxSize(sequenceFixture({ fragmented: true }), "trun", 12), resolveLimits()).warnings.length).toBeGreaterThan(0);
+    expect(parseHeifSequences(setByteInBox(sequenceFixture({ fragmented: true }), "trun", 0, 2), resolveLimits()).warnings).toEqual([]);
+    expect(parseHeifSequences(setBoxPayloadU32(sequenceFixture({ fragmented: true }), "tfhd", 4, 0), resolveLimits()).warnings).toEqual([]);
+    expect(parseHeifSequences(replaceBoxType(sequenceFixture({ fragmented: true }), "tfdt", "free"), resolveLimits()).warnings).toEqual([]);
+  });
+
   it("keeps sequence fields available through the bounded JSON result adapter", async () => {
     const result = await parseMetadata(sequenceFixture({ fragmented: true }));
     const safe = toJsonSafeResult(result) as { readonly heifSequences?: readonly unknown[] };
     expect(safe.heifSequences).toHaveLength(1);
     expect(JSON.stringify(safe)).toContain("primaryTrackCandidates");
   });
+
+  it("covers missing-track structures, handler classes, table alternatives, and fragment defaults", () => {
+    const base = sequenceFixture();
+    const cases = [
+      replaceBoxType(base, "tkhd", "free"),
+      replaceBoxType(base, "mdia", "free"),
+      replaceBoxType(base, "mdhd", "free"),
+      replaceBoxType(base, "hdlr", "free"),
+      replaceBoxType(base, "minf", "free"),
+      replaceBoxType(base, "stbl", "free"),
+      replaceBoxType(base, "stsd", "free"),
+      setBoxPayloadU32(base, "stsd", 4, 0xffffffff),
+      setBoxPayloadU32(base, "stsz", 4, 1),
+      setBoxPayloadU32(base, "stsc", 8, 0),
+      setBoxPayloadU32(base, "stsc", 12, 0),
+      setBoxPayloadU32(base, "stsc", 16, 0),
+      setBoxPayloadU32(base, "stco", 4, 0xffffffff),
+      setBoxPayloadU32(base, "stts", 4, 0xffffffff),
+      setBoxPayloadU32(base, "ctts", 4, 0xffffffff),
+      setBoxPayloadU32(base, "stss", 4, 0xffffffff),
+    ];
+    for (const bytes of cases) {
+      const result = parseHeifSequences(bytes, resolveLimits({ maxIfdEntries: 4, maxImageDetailFrames: 4 }));
+      expect(result.sequences).toBeInstanceOf(Array);
+      expect(result.warnings.every(({ code }) => /^[A-Z][A-Z0-9_]+$/u.test(code))).toBe(true);
+    }
+
+    let unknown = base;
+    for (const [offset, value] of ["z", "z", "z", "z"].map((character, offset) => [8 + offset, character.charCodeAt(0)] as const)) unknown = setByteInBox(unknown, "hdlr", offset, value, 0);
+    const unknownResult = parseHeifSequences(unknown, resolveLimits()).sequences[0];
+    expect(unknownResult?.tracks[0]?.kind).toBe("unknown");
+
+    let mdta = base;
+    for (const [offset, value] of ["m", "d", "t", "a"].map((character, index) => [8 + index, character.charCodeAt(0)] as const)) mdta = setByteInBox(mdta, "hdlr", offset, value, 1);
+    expect(parseHeifSequences(mdta, resolveLimits()).sequences[0]?.tracks[1]?.kind).toBe("metadata");
+
+    const fragmented = sequenceFixture({ fragmented: true, unresolvedFragmentOffset: true });
+    const noTfdt = replaceBoxType(fragmented, "tfdt", "free");
+    const moovTypeOffset = fragmented.findIndex((value, index) => value === 0x6d && fragmented[index + 1] === 0x6f && fragmented[index + 2] === 0x6f && fragmented[index + 3] === 0x76);
+    const noMoov = fragmented.slice(Math.max(0, moovTypeOffset - 4));
+    const noMovieResult = parseHeifSequences(noMoov, resolveLimits());
+    expect(noMovieResult.sequences[0]?.fragmented).toBe(true);
+    expect(noMovieResult.sequences[0]?.complete).toBe(false);
+    expect(parseHeifSequences(noTfdt, resolveLimits()).sequences[0]?.fragmented).toBe(true);
+
+    const noDefaultBase = sequenceFixture({ fragmented: true, unresolvedFragmentOffset: true });
+    expect(parseHeifSequences(noDefaultBase, resolveLimits({ maxImageDetailFrames: 1 })).warnings.some(({ code }) => code === "UNSAFE_OFFSET" || code === "LIMIT_EXCEEDED")).toBe(true);
+  });
+
+  it("validates independent HEIF spatial extents, nesting, safe sizes, and agreement", () => {
+    const extent = (width: number, height: number): Uint8Array => box("ispe", full(0, 0, u32(width), u32(height)));
+    const container = (type: string, ...children: readonly Uint8Array[]): Uint8Array => box(type, ...children);
+    expect(parseHeifDimensions(extent(640, 480))).toEqual({ width: 640, height: 480 });
+    expect(parseHeifDimensions(container("meta", new Uint8Array(4), extent(640, 480)))).toEqual({ width: 640, height: 480 });
+    expect(parseHeifDimensions(container("meta", new Uint8Array(4), extent(640, 480), extent(640, 480)))).toEqual({ width: 640, height: 480 });
+    expect(parseHeifDimensions(container("meta", new Uint8Array(4), extent(640, 480), extent(320, 240)))).toBeNull();
+    expect(parseHeifDimensions(extent(0, 480))).toBeNull();
+    expect(parseHeifDimensions(box("free", Uint8Array.of(1, 2, 3)))).toBeNull();
+    expect(parseHeifDimensions(Uint8Array.of(0, 0, 0, 4, 0x69, 0x73, 0x70, 0x65))).toBeNull();
+    expect(parseHeifDimensions(container("meta", new Uint8Array(4), extent(640, 480)), 0)).toBeNull();
+    expect(parseHeifDimensions(container("meta", new Uint8Array(4), extent(640, 480)), 8, 1)).toBeNull();
+    const extended = new Uint8Array(16 + 12);
+    new DataView(extended.buffer).setUint32(0, 1);
+    extended.set(text("ispe"), 4);
+    new DataView(extended.buffer).setUint32(8, 0);
+    new DataView(extended.buffer).setUint32(12, 28);
+    extended.set(full(0, 0, u32(640), u32(480)), 16);
+    expect(parseHeifDimensions(extended)).toEqual({ width: 640, height: 480 });
+    const unsafeExtended = extended.slice();
+    new DataView(unsafeExtended.buffer).setUint32(8, 0x00ff0000);
+    expect(parseHeifDimensions(unsafeExtended)).toBeNull();
+    const aborted = new AbortController(); aborted.abort();
+    expect(() => parseHeifDimensions(extent(1, 1), 8, 8, aborted.signal)).toThrow();
+  });
+
+  it("exercises alternate sample tables, visual codec children, co64 offsets, and fragment defaults", () => {
+    const codecChild = box("av1C", Uint8Array.of(1, 2, 3, 4));
+    const withCodecChild = parseHeifSequences(sequenceFixture({ sampleChildren: [codecChild] }), resolveLimits()).sequences[0];
+    expect(withCodecChild?.tracks[0]?.sampleDescriptions[0]?.codecConfigurationTypes).toEqual(["av1C"]);
+
+    const truncatedCodecChild = box("av1C", Uint8Array.of(1, 2, 3, 4)).slice(0, 10);
+    const truncatedDescription = parseHeifSequences(sequenceFixture({ sampleChildren: [truncatedCodecChild] }), resolveLimits());
+    expect(truncatedDescription.warnings).toContainEqual(expect.objectContaining({ code: "TRUNCATED_DATA" }));
+
+    const co64 = parseHeifSequences(replaceBoxType(sequenceFixture(), "stco", "co64"), resolveLimits());
+    expect(co64.sequences[0]?.tracks[0]?.samples[0]?.offset).toBeNull();
+    expect(co64.warnings).toContainEqual(expect.objectContaining({ code: "TRUNCATED_DATA" }));
+
+    const fixedSize = parseHeifSequences(setBoxPayloadU32(sequenceFixture(), "stsz", 4, 4), resolveLimits()).sequences[0];
+    expect(fixedSize?.tracks[0]?.samples.map(({ byteLength }) => byteLength)).toEqual([4, 4, 4]);
+    expect(warningCodes(setBoxPayloadU32(sequenceFixture(), "stsz", 4, 4))).toContain("MALFORMED_HEIF");
+
+    const compactTrailing = setBoxPayloadU32(sequenceFixture({ compactSampleSize: 8 }), "stz2", 8, 2);
+    expect(warningCodes(compactTrailing)).toContain("MALFORMED_HEIF");
+    const chunkTrailing = setBoxPayloadU32(sequenceFixture(), "stsc", 4, 0);
+    expect(warningCodes(chunkTrailing)).toContain("MALFORMED_HEIF");
+
+    const limitedDescription = parseHeifSequences(sequenceFixture({ sampleChildren: [codecChild] }), resolveLimits({ maxIfdEntries: 1 }));
+    expect(limitedDescription.sequences[0]?.tracks[0]?.sampleDescriptions).toHaveLength(1);
+
+    let fragmentDefaults = sequenceFixture({ fragmented: true });
+    fragmentDefaults = setByteInBox(setByteInBox(fragmentDefaults, "tfhd", 1, 0), "tfhd", 2, 0);
+    fragmentDefaults = setByteInBox(fragmentDefaults, "tfhd", 3, 0);
+    const defaulted = parseHeifSequences(fragmentDefaults, resolveLimits());
+    expect(defaulted.sequences[0]?.tracks[0]?.samples).toHaveLength(2);
+    expect(defaulted.sequences[0]?.tracks[0]?.samples[0]?.byteLength).toBe(5);
+
+    const truncatedDecodeTime = setByteInBox(sequenceFixture({ fragmented: true }), "tfdt", 0, 1);
+    expect(warningCodes(truncatedDecodeTime)).toContain("TRUNCATED_DATA");
+    const defaultedRun = setByteInBox(setByteInBox(setByteInBox(sequenceFixture({ fragmented: true }), "trun", 1, 0), "trun", 2, 0), "trun", 3, 0);
+    expect(parseHeifSequences(defaultedRun, resolveLimits()).sequences[0]?.tracks[0]?.samples).toHaveLength(2);
+  });
+
+  it("retains valid BigTIFF-width sequence offsets, every supported matrix orientation, and explicit fragment defaults", () => {
+    const co64Result = parseHeifSequences(sequenceFixture({ offsetKind: "co64" }), resolveLimits());
+    expect(co64Result.warnings.filter(({ severity }) => severity === "error")).toEqual([]);
+    expect(co64Result.sequences[0]?.tracks[0]?.samples.map(({ offset }) => offset)).toEqual(expect.arrayContaining([expect.any(Number)]));
+
+    const matrices = [
+      [1, 0, 0, 0, 1, 0, 0, 0, 1],
+      [0, 1, 0, -1, 0, 0, 0, 0, 1],
+      [-1, 0, 0, 0, -1, 0, 0, 0, 1],
+      [0, -1, 0, 1, 0, 0, 0, 0, 1],
+      [-1, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, -1, 0, 0, 0, 1],
+    ] as const;
+    const rotations = [0, 90, 180, 270, 0, 0] as const;
+    const mirrored = [false, false, false, false, true, true] as const;
+    matrices.forEach((matrix, index) => {
+      const sequence = parseHeifSequences(sequenceFixture({ matrix }), resolveLimits()).sequences[0];
+      expect(sequence?.tracks[0]?.transformation?.orientation).toMatchObject({ rotation: rotations[index], mirrored: mirrored[index] });
+    });
+
+    const explicitParts = explicitBaseFragmentedMovie(1, [4, 5]);
+    const explicit = parseHeifSequences(Uint8Array.from([...explicitParts.movie, ...explicitParts.media]), resolveLimits());
+    expect(explicit.warnings.filter(({ severity }) => severity === "error")).toEqual([]);
+    expect(explicit.sequences[0]?.tracks[0]?.samples).toMatchObject([
+      { byteLength: 4, decodeTime: 0, compositionTime: 0, sync: true },
+      { byteLength: 5, decodeTime: 1000, compositionTime: 990, sync: true },
+    ]);
+  });
+
+  it("checks every truncation boundary across complete and fragmented sequence indexes", () => {
+    const fixtures = [
+      sequenceFixture({ version: 1, edits: true, compactSampleSize: 4, sampleChildren: [box("av1C", Uint8Array.of(1, 2, 3))] }),
+      sequenceFixture({ fragmented: true }),
+      sequenceFixture({ fragmented: true, unresolvedFragmentOffset: true }),
+    ];
+    for (const fixture of fixtures) {
+      for (let length = 0; length <= fixture.length; length += 1) {
+        const result = parseHeifSequences(fixture.subarray(0, length), resolveLimits({ maxImageDetailFrames: 16, maxSegments: 256 }));
+        expect(result.sequences).toBeInstanceOf(Array);
+        expect(result.warnings.every(({ code }) => /^[A-Z][A-Z0-9_]+$/u.test(code))).toBe(true);
+        expect(result.sequences.every((sequence) => sequence.tracks.length <= 16)).toBe(true);
+      }
+    }
+  });
+
+  it("keeps complete and fragmented sequence indexes typed across structural byte mutations", () => {
+    const fixtures = [
+      sequenceFixture({ version: 1, edits: true, compactSampleSize: 4, sampleChildren: [box("av1C", Uint8Array.of(1, 2, 3))] }),
+      sequenceFixture({ fragmented: true }),
+      sequenceFixture({ fragmented: true, unresolvedFragmentOffset: true }),
+    ];
+    const mutationValues = [0x00, 0x01, 0x7f, 0xff];
+    const limits = resolveLimits({
+      maxSegments: 512,
+      maxIfdEntries: 64,
+      maxImageDetailFrames: 64,
+      maxImageDetailRelationships: 64,
+      maxWarnings: 64,
+    });
+    for (const fixture of fixtures) {
+      const original = fixture.slice();
+      for (let offset = 0; offset < fixture.length; offset += 16) {
+        for (const value of mutationValues) {
+          const mutated = fixture.slice();
+          mutated[offset] = value;
+          const result = parseHeifSequences(mutated, limits);
+          expect(result.sequences).toBeInstanceOf(Array);
+          expect(result.sequences.length).toBeLessThanOrEqual(limits.maxIfdEntries);
+          expect(result.sequences.every((sequence) => sequence.tracks.length <= limits.maxIfdEntries)).toBe(true);
+          expect(result.warnings.length).toBeLessThanOrEqual(limits.maxWarnings);
+          expect(result.warnings.every(({ code, offset: warningOffset, length }) => {
+            return /^[A-Z][A-Z0-9_]+$/u.test(code) && Number.isSafeInteger(warningOffset ?? 0) && (warningOffset ?? 0) >= 0 && (length === undefined || (Number.isSafeInteger(length) && length >= 0));
+          })).toBe(true);
+          expect(fixture).toEqual(original);
+        }
+      }
+    }
+  }, 120_000);
 });

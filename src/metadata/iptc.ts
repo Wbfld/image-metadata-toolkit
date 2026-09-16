@@ -225,7 +225,7 @@ function iimType(key: number, decoded: string | null): ExifDataType {
 }
 
 function readUint16(payload: Uint8Array, offset: number): number {
-  return ((payload[offset] ?? 0) << 8) | (payload[offset + 1] ?? 0);
+  return ((payload[offset] as number) << 8) | (payload[offset + 1] as number);
 }
 
 function decodeLatin1(payload: Uint8Array): string {
@@ -323,7 +323,7 @@ function resourcePayloads(payload: Uint8Array): { payloads: IptcResourcePayload[
   while (cursor < payload.length) {
     if (cursor > payload.length - 12 || !RESOURCE_SIGNATURE.every((byte, index) => payload[cursor + index] === byte)) return { payloads: [], malformed: true };
     const resourceId = readUint16(payload, cursor + 4);
-    const nameLength = payload[cursor + 6] ?? 0;
+    const nameLength = payload[cursor + 6] as number;
     const paddedNameSize = (1 + nameLength + 1) & ~1;
     const sizeOffset = cursor + 6 + paddedNameSize;
     if (sizeOffset > payload.length - 4) return { payloads: [], malformed: true };
@@ -340,10 +340,10 @@ function resourcePayloads(payload: Uint8Array): { payloads: IptcResourcePayload[
 
 function readUint32(payload: Uint8Array, offset: number): number {
   return (
-    (payload[offset] ?? 0) * 0x1000000 +
-    ((payload[offset + 1] ?? 0) << 16) +
-    ((payload[offset + 2] ?? 0) << 8) +
-    (payload[offset + 3] ?? 0)
+    (payload[offset] as number) * 0x1000000 +
+    ((payload[offset + 1] as number) << 16) +
+    ((payload[offset + 2] as number) << 8) +
+    (payload[offset + 3] as number)
   );
 }
 
@@ -361,8 +361,8 @@ export function inspectIptc(payload: Uint8Array): IptcInspection {
     if (!RESOURCE_SIGNATURE.every((byte, index) => payload[cursor + index] === byte)) {
       return { data: null, malformed: true };
     }
-    const resourceId = ((payload[cursor + 4] ?? 0) << 8) | (payload[cursor + 5] ?? 0);
-    const nameLength = payload[cursor + 6] ?? 0;
+    const resourceId = ((payload[cursor + 4] as number) << 8) | (payload[cursor + 5] as number);
+    const nameLength = payload[cursor + 6] as number;
     const paddedNameSize = (1 + nameLength + 1) & ~1;
     const sizeOffset = cursor + 6 + paddedNameSize;
     if (sizeOffset + 4 > payload.length) return { data: null, malformed: true };
@@ -424,8 +424,8 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
         if (warnings.length < limits.maxWarnings) warnings.push({ code: "TRUNCATED_DATA", message: "IPTC dataset header is truncated.", severity: "error", offset: warningBaseOffset + resourceInfo.offset + cursor });
         break;
       }
-      const record = resource[cursor + 1] ?? 0;
-      const dataset = resource[cursor + 2] ?? 0;
+      const record = resource[cursor + 1] as number;
+      const dataset = resource[cursor + 2] as number;
       const declared = readUint16(resource, cursor + 3);
       let headerLength = 5;
       let valueLength = declared;
@@ -437,7 +437,7 @@ export function parseIptcMetadata(payload: Uint8Array, limits: SecurityLimits, w
         }
         valueLength = 0;
         for (let index = 0; index < countBytes; index += 1) {
-          const nextLength = valueLength * 256 + (resource[cursor + 5 + index] ?? 0);
+          const nextLength = valueLength * 256 + (resource[cursor + 5 + index] as number);
           if (!Number.isSafeInteger(nextLength)) {
             if (warnings.length < limits.maxWarnings) warnings.push({ code: "LIMIT_EXCEEDED", message: "IPTC extended dataset length overflowed safely.", severity: "error", offset: warningBaseOffset + resourceInfo.offset + cursor + 3 });
             valueLength = -1;

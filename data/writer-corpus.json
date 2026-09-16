@@ -1,0 +1,47 @@
+{
+  "schema": "browser-image-metadata.writer-corpus-manifest.v1",
+  "retrievedAt": "2026-09-15",
+  "minimumFixturesPerFamily": 500,
+  "maximumFixtureBytes": 67108864,
+  "maximumSourceFiles": 100000,
+  "sources": [
+    {
+      "id": "web-platform-tests",
+      "repository": "https://github.com/web-platform-tests/wpt.git",
+      "commit": "63ff666e50e7ef4c11a6885612a05951f6f63547",
+      "license": "BSD-3-Clause",
+      "licenseSource": "https://github.com/web-platform-tests/wpt/blob/63ff666e50e7ef4c11a6885612a05951f6f63547/LICENSE.md",
+      "root": ".",
+      "extensions": [".jpg", ".jpeg", ".png", ".webp"]
+    },
+    {
+      "id": "imazen-codec-corpus",
+      "repository": "https://github.com/imazen/codec-corpus.git",
+      "commit": "8e10d4d765667c1c49d74413878fc4bfb46dcf8d",
+      "license": "Per-dataset licenses are recorded by the pinned repository README and LICENSE files; selected sets include MIT, IJG/BSD, CC0, Freeware, BSD, Apache, CC-BY-SA, LGPL, and explicitly Various sources.",
+      "licenseSource": "https://github.com/imazen/codec-corpus/tree/8e10d4d765667c1c49d74413878fc4bfb46dcf8d README.md, LICENSE, and selected dataset README/LICENSE files",
+      "roots": ["jpeg-conformance", "webp-conformance", "pngsuite"],
+      "extensions": [".jpg", ".jpeg", ".png", ".webp"]
+    },
+    {
+      "id": "ianare-exif-py",
+      "repository": "https://github.com/ianare/exif-py.git",
+      "commit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "license": "LGPL-3.0-or-later for exif-py; user-contributed sample images retain the attribution and license records documented by the pinned repository.",
+      "licenseSource": "https://github.com/ianare/exif-py/tree/a69bf74770caf6b333221658f5092ed69f99faac/tests/resources README and attribution records",
+      "roots": ["tests/resources"],
+      "extensions": [".jpg", ".jpeg"]
+    }
+  ],
+  "derivedPolicy": {
+    "allowed": true,
+    "description": "Only used to fill a family minimum after eligible pinned real files are exhausted. Each derived JPEG or WebP is encoded by the pinned Playwright Chromium implementation from a hash-recorded decoded WPT PNG; it is not a synthetic pixel fixture.",
+    "source": "web-platform-tests",
+    "encoderPackage": "@playwright/test@1.63.0",
+    "encoderLicense": "Apache-2.0",
+    "encoderProvenance": "https://playwright.dev/ and the exact package-lock resolution; browser binary version is recorded in the report",
+    "jpegQuality": 0.92,
+    "webpQuality": 0.92
+  },
+  "operationMarker": "browser-image-metadata-stage5"
+}

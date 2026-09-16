@@ -123,6 +123,21 @@ describe("W03 transactional JPEG metadata editing", () => {
     expect(parseJpeg(deleted.data, DEFAULT_LIMITS).fields.some((field) => field.name === "Make")).toBe(false);
   });
 
+  it("adds a normalized EXIF field to an existing block when that field is absent", async () => {
+    const input = syntheticJpeg([segment(0xe1, minimalExif("Before"))]).bytes;
+    const withoutMake = await editMetadata(input, {
+      operations: [{ op: "delete", operationId: "delete-make", target: { kind: "field", fieldId: "normalized:Make" } }],
+    });
+    expect(withoutMake.successful).toBe(true);
+    if (!withoutMake.successful) throw new Error("JPEG EXIF field deletion did not complete");
+    const restored = await editMetadata(withoutMake.data, {
+      operations: [{ op: "set", operationId: "restore-make", target: { kind: "field", fieldId: "normalized:Make" }, value: "Restored" }],
+    });
+    expect(restored.successful).toBe(true);
+    if (!restored.successful) throw new Error("JPEG EXIF field insertion did not complete");
+    expect(parseJpeg(restored.data, DEFAULT_LIMITS).fields.find((field) => field.name === "Make")?.value).toBe("Restored");
+  });
+
   it("adds and replaces standard XMP, ICC, and IPTC blocks with package reparsing", () => {
     const fixture = syntheticJpeg().bytes;
     const blockEdits = [

@@ -1,0 +1,833 @@
+{
+  "schema": "browser-image-metadata.mpf-t05-evidence.v1",
+  "status": "pass",
+  "generatedAt": "2026-09-15T08:30:40.149Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "manifest": {
+    "path": "data/mpf/reference-corpus.json",
+    "sha256": "a858f9449f85a0d4a243d9749bab4b65b0a069b9511bf71e02f8ff866ac881d8",
+    "schema": "browser-image-metadata.mpf-t05-reference-corpus.v1"
+  },
+  "standards": [
+    {
+      "id": "cipa-mpf",
+      "authority": "Camera & Imaging Products Association",
+      "title": "CIPA DC-X007:2025 Multi-Picture Format",
+      "version": "2025",
+      "url": "https://www.cipa.jp/std/documents/e/DC-X007-KEY_E.pdf",
+      "license": "CIPA-published standard; implementation references are retained as provenance only and the standard is not redistributed.",
+      "retrievedAt": "2026-09-15",
+      "sha256": "5634b15162fea9a1708ab5668293ae78407683f61ec34cec2ed14b2249d0588f",
+      "temporaryFileName": "cipa.pdf",
+      "byteLength": 422506,
+      "verifiedSha256": "5634b15162fea9a1708ab5668293ae78407683f61ec34cec2ed14b2249d0588f"
+    },
+    {
+      "id": "android-ultra-hdr",
+      "authority": "Android Developers",
+      "title": "Ultra HDR Image Format v1.1",
+      "version": "1.1",
+      "url": "https://developer.android.com/media/platform/hdr-image-format",
+      "license": "Android Developers documentation under CC BY 4.0; implementation references are retained as provenance only and the page is not redistributed.",
+      "retrievedAt": "2026-09-15",
+      "sha256": "cc58028a438b51fbc88707080136a12fd5db22e19c0e937b20c6582c78568f42",
+      "temporaryFileName": "android.html",
+      "byteLength": 356912,
+      "verifiedSha256": "cc58028a438b51fbc88707080136a12fd5db22e19c0e937b20c6582c78568f42"
+    }
+  ],
+  "corpusPolicy": "Temporary hash-pinned fixture directory only; fixture-relative paths, byte lengths, hashes, source commits, licenses, and decoded summaries are retained. No corpus bytes or derived image copies are written to the repository or report directory.",
+  "normalizationPolicy": "MPF offsets are retained as CIPA stored offsets and resolved absolute source offsets; TIFF numeric values are represented as integers; XMP values retain lexical strings alongside finite numeric interpretations; array and GContainer order is preserved; diagnostics are represented by stable codes and messages.",
+  "limitsPolicy": "SecurityLimits bound input, segment, IFD, image, XMP, nested JPEG, field, warning, and output sizes. Safe-integer arithmetic is required for every MPF offset and length. Remote URI references are never fetched.",
+  "writePolicy": "MPF and Ultra HDR writes remain refused by default. The explicit typed mpf: { mode: 'preserve', ultraHdr: 'preserve' } policy recalculates MPF offsets/sizes, verifies every bounded associated JPEG scan hash, and preserves complete Ultra HDR GContainer semantics; malformed or ambiguous relationships fail atomically.",
+  "corpus": {
+    "directoryRequired": true,
+    "expectedFixtureCount": 3,
+    "examinedFixtureCount": 3,
+    "completeParticipation": true,
+    "kinds": [
+      "android-ultra-hdr",
+      "cipa-mpf"
+    ]
+  },
+  "fixtures": [
+    {
+      "id": "android-ultra-hdr-01",
+      "kind": "android-ultra-hdr",
+      "fixture": "temporary-t05-corpus/android-ultra-hdr-01.jpg",
+      "sourceUrl": "https://raw.githubusercontent.com/MishaalRahmanGH/Ultra_HDR_Samples/de109721ca479b2b0f31cc709e70b614531b413f/Originals/Ultra_HDR_Samples_Originals_01.jpg",
+      "repository": "MishaalRahmanGH/Ultra_HDR_Samples",
+      "commit": "de109721ca479b2b0f31cc709e70b614531b413f",
+      "license": "CC-BY-4.0",
+      "byteLength": 2746718,
+      "sha256": "b52c5f4b9f7c8e831ebe78c3338d6ed1b9a4d3aa4b6c30be7a1851294e094403",
+      "format": "jpeg",
+      "dimensions": {
+        "width": 4080,
+        "height": 3072
+      },
+      "warningCodes": [],
+      "blockFamilies": [
+        "EXIF",
+        "JFIF",
+        "ICC",
+        "XMP",
+        "MPF"
+      ],
+      "mpf": {
+        "complete": true,
+        "segmentCount": 1,
+        "segments": [
+          {
+            "id": "jpeg:APP2:84450",
+            "sourceOffset": 84450,
+            "byteLength": 90,
+            "complete": true,
+            "mpfVersion": "0100",
+            "numberOfImages": 2,
+            "indexIfd": {
+              "kind": "index",
+              "sourceOffset": 84462,
+              "relativeOffset": 8,
+              "byteLength": 42,
+              "entryTags": [
+                "0xb000",
+                "0xb001",
+                "0xb002"
+              ]
+            },
+            "attributeIfds": [],
+            "diagnosticCodes": []
+          }
+        ],
+        "imageCount": 2,
+        "images": [
+          {
+            "index": 0,
+            "attributes": 196608,
+            "imageFormat": "jpeg",
+            "imageFormatCode": 0,
+            "imageType": "baseline-primary",
+            "imageTypeCode": 196608,
+            "representative": false,
+            "dependentChild": false,
+            "dependentParent": false,
+            "size": 2683841,
+            "offset": 0,
+            "absoluteOffset": 0,
+            "rangeLength": 2683841,
+            "dependentImage1": null,
+            "dependentImage2": null,
+            "status": "decoded",
+            "metadata": {
+              "complete": false,
+              "format": "jpeg",
+              "dimensions": {
+                "width": 4080,
+                "height": 3072
+              },
+              "fieldCount": 36,
+              "fieldIds": [
+                "normalized:Make",
+                "normalized:Model",
+                "normalized:Orientation",
+                "normalized:DateTime",
+                "normalized:DateTimeOriginal",
+                "normalized:DateTimeDigitized",
+                "normalized:ExposureTime",
+                "normalized:FNumber",
+                "normalized:ISOSpeedRatings",
+                "normalized:Flash",
+                "normalized:FocalLength",
+                "normalized:FocalLengthIn35mmFilm",
+                "normalized:GPSAltitude",
+                "normalized:Copyright",
+                "normalized:Software",
+                "normalized:LensMake",
+                "normalized:LensModel",
+                "normalized:UserComment",
+                "ICC:0x0000",
+                "ICC:0x0004",
+                "ICC:0x0008",
+                "ICC:0x000c",
+                "ICC:0x0010",
+                "ICC:0x0014",
+                "ICC:0x0040",
+                "ICC:0x0018",
+                "ICC:desc",
+                "ICC:cprt",
+                "ICC:wtpt",
+                "ICC:rXYZ",
+                "ICC:gXYZ",
+                "ICC:bXYZ",
+                "ICC:rTRC",
+                "ICC:chad",
+                "ICC:bTRC",
+                "ICC:gTRC"
+              ],
+              "metadataFamilies": [
+                "EXIF",
+                "JFIF",
+                "ICC",
+                "XMP",
+                "MPF"
+              ],
+              "xmpPacketCount": 2,
+              "diagnosticCodes": [
+                "INCOMPLETE_GPS",
+                "INCOMPLETE_GPS",
+                "TRUNCATED_DATA"
+              ]
+            }
+          },
+          {
+            "index": 1,
+            "attributes": 0,
+            "imageFormat": "jpeg",
+            "imageFormatCode": 0,
+            "imageType": "undefined",
+            "imageTypeCode": 0,
+            "representative": false,
+            "dependentChild": false,
+            "dependentParent": false,
+            "size": 62570,
+            "offset": 2599690,
+            "absoluteOffset": 2684148,
+            "rangeLength": 62570,
+            "dependentImage1": null,
+            "dependentImage2": null,
+            "status": "decoded",
+            "metadata": {
+              "complete": true,
+              "format": "jpeg",
+              "dimensions": {
+                "width": 1020,
+                "height": 768
+              },
+              "fieldCount": 0,
+              "fieldIds": [],
+              "metadataFamilies": [
+                "JFIF",
+                "XMP"
+              ],
+              "xmpPacketCount": 1,
+              "diagnosticCodes": []
+            }
+          }
+        ],
+        "primaryMetadataComplete": false,
+        "secondaryMetadataComplete": true,
+        "relationshipTypes": [
+          "primary-image"
+        ],
+        "diagnosticCodes": []
+      },
+      "ultraHdr": {
+        "standard": "Android Ultra HDR v1.1",
+        "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+        "gContainerNamespaceUri": "http://ns.google.com/photos/1.0/container/",
+        "sourcePacketIndices": [
+          0,
+          2
+        ],
+        "sourceBlockIds": [
+          "jpeg:APP1:29690",
+          "mpf:secondary:2684148:xmp:0"
+        ],
+        "version": "1.0",
+        "gainMapProperties": [
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "Version",
+            "sourcePacketIndex": 0,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "1.0"
+            ],
+            "numericValues": [
+              1
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "GainMapMin",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "0.000000"
+            ],
+            "numericValues": [
+              0
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "GainMapMax",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "2.656715"
+            ],
+            "numericValues": [
+              2.656715
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "HDRCapacityMin",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "0.000000"
+            ],
+            "numericValues": [
+              0
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "HDRCapacityMax",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "2.656715"
+            ],
+            "numericValues": [
+              2.656715
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "OffsetHDR",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "0.000000"
+            ],
+            "numericValues": [
+              0
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "OffsetSDR",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "0.000000"
+            ],
+            "numericValues": [
+              0
+            ]
+          }
+        ],
+        "directory": [
+          {
+            "index": 0,
+            "semantic": "Primary",
+            "mime": "image/jpeg",
+            "length": null,
+            "padding": 0,
+            "uri": null,
+            "sourcePacketIndex": 0,
+            "mpfImageId": "jpeg:APP2:84450:image:0",
+            "status": "decoded"
+          },
+          {
+            "index": 1,
+            "semantic": "GainMap",
+            "mime": "image/jpeg",
+            "length": 62570,
+            "padding": 0,
+            "uri": null,
+            "sourcePacketIndex": 0,
+            "mpfImageId": "jpeg:APP2:84450:image:1",
+            "status": "decoded"
+          }
+        ],
+        "primaryImageId": "jpeg:APP2:84450:image:0",
+        "gainMapImageId": "jpeg:APP2:84450:image:1",
+        "status": "decoded",
+        "complete": true,
+        "diagnosticCodes": []
+      },
+      "status": "passed"
+    },
+    {
+      "id": "android-ultra-hdr-02",
+      "kind": "android-ultra-hdr",
+      "fixture": "temporary-t05-corpus/android-ultra-hdr-02.jpg",
+      "sourceUrl": "https://raw.githubusercontent.com/MishaalRahmanGH/Ultra_HDR_Samples/de109721ca479b2b0f31cc709e70b614531b413f/Originals/Ultra_HDR_Samples_Originals_02.jpg",
+      "repository": "MishaalRahmanGH/Ultra_HDR_Samples",
+      "commit": "de109721ca479b2b0f31cc709e70b614531b413f",
+      "license": "CC-BY-4.0",
+      "byteLength": 2915755,
+      "sha256": "dacf902fbcfb32b1ab29afbfba21e8880d2da205c76bb2a3678773c1f79c1359",
+      "format": "jpeg",
+      "dimensions": {
+        "width": 4080,
+        "height": 3072
+      },
+      "warningCodes": [],
+      "blockFamilies": [
+        "EXIF",
+        "JFIF",
+        "ICC",
+        "XMP",
+        "MPF"
+      ],
+      "mpf": {
+        "complete": true,
+        "segmentCount": 1,
+        "segments": [
+          {
+            "id": "jpeg:APP2:81416",
+            "sourceOffset": 81416,
+            "byteLength": 90,
+            "complete": true,
+            "mpfVersion": "0100",
+            "numberOfImages": 2,
+            "indexIfd": {
+              "kind": "index",
+              "sourceOffset": 81428,
+              "relativeOffset": 8,
+              "byteLength": 42,
+              "entryTags": [
+                "0xb000",
+                "0xb001",
+                "0xb002"
+              ]
+            },
+            "attributeIfds": [],
+            "diagnosticCodes": []
+          }
+        ],
+        "imageCount": 2,
+        "images": [
+          {
+            "index": 0,
+            "attributes": 196608,
+            "imageFormat": "jpeg",
+            "imageFormatCode": 0,
+            "imageType": "baseline-primary",
+            "imageTypeCode": 196608,
+            "representative": false,
+            "dependentChild": false,
+            "dependentParent": false,
+            "size": 2852770,
+            "offset": 0,
+            "absoluteOffset": 0,
+            "rangeLength": 2852770,
+            "dependentImage1": null,
+            "dependentImage2": null,
+            "status": "decoded",
+            "metadata": {
+              "complete": false,
+              "format": "jpeg",
+              "dimensions": {
+                "width": 4080,
+                "height": 3072
+              },
+              "fieldCount": 36,
+              "fieldIds": [
+                "normalized:Make",
+                "normalized:Model",
+                "normalized:Orientation",
+                "normalized:DateTime",
+                "normalized:DateTimeOriginal",
+                "normalized:DateTimeDigitized",
+                "normalized:ExposureTime",
+                "normalized:FNumber",
+                "normalized:ISOSpeedRatings",
+                "normalized:Flash",
+                "normalized:FocalLength",
+                "normalized:FocalLengthIn35mmFilm",
+                "normalized:GPSAltitude",
+                "normalized:Copyright",
+                "normalized:Software",
+                "normalized:LensMake",
+                "normalized:LensModel",
+                "normalized:UserComment",
+                "ICC:0x0000",
+                "ICC:0x0004",
+                "ICC:0x0008",
+                "ICC:0x000c",
+                "ICC:0x0010",
+                "ICC:0x0014",
+                "ICC:0x0040",
+                "ICC:0x0018",
+                "ICC:desc",
+                "ICC:cprt",
+                "ICC:wtpt",
+                "ICC:rXYZ",
+                "ICC:gXYZ",
+                "ICC:bXYZ",
+                "ICC:rTRC",
+                "ICC:chad",
+                "ICC:bTRC",
+                "ICC:gTRC"
+              ],
+              "metadataFamilies": [
+                "EXIF",
+                "JFIF",
+                "ICC",
+                "XMP",
+                "MPF"
+              ],
+              "xmpPacketCount": 2,
+              "diagnosticCodes": [
+                "INCOMPLETE_GPS",
+                "INCOMPLETE_GPS",
+                "TRUNCATED_DATA"
+              ]
+            }
+          },
+          {
+            "index": 1,
+            "attributes": 0,
+            "imageFormat": "jpeg",
+            "imageFormatCode": 0,
+            "imageType": "undefined",
+            "imageTypeCode": 0,
+            "representative": false,
+            "dependentChild": false,
+            "dependentParent": false,
+            "size": 62677,
+            "offset": 2771654,
+            "absoluteOffset": 2853078,
+            "rangeLength": 62677,
+            "dependentImage1": null,
+            "dependentImage2": null,
+            "status": "decoded",
+            "metadata": {
+              "complete": true,
+              "format": "jpeg",
+              "dimensions": {
+                "width": 1020,
+                "height": 768
+              },
+              "fieldCount": 0,
+              "fieldIds": [],
+              "metadataFamilies": [
+                "JFIF",
+                "XMP"
+              ],
+              "xmpPacketCount": 1,
+              "diagnosticCodes": []
+            }
+          }
+        ],
+        "primaryMetadataComplete": false,
+        "secondaryMetadataComplete": true,
+        "relationshipTypes": [
+          "primary-image"
+        ],
+        "diagnosticCodes": []
+      },
+      "ultraHdr": {
+        "standard": "Android Ultra HDR v1.1",
+        "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+        "gContainerNamespaceUri": "http://ns.google.com/photos/1.0/container/",
+        "sourcePacketIndices": [
+          0,
+          2
+        ],
+        "sourceBlockIds": [
+          "jpeg:APP1:27940",
+          "mpf:secondary:2853078:xmp:0"
+        ],
+        "version": "1.0",
+        "gainMapProperties": [
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "Version",
+            "sourcePacketIndex": 0,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "1.0"
+            ],
+            "numericValues": [
+              1
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "GainMapMin",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "0.000000"
+            ],
+            "numericValues": [
+              0
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "GainMapMax",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "2.039969"
+            ],
+            "numericValues": [
+              2.039969
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "HDRCapacityMin",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "0.000000"
+            ],
+            "numericValues": [
+              0
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "HDRCapacityMax",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "2.039969"
+            ],
+            "numericValues": [
+              2.039969
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "OffsetHDR",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "0.000000"
+            ],
+            "numericValues": [
+              0
+            ]
+          },
+          {
+            "namespaceUri": "http://ns.adobe.com/hdr-gain-map/1.0/",
+            "localName": "OffsetSDR",
+            "sourcePacketIndex": 2,
+            "lexicalValueCount": 1,
+            "lexicalValues": [
+              "0.000000"
+            ],
+            "numericValues": [
+              0
+            ]
+          }
+        ],
+        "directory": [
+          {
+            "index": 0,
+            "semantic": "Primary",
+            "mime": "image/jpeg",
+            "length": null,
+            "padding": 0,
+            "uri": null,
+            "sourcePacketIndex": 0,
+            "mpfImageId": "jpeg:APP2:81416:image:0",
+            "status": "decoded"
+          },
+          {
+            "index": 1,
+            "semantic": "GainMap",
+            "mime": "image/jpeg",
+            "length": 62677,
+            "padding": 0,
+            "uri": null,
+            "sourcePacketIndex": 0,
+            "mpfImageId": "jpeg:APP2:81416:image:1",
+            "status": "decoded"
+          }
+        ],
+        "primaryImageId": "jpeg:APP2:81416:image:0",
+        "gainMapImageId": "jpeg:APP2:81416:image:1",
+        "status": "decoded",
+        "complete": true,
+        "diagnosticCodes": []
+      },
+      "status": "passed"
+    },
+    {
+      "id": "cipa-mpf-pillow-frame-size",
+      "kind": "cipa-mpf",
+      "fixture": "temporary-t05-corpus/pillow-frame-size.mpo",
+      "sourceUrl": "https://raw.githubusercontent.com/python-pillow/Pillow/27c29174fa7e60f227377f3f096d5c0b5ab78100/Tests/images/frame_size.mpo",
+      "repository": "python-pillow/Pillow",
+      "commit": "27c29174fa7e60f227377f3f096d5c0b5ab78100",
+      "license": "CC-BY-4.0 (Pillow Tests/images corpus license marker)",
+      "byteLength": 14574,
+      "sha256": "52e7358095494ba0bd0f3fce9705cc7d126c3e9211d40c87f99b199f3e97c606",
+      "format": "jpeg",
+      "dimensions": {
+        "width": 56,
+        "height": 70
+      },
+      "warningCodes": [],
+      "blockFamilies": [
+        "JFIF",
+        "EXIF",
+        "MPF",
+        "ICC",
+        "XMP"
+      ],
+      "mpf": {
+        "complete": true,
+        "segmentCount": 1,
+        "segments": [
+          {
+            "id": "jpeg:APP2:2658",
+            "sourceOffset": 2658,
+            "byteLength": 90,
+            "complete": true,
+            "mpfVersion": "0100",
+            "numberOfImages": 2,
+            "indexIfd": {
+              "kind": "index",
+              "sourceOffset": 2670,
+              "relativeOffset": 8,
+              "byteLength": 42,
+              "entryTags": [
+                "0xb000",
+                "0xb001",
+                "0xb002"
+              ]
+            },
+            "attributeIfds": [],
+            "diagnosticCodes": []
+          }
+        ],
+        "imageCount": 2,
+        "images": [
+          {
+            "index": 0,
+            "attributes": 196608,
+            "imageFormat": "jpeg",
+            "imageFormatCode": 0,
+            "imageType": "baseline-primary",
+            "imageTypeCode": 196608,
+            "representative": false,
+            "dependentChild": false,
+            "dependentParent": false,
+            "size": 4226,
+            "offset": 0,
+            "absoluteOffset": 0,
+            "rangeLength": 4226,
+            "dependentImage1": null,
+            "dependentImage2": null,
+            "status": "decoded",
+            "metadata": {
+              "complete": true,
+              "format": "jpeg",
+              "dimensions": {
+                "width": 56,
+                "height": 70
+              },
+              "fieldCount": 34,
+              "fieldIds": [
+                "normalized:Make",
+                "normalized:Model",
+                "normalized:Orientation",
+                "normalized:DateTime",
+                "normalized:DateTimeOriginal",
+                "normalized:DateTimeDigitized",
+                "normalized:ExposureTime",
+                "normalized:FNumber",
+                "normalized:ISOSpeedRatings",
+                "normalized:Flash",
+                "normalized:FocalLength",
+                "normalized:FocalLengthIn35mmFilm",
+                "normalized:LensSpecification",
+                "normalized:Software",
+                "normalized:LensMake",
+                "normalized:LensModel",
+                "ICC:0x0000",
+                "ICC:0x0004",
+                "ICC:0x0008",
+                "ICC:0x000c",
+                "ICC:0x0010",
+                "ICC:0x0014",
+                "ICC:0x0040",
+                "ICC:0x0018",
+                "ICC:desc",
+                "ICC:cprt",
+                "ICC:wtpt",
+                "ICC:rXYZ",
+                "ICC:gXYZ",
+                "ICC:bXYZ",
+                "ICC:rTRC",
+                "ICC:chad",
+                "ICC:bTRC",
+                "ICC:gTRC"
+              ],
+              "metadataFamilies": [
+                "JFIF",
+                "EXIF",
+                "MakerNote",
+                "MPF",
+                "ICC"
+              ],
+              "xmpPacketCount": 0,
+              "diagnosticCodes": [
+                "INVALID_VALUE",
+                "UNSUPPORTED_STRUCTURE"
+              ]
+            }
+          },
+          {
+            "index": 1,
+            "attributes": 0,
+            "imageFormat": "jpeg",
+            "imageFormatCode": 0,
+            "imageType": "undefined",
+            "imageTypeCode": 0,
+            "representative": false,
+            "dependentChild": false,
+            "dependentParent": false,
+            "size": 10348,
+            "offset": 1560,
+            "absoluteOffset": 4226,
+            "rangeLength": 10348,
+            "dependentImage1": null,
+            "dependentImage2": null,
+            "status": "decoded",
+            "metadata": {
+              "complete": true,
+              "format": "jpeg",
+              "dimensions": {
+                "width": 349,
+                "height": 434
+              },
+              "fieldCount": 0,
+              "fieldIds": [],
+              "metadataFamilies": [
+                "XMP"
+              ],
+              "xmpPacketCount": 1,
+              "diagnosticCodes": []
+            }
+          }
+        ],
+        "primaryMetadataComplete": true,
+        "secondaryMetadataComplete": true,
+        "relationshipTypes": [
+          "primary-image"
+        ],
+        "diagnosticCodes": []
+      },
+      "ultraHdr": null,
+      "status": "passed"
+    }
+  ],
+  "complete": true
+}

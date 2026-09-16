@@ -38,17 +38,17 @@ interface InflateResult {
 
 function uint32BigEndian(bytes: Uint8Array, offset: number): number {
   return (
-    (bytes[offset] ?? 0) * 0x1000000 +
-    ((bytes[offset + 1] ?? 0) << 16) +
-    ((bytes[offset + 2] ?? 0) << 8) +
-    (bytes[offset + 3] ?? 0)
+    (bytes[offset] as number) * 0x1000000 +
+    ((bytes[offset + 1] as number) << 16) +
+    ((bytes[offset + 2] as number) << 8) +
+    (bytes[offset + 3] as number)
   );
 }
 
 function crc32(bytes: Uint8Array, start: number, end: number): number {
   let crc = 0xffffffff;
   for (let offset = start; offset < end; offset += 1) {
-    crc ^= bytes[offset] ?? 0;
+    crc ^= bytes[offset] as number;
     for (let bit = 0; bit < 8; bit += 1) {
       crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
     }
@@ -69,16 +69,16 @@ function isPngSignature(bytes: Uint8Array): boolean {
 
 function chunkType(bytes: Uint8Array, offset: number): string {
   return String.fromCharCode(
-    bytes[offset] ?? 0,
-    bytes[offset + 1] ?? 0,
-    bytes[offset + 2] ?? 0,
-    bytes[offset + 3] ?? 0,
+    bytes[offset] as number,
+    bytes[offset + 1] as number,
+    bytes[offset + 2] as number,
+    bytes[offset + 3] as number,
   );
 }
 
 function isValidChunkType(bytes: Uint8Array, offset: number): boolean {
   for (let index = 0; index < 4; index += 1) {
-    const byte = bytes[offset + index] ?? 0;
+    const byte = bytes[offset + index] as number;
     if (!((byte >= 0x41 && byte <= 0x5a) || (byte >= 0x61 && byte <= 0x7a))) return false;
   }
   return true;
@@ -114,11 +114,11 @@ export function parsePngDimensions(bytes: Uint8Array): ImageDimensions | null {
   if (bytes[12] !== 0x49 || bytes[13] !== 0x48 || bytes[14] !== 0x44 || bytes[15] !== 0x52) return null;
   const width = uint32BigEndian(bytes, 16);
   const height = uint32BigEndian(bytes, 20);
-  const bitDepth = bytes[24] ?? 0;
-  const colorType = bytes[25] ?? 0;
-  const compression = bytes[26] ?? 0;
-  const filter = bytes[27] ?? 0;
-  const interlace = bytes[28] ?? 0;
+  const bitDepth = bytes[24] as number;
+  const colorType = bytes[25] as number;
+  const compression = bytes[26] as number;
+  const filter = bytes[27] as number;
+  const interlace = bytes[28] as number;
   if (
     width === 0 ||
     height === 0 ||

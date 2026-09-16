@@ -63,18 +63,18 @@ function sha256(input: Uint8Array): Uint8Array {
   for (let block = 0; block < paddedLength; block += 64) {
     for (let index = 0; index < 16; index += 1) words[index] = view.getUint32(block + index * 4, false);
     for (let index = 16; index < 64; index += 1) {
-      const value = words[index - 15] ?? 0;
-      const value2 = words[index - 2] ?? 0;
+      const value = Number(words[index - 15]);
+      const value2 = Number(words[index - 2]);
       const s0 = rotr(value, 7) ^ rotr(value, 18) ^ (value >>> 3);
       const s1 = rotr(value2, 17) ^ rotr(value2, 19) ^ (value2 >>> 10);
-      words[index] = ((words[index - 16] ?? 0) + s0 + (words[index - 7] ?? 0) + s1) >>> 0;
+      words[index] = (Number(words[index - 16]) + s0 + Number(words[index - 7]) + s1) >>> 0;
     }
     let a = h0; let b = h1; let c = h2; let d = h3;
     let e = h4; let f = h5; let g = h6; let h = h7;
     for (let index = 0; index < 64; index += 1) {
       const s1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
       const choose = (e & f) ^ (~e & g);
-      const temp1 = (h + s1 + choose + (constants[index] ?? 0) + (words[index] ?? 0)) >>> 0;
+      const temp1 = (h + s1 + choose + Number(constants[index]) + Number(words[index])) >>> 0;
       const s0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
       const majority = (a & b) ^ (a & c) ^ (b & c);
       const temp2 = (s0 + majority) >>> 0;

@@ -3,6 +3,8 @@
 For executable, version-pinned mappings from exifr, ExifReader, exif-js, and
 piexifjs—including generated side-by-side output evidence and every semantic
 difference—start with [the R04 migration compatibility guide](./R04_MIGRATION_COMPATIBILITY.md).
+For a product-level decision between this package, ExifReader, exifr, and
+ExifTool, read [Choosing an image metadata tool](./COMPARISON.md).
 
 `browser-image-metadata` accepts in-memory browser-friendly bytes and returns a typed inspection result. It deliberately does not accept URL strings, local file paths, or image elements: obtaining an image remains the application's responsibility, which keeps metadata inspection local and avoids unexpected network or filesystem reads.
 
@@ -43,6 +45,38 @@ console.log(summary.camera.make, summary.camera.model, result.dimensions);
 
 The package treats parsing warnings as data rather than silently flattening values that disagree. If an interface needs the original family boundaries, read `result.exif`, `result.xmp`, `result.iptc`, or `result.icc` directly.
 
+## From ExifTool
+
+Treat this as a selective application migration, not a promise of complete
+ExifTool parity. ExifTool remains the better tool for its much broader file and
+tag coverage, specialized vendor metadata, and mature shell-oriented batch
+workflows.
+
+Move a workflow to `browser-image-metadata` when it needs to run inside a
+browser or worker, keep bytes local, enforce bounded parsing, preserve typed
+provenance and conflicts, apply a strict privacy policy, or perform one of the
+exact writes in the capability matrix without a Perl process.
+
+The package CLI provides automation-friendly `inspect`, `audit`, `sanitize`,
+`edit`, and `verify` commands, but intentionally shares the package's narrower
+image-focused capability boundary. Before replacing an ExifTool command:
+
+1. Resolve every source tag to a stable field, namespace/local-name, dataset,
+   or block identity instead of relying on a display label alone.
+2. Check the requested read or write operation in
+   [CAPABILITIES.md](./CAPABILITIES.md).
+3. Decide how duplicates, conflicts, malformed values, and incomplete coverage
+   should affect the workflow.
+4. For writes, require a successful typed outcome and preservation report.
+5. Keep ExifTool in the pipeline for any format, tag family, MakerNote, or
+   mutation the package does not explicitly support.
+
+`image-metadata inspect photo.jpg` emits the bounded JSON-safe result. Use
+`image-metadata audit photo.jpg` for safe-by-default privacy findings and
+`image-metadata verify before.jpg after.jpg` for encoded-payload preservation
+evidence. See [R03_CLI.md](./R03_CLI.md) for exact output, refusal, and exit-code
+contracts.
+
 ## From exif-js
 
 Replace callback-based image mutation with an awaited call on the selected `File` or an `ArrayBuffer`. No metadata is attached to a DOM image object.
@@ -80,6 +114,22 @@ use the legacy map for serialization or conflict resolution because it cannot
 represent duplicate qualified properties. Sidecar records can be supplied as
 provenance to the merge API, but the browser/core parser never reads sidecar
 files implicitly.
+
+## MPF and Ultra HDR inventory (T05)
+
+JPEG MPF and Android Ultra HDR inputs now expose additive `result.mpf` and
+`result.ultraHdr` inventories when the `MPF` selection group is requested. The
+inventory retains source-ordered IFD entries, stored and resolved image ranges,
+secondary JPEG metadata summaries, exact XMP namespace identities, lexical
+gain-map values, GContainer ordering, and typed completeness diagnostics.
+Writers continue to refuse offset-bearing MPF and Ultra HDR structures
+atomically by default. Applications that intentionally need metadata-only
+writing may opt in with `mpf: { mode: "preserve", ultraHdr: "preserve" }`;
+the writer recalculates safe MPF offsets/sizes and refuses incomplete or
+changed Ultra HDR relationships. Existing fields and default selection behavior
+are unchanged; applications that need the inventory should opt in with
+`select: { groups: ["MPF", "XMP", "Dimensions"] }` and handle incomplete
+results as untrusted input.
 
 ## IPTC semantic view (S06)
 

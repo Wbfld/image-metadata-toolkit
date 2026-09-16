@@ -1,0 +1,151 @@
+{
+  "schema": "browser-image-metadata.mpf-t05-write-evidence.v1",
+  "status": "pass",
+  "generatedAt": "2026-09-16T23:08:47.173Z",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "manifest": {
+    "path": "data/mpf/reference-corpus.json",
+    "sha256": "a858f9449f85a0d4a243d9749bab4b65b0a069b9511bf71e02f8ff866ac881d8",
+    "schema": "browser-image-metadata.mpf-t05-reference-corpus.v1"
+  },
+  "fixture": {
+    "path": "temporary-t05-corpus/pillow-frame-size.mpo",
+    "kind": "cipa-mpf",
+    "repository": "python-pillow/Pillow",
+    "commit": "27c29174fa7e60f227377f3f096d5c0b5ab78100",
+    "license": "CC-BY-4.0 (Pillow Tests/images corpus license marker)",
+    "byteLength": 14574,
+    "sha256": "52e7358095494ba0bd0f3fce9705cc7d126c3e9211d40c87f99b199f3e97c606"
+  },
+  "edit": {
+    "operation": "add standard XMP metadata before the primary JPEG frame",
+    "policy": {
+      "mode": "preserve"
+    },
+    "inputByteLength": 14574,
+    "outputByteLength": 14634,
+    "inputSha256": "52e7358095494ba0bd0f3fce9705cc7d126c3e9211d40c87f99b199f3e97c606",
+    "outputSha256": "766897eb3b86a87f94b935ccbb658a16529f61507df06898166f56ef1f0165b3",
+    "inputUnchangedAfterPlanning": true,
+    "packageReparse": {
+      "format": "jpeg",
+      "mpfComplete": true,
+      "imageCount": 2,
+      "relationshipsVerified": true
+    },
+    "preservation": {
+      "successful": true,
+      "diagnostics": []
+    },
+    "byteChanges": [
+      {
+        "blockId": "jpeg:standard-xmp:inserted:0",
+        "offset": 3442,
+        "length": 60,
+        "kind": "inserted"
+      },
+      {
+        "blockId": "jpeg:APP2:2658",
+        "offset": 2658,
+        "length": 90,
+        "kind": "rewritten"
+      }
+    ],
+    "images": [
+      {
+        "id": "jpeg:APP2:2658:image:0",
+        "index": 0,
+        "imageType": "baseline-primary",
+        "input": {
+          "offset": 0,
+          "size": 4226
+        },
+        "output": {
+          "offset": 0,
+          "size": 4286
+        },
+        "protectedEncodedPayloadCount": 1,
+        "protectedEncodedPayloads": [
+          {
+            "id": "jpeg:APP2:2658:image:0:scan:0",
+            "before": {
+              "offset": 3895,
+              "length": 329,
+              "sha256": "e692f78e99307c607ada4630b0652a431bba68d2a07c93f5ec6b8be78991dbc5"
+            },
+            "after": {
+              "offset": 3955,
+              "length": 329,
+              "sha256": "e692f78e99307c607ada4630b0652a431bba68d2a07c93f5ec6b8be78991dbc5"
+            },
+            "status": "matched"
+          }
+        ],
+        "secondaryWholeImageSha256": null
+      },
+      {
+        "id": "jpeg:APP2:2658:image:1",
+        "index": 1,
+        "imageType": "undefined",
+        "input": {
+          "offset": 4226,
+          "size": 10348
+        },
+        "output": {
+          "offset": 4286,
+          "size": 10348
+        },
+        "protectedEncodedPayloadCount": 1,
+        "protectedEncodedPayloads": [
+          {
+            "id": "jpeg:APP2:2658:image:1:scan:0",
+            "before": {
+              "offset": 5216,
+              "length": 9356,
+              "sha256": "11c97fb679cb03af360a51ce62d21034d9029cd8ce12cc6513525401327a3ca1"
+            },
+            "after": {
+              "offset": 5276,
+              "length": 9356,
+              "sha256": "11c97fb679cb03af360a51ce62d21034d9029cd8ce12cc6513525401327a3ca1"
+            },
+            "status": "matched"
+          }
+        ],
+        "secondaryWholeImageSha256": "284d50f2d31e54406d4e27493c8ef59c06cb9b79e2841ac6a2246e6288979e85"
+      }
+    ],
+    "diagnostics": [
+      "MPF offsets and sizes were rewritten with the source TIFF byte order.",
+      "Encoded JPEG scan payloads were compared by SHA-256; image bytes were not retained in this evidence."
+    ]
+  },
+  "independentOracle": {
+    "package": "exiftool-vendored",
+    "packageVersion": "38.1.0",
+    "implementationVersion": "13.59",
+    "license": "ExifTool: Perl Artistic License or GPL-1.0-or-later; exiftool-vendored.js: MIT",
+    "provenance": [
+      "https://exiftool.org/",
+      "https://github.com/photostructure/exiftool-vendored.js"
+    ],
+    "role": "secondary metadata output oracle only",
+    "comparison": {
+      "field": "MPF0:NumberOfImages",
+      "expected": 2,
+      "observed": 2,
+      "status": "matched"
+    }
+  },
+  "independentDecoderEvidence": {
+    "implementation": "browser-native JPEG decoders exercised by tests/browser/metadata.spec.ts",
+    "policy": "The retained Playwright test decodes every edited primary and secondary JPEG in Chromium and Firefox; browser engine launcher failures are reported separately and never count as successful decoding evidence.",
+    "retainedTest": "tests/browser/metadata.spec.ts"
+  },
+  "normalizationPolicy": "MPF stored offsets remain distinct from resolved absolute offsets. TIFF numeric fields are compared as unsigned integers in the source byte order. Protected JPEG scan ranges are compared byte-for-byte and by SHA-256. Secondary complete JPEG ranges are additionally compared by SHA-256. No image bytes are retained in this report.",
+  "limitsPolicy": "The writer and parser apply SecurityLimits to input bytes, marker segments, metadata totals, IFD entries, image counts, ranges, nested metadata, and output. All MPF arithmetic is safe-integer checked; malformed, ambiguous, overlapping, unsupported, and out-of-range relationships fail before output is exposed.",
+  "complete": true
+}

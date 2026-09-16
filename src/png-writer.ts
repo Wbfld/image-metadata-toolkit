@@ -332,6 +332,8 @@ async function makeTextChunk(edit: PngBlockEdit, limits: SecurityLimits): Promis
   const value = edit.data;
   if (value === undefined) throw new PngWriterError("INVALID_VALUE", "PNG text edits require data.");
   const type = edit.kind === "xmp" ? "iTXt" : edit.chunkType ?? "tEXt";
+  const supportedTextTypes: ReadonlySet<string> = new Set(["tEXt", "zTXt", "iTXt"]);
+  if (!supportedTextTypes.has(type)) throw new PngWriterError("INVALID_VALUE", "PNG text chunk type is not supported.");
   if (type === "tEXt") {
     if (typeof value !== "string") throw new PngWriterError("INVALID_VALUE", "tEXt edits require a string value.");
     const text = latin1(value, "PNG tEXt value");
@@ -667,7 +669,7 @@ export async function applyPngEditTransaction(input: Uint8Array, operations: rea
   }
   if (results.some((item) => item.status !== "applied")) return { output: null, operations: results, before, after: null, byteChanges: [], preservedPayloads: [], verified: false };
   try {
-    const output = await rewritePngMetadata(input, { blocks: blockEdits, limits, verify: policy.verification !== "none", duplicatePolicy: policy.duplicates });
+    const output = await rewritePngMetadata(input, { blocks: blockEdits, limits, verify: policy.verification !== "none", duplicatePolicy: policy.duplicates, preservation: { orientationPolicy: policy.orientation } });
     const after = parsePngIndex(output.data, limits);
     return { output: output.data, operations: results, before, after, byteChanges: output.byteChanges, preservedPayloads: output.preservedPayloads, verified: policy.verification !== "none", ...(output.preservation === null ? {} : { preservation: output.preservation }) };
   } catch (error) {

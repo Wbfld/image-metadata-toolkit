@@ -1,3 +1,76 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'; connect-src 'none'; img-src 'self' blob:; script-src 'self'; style-src 'self';"><title>browser-image-metadata documentation</title><link rel="stylesheet" href="./styles.css"></head>
-<body><header><a href="./index.html"><strong>browser-image-metadata</strong></a><nav aria-label="Primary"><a href="./registry.html">Registry</a><a href="./playground.html">Local playground</a><a href="./recipes.html">Recipes</a><a href="./fetch-demo.html">Fetch demo</a></nav></header><main><h1>Metadata you can inspect and explain</h1><p class="lede">A local-first documentation site for bounded image metadata parsing, privacy inspection, lossless editing, and preservation evidence. The core never uploads selected files or fetches remote resources.</p><div class="grid"><section class="panel"><h2>Search the registry</h2><p>Browse generated EXIF, IPTC, XMP, ICC, policy, selector, format, and capability references.</p><p><a href="./registry.html">Open searchable registry</a></p></section><section class="panel"><h2>Try it locally</h2><p>Inspect a local image and see blocks, fields, raw/semantic values, coverage, privacy, planned edits, byte changes, and verification.</p><p><a href="./playground.html">Open local-only playground</a></p></section><section class="panel"><h2>Runtime recipes</h2><p>Copy tested boundary examples for browser, workers, Node, Deno, Bun, Vite, Next.js, React, and serverless usage.</p><p><a href="./recipes.html">Read recipes and evidence</a></p></section><section class="panel"><h2>Deliberate fetch demo</h2><p>This is the only page that demonstrates network input. It is separate, clearly labeled, and describes its transport policy.</p><p><a href="./fetch-demo.html">Open fetch demo</a></p></section></div><section class="panel"><h2>Trust boundaries</h2><ul><li>Metadata values are rendered as text, never as HTML.</li><li>Raw sensitive values are hidden by default in privacy output.</li><li>Unknown and opaque structures remain visible as fail-closed risks.</li><li>C2PA inventory is structural and never implies signature verification.</li></ul></section></main><footer><p>Generated from pinned repository registries. See <a href="../R01_API_DECISION.md">the API contract</a> and <a href="../RUNTIME_SUPPORT.md">runtime support policy</a>.</p></footer></body></html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'; connect-src 'none'; img-src 'self' blob:; script-src 'self'; style-src 'self';">
+    <title>browser-image-metadata documentation</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header>
+      <a href="./index.html"><strong>browser-image-metadata</strong></a>
+      <nav aria-label="Primary">
+        <a href="../COMPARISON.md">Compare</a>
+        <a href="./registry.html">Registry</a>
+        <a href="./playground.html">Local playground</a>
+        <a href="./recipes.html">Recipes</a>
+        <a href="./fetch-demo.html">Fetch demo</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Image metadata you can inspect, edit, and prove</h1>
+      <p class="lede">A local-first toolkit for bounded metadata parsing, semantic privacy inspection, atomic supported edits, and encoded-payload preservation evidence. The core never uploads selected files or fetches remote resources.</p>
+      <div class="grid">
+        <section class="panel">
+          <h2>Choose with evidence</h2>
+          <p>Compare this package with ExifReader, exifr, and ExifTool, including the jobs where an incumbent remains the better choice.</p>
+          <p><a href="../COMPARISON.md">Read the decision guide</a></p>
+        </section>
+        <section class="panel">
+          <h2>Search the registry</h2>
+          <p>Browse generated EXIF, IPTC, XMP, ICC, policy, selector, format, and capability references.</p>
+          <p><a href="./registry.html">Open searchable registry</a></p>
+        </section>
+        <section class="panel">
+          <h2>Try it locally</h2>
+          <p>Inspect a local image and see blocks, fields, raw/semantic values, coverage, privacy, planned edits, byte changes, and verification.</p>
+          <p><a href="./playground.html">Open local-only playground</a></p>
+        </section>
+        <section class="panel">
+          <h2>Runtime recipes</h2>
+          <p>Copy tested boundary examples for browser, workers, Node, Deno, Bun, Vite, Next.js, React, and serverless usage.</p>
+          <p><a href="./recipes.html">Read recipes and evidence</a></p>
+        </section>
+        <section class="panel">
+          <h2>Deliberate fetch demo</h2>
+          <p>This is the only page that demonstrates network input. It is separate, clearly labeled, and describes its transport policy.</p>
+          <p><a href="./fetch-demo.html">Open fetch demo</a></p>
+        </section>
+      </div>
+      <section class="panel">
+        <h2>Why product teams choose it</h2>
+        <ul>
+          <li>Privacy findings are semantic and hide sensitive values by default.</li>
+          <li>Strict policies produce no output when inspection or mutation coverage is insufficient.</li>
+          <li>Duplicates, conflicts, unknown structures, provenance, and completeness remain visible.</li>
+          <li>Supported edits are atomic, reparsed, and checked against encoded image-payload hashes.</li>
+          <li>Network access and official C2PA verification live behind separate explicit entry points.</li>
+        </ul>
+      </section>
+      <section class="panel">
+        <h2>Trust boundaries</h2>
+        <ul>
+          <li>Metadata values are rendered as text, never as HTML.</li>
+          <li>Raw sensitive values are hidden by default in privacy output.</li>
+          <li>Unknown and opaque structures remain visible as fail-closed risks.</li>
+          <li>C2PA inventory is structural and never implies signature verification.</li>
+          <li>Preservation evidence compares encoded payloads and does not claim pixel equivalence.</li>
+        </ul>
+      </section>
+    </main>
+    <footer>
+      <p>Generated registries are derived from pinned repository sources. See <a href="../CAPABILITIES.md">exact capabilities</a>, <a href="../R01_API_DECISION.md">the API contract</a>, and <a href="../RUNTIME_SUPPORT.md">the runtime support policy</a>.</p>
+    </footer>
+  </body>
+</html>

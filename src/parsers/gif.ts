@@ -9,7 +9,7 @@ interface SubBlocks {
 }
 
 function little16(bytes: Uint8Array, offset: number): number {
-  return (bytes[offset] ?? 0) | ((bytes[offset + 1] ?? 0) << 8);
+  return (bytes[offset] as number) | ((bytes[offset + 1] as number) << 8);
 }
 
 function field(tag: number, name: string, value: string | number, sensitivity: MetadataField["sensitivity"]): MetadataField {
@@ -35,7 +35,7 @@ function readSubBlocks(bytes: Uint8Array, start: number, limits: SecurityLimits,
   let length = 0;
   const chunks: Uint8Array[] = [];
   while (cursor < bytes.length) {
-    const blockLength = bytes[cursor] ?? 0;
+    const blockLength = bytes[cursor] as number;
     cursor += 1;
     if (blockLength === 0) return { data: retain ? concat(chunks, length) : null, next: cursor, malformed: false };
     if (++blocks > limits.maxSegments || cursor > bytes.length - blockLength) return { data: null, next: bytes.length, malformed: true };
@@ -81,7 +81,7 @@ export function parseGif(bytes: Uint8Array, limits: SecurityLimits, selection?: 
       warnings: [{ code: "MALFORMED_GIF", message: "GIF logical screen descriptor is truncated.", severity: "error", offset: 0, length: bytes.length }],
     };
   }
-  const packed = bytes[10] ?? 0;
+  const packed = bytes[10] as number;
   let cursor = 13;
   if ((packed & 0x80) !== 0) {
     const tableLength = 3 * (1 << ((packed & 0x07) + 1));
@@ -97,12 +97,12 @@ export function parseGif(bytes: Uint8Array, limits: SecurityLimits, selection?: 
   let loopCount: number | null = null;
   while (cursor < bytes.length) {
     throwIfAborted(signal);
-    const marker = bytes[cursor] ?? 0;
+    const marker = bytes[cursor] as number;
     cursor += 1;
     if (marker === 0x3b) break;
     if (marker === 0x2c) {
       if (cursor > bytes.length - 9) { warnings.push({ code: "MALFORMED_GIF", message: "GIF image descriptor is truncated.", severity: "error", offset: cursor - 1 }); break; }
-      const imagePacked = bytes[cursor + 8] ?? 0;
+      const imagePacked = bytes[cursor + 8] as number;
       cursor += 9;
       if ((imagePacked & 0x80) !== 0) {
         const localTable = 3 * (1 << ((imagePacked & 0x07) + 1));
@@ -118,11 +118,11 @@ export function parseGif(bytes: Uint8Array, limits: SecurityLimits, selection?: 
       continue;
     }
     if (marker !== 0x21 || cursor >= bytes.length) { warnings.push({ code: "MALFORMED_GIF", message: "GIF contains an invalid block introducer.", severity: "error", offset: cursor - 1 }); break; }
-    const label = bytes[cursor] ?? 0;
+    const label = bytes[cursor] as number;
     cursor += 1;
     if (label === 0xff) {
       const extensionOffset = cursor - 2;
-      const identifierLength = bytes[cursor] ?? 0;
+      const identifierLength = bytes[cursor] as number;
       cursor += 1;
       if (identifierLength !== 11 || cursor > bytes.length - identifierLength) { warnings.push({ code: "MALFORMED_GIF", message: "GIF application extension identifier is malformed.", severity: "error", offset: cursor - 1 }); break; }
       const identifier = decodeLatin1(bytes.subarray(cursor, cursor + identifierLength));
@@ -152,7 +152,7 @@ export function parseGif(bytes: Uint8Array, limits: SecurityLimits, selection?: 
       } else provenance.push({ id: `gif:comment:${extensionOffset}`, family: "Unknown", container: "GIF comment extension", status: "skipped", offset: extensionOffset, length: cursor - extensionOffset, associatedImage: null, sensitivity: "moderate", warningCodes: [] });
       continue;
     }
-    const blockSize = bytes[cursor] ?? 0;
+    const blockSize = bytes[cursor] as number;
     cursor += 1;
     if (cursor > bytes.length - blockSize) { warnings.push({ code: "MALFORMED_GIF", message: "GIF extension block is truncated.", severity: "error", offset: cursor - 1 }); break; }
     cursor += blockSize;

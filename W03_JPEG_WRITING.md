@@ -133,13 +133,20 @@ inconsistent ICC sequences, malformed Extended XMP, and output that exceeds
 `SecurityLimits`. Arithmetic for marker lengths, offsets, cumulative metadata,
 segment counts, and output allocation is checked for safe-integer overflow.
 
-The following structures are refused because W03 does not rewrite their
-embedded offsets or associated payload relationships:
+The following structures remain refused by the W03 default policy because an
+ordinary metadata edit must not rewrite embedded offsets or associated payload
+relationships implicitly:
 
 - MPF secondary-image APP2 metadata;
 - Ultra HDR gain-map XMP;
 - JUMBF/C2PA and APP11 offset-bearing metadata; and
 - height-deferred JPEG codestreams using DNL for the frame height.
+
+T05 adds a separate explicit opt-in for MPF/Ultra HDR metadata-only writing:
+`mpf: { mode: "preserve", ultraHdr: "preserve" }`. That policy recalculates
+MPF offsets and the primary size, verifies each bounded associated JPEG range,
+and preserves Ultra HDR GContainer semantics. It refuses incomplete,
+overlapping, ambiguous, or changed relationships and never handles C2PA/JUMBF.
 
 Unknown APP markers and unrecognized marker payloads are copied unchanged
 when the surrounding JPEG is safe to rewrite. A marker that appears to carry

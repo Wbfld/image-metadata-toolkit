@@ -299,9 +299,12 @@ The default result also exposes the independent W08 `preservation` report;
 `verify: false` returns `preservation: null`.
 Default verification reparses the JPEG, checks frame dimensions and scan bytes,
 checks Extended XMP references, and checks non-target markers. MPF secondary
-images, Ultra HDR gain maps, JUMBF/C2PA/APP11 offset-bearing structures, DNL
-height-deferred codestreams, malformed resources, and over-limit output fail
-closed without exposing partial bytes. See
+images and Ultra HDR gain maps fail closed unless the caller supplies the typed
+`mpf: { mode: "preserve", ultraHdr: "preserve" }` policy. Under that policy,
+MPF offsets/sizes and every primary/secondary encoded scan hash are verified;
+Ultra HDR GContainer semantics must remain unchanged. JUMBF/C2PA/APP11
+offset-bearing structures, DNL height-deferred codestreams, malformed
+resources, and over-limit output fail closed without exposing partial bytes. See
 [`W03_JPEG_WRITING.md`](./W03_JPEG_WRITING.md) for the complete boundary and
 operation model.
 

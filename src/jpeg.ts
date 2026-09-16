@@ -55,3 +55,5 @@ export async function parseJpegMetadata(input: MetadataInput, options: ParseOpti
 
 export { DEFAULT_LIMITS };
 export type { MetadataInput, MetadataResult, ParseOptions };
+export { inspectMpfSegments, inspectUltraHdrXmp, MPF_IDENTIFIER, MPF_STANDARD, ULTRA_HDR_STANDARD, ULTRA_HDR_NAMESPACE, GCONTAINER_NAMESPACE, GCONTAINER_ITEM_NAMESPACE } from "./metadata/mpf-ultrahdr.js";
+export type { GContainerItem, MpfData, MpfDiagnostic, MpfEmbeddedMetadataInventory, MpfIfd, MpfIfdEntry, MpfImageEntry, MpfImageFormat, MpfImageType, MpfRelationship, MpfSegment, UltraHdrData, UltraHdrGainMapProperty } from "./types.js";

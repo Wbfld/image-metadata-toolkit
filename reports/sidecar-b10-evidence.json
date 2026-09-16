@@ -1,7 +1,7 @@
 {
   "schema": "browser-image-metadata.b10-sidecar-evidence.v1",
   "ticket": "B10",
-  "generatedAt": "2026-09-15T03:41:50.553Z",
+  "generatedAt": "2026-09-16T23:53:34.948Z",
   "package": {
     "name": "browser-image-metadata",
     "version": "2.0.0-alpha.3"

@@ -31,8 +31,8 @@
   },
   "independentOracle": {
     "package": "exiftool-vendored",
-    "packageVersion": "33.5.0",
-    "implementationVersion": "13.42",
+    "packageVersion": "38.1.0",
+    "implementationVersion": "13.59",
     "license": "MIT wrapper; bundled ExifTool is Artistic License 2.0 / GPL-1.0-or-later",
     "source": "https://github.com/photostructure/exiftool-vendored.js",
     "role": "secondary output oracle only"
@@ -3722,7 +3722,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -3761,7 +3761,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -3802,7 +3802,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -3843,7 +3843,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -3884,7 +3884,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -3925,7 +3925,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -3966,7 +3966,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -4007,7 +4007,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -4048,7 +4048,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -4089,7 +4089,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -4130,7 +4130,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -4171,7 +4171,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -4210,7 +4210,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     },
     {
@@ -4249,7 +4249,7 @@
       },
       "oracle": {
         "package": "exiftool-vendored",
-        "implementationVersion": "13.42"
+        "implementationVersion": "13.59"
       }
     }
   ],

@@ -84,8 +84,8 @@ redistribution-safe artifacts [`reports/raw-b05-evidence.json`](./reports/raw-b0
 and [`reports/raw-b05-evidence.md`](./reports/raw-b05-evidence.md). The artifacts
 retain no source image bytes.
 
-The independent secondary oracle is `exiftool-vendored@33.5.0`, invoking
-ExifTool 13.42 under its Artistic License 1.0/GPL-1.0-or-later distribution
+The independent secondary oracle is `exiftool-vendored@38.1.0`, invoking
+ExifTool 13.59 under its Artistic License 1.0/GPL-1.0-or-later distribution
 terms. It is not the implementation. Evidence compares identity, dimensions,
 Make, Model, orientation where ExifTool's structured output is available,
 preview presence, metadata presence, RAW/CFA presence, and the RAF embedded

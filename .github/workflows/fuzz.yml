@@ -20,3 +20,32 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:fuzz
+
+  high-volume:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run bounded high-volume fuzz gate
+        env:
+          S06_FUZZ_FIXTURE_ROOT: ${{ github.workspace }}/tests/fixtures
+          S06_FUZZ_ITERATIONS: "20000"
+          S06_FUZZ_TIME_MS: "120000"
+          S06_FUZZ_MAX_INPUT_BYTES: "65536"
+          S06_FUZZ_MAX_OUTPUT_BYTES: "2097152"
+          S06_FUZZ_MAX_MEMORY_BYTES: "536870912"
+        run: npm run test:fuzz:high-volume
+      - name: Upload Stage 6 fuzz evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s06-high-volume-fuzz-evidence
+          path: |
+            reports/s06-high-volume-fuzz-evidence.json
+            reports/s06-high-volume-fuzz-evidence.md
+          if-no-files-found: error

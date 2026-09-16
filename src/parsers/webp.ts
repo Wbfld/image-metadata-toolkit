@@ -15,19 +15,19 @@ function isAscii(bytes: Uint8Array, offset: number, text: string): boolean {
 }
 
 function uint16LittleEndian(bytes: Uint8Array, offset: number): number {
-  return (bytes[offset] ?? 0) | ((bytes[offset + 1] ?? 0) << 8);
+  return (bytes[offset] as number) | ((bytes[offset + 1] as number) << 8);
 }
 
 function uint24LittleEndian(bytes: Uint8Array, offset: number): number {
-  return (bytes[offset] ?? 0) | ((bytes[offset + 1] ?? 0) << 8) | ((bytes[offset + 2] ?? 0) << 16);
+  return (bytes[offset] as number) | ((bytes[offset + 1] as number) << 8) | ((bytes[offset + 2] as number) << 16);
 }
 
 function uint32LittleEndian(bytes: Uint8Array, offset: number): number {
   return (
-    (bytes[offset] ?? 0) +
-    (bytes[offset + 1] ?? 0) * 0x100 +
-    (bytes[offset + 2] ?? 0) * 0x10000 +
-    (bytes[offset + 3] ?? 0) * 0x1000000
+    (bytes[offset] as number) +
+    (bytes[offset + 1] as number) * 0x100 +
+    (bytes[offset + 2] as number) * 0x10000 +
+    (bytes[offset + 3] as number) * 0x1000000
   );
 }
 
@@ -60,10 +60,10 @@ export function parseWebpDimensions(bytes: Uint8Array): ImageDimensions | null {
     return { width: uint24LittleEndian(bytes, 24) + 1, height: uint24LittleEndian(bytes, 27) + 1 };
   }
   if (isAscii(bytes, 12, "VP8L") && chunkLength >= 5 && bytes[20] === 0x2f) {
-    const b1 = bytes[21] ?? 0;
-    const b2 = bytes[22] ?? 0;
-    const b3 = bytes[23] ?? 0;
-    const b4 = bytes[24] ?? 0;
+    const b1 = bytes[21] as number;
+    const b2 = bytes[22] as number;
+    const b3 = bytes[23] as number;
+    const b4 = bytes[24] as number;
     if ((b4 & 0xe0) !== 0) return null;
     return {
       width: 1 + b1 + ((b2 & 0x3f) << 8),
@@ -73,8 +73,8 @@ export function parseWebpDimensions(bytes: Uint8Array): ImageDimensions | null {
   if (
     isAscii(bytes, 12, "VP8 ") &&
     chunkLength >= 10 &&
-    ((bytes[20] ?? 1) & 0x01) === 0 &&
-    ((bytes[20] ?? 0) & 0x10) !== 0 &&
+    ((bytes[20] as number) & 0x01) === 0 &&
+    ((bytes[20] as number) & 0x10) !== 0 &&
     bytes[23] === 0x9d &&
     bytes[24] === 0x01 &&
     bytes[25] === 0x2a
@@ -118,7 +118,7 @@ export function parseWebp(bytes: Uint8Array, limits: SecurityLimits, selection?:
           warningError(warnings, limits, { code: "TRUNCATED_DATA", message: "WebP chunk header is truncated.", offset: cursor });
           break;
         }
-        const type = String.fromCharCode(bytes[cursor] ?? 0, bytes[cursor + 1] ?? 0, bytes[cursor + 2] ?? 0, bytes[cursor + 3] ?? 0);
+        const type = String.fromCharCode(bytes[cursor] as number, bytes[cursor + 1] as number, bytes[cursor + 2] as number, bytes[cursor + 3] as number);
         const length = uint32LittleEndian(bytes, cursor + 4);
         const dataStart = cursor + 8;
         const dataEnd = dataStart + length;

@@ -4,6 +4,8 @@ import { readFile } from "node:fs/promises";
 import { inventoryC2pa, inventoryJumbfC2pa, redactMetadata, rewritePngMetadata, rewriteWebpMetadata } from "../src/index.js";
 import { JpegWriterError, rewriteJpegMetadata } from "../src/jpeg-writer.js";
 import { WebpWriterError } from "../src/webp-writer.js";
+import { c2paMutationFailure, hasC2paInventoryCandidate } from "../src/trust/jumbf.js";
+import { resolveLimits } from "../src/security/limits.js";
 
 const pngSignature = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
@@ -52,6 +54,10 @@ function appendWebpC2pa(input: Uint8Array): Uint8Array {
   output[6] = (size >>> 16) & 0xff;
   output[7] = (size >>> 24) & 0xff;
   return output;
+}
+
+function webpChunk(type: string, payload: Uint8Array): Uint8Array {
+  return Uint8Array.from([...new TextEncoder().encode(type), payload.length & 0xff, (payload.length >>> 8) & 0xff, (payload.length >>> 16) & 0xff, (payload.length >>> 24) & 0xff, ...payload, ...(payload.length % 2 === 0 ? [] : [0])]);
 }
 
 function bmffBox(type: string, payload: Uint8Array): Uint8Array {
@@ -173,6 +179,63 @@ describe("T03 bounded JUMBF/C2PA inventory", () => {
     expect(preserved.data.length).toBeGreaterThan(png.length);
     const preservedWebp = rewriteWebpMetadata(webp, { blocks: [{ op: "add", kind: "xmp", data: "x" }], c2pa: "preserve" });
     expect(preservedWebp.data.length).toBeGreaterThan(webp.length);
-    await expect(rewritePngMetadata(png, { blocks: [{ op: "add", kind: "text", keyword: "Comment", data: "x" }], c2pa: "invalidate" })).rejects.toThrowError(/unavailable/u);
+    await expect(rewritePngMetadata(png, { blocks: [{ op: "add", kind: "text", keyword: "Comment", data: "x" }], c2pa: "invalidate" })).rejects.toThrow(/unavailable/u);
+  });
+
+  it("covers carrier boundary variants and conservative candidate decisions", () => {
+    expect(inventoryJumbfC2pa(pngSignature.subarray(0, 4)).status).toBe("unsupported");
+    const noKeyword = Uint8Array.from([...pngSignature, ...pngChunk("iTXt", new TextEncoder().encode("payload")), ...pngChunk("IEND", new Uint8Array())]);
+    expect(inventoryJumbfC2pa(noKeyword).detected).toBe(false);
+    const unknownPngType = Uint8Array.from([...pngSignature, ...pngChunk("zzzz", new TextEncoder().encode("c2pa opaque")), ...pngChunk("IEND", new Uint8Array())]);
+    expect(inventoryJumbfC2pa(unknownPngType).detected).toBe(true);
+    const crcBroken = minimalPngWithC2pa();
+    crcBroken[crcBroken.length - 13] = (crcBroken[crcBroken.length - 13] ?? 0) ^ 0xff;
+    expect(inventoryJumbfC2pa(crcBroken).diagnostics.some(({ code }) => code === "MALFORMED_STRUCTURE")).toBe(true);
+    expect(inventoryJumbfC2pa(Uint8Array.from([...minimalPngWithC2pa(), 0])).complete).toBe(false);
+
+    expect(inventoryJumbfC2pa(Uint8Array.of(0xff, 0xd8, 0xff, 0x01, 0xff, 0xd0, 0xff, 0xd9)).complete).toBe(true);
+    expect(inventoryJumbfC2pa(Uint8Array.of(0xff, 0xd8, 0x01, 0x02)).complete).toBe(false);
+    expect(inventoryJumbfC2pa(Uint8Array.of(0xff, 0xd8, 0xff)).complete).toBe(false);
+    expect(inventoryJumbfC2pa(Uint8Array.of(0xff, 0xd8, 0xff, 0xff)).complete).toBe(false);
+    expect(inventoryJumbfC2pa(Uint8Array.of(0xff, 0xd8, 0xff, 0xe0, 0)).status).toBe("malformed");
+    expect(inventoryJumbfC2pa(Uint8Array.of(0xff, 0xd8, 0xff, 0xe0, 0, 1)).status).toBe("malformed");
+    expect(inventoryJumbfC2pa(Uint8Array.of(0xff, 0xd8, 0xff, 0xeb, 0, 1)).status).toBe("malformed");
+
+    const emptyWebp = Uint8Array.from([...new TextEncoder().encode("RIFF"), ...u32(4).reverse(), ...new TextEncoder().encode("WEBP")]);
+    expect(inventoryJumbfC2pa(emptyWebp).complete).toBe(true);
+    expect(inventoryJumbfC2pa(emptyWebp.subarray(0, 8)).status).toBe("unsupported");
+    const webpUnknown = Uint8Array.from([...new TextEncoder().encode("RIFF"), ...u32(4 + webpChunk("TEST", Uint8Array.of(1)).length).reverse(), ...new TextEncoder().encode("WEBP"), ...webpChunk("TEST", Uint8Array.of(1))]);
+    expect(inventoryJumbfC2pa(webpUnknown).detected).toBe(false);
+    const webpTruncated = Uint8Array.from([...new TextEncoder().encode("RIFF"), ...u32(12).reverse(), ...new TextEncoder().encode("WEBP"), ...new TextEncoder().encode("TEST"), 0xff, 0xff, 0xff, 0xff]);
+    expect(inventoryJumbfC2pa(webpTruncated).status).toBe("malformed");
+    expect(hasC2paInventoryCandidate(webpTruncated, resolveLimits({ maxPngChunks: 1 }))).toBe(true);
+    const webpTwoUnknown = Uint8Array.from([...new TextEncoder().encode("RIFF"), ...u32(webpChunk("TEST", Uint8Array.of(1)).length + webpChunk("MORE", Uint8Array.of(2)).length).reverse(), ...new TextEncoder().encode("WEBP"), ...webpChunk("TEST", Uint8Array.of(1)), ...webpChunk("MORE", Uint8Array.of(2))]);
+    expect(hasC2paInventoryCandidate(webpTwoUnknown, resolveLimits({ maxPngChunks: 1 }))).toBe(true);
+    const pngTruncated = Uint8Array.from([...pngSignature, 0, 0, 0, 50, 0x7a, 0x7a, 0x7a, 0x7a, 0, 0, 0, 0]);
+    expect(hasC2paInventoryCandidate(pngTruncated, resolveLimits({ maxPngChunks: 1 }))).toBe(true);
+    const jpegManyMarkers = Uint8Array.of(0xff, 0xd8, 0xff, 0xe0, 0, 2, 0xff, 0xe0, 0, 2, 0xff, 0xd9);
+    expect(hasC2paInventoryCandidate(jpegManyMarkers, resolveLimits({ maxSegments: 1 }))).toBe(true);
+    expect(inventoryJumbfC2pa(appendWebpC2pa(minimalWebpWithC2pa()), { limits: { maxPngChunks: 1 } }).status).toBe("limited");
+
+    const uuid = Uint8Array.from([...u32(8 + 16 + 4), ...new TextEncoder().encode("uuid"), 0x63, 0x32, 0x70, 0x61, 0, 0x11, 0, 0x10, 0x80, 0, 0, 0xaa, 0, 0x38, 0x9b, 0x71, 0x63, 0x32, 0x70, 0x61]);
+    expect(inventoryJumbfC2pa(heifWithBoxes(uuid)).stores[0]?.kind).toBe("c2pa");
+    const extendedPayload = new TextEncoder().encode("jumbf c2pa");
+    const extended = Uint8Array.from([0, 0, 0, 1, 0x6a, 0x75, 0x6d, 0x62, ...new Uint8Array([0, 0, 0, 0, 0, 0, 0, 16 + extendedPayload.length]), ...extendedPayload]);
+    expect(inventoryJumbfC2pa(heifWithBoxes(extended)).detected).toBe(true);
+    const shortExtended = Uint8Array.from([0, 0, 0, 1, 0x6a, 0x75, 0x6d, 0x62, 0, 0, 0, 0]);
+    expect(inventoryJumbfC2pa(heifWithBoxes(shortExtended)).status).toBe("limited");
+    const sizeZero = Uint8Array.from([0, 0, 0, 0, 0x6a, 0x75, 0x6d, 0x62, ...new TextEncoder().encode("c2pa")]);
+    expect(inventoryJumbfC2pa(heifWithBoxes(sizeZero)).detected).toBe(true);
+    expect(inventoryJumbfC2pa(minimalPngWithC2pa(), { limits: { maxAdapterItems: 1 } }).diagnostics.some(({ code }) => code === "LIMIT_EXCEEDED")).toBe(true);
+
+    expect(hasC2paInventoryCandidate(new Uint8Array(20), resolveLimits({ maxInputBytes: 10 }))).toBe(true);
+    expect(hasC2paInventoryCandidate(new TextEncoder().encode("ordinary metadata"))).toBe(false);
+    expect(hasC2paInventoryCandidate(minimalJpegWithC2pa())).toBe(true);
+    expect(hasC2paInventoryCandidate(emptyWebp)).toBe(false);
+    expect(hasC2paInventoryCandidate(webpTruncated)).toBe(false);
+    expect(hasC2paInventoryCandidate(noKeyword)).toBe(false);
+    expect(c2paMutationFailure(new TextEncoder().encode("c2pa"), undefined)).toContain("explicit preserve");
+    expect(c2paMutationFailure(new TextEncoder().encode("c2pa"), "preserve")).toBeNull();
+    expect(c2paMutationFailure(new TextEncoder().encode("c2pa"), "invalidate")).toContain("unavailable");
   });
 });

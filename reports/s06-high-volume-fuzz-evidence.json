@@ -1,0 +1,131 @@
+{
+  "schema": "browser-image-metadata.s06-high-volume-fuzz-evidence.v1",
+  "checked": true,
+  "status": "passed",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "runtime": {
+    "node": "23.7.0",
+    "v8": "12.9.202.28-node.12",
+    "platform": "darwin",
+    "architecture": "arm64"
+  },
+  "seeds": {
+    "container": 1863195948,
+    "decoder": 1511506142,
+    "writer": 1260216045
+  },
+  "bounds": {
+    "iterations": 20000,
+    "timeLimitMs": 120000,
+    "maxInputBytes": 65536,
+    "maxOutputBytes": 2097152,
+    "maxMemoryBytes": 536870912
+  },
+  "fixtures": [
+    {
+      "roles": [
+        "jpeg",
+        "makernote",
+        "mpf"
+      ],
+      "path": "tests/fixtures/jpeg-exif-little-endian.jpg",
+      "byteLength": 1332,
+      "sha256": "6727e301428933a6accd496168a6c3b6fbf0c800f2a0e026afe384799c58f27e"
+    },
+    {
+      "roles": [
+        "png"
+      ],
+      "path": "tests/fixtures/png-metadata.png",
+      "byteLength": 985,
+      "sha256": "5811509f52bb9ca60ca7d077e8b5dac9720794b5f2a7882ae349a6899f329506"
+    },
+    {
+      "roles": [
+        "webp"
+      ],
+      "path": "tests/fixtures/webp-metadata.webp",
+      "byteLength": 804,
+      "sha256": "0bdc0894e5b76fabacb7bbad5f590b1ec58b796f8a96db1076cb5e066edbae71"
+    },
+    {
+      "roles": [
+        "tiff"
+      ],
+      "path": "tests/fixtures/tiff-metadata.tif",
+      "byteLength": 262,
+      "sha256": "a27c42137f0443afd9dcbedc635b4529f60d7b9e84b360d7dc14a5003c7a2875"
+    },
+    {
+      "roles": [
+        "xmp",
+        "iptc",
+        "photoshop",
+        "creator"
+      ],
+      "path": "tests/fixtures/jpeg-iptc.jpg",
+      "byteLength": 1510,
+      "sha256": "4b5a1b54c292ea60c1e5d4e4f66906c445e702c609476541631faecf33ffeaef"
+    },
+    {
+      "roles": [
+        "icc"
+      ],
+      "path": "tests/fixtures/jpeg-icc.jpg",
+      "byteLength": 1482,
+      "sha256": "c44d2eb179662e35da1a89c6974c3f569421b365871bff21e257e8f978600add"
+    },
+    {
+      "roles": [
+        "c2pa"
+      ],
+      "path": "tests/fixtures/base.png",
+      "byteLength": 171,
+      "sha256": "d2eb7e9208ea23ead0947738e379f7d6b356480370e6865960a1751203ad3fc0"
+    }
+  ],
+  "phases": [
+    {
+      "name": "container-indexers",
+      "seed": 1863195948,
+      "iterations": 20000,
+      "expectedFailures": 0,
+      "status": "passed"
+    },
+    {
+      "name": "decoder-families",
+      "seed": 1511506142,
+      "iterations": 20000,
+      "expectedFailures": 0,
+      "status": "passed"
+    },
+    {
+      "name": "writer-planning",
+      "seed": 1260216045,
+      "iterations": 5000,
+      "expectedFailures": 0,
+      "status": "passed"
+    }
+  ],
+  "expectedFailureCount": 0,
+  "unexpectedFailureCount": 0,
+  "writerVerificationCount": 5000,
+  "writerVerificationByFamily": {
+    "jpeg": 1667,
+    "png": 1667,
+    "webp": 1666
+  },
+  "serializationBoundaryCount": 10000,
+  "normalizationPolicy": "No semantic normalization is used for fuzz pass/fail. Parser diagnostics are matched by typed code; successful writer outputs are reparsed before they count.",
+  "sourceMutationPolicy": "Every source fixture is hashed before and after its phase; mutation is a failure. Mutated inputs are in-memory copies only.",
+  "remoteReferencePolicy": "C2PA/JUMBF remote references are inventoried without fetching.",
+  "regressionPolicy": "No unexpected failure occurred; no regression bytes were generated. Any future unexpected failure must be minimized from the repo-local lawful fixture and retained only after review.",
+  "evidence": {
+    "json": "reports/s06-high-volume-fuzz-evidence.json",
+    "markdown": "reports/s06-high-volume-fuzz-evidence.md",
+    "containsInputBytes": false
+  }
+}

@@ -1,4 +1,4 @@
-<!-- Generated from pinned repository source data by scripts/generate-docs-site.mjs; data-sha256: 52cd55b04161f1081c123fc384fcfa79b34c4ca5f5e9e8150decb01478dc5a3d -->
+<!-- Generated from pinned repository source data by scripts/generate-docs-site.mjs; data-sha256: 6f1669514a4a8b1f4287543e17854898b5e80811c474ae20a55ab7d1677c5357 -->
 # Documentation site
 
 - EXIF entries: 165

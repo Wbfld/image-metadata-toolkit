@@ -17,6 +17,7 @@ export interface CorpusMetrics {
   mismatched: number;
   missingLocal: number;
   missingReference: number;
+  nonComparable: number;
 }
 export interface CorpusRow {
   key: string;
@@ -34,6 +35,10 @@ export interface CorpusFixture {
   sha256: string | null;
   format: string | null;
   producer: string;
+  corpusId?: string;
+  corpusSource?: string;
+  corpusCommit?: string | null;
+  corpusLicense?: string | null;
   rows: CorpusRow[];
   error?: string;
 }
@@ -45,6 +50,9 @@ export interface CorpusSummary {
   byProducerField: Array<CorpusMetrics & { field: string; key: string; family: string; producer: string }>;
   byFormat: Array<CorpusMetrics & { format: string }>;
   byFormatField: Array<CorpusMetrics & { field: string; key: string; family: string; format: string }>;
+  byCorpus: Array<CorpusMetrics & { corpus: string }>;
+  byCorpusField: Array<CorpusMetrics & { corpus: string; field: string; key: string; family: string }>;
+  byMetadataFamily: Array<CorpusMetrics & { family: string }>;
 }
 export function compareFixture(input: {
   relativePath: string;
@@ -62,7 +70,11 @@ export function compareFixture(input: {
   };
   external: Record<string, unknown>;
   registry: { fields: readonly unknown[]; blocks: readonly unknown[] };
+  corpusId?: string;
+  corpusSource?: string;
+  corpusCommit?: string | null;
+  corpusLicense?: string | null;
 }): CorpusFixture;
 export function summarize(fixtures: readonly CorpusFixture[]): CorpusSummary;
-export function evaluateGate(input: { fixtures: readonly CorpusFixture[]; summary: CorpusSummary; minimumFixtures?: number; maxMissingLocalRate?: number; maxMismatched?: number; allowlist?: { entries: readonly unknown[] }; currentVersion?: string }): { passed: boolean; failures: string[]; missingLocalRate: number; maxMissingLocalRate: number; mismatched: number; minimumFixtures: number; thresholds: { maxMissingLocalRate: number; maxMismatched: number; maxFixtureErrors: number }; observed: { fixtureCount: number; fixtureErrors: number; referencePresent: number; missingLocal: number; mismatched: number } };
-export function renderMarkdown(report: { schema: string; corpus: { fixtureCount: number; source?: string; commit?: string; pinnedCommit?: string; totalBytes?: number }; gate: { passed: boolean; minimumFixtures: number; missingLocalRate: number; maxMissingLocalRate?: number; mismatched?: number; thresholds?: { maxMissingLocalRate?: number; maxMismatched?: number }; observed?: { mismatched?: number }; failures: readonly string[] }; package?: { name?: string; version?: string }; reference?: { tool?: string; package?: string; version?: string }; registry?: { version?: number; sha256?: string }; allowlist?: { version?: number; sha256?: string }; normalization?: { id?: string; sha256?: string }; summary: CorpusSummary; fixtures: readonly CorpusFixture[] }): string;
+export function evaluateGate(input: { fixtures: readonly CorpusFixture[]; summary: CorpusSummary; minimumFixtures?: number; minimumUniqueFixtures?: number; minimumComparableValues?: number; minimumSemanticAgreement?: number; maxMissingLocalRate?: number; maxMismatched?: number; allowlist?: { entries: readonly unknown[] }; currentVersion?: string }): { passed: boolean; failures: string[]; missingLocalRate: number; maxMissingLocalRate: number; mismatched: number; rawMismatched: number; semanticAgreement: number; minimumFixtures: number; minimumUniqueFixtures: number; minimumComparableValues: number; minimumSemanticAgreement: number; thresholds: { maxMissingLocalRate: number; maxMismatched: number; maxFixtureErrors: number; minimumSemanticAgreement: number }; observed: { fixtureCount: number; uniqueFixtureCount: number; fixtureErrors: number; referencePresent: number; missingLocal: number; rawMissingLocal: number; mismatched: number; rawMismatched: number; allowlistedMismatched: number; comparableValues: number; agreedValues: number; semanticAgreement: number } };
+export function renderMarkdown(report: { schema: string; corpus: { fixtureCount: number; source?: string; commit?: string | null; pinnedCommit?: string | null; totalBytes?: number; uniqueFixtureCount?: number; corpora?: readonly { id: string; source: string; commit: string; fixtureCount?: number; licenseSource?: string }[] }; gate: { passed: boolean; minimumFixtures: number; minimumUniqueFixtures?: number; minimumComparableValues?: number; minimumSemanticAgreement?: number; missingLocalRate: number; maxMissingLocalRate?: number; mismatched?: number; semanticAgreement?: number; thresholds?: { maxMissingLocalRate?: number; maxMismatched?: number; minimumSemanticAgreement?: number }; observed?: { uniqueFixtureCount?: number; comparableValues?: number; semanticAgreement?: number; mismatched?: number }; failures: readonly string[] }; package?: { name?: string; version?: string }; reference?: { tool?: string; package?: string; version?: string }; registry?: { version?: number; sha256?: string }; allowlist?: { version?: number; sha256?: string }; normalization?: { id?: string; sha256?: string }; summary: CorpusSummary; fixtures: readonly CorpusFixture[] }): string;

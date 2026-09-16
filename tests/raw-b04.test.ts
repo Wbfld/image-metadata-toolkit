@@ -136,7 +136,7 @@ describe("B04 TIFF-derived RAW phase one", () => {
     const result = await editMetadata(bytes, { operations: [{ op: "set", operationId: "raw-edit", target: { kind: "field", fieldId: "normalized:Make" }, value: "Refused" }] });
     expect(result).toMatchObject({ successful: false, status: "unsupported", data: null, output: null });
     expect(result.diagnostics.some(({ detail }) => detail.includes("RAW DNG writing is intentionally unsupported"))).toBe(true);
-    expect(() => rewriteTiff(bytes, { edits: [] })).toThrowError(TiffSerializationError);
+    expect(() => rewriteTiff(bytes, { edits: [] })).toThrow(TiffSerializationError);
     expect(() => rewriteTiff(bytes, { edits: [] })).toThrow(/RAW DNG writing is intentionally unsupported/u);
   });
 

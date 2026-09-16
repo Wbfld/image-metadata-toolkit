@@ -1,0 +1,77 @@
+{
+  "schema": "browser-image-metadata.mpf-t05-reference-corpus.v1",
+  "retrievedAt": "2026-09-15",
+  "standards": [
+    {
+      "id": "cipa-mpf",
+      "authority": "Camera & Imaging Products Association",
+      "title": "CIPA DC-X007:2025 Multi-Picture Format",
+      "version": "2025",
+      "url": "https://www.cipa.jp/std/documents/e/DC-X007-KEY_E.pdf",
+      "license": "CIPA-published standard; implementation references are retained as provenance only and the standard is not redistributed.",
+      "retrievedAt": "2026-09-15",
+      "sha256": "5634b15162fea9a1708ab5668293ae78407683f61ec34cec2ed14b2249d0588f",
+      "temporaryFileName": "cipa.pdf"
+    },
+    {
+      "id": "android-ultra-hdr",
+      "authority": "Android Developers",
+      "title": "Ultra HDR Image Format v1.1",
+      "version": "1.1",
+      "url": "https://developer.android.com/media/platform/hdr-image-format",
+      "license": "Android Developers documentation under CC BY 4.0; implementation references are retained as provenance only and the page is not redistributed.",
+      "retrievedAt": "2026-09-15",
+      "sha256": "cc58028a438b51fbc88707080136a12fd5db22e19c0e937b20c6582c78568f42",
+      "temporaryFileName": "android.html"
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "android-ultra-hdr-01",
+      "kind": "android-ultra-hdr",
+      "fileName": "android-ultra-hdr-01.jpg",
+      "url": "https://raw.githubusercontent.com/MishaalRahmanGH/Ultra_HDR_Samples/de109721ca479b2b0f31cc709e70b614531b413f/Originals/Ultra_HDR_Samples_Originals_01.jpg",
+      "repository": "MishaalRahmanGH/Ultra_HDR_Samples",
+      "commit": "de109721ca479b2b0f31cc709e70b614531b413f",
+      "license": "CC-BY-4.0",
+      "sha256": "b52c5f4b9f7c8e831ebe78c3338d6ed1b9a4d3aa4b6c30be7a1851294e094403",
+      "expected": {
+        "mpfImages": 2,
+        "ultraHdrComplete": true,
+        "gainMapProperties": ["Version", "GainMapMin", "GainMapMax", "HDRCapacityMin", "HDRCapacityMax"],
+        "directorySemantics": ["Primary", "GainMap"]
+      }
+    },
+    {
+      "id": "android-ultra-hdr-02",
+      "kind": "android-ultra-hdr",
+      "fileName": "android-ultra-hdr-02.jpg",
+      "url": "https://raw.githubusercontent.com/MishaalRahmanGH/Ultra_HDR_Samples/de109721ca479b2b0f31cc709e70b614531b413f/Originals/Ultra_HDR_Samples_Originals_02.jpg",
+      "repository": "MishaalRahmanGH/Ultra_HDR_Samples",
+      "commit": "de109721ca479b2b0f31cc709e70b614531b413f",
+      "license": "CC-BY-4.0",
+      "sha256": "dacf902fbcfb32b1ab29afbfba21e8880d2da205c76bb2a3678773c1f79c1359",
+      "expected": {
+        "mpfImages": 2,
+        "ultraHdrComplete": true,
+        "gainMapProperties": ["Version", "GainMapMin", "GainMapMax", "HDRCapacityMin", "HDRCapacityMax"],
+        "directorySemantics": ["Primary", "GainMap"]
+      }
+    },
+    {
+      "id": "cipa-mpf-pillow-frame-size",
+      "kind": "cipa-mpf",
+      "fileName": "pillow-frame-size.mpo",
+      "url": "https://raw.githubusercontent.com/python-pillow/Pillow/27c29174fa7e60f227377f3f096d5c0b5ab78100/Tests/images/frame_size.mpo",
+      "repository": "python-pillow/Pillow",
+      "commit": "27c29174fa7e60f227377f3f096d5c0b5ab78100",
+      "license": "CC-BY-4.0 (Pillow Tests/images corpus license marker)",
+      "sha256": "52e7358095494ba0bd0f3fce9705cc7d126c3e9211d40c87f99b199f3e97c606",
+      "expected": {
+        "mpfImages": 2,
+        "ultraHdrComplete": false,
+        "secondaryMetadataComplete": true
+      }
+    }
+  ]
+}

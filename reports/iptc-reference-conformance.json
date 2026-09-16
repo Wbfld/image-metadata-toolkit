@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "status": "pass",
-  "executedAt": "2026-09-13T07:51:16.632Z",
+  "executedAt": "2026-09-16T23:08:33.698Z",
   "package": {
     "name": "browser-image-metadata",
     "version": "2.0.0-alpha.3"

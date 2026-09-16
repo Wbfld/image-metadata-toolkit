@@ -32,7 +32,7 @@ const RAF_SIGNATURE = "FUJIFILMCCD-RAW ";
 const CR3_CONTAINERS = new Set(["moov", "trak", "mdia", "minf", "stbl", "edts", "dinf", "udta", "meta", "ilst"]);
 
 function uint32(bytes: Uint8Array, offset: number): number {
-  return (bytes[offset] ?? 0) * 0x1000000 + (bytes[offset + 1] ?? 0) * 0x10000 + (bytes[offset + 2] ?? 0) * 0x100 + (bytes[offset + 3] ?? 0);
+  return (bytes[offset] as number) * 0x1000000 + (bytes[offset + 1] as number) * 0x10000 + (bytes[offset + 2] as number) * 0x100 + (bytes[offset + 3] as number);
 }
 
 function uint64(bytes: Uint8Array, offset: number): number | null {

@@ -2,7 +2,7 @@
 
 Status: **pass**
 
-Generated: 2026-09-12T19:29:52.566Z
+Generated: 2026-09-16T23:08:26.227Z
 Profiles examined: 14 (minimum 10)
 Comparable values: 201 (minimum 100)
 Mismatches: 0 (maximum 0)
@@ -11,7 +11,7 @@ Parser warnings: 6; oracle warnings: 0
 ## Provenance
 
 - Implementation under test: browser-image-metadata standards-based ICC.1:2022 decoder
-- Independent oracle: ExifTool 13.42 via exiftool-vendored 33.5.0
+- Independent oracle: ExifTool 13.59 via exiftool-vendored 38.1.0
 - Oracle license: ExifTool: Perl Artistic License or GPL-1.0-or-later; exiftool-vendored.js: MIT
 - Corpus manifest: data/icc/reference-corpus.json
 - Profile hashes: recorded in JSON for every examined fixture; profile bytes are not copied into this report.

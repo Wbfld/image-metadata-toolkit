@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   r05:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
           cache: npm
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.x
+          deno-version: v2.9.6
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.2.21"
@@ -48,8 +48,8 @@ jobs:
           NODE
       - name: Prepare all remaining pinned R05 corpora in temporary runner storage
         run: npm run r05:prepare-corpora -- --root "$RUNNER_TEMP/r05-corpora"
-      - name: Run the same R05 gate used for release candidates
-        run: npm run r05:audit
+      - name: Run the prepublication R05 gate used for release candidates
+        run: npm run r05:audit -- --phase prepublication
         env:
           EXTERNAL_FIXTURE_ROOT: ${{ runner.temp }}/exif-py/tests/resources
           EXTERNAL_CORPUS_COMMIT: a69bf74770caf6b333221658f5092ed69f99faac
@@ -64,6 +64,8 @@ jobs:
           B09_SVG_CORPUS_DIR: ${{ runner.temp }}/r05-corpora/svg
           R05_BENCHMARK_OUTPUT: artifacts/r05/benchmark.json
           R05_REPORT_DIR: artifacts/r05
+          R05_CLEAN_CHECKOUT: ${{ github.workspace }}
+          R05_CANDIDATE_COMMIT: ${{ github.sha }}
       - name: Upload complete R05 and supporting evidence
         if: always()
         uses: actions/upload-artifact@v4

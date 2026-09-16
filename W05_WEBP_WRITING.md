@@ -40,8 +40,8 @@ never claimed because the package does not decode pixels. `verify: false` is an
 explicit raw-writer opt-out and returns `preservation: null`.
 
 The orientation regression gate writes every VP8, VP8L, and VP8X result to a
-temporary file and checks it with ExifTool 13.42 through the pinned
-`exiftool-vendored` 33.5.0 package (ExifTool's Perl Artistic License/GPL
+temporary file and checks it with ExifTool 13.59 through the pinned
+`exiftool-vendored` 38.1.0 package (ExifTool's Perl Artistic License/GPL
 licensing and the wrapper's MIT license). ExifTool is a secondary metadata
 oracle only: package reparsing asserts 2x2 dimensions for every path, while the
 oracle is required to report no errors and the expected orientation and Make

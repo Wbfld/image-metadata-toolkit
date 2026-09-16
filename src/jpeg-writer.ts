@@ -1,9 +1,11 @@
 import { parseIccChunk } from "./metadata/icc.js";
 import { extendedXmpGuid, parseExtendedXmpChunk, reassembleExtendedXmp, type ExtendedXmpChunk } from "./metadata/xmp.js";
 import { applyTiffEditTransaction, serializeTiff, type TiffEditTransaction } from "./tiff.js";
+import { inspectMpfSegments, type MpfSegmentInput } from "./metadata/mpf-ultrahdr.js";
 import { parseJpeg } from "./parsers/jpeg.js";
 import { inspectPhotoshopResourceSpans } from "./metadata/photoshop.js";
 import { resolveLimits } from "./security/limits.js";
+import { sha256HexSync } from "./security/sha256.js";
 import { verifyPreservationSync, type PreservationReport, type PreservationVerifierOptions } from "./preservation.js";
 import type {
   EditFailure,
@@ -12,6 +14,12 @@ import type {
   EditOperationStatus,
   EditPolicyEvidence,
   EditTarget,
+  JpegEncodedPayloadRangeEvidence,
+  JpegMpfImageWriteEvidence,
+  JpegMpfMutationPolicy,
+  JpegMpfWriteEvidence,
+  MpfData,
+  MpfImageEntry,
   SecurityLimits,
 } from "./types.js";
 import { c2paMutationFailure, type C2paMutationPolicy } from "./trust/jumbf.js";
@@ -136,6 +144,8 @@ export interface JpegRewriteOptions {
   readonly preservation?: PreservationVerifierOptions;
   /** C2PA/JUMBF is refused by default; `preserve` is an explicit caller policy. */
   readonly c2pa?: C2paMutationPolicy;
+  /** MPF and Ultra HDR are refused by default; preserve is an explicit policy. */
+  readonly mpf?: JpegMpfMutationPolicy;
 }
 
 export interface JpegRewriteResult {
@@ -146,6 +156,8 @@ export interface JpegRewriteResult {
   readonly outputBytes: number;
   /** Checked, JSON-safe preservation evidence; null only when `verify: false` was requested. */
   readonly preservation: PreservationReport | null;
+  /** Present only when an explicit MPF preservation policy was used. */
+  readonly mpf?: JpegMpfWriteEvidence;
 }
 
 export type JpegWriterErrorCode = "INVALID_VALUE" | "UNSAFE_STRUCTURE" | "LIMIT_EXCEEDED" | "UNSUPPORTED_STRUCTURE" | "VERIFICATION_FAILURE";
@@ -182,6 +194,7 @@ export interface JpegEditTransaction {
   readonly preservedPayloads: readonly { readonly id: string; readonly before: Uint8Array; readonly after: Uint8Array }[];
   readonly verified: boolean;
   readonly preservation?: PreservationReport;
+  readonly mpf?: JpegMpfWriteEvidence;
 }
 
 function asciiBytes(value: string): Uint8Array {
@@ -411,12 +424,211 @@ function parsePhotoshop(payload: Uint8Array): ParsedPhotoshop | null {
   return { resources, rawIim: false };
 }
 
-function findUnsupportedStructure(bytes: Uint8Array, index: JpegIndex, limits: SecurityLimits, c2paPolicy?: C2paMutationPolicy): void {
+interface MpfWriteImageSnapshot {
+  readonly image: MpfImageEntry;
+  readonly jpeg: JpegIndex;
+}
+
+interface MpfWriteSnapshot {
+  readonly data: MpfData;
+  readonly segment: JpegSegment;
+  readonly segmentBytes: Uint8Array;
+  readonly images: readonly MpfWriteImageSnapshot[];
+  readonly ultraHdrSignature: string | null;
+}
+
+function validateMpfMutationPolicy(value: unknown): JpegMpfMutationPolicy | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new JpegWriterError("INVALID_VALUE", "JPEG mpf policy must be an object.");
+  const candidate = value as Record<string, unknown>;
+  if (candidate.mode !== "preserve") throw new JpegWriterError("INVALID_VALUE", "JPEG mpf policy mode must be preserve.");
+  if (candidate.ultraHdr !== undefined && candidate.ultraHdr !== "preserve") throw new JpegWriterError("INVALID_VALUE", "JPEG mpf ultraHdr policy must be preserve when supplied.");
+  return { mode: "preserve", ...(candidate.ultraHdr === undefined ? {} : { ultraHdr: "preserve" as const }) };
+}
+
+function mpfSegmentInputs(bytes: Uint8Array, index: JpegIndex): MpfSegmentInput[] {
+  return index.segments
+    .filter((segment) => segment.marker === APP2 && startsWith(bytes.subarray(segment.payloadStart, segment.payloadEnd), MPF_IDENTIFIER))
+    .map((segment) => ({ id: segment.id, sourceOffset: segment.start, byteLength: segment.end - segment.start, payload: bytes.subarray(segment.payloadStart, segment.payloadEnd).slice() }));
+}
+
+function sourceView(bytes: Uint8Array): { readonly length: number; readonly subarray: (start: number, end: number) => Uint8Array; readonly isMaterialized: (start: number, end: number) => boolean } {
+  return { length: bytes.length, subarray: (start, end) => bytes.subarray(start, end), isMaterialized: (start, end) => Number.isSafeInteger(start) && Number.isSafeInteger(end) && start >= 0 && end >= start && end <= bytes.length };
+}
+
+function ultraHdrFingerprint(value: NonNullable<ReturnType<typeof parseJpeg>["ultraHdr"]>, images: readonly MpfImageEntry[]): string {
+  const imageIndex = (id: string | null): number | null => id === null ? null : images.find((image) => image.id === id)?.index ?? null;
+  return JSON.stringify({
+    version: value.version,
+    properties: value.gainMapProperties.map((property) => ({ localName: property.localName, lexicalValues: [...property.lexicalValues] })),
+    directory: value.directory.map((item) => ({ index: item.index, semantic: item.semantic, mime: item.mime, length: item.length, padding: item.padding, uri: item.uri, status: item.status })),
+    primaryImageIndex: imageIndex(value.primaryImageId),
+    gainMapImageIndex: imageIndex(value.gainMapImageId),
+  });
+}
+
+function imageJpegIndex(bytes: Uint8Array, image: MpfImageEntry, limits: SecurityLimits): JpegIndex {
+  if (image.absoluteOffset === null || image.rangeLength === null || image.rangeLength !== image.size) throw new JpegWriterError("UNSAFE_STRUCTURE", `MPF image ${image.index + 1} does not have a complete bounded byte range.`);
+  const end = image.absoluteOffset + image.rangeLength;
+  if (!Number.isSafeInteger(end) || end > bytes.length) throw new JpegWriterError("UNSAFE_STRUCTURE", `MPF image ${image.index + 1} range exceeds the JPEG input.`);
+  const parsed = parseJpegIndex(bytes.subarray(image.absoluteOffset, end), limits);
+  if (parsed.eoiEnd !== image.rangeLength) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", `MPF image ${image.index + 1} contains bytes after its JPEG EOI; its protected range is ambiguous.`);
+  return parsed;
+}
+
+function prepareMpfWriteSnapshot(bytes: Uint8Array, index: JpegIndex, limits: SecurityLimits, policy: JpegMpfMutationPolicy | undefined): MpfWriteSnapshot | null {
+  const inputs = mpfSegmentInputs(bytes, index);
+  const primaryHasUltraHdr = index.segments.some((segment) => segment.marker === APP1 && containsUltraHdr(bytes.subarray(segment.payloadStart, segment.payloadEnd)));
+  if (inputs.length === 0) {
+    if (primaryHasUltraHdr) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG Ultra HDR gain-map metadata has no rewritable MPF image index.");
+    return null;
+  }
+  if (policy === undefined) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG MPF secondary-image offsets are preserved only with an explicit mpf preserve policy.");
+  const data = inspectMpfSegments(inputs, sourceView(bytes), limits);
+  if (data === null || !data.complete || data.segments.length !== 1 || data.images.length === 0) throw new JpegWriterError("UNSAFE_STRUCTURE", "JPEG MPF is incomplete or ambiguous and cannot be rewritten safely.");
+  const segment = index.segments.find((candidate) => candidate.id === data.segments[0]?.id);
+  if (segment === undefined) throw new JpegWriterError("UNSAFE_STRUCTURE", "JPEG MPF segment identity was not retained by the writer index.");
+  const images = data.images.map((image) => ({ image, jpeg: imageJpegIndex(bytes, image, limits) }));
+  const primary = images[0];
+  if (primary === undefined || primary.image.index !== 0 || primary.image.absoluteOffset !== 0 || primary.image.size !== index.eoiEnd) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG MPF primary-image size does not exactly cover the primary JPEG; offset rewriting is ambiguous.");
+  for (const item of images.slice(1)) {
+    if (item.image.absoluteOffset === null || item.image.absoluteOffset < index.eoiEnd) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", `MPF secondary image ${item.image.index + 1} overlaps the primary JPEG or its metadata.`);
+  }
+  const associatedHasUltraHdr = images.some(({ image }) => image.absoluteOffset !== null && image.rangeLength !== null && containsUltraHdr(bytes.subarray(image.absoluteOffset, image.absoluteOffset + image.rangeLength)));
+  const hasUltraHdr = primaryHasUltraHdr || associatedHasUltraHdr;
+  let ultraHdrSignature: string | null = null;
+  if (hasUltraHdr) {
+    if (policy.ultraHdr !== "preserve") throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG Ultra HDR relationships require an explicit ultraHdr preserve policy.");
+    const parsed = parseJpeg(bytes, limits, { selection: { groups: new Set(["MPF", "XMP"]), tags: null } });
+    if (parsed.ultraHdr?.complete !== true || parsed.mpf?.complete !== true || parsed.ultraHdr.status !== "decoded") throw new JpegWriterError("UNSAFE_STRUCTURE", "JPEG Ultra HDR relationships are incomplete or ambiguous and cannot be preserved safely.");
+    ultraHdrSignature = ultraHdrFingerprint(parsed.ultraHdr, data.images);
+  }
+  return { data, segment, segmentBytes: bytes.subarray(segment.start, segment.end).slice(), images, ultraHdrSignature };
+}
+
+interface MpfEntryLayout {
+  readonly littleEndian: boolean;
+  readonly mpEntryAbsoluteOffset: number;
+  readonly imageCount: number;
+}
+
+interface MpfPatchResult {
+  readonly outputRanges: readonly { readonly outputOffset: number; readonly outputSize: number }[];
+  readonly changed: boolean;
+}
+
+function readUint16Endian(bytes: Uint8Array, offset: number, littleEndian: boolean): number {
+  if (offset < 0 || offset > bytes.length - 2) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF IFD value is truncated.", offset);
+  return littleEndian ? (bytes[offset] ?? 0) | ((bytes[offset + 1] ?? 0) << 8) : ((bytes[offset] ?? 0) << 8) | (bytes[offset + 1] ?? 0);
+}
+
+function readUint32Endian(bytes: Uint8Array, offset: number, littleEndian: boolean): number {
+  if (offset < 0 || offset > bytes.length - 4) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF IFD value is truncated.", offset);
+  return littleEndian
+    ? (bytes[offset] ?? 0) + (bytes[offset + 1] ?? 0) * 0x100 + (bytes[offset + 2] ?? 0) * 0x10000 + (bytes[offset + 3] ?? 0) * 0x1000000
+    : (bytes[offset] ?? 0) * 0x1000000 + (bytes[offset + 1] ?? 0) * 0x10000 + (bytes[offset + 2] ?? 0) * 0x100 + (bytes[offset + 3] ?? 0);
+}
+
+function writeUint32Endian(bytes: Uint8Array, offset: number, value: number, littleEndian: boolean): void {
+  if (!Number.isSafeInteger(value) || value < 0 || value > 0xffffffff) throw new JpegWriterError("LIMIT_EXCEEDED", "MPF offsets and sizes must fit unsigned 32-bit fields.", offset);
+  if (littleEndian) {
+    bytes[offset] = value & 0xff;
+    bytes[offset + 1] = (value >>> 8) & 0xff;
+    bytes[offset + 2] = (value >>> 16) & 0xff;
+    bytes[offset + 3] = (value >>> 24) & 0xff;
+  } else writeUint32(bytes, offset, value);
+}
+
+function locateMpfEntries(payload: Uint8Array, expectedImageCount: number): MpfEntryLayout {
+  if (!startsWith(payload, MPF_IDENTIFIER) || payload.length < 12) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF payload is truncated or has no identifier.");
+  const littleEndian = payload[4] === 0x49 && payload[5] === 0x49;
+  if (!littleEndian && !(payload[4] === 0x4d && payload[5] === 0x4d)) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF TIFF byte order is invalid.");
+  if (readUint16Endian(payload, 6, littleEndian) !== 42) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF TIFF magic is invalid.");
+  const ifdOffset = readUint32Endian(payload, 8, littleEndian);
+  if (ifdOffset < 8 || ifdOffset > payload.length - 4) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF index IFD offset is outside the payload.");
+  const ifdAbsolute = 4 + ifdOffset;
+  const count = readUint16Endian(payload, ifdAbsolute, littleEndian);
+  const tableEnd = ifdAbsolute + 2 + count * 12;
+  if (!Number.isSafeInteger(tableEnd) || tableEnd > payload.length - 4) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF index IFD table is truncated.");
+  for (let entryIndex = 0; entryIndex < count; entryIndex += 1) {
+    const entryOffset = ifdAbsolute + 2 + entryIndex * 12;
+    const tag = readUint16Endian(payload, entryOffset, littleEndian);
+    const type = readUint16Endian(payload, entryOffset + 2, littleEndian);
+    const itemCount = readUint32Endian(payload, entryOffset + 4, littleEndian);
+    if (tag !== 0xb002) continue;
+    if (type !== 7 || itemCount !== expectedImageCount * 16) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF MPEntry has an unexpected type or count.", entryOffset);
+    const valueLength = itemCount;
+    const valueRelative = valueLength <= 4 ? entryOffset + 8 - 4 : readUint32Endian(payload, entryOffset + 8, littleEndian);
+    const absolute = 4 + valueRelative;
+    if (absolute < 0 || valueLength < 0 || absolute > payload.length - valueLength) throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF MPEntry value is outside the payload.", entryOffset);
+    return { littleEndian, mpEntryAbsoluteOffset: absolute, imageCount: expectedImageCount };
+  }
+  throw new JpegWriterError("UNSAFE_STRUCTURE", "MPF index IFD has no MPEntry value.");
+}
+
+function patchMpfEntries(planned: PlannedOutput, before: MpfWriteSnapshot, beforeIndex: JpegIndex, afterIndex: JpegIndex, limits: SecurityLimits): MpfPatchResult {
+  const placed = planned.placedSegments.find((candidate) => candidate.id === before.segment.id);
+  if (placed === undefined) throw new JpegWriterError("VERIFICATION_FAILURE", "MPF segment was removed from the planned output.");
+  const payload = planned.data.subarray(placed.outputStart + 4, placed.outputEnd);
+  const layout = locateMpfEntries(payload, before.images.length);
+  const delta = afterIndex.eoiEnd - beforeIndex.eoiEnd;
+  if (!Number.isSafeInteger(delta)) throw new JpegWriterError("LIMIT_EXCEEDED", "JPEG primary-image offset delta exceeded the safe integer range.");
+  const outputRanges: { outputOffset: number; outputSize: number }[] = [];
+  for (const item of before.images) {
+    const sourceOffset = item.image.absoluteOffset;
+    if (sourceOffset === null) throw new JpegWriterError("UNSAFE_STRUCTURE", `MPF image ${item.image.index + 1} has no source offset.`);
+    const outputOffset = item.image.index === 0 ? 0 : sourceOffset + delta;
+    const outputSize = item.image.index === 0 ? afterIndex.eoiEnd : item.image.size;
+    if (!Number.isSafeInteger(outputOffset) || outputOffset < 0 || !Number.isSafeInteger(outputSize) || outputSize <= 0 || outputOffset > planned.data.length - outputSize) throw new JpegWriterError("UNSAFE_STRUCTURE", `MPF image ${item.image.index + 1} does not fit in the planned output.`);
+    const entryOffset = layout.mpEntryAbsoluteOffset + item.image.index * 16;
+    writeUint32Endian(payload, entryOffset + 4, outputSize, layout.littleEndian);
+    writeUint32Endian(payload, entryOffset + 8, item.image.index === 0 ? 0 : outputOffset - (placed.outputStart + 8), layout.littleEndian);
+    outputRanges.push({ outputOffset, outputSize });
+  }
+  if (payload.length > limits.maxSegmentBytes) throw new JpegWriterError("LIMIT_EXCEEDED", "Rewritten MPF payload exceeds the configured segment limit.");
+  return { outputRanges, changed: !equalBytes(planned.data.subarray(placed.outputStart, placed.outputEnd), before.segmentBytes) };
+}
+
+function verifyMpfWrite(input: Uint8Array, output: Uint8Array, before: MpfWriteSnapshot, outputRanges: readonly { readonly outputOffset: number; readonly outputSize: number }[], afterIndex: JpegIndex, limits: SecurityLimits): JpegMpfWriteEvidence {
+  const parsed = parseJpeg(output, limits, { selection: { groups: new Set(["MPF", "XMP"]), tags: null } });
+  if (parsed.warnings.some((warning) => warning.severity === "error")) throw new JpegWriterError("VERIFICATION_FAILURE", "The rewritten JPEG MPF inventory has parser errors.");
+  if (parsed.mpf?.complete !== true || parsed.mpf.images.length !== before.images.length) throw new JpegWriterError("VERIFICATION_FAILURE", "The rewritten JPEG MPF inventory is incomplete or has a changed image count.");
+  const outputImages = parsed.mpf.images;
+  const evidenceImages: JpegMpfImageWriteEvidence[] = [];
+  for (const [index, source] of before.images.entries()) {
+    const range = outputRanges[index];
+    const target = outputImages[index];
+    if (range === undefined || target === undefined || target.absoluteOffset !== range.outputOffset || target.size !== range.outputSize || target.rangeLength !== range.outputSize) throw new JpegWriterError("VERIFICATION_FAILURE", `Rewritten MPF image ${index + 1} has incorrect offset or size.`);
+    const afterJpeg = imageJpegIndex(output, { ...target, absoluteOffset: range.outputOffset, rangeLength: range.outputSize }, limits);
+    if (afterJpeg.scans.length !== source.jpeg.scans.length) throw new JpegWriterError("VERIFICATION_FAILURE", `Rewritten MPF image ${index + 1} changed its scan count.`);
+    const encodedPayloads: Array<JpegMpfImageWriteEvidence["encodedPayloads"][number]> = [];
+    for (const [scanIndex, scan] of source.jpeg.scans.entries()) {
+      const afterScan = afterJpeg.scans[scanIndex];
+      if (afterScan === undefined) throw new JpegWriterError("VERIFICATION_FAILURE", `Rewritten MPF image ${index + 1} lost scan ${scanIndex + 1}.`);
+      const beforeRange = input.subarray((source.image.absoluteOffset ?? 0) + scan.start, (source.image.absoluteOffset ?? 0) + scan.end);
+      const afterRange = output.subarray(range.outputOffset + afterScan.start, range.outputOffset + afterScan.end);
+      if (!equalBytes(beforeRange, afterRange)) throw new JpegWriterError("VERIFICATION_FAILURE", `Encoded JPEG payload for MPF image ${index + 1}, scan ${scanIndex + 1} changed.`);
+      const beforeEvidence: JpegEncodedPayloadRangeEvidence = { offset: (source.image.absoluteOffset ?? 0) + scan.start, length: beforeRange.length, sha256: sha256HexSync(beforeRange) };
+      const afterEvidence: JpegEncodedPayloadRangeEvidence = { offset: range.outputOffset + afterScan.start, length: afterRange.length, sha256: sha256HexSync(afterRange) };
+      encodedPayloads.push({ id: `${source.image.id}:scan:${scanIndex}`, before: beforeEvidence, after: afterEvidence, status: "matched" });
+    }
+    evidenceImages.push({ id: source.image.id, index, imageType: source.image.imageType, inputOffset: source.image.absoluteOffset ?? 0, inputSize: source.image.size, outputOffset: range.outputOffset, outputSize: range.outputSize, encodedPayloads });
+  }
+  let ultraHdr: JpegMpfWriteEvidence["ultraHdr"] = "not-present";
+  if (before.ultraHdrSignature !== null) {
+    if (parsed.ultraHdr?.complete !== true || parsed.ultraHdr.status !== "decoded" || ultraHdrFingerprint(parsed.ultraHdr, outputImages) !== before.ultraHdrSignature) throw new JpegWriterError("VERIFICATION_FAILURE", "Rewritten Ultra HDR gain-map relationships changed or became incomplete.");
+    ultraHdr = "preserved";
+  }
+  if (afterIndex.eoiEnd !== outputRanges[0]?.outputSize) throw new JpegWriterError("VERIFICATION_FAILURE", "Rewritten MPF primary-image size does not match the primary JPEG boundary.");
+  return { schema: "browser-image-metadata.jpeg-mpf-write.v1", policy: "preserve", mpfSegmentId: before.segment.id, relationshipsVerified: true, ultraHdr, images: evidenceImages, diagnostics: ["MPF offsets and sizes were rewritten with the source TIFF byte order.", "Encoded JPEG scan payloads were compared by SHA-256; image bytes were not retained in this evidence."] };
+}
+
+function findUnsupportedStructure(bytes: Uint8Array, index: JpegIndex, limits: SecurityLimits, c2paPolicy?: C2paMutationPolicy, mpfPolicy?: JpegMpfMutationPolicy): void {
   const extended = new Map<string, { readonly guid: string; readonly fullLength: number; readonly offset: number; readonly data: Uint8Array }[]>();
   const iccChunks: { readonly sequence: number; readonly total: number; readonly data: Uint8Array }[] = [];
   for (const segment of index.segments) {
     const payload = bytes.subarray(segment.payloadStart, segment.payloadEnd);
-    if (segment.marker === APP2 && startsWith(payload, MPF_IDENTIFIER)) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG MPF secondary-image offsets are not rewritten by W03.", segment.start);
+    if (segment.marker === APP2 && startsWith(payload, MPF_IDENTIFIER) && mpfPolicy === undefined) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG MPF secondary-image offsets are preserved only with an explicit mpf preserve policy.", segment.start);
     if (segment.marker === APP11 || containsAscii(payload, "jumb") || containsAscii(payload, "c2pa")) {
       if (c2paMutationFailure(bytes, c2paPolicy, limits) !== null) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", c2paMutationFailure(bytes, c2paPolicy, limits) ?? "JPEG C2PA/JUMBF mutation was refused.", segment.start);
     }
@@ -432,7 +644,7 @@ function findUnsupportedStructure(bytes: Uint8Array, index: JpegIndex, limits: S
       if (packet.length > limits.maxStringBytes) throw new JpegWriterError("LIMIT_EXCEEDED", "JPEG standard XMP exceeds the configured string limit.", segment.start);
       try { new TextDecoder("utf-8", { fatal: true }).decode(packet); } catch { throw new JpegWriterError("UNSAFE_STRUCTURE", "JPEG standard XMP is not valid UTF-8.", segment.start); }
     }
-    if (segment.marker === APP1 && (segment.kind === "standard-xmp" || segment.kind === "extended-xmp") && containsUltraHdr(payload)) throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG Ultra HDR gain-map metadata is not rewritten by W03.", segment.start);
+    if (segment.marker === APP1 && (segment.kind === "standard-xmp" || segment.kind === "extended-xmp") && containsUltraHdr(payload) && mpfPolicy?.ultraHdr !== "preserve") throw new JpegWriterError("UNSUPPORTED_STRUCTURE", "JPEG Ultra HDR relationships require an explicit ultraHdr preserve policy.", segment.start);
     if (segment.marker === APP13 && startsWith(payload, PHOTOSHOP_IDENTIFIER) && parsePhotoshop(payload) === null) throw new JpegWriterError("UNSAFE_STRUCTURE", "JPEG Photoshop image-resource data is malformed; metadata editing is refused.", segment.start);
     if (segment.marker === APP2 && startsWith(payload, ICC_IDENTIFIER)) {
       const chunk = parseIccChunk(payload);
@@ -875,14 +1087,19 @@ function exactPhotoshopSegmentIds(input: Uint8Array, index: JpegIndex, resourceI
   }).map((segment) => segment.id);
 }
 
-function outputForBlocks(input: Uint8Array, index: JpegIndex, blocks: readonly JpegBlockEdit[], limits: SecurityLimits, options: Pick<JpegRewriteOptions, "duplicatePolicy" | "verify" | "preservation" | "c2pa"> = {}): JpegRewriteResult {
-  findUnsupportedStructure(input, index, limits, options.c2pa);
+function outputForBlocks(input: Uint8Array, index: JpegIndex, blocks: readonly JpegBlockEdit[], limits: SecurityLimits, options: Pick<JpegRewriteOptions, "duplicatePolicy" | "verify" | "preservation" | "c2pa" | "mpf"> = {}): JpegRewriteResult {
+  const mpfSnapshot = prepareMpfWriteSnapshot(input, index, limits, options.mpf);
+  findUnsupportedStructure(input, index, limits, options.c2pa, options.mpf);
   const works: SegmentWork[] = index.segments.map((segment) => ({ original: segment, originalBytes: input.subarray(segment.start, segment.end).slice(), bytes: input.subarray(segment.start, segment.end).slice(), removed: false }));
   const inserted: InsertedSegment[] = [];
   applyBlockEditsToWorks(index, blocks, limits, works, inserted, options.duplicatePolicy ?? "preserve");
 
   const planned = rebuildJpeg(input, works, inserted, limits);
   const after = parseJpegIndex(planned.data, limits);
+  const mpfPatch = mpfSnapshot === null ? null : patchMpfEntries(planned, mpfSnapshot, index, after, limits);
+  const byteChanges = mpfPatch?.changed === true
+    ? [...planned.changes, { blockId: mpfSnapshot?.segment.id ?? "jpeg:APP2:MPF", offset: planned.placedSegments.find((candidate) => candidate.id === mpfSnapshot?.segment.id)?.outputStart ?? 0, length: mpfSnapshot?.segmentBytes.length ?? 0, kind: "rewritten" as const }]
+    : planned.changes;
   verifyExtendedXmpRelationships(planned.data, after, limits);
   if (options.verify !== false) verifyJpegRewrite(input, planned.data, index, limits, planned.placedSegments);
   const preservedPayloads = index.scans.map((scan, scanIndex) => {
@@ -894,7 +1111,8 @@ function outputForBlocks(input: Uint8Array, index: JpegIndex, blocks: readonly J
     ? null
     : verifyPreservationSync(input, planned.data, { colorPolicy: "report-only", orientationPolicy: "preserve", ...options.preservation, limits });
   if (preservation !== null && !preservation.successful) throw new JpegWriterError("VERIFICATION_FAILURE", `Independent JPEG preservation verification failed: ${preservation.diagnostics.join(" ")}`);
-  return { data: planned.data, byteChanges: planned.changes, preservedPayloads, inputBytes: input.length, outputBytes: planned.data.length, preservation };
+  const mpf = mpfSnapshot === null || mpfPatch === null ? undefined : verifyMpfWrite(input, planned.data, mpfSnapshot, mpfPatch.outputRanges, after, limits);
+  return { data: planned.data, byteChanges, preservedPayloads, inputBytes: input.length, outputBytes: planned.data.length, preservation, ...(mpf === undefined ? {} : { mpf }) };
 }
 
 function verifyExtendedXmpRelationships(bytes: Uint8Array, index: JpegIndex, limits: SecurityLimits): void {
@@ -1112,6 +1330,7 @@ export function rewriteJpegMetadata(input: Uint8Array, options: JpegRewriteOptio
   }
   if (preservationOptions?.requireCompletePayloadExtraction !== undefined && typeof preservationOptions.requireCompletePayloadExtraction !== "boolean") throw new JpegWriterError("INVALID_VALUE", "JPEG preservation requireCompletePayloadExtraction must be boolean.");
   if (candidateOptions.duplicatePolicy !== undefined && candidateOptions.duplicatePolicy !== "preserve" && candidateOptions.duplicatePolicy !== "replace-target" && candidateOptions.duplicatePolicy !== "deduplicate-equivalent" && candidateOptions.duplicatePolicy !== "reject") throw new JpegWriterError("INVALID_VALUE", "JPEG writer duplicatePolicy is not supported.");
+  validateMpfMutationPolicy(candidateOptions.mpf);
   const index = parseJpegIndex(input, limits);
   return outputForBlocks(input, index, validatedOptions.blocks, limits, validatedOptions);
 }
@@ -1203,7 +1422,7 @@ function applyExifOperation(works: readonly SegmentWork[], index: JpegIndex, ins
   for (const work of exifWorks) {
     const tiff = rawSegmentPayload(work.bytes).subarray(EXIF_IDENTIFIER.length);
     try {
-      const syntheticOperation = operation;
+      const syntheticOperation = newExifOperation(operation) ?? operation;
       const transaction: TiffEditTransaction = applyTiffEditTransaction(tiff, [syntheticOperation], policy, limits);
       const item = transaction.operations[0];
       if (item?.status === "applied" && transaction.output !== null) {
@@ -1233,7 +1452,9 @@ export function applyJpegEditTransaction(input: Uint8Array, operations: readonly
   if (!(input instanceof Uint8Array)) throw new JpegWriterError("INVALID_VALUE", "JPEG transaction input must be a Uint8Array.");
   if (!Array.isArray(operations) || operations.length === 0) throw new JpegWriterError("INVALID_VALUE", "JPEG transaction requires at least one operation.");
   const before = parseJpegIndex(input, limits);
-  findUnsupportedStructure(input, before, limits);
+  const mpfPolicy = validateMpfMutationPolicy(policy.mpf);
+  const mpfSnapshot = prepareMpfWriteSnapshot(input, before, limits, mpfPolicy);
+  findUnsupportedStructure(input, before, limits, undefined, mpfPolicy);
   const results: JpegTransactionOperation[] = [];
   const works: SegmentWork[] = before.segments.map((segment) => ({ original: segment, originalBytes: input.subarray(segment.start, segment.end).slice(), bytes: input.subarray(segment.start, segment.end).slice(), removed: false }));
   const inserted: InsertedSegment[] = [];
@@ -1304,6 +1525,10 @@ export function applyJpegEditTransaction(input: Uint8Array, operations: readonly
     }
     const planned = rebuildJpeg(input, works, inserted, limits);
     const after = parseJpegIndex(planned.data, limits);
+    const mpfPatch = mpfSnapshot === null ? null : patchMpfEntries(planned, mpfSnapshot, before, after, limits);
+    const byteChanges = mpfPatch?.changed === true
+      ? [...planned.changes, { blockId: mpfSnapshot?.segment.id ?? "jpeg:APP2:MPF", offset: planned.placedSegments.find((candidate) => candidate.id === mpfSnapshot?.segment.id)?.outputStart ?? 0, length: mpfSnapshot?.segmentBytes.length ?? 0, kind: "rewritten" as const }]
+      : planned.changes;
     verifyExtendedXmpRelationships(planned.data, after, limits);
     if (policy.verification !== "none") verifyJpegRewrite(input, planned.data, before, limits, planned.placedSegments);
     const preservedPayloads = before.scans.map((scan, scanIndex) => {
@@ -1311,8 +1536,9 @@ export function applyJpegEditTransaction(input: Uint8Array, operations: readonly
       if (afterScan === undefined) throw new JpegWriterError("VERIFICATION_FAILURE", `JPEG scan ${scan.id} disappeared during rewriting.`);
       return { id: scan.id, before: input.subarray(scan.start, scan.end).slice(), after: planned.data.subarray(afterScan.start, afterScan.end).slice() };
     });
-    const preservation = policy.verification === "none" ? undefined : verifyPreservationSync(input, planned.data, { colorPolicy: "report-only", orientationPolicy: "preserve", limits });
+    const preservation = policy.verification === "none" ? undefined : verifyPreservationSync(input, planned.data, { colorPolicy: "report-only", orientationPolicy: policy.orientation, limits });
     if (preservation !== undefined && !preservation.successful) throw new JpegWriterError("VERIFICATION_FAILURE", `Independent JPEG preservation verification failed: ${preservation.diagnostics.join(" ")}`);
+    const mpf = mpfSnapshot === null || mpfPatch === null ? undefined : verifyMpfWrite(input, planned.data, mpfSnapshot, mpfPatch.outputRanges, after, limits);
     const byOperationId = new Map(results.map((result) => [result.operationId, result]));
     for (const { operation, edit } of blockEdits) {
       const matches = edit.kind === "photoshop-resource"
@@ -1324,7 +1550,7 @@ export function applyJpegEditTransaction(input: Uint8Array, operations: readonly
       byOperationId.set(operation.operationId, next);
     }
     const finalResults = operations.map((operation: EditOperation) => byOperationId.get(operation.operationId) ?? unsupportedOperation(operation, "The JPEG operation was not included in the transaction plan."));
-    return { output: planned.data, operations: finalResults, before, after, byteChanges: planned.changes, preservedPayloads, verified: policy.verification !== "none", ...(preservation === undefined ? {} : { preservation }) };
+    return { output: planned.data, operations: finalResults, before, after, byteChanges, preservedPayloads, verified: policy.verification !== "none", ...(preservation === undefined ? {} : { preservation }), ...(mpf === undefined ? {} : { mpf }) };
   } catch (error) {
     const detail = error instanceof Error ? error.message : "JPEG output verification failed before the transaction could be committed.";
     return { output: null, operations: operations.map((operation: EditOperation) => transactionVerificationFailure(operation, `The JPEG transaction was not committed after output verification failed: ${detail}`)), before, after: null, byteChanges: [], preservedPayloads: [], verified: false };

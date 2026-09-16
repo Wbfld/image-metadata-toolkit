@@ -152,4 +152,60 @@ describe("B07 MakerNote plugin contract", () => {
     const independent = inspectMakerNotes([input()], limits, { plugins: [plugin("independent")] });
     expect(independent.notes[0]?.status).toBe("detected-decoded");
   });
+
+  it("exhausts bounded plugin input, detection, result, and context failure paths", () => {
+    const invalidInput = inspectMakerNotes([null as never], limits, { plugins: [plugin("invalid-input")] });
+    expect(invalidInput.notes[0]?.status).toBe("rejected");
+    expect(invalidInput.diagnostics[0]?.code).toBe("PLUGIN_REJECTED");
+    expect(inspectMakerNotes([input(), input()], { ...limits, maxSegments: 1 }, { plugins: [plugin("too-many")] }).diagnostics).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
+
+    const invalidDetection = inspectMakerNotes([input()], limits, { plugins: [plugin("bad-detection", { detect: () => ({ confidence: 1 }) as never })] });
+    expect(invalidDetection.notes[0]?.status).toBe("unknown");
+    expect(invalidDetection.diagnostics).toContainEqual(expect.objectContaining({ code: "PLUGIN_REJECTED" }));
+    const ambiguous = inspectMakerNotes([input()], limits, { plugins: [plugin("ambiguous-a"), plugin("ambiguous-b")] });
+    expect(ambiguous.notes[0]?.status).toBe("low-confidence");
+    expect(ambiguous.notes[0]?.diagnostics).toContainEqual(expect.objectContaining({ code: "AMBIGUOUS_DETECTION" }));
+
+    const contextPlugin = plugin("context", {
+      detect: (context) => {
+        expect(context.resolveOffset(2, "note-start")).toBe(102);
+        expect(context.resolveOffset(2, "file-start")).toBe(2);
+        expect(context.resolveOffset(2, "tiff-start")).toBe(22);
+        expect(context.resolveOffset(2, "absolute")).toBe(2);
+        expect(context.resolveOffset(-1)).toBeNull();
+        expect(context.resolveOffset(300)).toBeNull();
+        return { confidence: 0.9, evidence: [{ kind: "structure", offset: 0, length: 4, description: "bounded" }], byteOrder: "unknown", baseOffsetRule: "tiff-start", status: "detected" };
+      },
+    });
+    expect(inspectMakerNotes([input()], limits, { plugins: [contextPlugin] }).notes[0]?.status).toBe("detected-decoded");
+
+    const invalidStatuses = ["not-a-status", "verified"] as const;
+    for (const status of invalidStatuses) {
+      const result = inspectMakerNotes([input()], limits, { plugins: [plugin(`status-${status}`, { parse: () => ({ status } as never) })] });
+      expect(result.notes[0]?.status).toBe("rejected");
+      expect(result.diagnostics).toContainEqual(expect.objectContaining({ code: "PLUGIN_REJECTED" }));
+    }
+    const invalidField = inspectMakerNotes([input()], limits, { plugins: [plugin("bad-field", { parse: () => ({ status: "detected-decoded", fields: [{} as never] }) })] });
+    expect(invalidField.notes[0]?.status).toBe("rejected");
+    const invalidOpaque = inspectMakerNotes([input()], limits, { plugins: [plugin("bad-opaque", { parse: () => ({ status: "detected-decoded", opaqueRanges: [{} as never] }) })] });
+    expect(invalidOpaque.notes[0]?.status).toBe("rejected");
+    const diagnostics = inspectMakerNotes([input()], limits, { plugins: [plugin("diagnostics", { parse: () => ({ status: "detected-decoded", diagnostics: [{ code: "PLUGIN_THROWN", message: "secret payload" }] }) })] });
+    expect(diagnostics.notes[0]?.status).toBe("detected-decoded");
+    expect(JSON.stringify(diagnostics)).not.toContain("secret payload");
+    const opaque = inspectMakerNotes([input()], limits, { plugins: [plugin("opaque-result", { parse: () => ({ status: "detected-decoded", opaqueRanges: [{ id: "opaque", noteRelativeOffset: 0, length: 1, originalFileOffset: 100, reason: "unknown", provenance: { ...provenance(), noteRelativeOffset: 0, rangeLength: 1 } }] }) })] });
+    expect(opaque.notes[0]?.status).toBe("detected-decoded");
+    expect(opaque.complete).toBe(false);
+
+    const rangeFailure = inspectMakerNotes([input()], limits, { plugins: [plugin("range-failure", { parse: () => { throw new RangeError("outside"); } })] });
+    expect(rangeFailure.notes[0]?.status).toBe("rejected");
+    expect(rangeFailure.diagnostics).toContainEqual(expect.objectContaining({ code: "UNSAFE_RANGE" }));
+    const thrown = inspectMakerNotes([input()], limits, { plugins: [plugin("thrown-parse", { parse: () => { throw new Error("failure"); } })] });
+    expect(thrown.notes[0]?.status).toBe("rejected");
+    expect(thrown.diagnostics).toContainEqual(expect.objectContaining({ code: "PLUGIN_THROWN" }));
+    const aborted = new AbortController();
+    aborted.abort();
+    const abortedResult = inspectMakerNotes([input()], limits, { plugins: [plugin("aborted", { detect: () => { throw new Error("should not run"); } })], signal: aborted.signal });
+    expect(abortedResult.notes[0]?.status).toBe("aborted");
+    expect(abortedResult.diagnostics).toContainEqual(expect.objectContaining({ code: "ABORTED" }));
+  });
 });

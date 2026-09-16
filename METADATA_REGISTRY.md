@@ -94,7 +94,7 @@ complete local directory of `.icc`/`.icm` files listed by SHA-256 in
 `ICC_REFERENCE_CORPUS_DIR` and `data/icc/reference-corpus.json`; missing,
 partial, or hash-different corpora fail. Each profile is embedded only in a
 temporary generated JPEG for this package's standards-based parser, then
-ExifTool 13.42 (through pinned `exiftool-vendored` 33.5.0) is queried as an
+ExifTool 13.59 (through pinned `exiftool-vendored` 38.1.0) is queried as an
 independent output oracle. The runner compares header version/class/space/PCS/
 date, localized description and copyright, XYZ white point and colorants,
 technology, measurement and viewing-condition values, TRC byte-length

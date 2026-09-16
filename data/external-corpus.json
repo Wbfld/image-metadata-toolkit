@@ -1,0 +1,32 @@
+{
+  "schema": "browser-image-metadata.external-corpus-manifest.v1",
+  "version": 1,
+  "minimumFixtures": 1000,
+  "minimumUniqueFixtures": 1000,
+  "minimumComparableValues": 100,
+  "minimumSemanticAgreement": 0.99,
+  "corpora": [
+    {
+      "id": "ianare-exif-py",
+      "source": "ianare/exif-py",
+      "repository": "https://github.com/ianare/exif-py.git",
+      "commit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "license": "LGPL-3.0-or-later for exif-py; user-contributed sample images retain the attribution and license records documented by the pinned repository.",
+      "licenseSource": "tests/resources README and attribution records at the pinned commit",
+      "roots": ["tests/resources"],
+      "extensions": [".jpg", ".jpeg", ".tif", ".tiff", ".heic", ".heif"],
+      "rootEnvKey": "ianare-exif-py"
+    },
+    {
+      "id": "imazen-codec-corpus",
+      "source": "imazen/codec-corpus",
+      "repository": "https://github.com/imazen/codec-corpus.git",
+      "commit": "8e10d4d765667c1c49d74413878fc4bfb46dcf8d",
+      "license": "Per-dataset licenses are recorded by the pinned repository README and LICENSE files; selected sets include MIT, IJG/BSD, CC0, Freeware, BSD, Apache, CC-BY-SA, LGPL, and explicitly Various sources.",
+      "licenseSource": "README.md, LICENSE, and selected dataset README/LICENSE files at the pinned commit",
+      "roots": ["jpeg-conformance", "webp-conformance", "tiff-conformance", "pngsuite", "heic-conformance", "avif-conformance"],
+      "extensions": [".jpg", ".jpeg", ".tif", ".tiff", ".heic", ".heif", ".png", ".webp", ".avif"],
+      "rootEnvKey": "imazen-codec-corpus"
+    }
+  ]
+}

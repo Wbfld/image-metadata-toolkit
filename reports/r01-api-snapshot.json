@@ -10,8 +10,8 @@
     "exportsSha256": "16a5673471e9ad3af94182fe1e6bd2ace3c808ca8fa9760143995437180f4189"
   },
   "declarations": {
-    "esmSha256": "881d5e202724cff597ef6f71e7803ae8b03f15f74b54ec6b020f28232a2c70da",
-    "commonjsSha256": "36f3c3639585c6e3d0fcd4ea848c63402b3baf47d843fae1ab9f5fab5360b8d7"
+    "esmSha256": "de21839b5066092eaeb367b5292557025b02deb44391b0913e5ae28b581280e9",
+    "commonjsSha256": "a5599ab4d629ae1d6cda92bd3d190053f9a84c5cda44cc35814eedbbe51833f4"
   },
   "requiredRootExports": [
     "parseMetadata",

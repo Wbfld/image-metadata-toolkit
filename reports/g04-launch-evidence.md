@@ -24,7 +24,7 @@ No image bytes are retained in this evidence report; only derived hashes, dimens
 | G04_LAUNCH_PLAN.md | 3399 | faadee8278272e0a6f9e62a7186a927c3db883a1e9a2f0990c16347be7dab696 |
 | G04_TECHNICAL_ARTICLE.md | 3895 | 13328b517254f07c98dacf6f33957b45218760720b86ad71f7f2753043de14ae |
 | G04_INTEGRATION_EXAMPLES.md | 1533 | b5ed22b5eca20d1b440a0f25164b6ee35f4e3025acc20aed5e892dbd7c92db09 |
-| docs-site/index.html | 2569 | b0455604857d5b883b7eb17f077594e6e4d0a3cd0e960dbc02af75d80a15e8d6 |
+| docs-site/index.html | 4212 | f297dca35bc00a52a1ee9cc53095b25a463fc8e34b25f50dd18fcfb3a612e5b5 |
 | docs-site/playground.html | 1890 | 0ba0b9bc67ac59a93c766fb271af6580c388f63a8f464ca51a383a95e604c8af |
 | BENCHMARKS.md | 4037 | 0eda52e0d8362c2403131167c13ede4ddc82401ce3be6aee6f037577aec61dca |
 | reports/g02-comparison.json | 14764 | 3c86ce3eddd95d4bdd4a29176976a76866223bef70bbd3e2a8f0d03550dfe7ac |

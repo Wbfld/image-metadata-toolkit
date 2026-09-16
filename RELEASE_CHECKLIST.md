@@ -43,7 +43,7 @@ fixtures, or local credentials.
    records remain blockers:
 
    ```sh
-   npm run r05:audit
+   npm run r05:audit -- --phase prepublication
    ```
 
    Supply temporary, hash-verified corpus/reference directories through the
@@ -81,3 +81,8 @@ superiority claims into the README automatically.
 The release workflow is intentionally fail-closed: a tag mismatch, capability
 drift, test failure, package validation failure, browser/runtime failure, or
 dirty release checkout stops publication before `npm publish --provenance`.
+The prepublication gate does not require registry facts that cannot exist yet;
+after publication, the workflow runs `npm run r05:postpublish` and verifies the
+exact registry tarball, integrity, prerelease/stable dist-tag, npm signatures,
+and provenance attestation. A prerelease such as `2.0.0-alpha.3` must not be
+published under `latest`.

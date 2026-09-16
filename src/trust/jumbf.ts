@@ -72,11 +72,11 @@ const C2PA_MANIFEST_UUID = Uint8Array.from([0x63, 0x32, 0x70, 0x61, 0x00, 0x11, 
 const C2PA_ASSERTION_UUID = Uint8Array.from([0x63, 0x32, 0x61, 0x73, 0x00, 0x11, 0x00, 0x10, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71]);
 
 function uint32(bytes: Uint8Array, offset: number): number {
-  return (bytes[offset] ?? 0) * 0x1000000 + (bytes[offset + 1] ?? 0) * 0x10000 + (bytes[offset + 2] ?? 0) * 0x100 + (bytes[offset + 3] ?? 0);
+  return (bytes[offset] as number) * 0x1000000 + (bytes[offset + 1] as number) * 0x10000 + (bytes[offset + 2] as number) * 0x100 + (bytes[offset + 3] as number);
 }
 
 function uint32LittleEndian(bytes: Uint8Array, offset: number): number {
-  return (bytes[offset] ?? 0) + (bytes[offset + 1] ?? 0) * 0x100 + (bytes[offset + 2] ?? 0) * 0x10000 + (bytes[offset + 3] ?? 0) * 0x1000000;
+  return (bytes[offset] as number) + (bytes[offset + 1] as number) * 0x100 + (bytes[offset + 2] as number) * 0x10000 + (bytes[offset + 3] as number) * 0x1000000;
 }
 
 function safeAdd(left: number, right: number): number | null {
@@ -217,7 +217,7 @@ function scanJpeg(state: MutableInventory, bytes: Uint8Array, limits: SecurityLi
       addDiagnostic(state, limits, { code: "TRUNCATED_DATA", message: "JPEG marker length is truncated while inventorying C2PA/JUMBF.", offset: cursor - 2, length: null });
       return;
     }
-    const length = (bytes[cursor] ?? 0) * 0x100 + (bytes[cursor + 1] ?? 0);
+    const length = (bytes[cursor] as number) * 0x100 + (bytes[cursor + 1] as number);
     const end = safeAdd(cursor, length);
     if (length < 2 || end === null || end > bytes.length) {
       addDiagnostic(state, limits, { code: "TRUNCATED_DATA", message: "JPEG marker extends beyond the supplied bytes.", offset: cursor - 2, length });
@@ -246,7 +246,7 @@ function scanJpeg(state: MutableInventory, bytes: Uint8Array, limits: SecurityLi
 function pngCrc(bytes: Uint8Array, start: number, end: number): number {
   let crc = 0xffffffff;
   for (let index = start; index < end; index += 1) {
-    crc ^= bytes[index] ?? 0;
+    crc ^= bytes[index] as number;
     for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
   }
   return (crc ^ 0xffffffff) >>> 0;
@@ -336,7 +336,7 @@ function scanWebp(state: MutableInventory, bytes: Uint8Array, limits: SecurityLi
 function uint64Safe(bytes: Uint8Array, offset: number): number | null {
   if (offset + 8 > bytes.length) return null;
   let value = 0n;
-  for (let index = 0; index < 8; index += 1) value = (value << 8n) | BigInt(bytes[offset + index] ?? 0);
+  for (let index = 0; index < 8; index += 1) value = (value << 8n) | BigInt(bytes[offset + index] as number);
   return value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
 }
 

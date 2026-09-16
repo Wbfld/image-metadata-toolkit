@@ -1,0 +1,2369 @@
+{
+  "schema": "browser-image-metadata.s06-coverage-evidence.v1",
+  "checked": true,
+  "status": "passed",
+  "package": {
+    "name": "browser-image-metadata",
+    "version": "2.0.0-alpha.3"
+  },
+  "runtime": {
+    "node": "23.7.0",
+    "v8": "12.9.202.28-node.12",
+    "platform": "darwin",
+    "architecture": "arm64"
+  },
+  "tools": {
+    "vitest": "4.1.11",
+    "coverageV8": "4.1.11",
+    "provider": "v8"
+  },
+  "policy": {
+    "overallBranchMinimumPercent": 85,
+    "securityScopeBranchMinimumPercent": 90,
+    "sourceInclusion": "src/**/*.ts",
+    "sourceExclusion": [
+      "src/types.ts"
+    ],
+    "testExclusion": [
+      "tests/cli.test.ts",
+      "tests/r04-compatibility.test.ts"
+    ],
+    "command": "vitest run --coverage --exclude tests/cli.test.ts --exclude tests/r04-compatibility.test.ts --reporter=default --reporter=json --outputFile.json=coverage/test-results.json",
+    "skippedBranchPolicy": "Any skipped branch record fails the gate; no c8 ignore or source exclusion is used for difficult code.",
+    "securityScope": "All bounded parser/indexer, metadata-decoder, structured-input, range-I/O, decompression, JUMBF-inventory, and security-limit source files. Mutation policy, surgery, selector, HTTP, and writer code remains covered by the repository-wide threshold; optional T04 C2PA runtime adapters are outside this Stage 6 parser/indexer scope."
+  },
+  "overall": {
+    "branches": {
+      "covered": 18197,
+      "total": 21223,
+      "skipped": 0,
+      "percent": 85.74188380530556
+    },
+    "statements": {
+      "total": 20566,
+      "covered": 18890,
+      "skipped": 0,
+      "pct": 91.85
+    },
+    "functions": {
+      "total": 2584,
+      "covered": 2492,
+      "skipped": 0,
+      "pct": 96.43
+    },
+    "lines": {
+      "total": 15425,
+      "covered": 14682,
+      "skipped": 0,
+      "pct": 95.18
+    }
+  },
+  "securityScope": {
+    "branches": {
+      "covered": 8378,
+      "total": 9308,
+      "skipped": 0,
+      "percent": 90.00859475719811
+    },
+    "files": [
+      "src/heif-range.ts",
+      "src/input.ts",
+      "src/jpeg-range.ts",
+      "src/tiff-range.ts",
+      "src/io/byte-source.ts",
+      "src/io/jpeg-byte-view.ts",
+      "src/metadata/exif.ts",
+      "src/metadata/icc.ts",
+      "src/metadata/iptc.ts",
+      "src/metadata/jfif.ts",
+      "src/metadata/makernote-pack-sources.ts",
+      "src/metadata/makernote-pack.ts",
+      "src/metadata/makernote.ts",
+      "src/metadata/mpf-ultrahdr.ts",
+      "src/metadata/photoshop.ts",
+      "src/metadata/serialization.ts",
+      "src/metadata/thumbnail.ts",
+      "src/metadata/xmp.ts",
+      "src/parsers/gif.ts",
+      "src/parsers/heif.ts",
+      "src/parsers/jpeg.ts",
+      "src/parsers/jxl.ts",
+      "src/parsers/png.ts",
+      "src/parsers/raw-phase-two.ts",
+      "src/parsers/svg.ts",
+      "src/parsers/tiff.ts",
+      "src/parsers/webp.ts",
+      "src/security/abort.ts",
+      "src/security/bounds.ts",
+      "src/security/limits.ts",
+      "src/security/sha256.ts",
+      "src/security/warnings.ts",
+      "src/trust/jumbf.ts"
+    ],
+    "fileCount": 33
+  },
+  "files": [
+    {
+      "file": "src/adapters.ts",
+      "branches": {
+        "covered": 340,
+        "total": 367,
+        "skipped": 0,
+        "percent": 92.64305177111717
+      },
+      "statements": {
+        "covered": 277,
+        "total": 287,
+        "percent": 96.51567944250871
+      },
+      "functions": {
+        "covered": 28,
+        "total": 28,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 212,
+        "total": 213,
+        "percent": 99.53051643192488
+      }
+    },
+    {
+      "file": "src/browser-thumbnail.ts",
+      "branches": {
+        "covered": 20,
+        "total": 23,
+        "skipped": 0,
+        "percent": 86.95652173913044
+      },
+      "statements": {
+        "covered": 22,
+        "total": 24,
+        "percent": 91.66666666666666
+      },
+      "functions": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 18,
+        "total": 18,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/c2pa-browser.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/c2pa-node.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/capabilities.ts",
+      "branches": {
+        "covered": 2,
+        "total": 2,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 3,
+        "total": 3,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 3,
+        "total": 3,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/convenience.ts",
+      "branches": {
+        "covered": 61,
+        "total": 61,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 45,
+        "total": 45,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 12,
+        "total": 12,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 38,
+        "total": 38,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/creator.ts",
+      "branches": {
+        "covered": 314,
+        "total": 409,
+        "skipped": 0,
+        "percent": 76.77261613691931
+      },
+      "statements": {
+        "covered": 386,
+        "total": 431,
+        "percent": 89.55916473317865
+      },
+      "functions": {
+        "covered": 50,
+        "total": 50,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 313,
+        "total": 344,
+        "percent": 90.98837209302324
+      }
+    },
+    {
+      "file": "src/details.ts",
+      "branches": {
+        "covered": 512,
+        "total": 605,
+        "skipped": 0,
+        "percent": 84.62809917355372
+      },
+      "statements": {
+        "covered": 503,
+        "total": 526,
+        "percent": 95.62737642585552
+      },
+      "functions": {
+        "covered": 60,
+        "total": 63,
+        "percent": 95.23809523809523
+      },
+      "lines": {
+        "covered": 179,
+        "total": 179,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/detect-format.ts",
+      "branches": {
+        "covered": 97,
+        "total": 112,
+        "skipped": 0,
+        "percent": 86.60714285714286
+      },
+      "statements": {
+        "covered": 94,
+        "total": 98,
+        "percent": 95.91836734693877
+      },
+      "functions": {
+        "covered": 7,
+        "total": 7,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 89,
+        "total": 93,
+        "percent": 95.6989247311828
+      }
+    },
+    {
+      "file": "src/detect.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/edit.ts",
+      "branches": {
+        "covered": 540,
+        "total": 678,
+        "skipped": 0,
+        "percent": 79.64601769911505
+      },
+      "statements": {
+        "covered": 510,
+        "total": 593,
+        "percent": 86.00337268128162
+      },
+      "functions": {
+        "covered": 73,
+        "total": 77,
+        "percent": 94.8051948051948
+      },
+      "lines": {
+        "covered": 420,
+        "total": 468,
+        "percent": 89.74358974358975
+      }
+    },
+    {
+      "file": "src/fetch.ts",
+      "branches": {
+        "covered": 23,
+        "total": 26,
+        "skipped": 0,
+        "percent": 88.46153846153845
+      },
+      "statements": {
+        "covered": 41,
+        "total": 44,
+        "percent": 93.18181818181817
+      },
+      "functions": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 39,
+        "total": 41,
+        "percent": 95.1219512195122
+      }
+    },
+    {
+      "file": "src/heif-range.ts",
+      "branches": {
+        "covered": 361,
+        "total": 411,
+        "skipped": 0,
+        "percent": 87.8345498783455
+      },
+      "statements": {
+        "covered": 460,
+        "total": 483,
+        "percent": 95.23809523809523
+      },
+      "functions": {
+        "covered": 36,
+        "total": 36,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 337,
+        "total": 338,
+        "percent": 99.70414201183432
+      }
+    },
+    {
+      "file": "src/heif-sequences.ts",
+      "branches": {
+        "covered": 704,
+        "total": 825,
+        "skipped": 0,
+        "percent": 85.33333333333334
+      },
+      "statements": {
+        "covered": 857,
+        "total": 950,
+        "percent": 90.21052631578948
+      },
+      "functions": {
+        "covered": 108,
+        "total": 110,
+        "percent": 98.18181818181819
+      },
+      "lines": {
+        "covered": 690,
+        "total": 732,
+        "percent": 94.26229508196722
+      }
+    },
+    {
+      "file": "src/http.ts",
+      "branches": {
+        "covered": 249,
+        "total": 340,
+        "skipped": 0,
+        "percent": 73.23529411764706
+      },
+      "statements": {
+        "covered": 335,
+        "total": 446,
+        "percent": 75.11210762331838
+      },
+      "functions": {
+        "covered": 43,
+        "total": 47,
+        "percent": 91.48936170212765
+      },
+      "lines": {
+        "covered": 299,
+        "total": 370,
+        "percent": 80.8108108108108
+      }
+    },
+    {
+      "file": "src/index.ts",
+      "branches": {
+        "covered": 304,
+        "total": 363,
+        "skipped": 0,
+        "percent": 83.7465564738292
+      },
+      "statements": {
+        "covered": 290,
+        "total": 330,
+        "percent": 87.87878787878788
+      },
+      "functions": {
+        "covered": 54,
+        "total": 59,
+        "percent": 91.52542372881356
+      },
+      "lines": {
+        "covered": 250,
+        "total": 265,
+        "percent": 94.33962264150944
+      }
+    },
+    {
+      "file": "src/input.ts",
+      "branches": {
+        "covered": 170,
+        "total": 185,
+        "skipped": 0,
+        "percent": 91.8918918918919
+      },
+      "statements": {
+        "covered": 211,
+        "total": 215,
+        "percent": 98.13953488372093
+      },
+      "functions": {
+        "covered": 22,
+        "total": 22,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 169,
+        "total": 170,
+        "percent": 99.41176470588235
+      }
+    },
+    {
+      "file": "src/iptc.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/jpeg-header.ts",
+      "branches": {
+        "covered": 36,
+        "total": 41,
+        "skipped": 0,
+        "percent": 87.8048780487805
+      },
+      "statements": {
+        "covered": 28,
+        "total": 28,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 20,
+        "total": 20,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/jpeg-range.ts",
+      "branches": {
+        "covered": 111,
+        "total": 126,
+        "skipped": 0,
+        "percent": 88.09523809523809
+      },
+      "statements": {
+        "covered": 117,
+        "total": 124,
+        "percent": 94.35483870967742
+      },
+      "functions": {
+        "covered": 22,
+        "total": 22,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 91,
+        "total": 96,
+        "percent": 94.79166666666666
+      }
+    },
+    {
+      "file": "src/jpeg-writer.ts",
+      "branches": {
+        "covered": 1055,
+        "total": 1267,
+        "skipped": 0,
+        "percent": 83.26756116811366
+      },
+      "statements": {
+        "covered": 1153,
+        "total": 1292,
+        "percent": 89.24148606811146
+      },
+      "functions": {
+        "covered": 149,
+        "total": 153,
+        "percent": 97.38562091503267
+      },
+      "lines": {
+        "covered": 921,
+        "total": 948,
+        "percent": 97.15189873417721
+      }
+    },
+    {
+      "file": "src/jpeg.ts",
+      "branches": {
+        "covered": 29,
+        "total": 37,
+        "skipped": 0,
+        "percent": 78.37837837837837
+      },
+      "statements": {
+        "covered": 16,
+        "total": 17,
+        "percent": 94.11764705882352
+      },
+      "functions": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 14,
+        "total": 14,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/mini.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/node-browser.ts",
+      "branches": {
+        "covered": 2,
+        "total": 2,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 6,
+        "total": 6,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 5,
+        "total": 5,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/node.ts",
+      "branches": {
+        "covered": 104,
+        "total": 128,
+        "skipped": 0,
+        "percent": 81.25
+      },
+      "statements": {
+        "covered": 172,
+        "total": 199,
+        "percent": 86.4321608040201
+      },
+      "functions": {
+        "covered": 37,
+        "total": 40,
+        "percent": 92.5
+      },
+      "lines": {
+        "covered": 157,
+        "total": 167,
+        "percent": 94.01197604790418
+      }
+    },
+    {
+      "file": "src/png-writer.ts",
+      "branches": {
+        "covered": 398,
+        "total": 502,
+        "skipped": 0,
+        "percent": 79.2828685258964
+      },
+      "statements": {
+        "covered": 452,
+        "total": 519,
+        "percent": 87.09055876685935
+      },
+      "functions": {
+        "covered": 52,
+        "total": 53,
+        "percent": 98.11320754716981
+      },
+      "lines": {
+        "covered": 361,
+        "total": 384,
+        "percent": 94.01041666666666
+      }
+    },
+    {
+      "file": "src/preservation.ts",
+      "branches": {
+        "covered": 493,
+        "total": 549,
+        "skipped": 0,
+        "percent": 89.79963570127505
+      },
+      "statements": {
+        "covered": 468,
+        "total": 478,
+        "percent": 97.90794979079497
+      },
+      "functions": {
+        "covered": 30,
+        "total": 30,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 255,
+        "total": 255,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/raw.ts",
+      "branches": {
+        "covered": 196,
+        "total": 294,
+        "skipped": 0,
+        "percent": 66.66666666666666
+      },
+      "statements": {
+        "covered": 152,
+        "total": 184,
+        "percent": 82.6086956521739
+      },
+      "functions": {
+        "covered": 32,
+        "total": 37,
+        "percent": 86.48648648648648
+      },
+      "lines": {
+        "covered": 121,
+        "total": 137,
+        "percent": 88.32116788321169
+      }
+    },
+    {
+      "file": "src/redact.ts",
+      "branches": {
+        "covered": 11,
+        "total": 12,
+        "skipped": 0,
+        "percent": 91.66666666666666
+      },
+      "statements": {
+        "covered": 21,
+        "total": 22,
+        "percent": 95.45454545454545
+      },
+      "functions": {
+        "covered": 8,
+        "total": 8,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 16,
+        "total": 16,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/registry.ts",
+      "branches": {
+        "covered": 116,
+        "total": 119,
+        "skipped": 0,
+        "percent": 97.47899159663865
+      },
+      "statements": {
+        "covered": 101,
+        "total": 104,
+        "percent": 97.11538461538461
+      },
+      "functions": {
+        "covered": 17,
+        "total": 18,
+        "percent": 94.44444444444444
+      },
+      "lines": {
+        "covered": 88,
+        "total": 88,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/result.ts",
+      "branches": {
+        "covered": 102,
+        "total": 107,
+        "skipped": 0,
+        "percent": 95.32710280373831
+      },
+      "statements": {
+        "covered": 87,
+        "total": 89,
+        "percent": 97.75280898876404
+      },
+      "functions": {
+        "covered": 26,
+        "total": 27,
+        "percent": 96.29629629629629
+      },
+      "lines": {
+        "covered": 62,
+        "total": 63,
+        "percent": 98.4126984126984
+      }
+    },
+    {
+      "file": "src/selection.ts",
+      "branches": {
+        "covered": 19,
+        "total": 19,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 19,
+        "total": 19,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 15,
+        "total": 15,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/sidecar.ts",
+      "branches": {
+        "covered": 80,
+        "total": 101,
+        "skipped": 0,
+        "percent": 79.20792079207921
+      },
+      "statements": {
+        "covered": 103,
+        "total": 114,
+        "percent": 90.35087719298247
+      },
+      "functions": {
+        "covered": 22,
+        "total": 26,
+        "percent": 84.61538461538461
+      },
+      "lines": {
+        "covered": 86,
+        "total": 87,
+        "percent": 98.85057471264368
+      }
+    },
+    {
+      "file": "src/summary.ts",
+      "branches": {
+        "covered": 46,
+        "total": 48,
+        "skipped": 0,
+        "percent": 95.83333333333334
+      },
+      "statements": {
+        "covered": 40,
+        "total": 41,
+        "percent": 97.5609756097561
+      },
+      "functions": {
+        "covered": 17,
+        "total": 17,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 33,
+        "total": 33,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/tiff-range.ts",
+      "branches": {
+        "covered": 455,
+        "total": 529,
+        "skipped": 0,
+        "percent": 86.01134215500946
+      },
+      "statements": {
+        "covered": 480,
+        "total": 507,
+        "percent": 94.67455621301775
+      },
+      "functions": {
+        "covered": 35,
+        "total": 35,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 405,
+        "total": 415,
+        "percent": 97.59036144578313
+      }
+    },
+    {
+      "file": "src/tiff.ts",
+      "branches": {
+        "covered": 771,
+        "total": 918,
+        "skipped": 0,
+        "percent": 83.98692810457517
+      },
+      "statements": {
+        "covered": 813,
+        "total": 894,
+        "percent": 90.93959731543623
+      },
+      "functions": {
+        "covered": 109,
+        "total": 116,
+        "percent": 93.96551724137932
+      },
+      "lines": {
+        "covered": 627,
+        "total": 640,
+        "percent": 97.96875
+      }
+    },
+    {
+      "file": "src/webp-writer.ts",
+      "branches": {
+        "covered": 381,
+        "total": 469,
+        "skipped": 0,
+        "percent": 81.2366737739872
+      },
+      "statements": {
+        "covered": 380,
+        "total": 414,
+        "percent": 91.78743961352657
+      },
+      "functions": {
+        "covered": 46,
+        "total": 47,
+        "percent": 97.87234042553192
+      },
+      "lines": {
+        "covered": 286,
+        "total": 294,
+        "percent": 97.27891156462584
+      }
+    },
+    {
+      "file": "src/worker.ts",
+      "branches": {
+        "covered": 69,
+        "total": 93,
+        "skipped": 0,
+        "percent": 74.19354838709677
+      },
+      "statements": {
+        "covered": 90,
+        "total": 107,
+        "percent": 84.11214953271028
+      },
+      "functions": {
+        "covered": 18,
+        "total": 20,
+        "percent": 90
+      },
+      "lines": {
+        "covered": 83,
+        "total": 94,
+        "percent": 88.29787234042553
+      }
+    },
+    {
+      "file": "src/xmp-rgrove.ts",
+      "branches": {
+        "covered": 19,
+        "total": 19,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 17,
+        "total": 18,
+        "percent": 94.44444444444444
+      },
+      "functions": {
+        "covered": 3,
+        "total": 3,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 14,
+        "total": 15,
+        "percent": 93.33333333333333
+      }
+    },
+    {
+      "file": "src/xmp-sidecar.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/xmp.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/generated/iptc-pmd.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 5,
+        "total": 5,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 5,
+        "total": 5,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/generated/metadata-registry.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 8,
+        "total": 8,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 8,
+        "total": 8,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/io/byte-source.ts",
+      "branches": {
+        "covered": 80,
+        "total": 84,
+        "skipped": 0,
+        "percent": 95.23809523809523
+      },
+      "statements": {
+        "covered": 140,
+        "total": 143,
+        "percent": 97.9020979020979
+      },
+      "functions": {
+        "covered": 22,
+        "total": 23,
+        "percent": 95.65217391304348
+      },
+      "lines": {
+        "covered": 116,
+        "total": 116,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/io/jpeg-byte-view.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/makernote/apple.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/makernote/canon.ts",
+      "branches": {
+        "covered": 8,
+        "total": 10,
+        "skipped": 0,
+        "percent": 80
+      },
+      "statements": {
+        "covered": 8,
+        "total": 8,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 6,
+        "total": 6,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/makernote/fujifilm.ts",
+      "branches": {
+        "covered": 4,
+        "total": 5,
+        "skipped": 0,
+        "percent": 80
+      },
+      "statements": {
+        "covered": 4,
+        "total": 5,
+        "percent": 80
+      },
+      "functions": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 4,
+        "total": 4,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/makernote/nikon.ts",
+      "branches": {
+        "covered": 28,
+        "total": 33,
+        "skipped": 0,
+        "percent": 84.84848484848484
+      },
+      "statements": {
+        "covered": 15,
+        "total": 18,
+        "percent": 83.33333333333334
+      },
+      "functions": {
+        "covered": 3,
+        "total": 3,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 12,
+        "total": 13,
+        "percent": 92.3076923076923
+      }
+    },
+    {
+      "file": "src/makernote/panasonic-leica.ts",
+      "branches": {
+        "covered": 11,
+        "total": 11,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 22,
+        "total": 22,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 14,
+        "total": 14,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/makernote/pentax.ts",
+      "branches": {
+        "covered": 4,
+        "total": 5,
+        "skipped": 0,
+        "percent": 80
+      },
+      "statements": {
+        "covered": 4,
+        "total": 5,
+        "percent": 80
+      },
+      "functions": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 4,
+        "total": 4,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/makernote/sony.ts",
+      "branches": {
+        "covered": 8,
+        "total": 8,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 6,
+        "total": 6,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 5,
+        "total": 5,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/metadata/exif.ts",
+      "branches": {
+        "covered": 639,
+        "total": 743,
+        "skipped": 0,
+        "percent": 86.00269179004037
+      },
+      "statements": {
+        "covered": 681,
+        "total": 754,
+        "percent": 90.3183023872679
+      },
+      "functions": {
+        "covered": 40,
+        "total": 40,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 602,
+        "total": 649,
+        "percent": 92.75808936825885
+      }
+    },
+    {
+      "file": "src/metadata/icc.ts",
+      "branches": {
+        "covered": 433,
+        "total": 480,
+        "skipped": 0,
+        "percent": 90.20833333333333
+      },
+      "statements": {
+        "covered": 385,
+        "total": 398,
+        "percent": 96.73366834170855
+      },
+      "functions": {
+        "covered": 40,
+        "total": 40,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 203,
+        "total": 203,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/metadata/iptc.ts",
+      "branches": {
+        "covered": 320,
+        "total": 356,
+        "skipped": 0,
+        "percent": 89.8876404494382
+      },
+      "statements": {
+        "covered": 294,
+        "total": 311,
+        "percent": 94.53376205787781
+      },
+      "functions": {
+        "covered": 29,
+        "total": 29,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 239,
+        "total": 245,
+        "percent": 97.55102040816327
+      }
+    },
+    {
+      "file": "src/metadata/jfif.ts",
+      "branches": {
+        "covered": 20,
+        "total": 26,
+        "skipped": 0,
+        "percent": 76.92307692307693
+      },
+      "statements": {
+        "covered": 14,
+        "total": 14,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 11,
+        "total": 11,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/metadata/makernote-pack-sources.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 5,
+        "total": 5,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 4,
+        "total": 4,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/metadata/makernote-pack.ts",
+      "branches": {
+        "covered": 216,
+        "total": 255,
+        "skipped": 0,
+        "percent": 84.70588235294117
+      },
+      "statements": {
+        "covered": 156,
+        "total": 172,
+        "percent": 90.69767441860465
+      },
+      "functions": {
+        "covered": 29,
+        "total": 29,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 126,
+        "total": 134,
+        "percent": 94.02985074626866
+      }
+    },
+    {
+      "file": "src/metadata/makernote.ts",
+      "branches": {
+        "covered": 350,
+        "total": 381,
+        "skipped": 0,
+        "percent": 91.86351706036746
+      },
+      "statements": {
+        "covered": 250,
+        "total": 260,
+        "percent": 96.15384615384616
+      },
+      "functions": {
+        "covered": 41,
+        "total": 41,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 209,
+        "total": 212,
+        "percent": 98.58490566037736
+      }
+    },
+    {
+      "file": "src/metadata/mpf-ultrahdr.ts",
+      "branches": {
+        "covered": 468,
+        "total": 515,
+        "skipped": 0,
+        "percent": 90.87378640776699
+      },
+      "statements": {
+        "covered": 444,
+        "total": 475,
+        "percent": 93.47368421052632
+      },
+      "functions": {
+        "covered": 58,
+        "total": 58,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 340,
+        "total": 359,
+        "percent": 94.70752089136491
+      }
+    },
+    {
+      "file": "src/metadata/photoshop.ts",
+      "branches": {
+        "covered": 166,
+        "total": 177,
+        "skipped": 0,
+        "percent": 93.78531073446328
+      },
+      "statements": {
+        "covered": 178,
+        "total": 179,
+        "percent": 99.4413407821229
+      },
+      "functions": {
+        "covered": 24,
+        "total": 24,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 155,
+        "total": 155,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/metadata/serialization.ts",
+      "branches": {
+        "covered": 393,
+        "total": 422,
+        "skipped": 0,
+        "percent": 93.12796208530806
+      },
+      "statements": {
+        "covered": 464,
+        "total": 475,
+        "percent": 97.68421052631578
+      },
+      "functions": {
+        "covered": 87,
+        "total": 88,
+        "percent": 98.86363636363636
+      },
+      "lines": {
+        "covered": 316,
+        "total": 316,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/metadata/thumbnail.ts",
+      "branches": {
+        "covered": 19,
+        "total": 19,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 11,
+        "total": 11,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 3,
+        "total": 3,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 7,
+        "total": 7,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/metadata/xmp.ts",
+      "branches": {
+        "covered": 531,
+        "total": 578,
+        "skipped": 0,
+        "percent": 91.86851211072664
+      },
+      "statements": {
+        "covered": 574,
+        "total": 609,
+        "percent": 94.25287356321839
+      },
+      "functions": {
+        "covered": 89,
+        "total": 92,
+        "percent": 96.73913043478261
+      },
+      "lines": {
+        "covered": 234,
+        "total": 239,
+        "percent": 97.90794979079497
+      }
+    },
+    {
+      "file": "src/normalize/composites.ts",
+      "branches": {
+        "covered": 534,
+        "total": 602,
+        "skipped": 0,
+        "percent": 88.70431893687709
+      },
+      "statements": {
+        "covered": 479,
+        "total": 520,
+        "percent": 92.11538461538461
+      },
+      "functions": {
+        "covered": 73,
+        "total": 75,
+        "percent": 97.33333333333334
+      },
+      "lines": {
+        "covered": 388,
+        "total": 399,
+        "percent": 97.24310776942356
+      }
+    },
+    {
+      "file": "src/normalize/descriptions.ts",
+      "branches": {
+        "covered": 49,
+        "total": 51,
+        "skipped": 0,
+        "percent": 96.07843137254902
+      },
+      "statements": {
+        "covered": 41,
+        "total": 41,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 8,
+        "total": 8,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 18,
+        "total": 18,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/normalize/iptc.ts",
+      "branches": {
+        "covered": 226,
+        "total": 346,
+        "skipped": 0,
+        "percent": 65.3179190751445
+      },
+      "statements": {
+        "covered": 198,
+        "total": 265,
+        "percent": 74.71698113207546
+      },
+      "functions": {
+        "covered": 34,
+        "total": 42,
+        "percent": 80.95238095238095
+      },
+      "lines": {
+        "covered": 164,
+        "total": 201,
+        "percent": 81.59203980099502
+      }
+    },
+    {
+      "file": "src/normalize/values.ts",
+      "branches": {
+        "covered": 363,
+        "total": 417,
+        "skipped": 0,
+        "percent": 87.05035971223022
+      },
+      "statements": {
+        "covered": 328,
+        "total": 370,
+        "percent": 88.64864864864866
+      },
+      "functions": {
+        "covered": 45,
+        "total": 47,
+        "percent": 95.74468085106383
+      },
+      "lines": {
+        "covered": 286,
+        "total": 318,
+        "percent": 89.937106918239
+      }
+    },
+    {
+      "file": "src/parsers/gif.ts",
+      "branches": {
+        "covered": 96,
+        "total": 99,
+        "skipped": 0,
+        "percent": 96.96969696969697
+      },
+      "statements": {
+        "covered": 141,
+        "total": 146,
+        "percent": 96.57534246575342
+      },
+      "functions": {
+        "covered": 9,
+        "total": 11,
+        "percent": 81.81818181818183
+      },
+      "lines": {
+        "covered": 111,
+        "total": 111,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/parsers/heif.ts",
+      "branches": {
+        "covered": 1106,
+        "total": 1222,
+        "skipped": 0,
+        "percent": 90.50736497545007
+      },
+      "statements": {
+        "covered": 1132,
+        "total": 1180,
+        "percent": 95.9322033898305
+      },
+      "functions": {
+        "covered": 117,
+        "total": 117,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 876,
+        "total": 892,
+        "percent": 98.20627802690582
+      }
+    },
+    {
+      "file": "src/parsers/jpeg.ts",
+      "branches": {
+        "covered": 522,
+        "total": 579,
+        "skipped": 0,
+        "percent": 90.15544041450777
+      },
+      "statements": {
+        "covered": 432,
+        "total": 439,
+        "percent": 98.40546697038725
+      },
+      "functions": {
+        "covered": 62,
+        "total": 65,
+        "percent": 95.38461538461539
+      },
+      "lines": {
+        "covered": 383,
+        "total": 386,
+        "percent": 99.22279792746113
+      }
+    },
+    {
+      "file": "src/parsers/jxl.ts",
+      "branches": {
+        "covered": 205,
+        "total": 235,
+        "skipped": 0,
+        "percent": 87.2340425531915
+      },
+      "statements": {
+        "covered": 285,
+        "total": 330,
+        "percent": 86.36363636363636
+      },
+      "functions": {
+        "covered": 25,
+        "total": 26,
+        "percent": 96.15384615384616
+      },
+      "lines": {
+        "covered": 256,
+        "total": 292,
+        "percent": 87.67123287671232
+      }
+    },
+    {
+      "file": "src/parsers/png.ts",
+      "branches": {
+        "covered": 275,
+        "total": 289,
+        "skipped": 0,
+        "percent": 95.15570934256056
+      },
+      "statements": {
+        "covered": 323,
+        "total": 328,
+        "percent": 98.47560975609755
+      },
+      "functions": {
+        "covered": 30,
+        "total": 30,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 284,
+        "total": 284,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/parsers/raw-phase-two.ts",
+      "branches": {
+        "covered": 433,
+        "total": 521,
+        "skipped": 0,
+        "percent": 83.10940499040306
+      },
+      "statements": {
+        "covered": 436,
+        "total": 459,
+        "percent": 94.98910675381264
+      },
+      "functions": {
+        "covered": 81,
+        "total": 84,
+        "percent": 96.42857142857143
+      },
+      "lines": {
+        "covered": 335,
+        "total": 347,
+        "percent": 96.54178674351584
+      }
+    },
+    {
+      "file": "src/parsers/svg.ts",
+      "branches": {
+        "covered": 140,
+        "total": 148,
+        "skipped": 0,
+        "percent": 94.5945945945946
+      },
+      "statements": {
+        "covered": 144,
+        "total": 145,
+        "percent": 99.3103448275862
+      },
+      "functions": {
+        "covered": 8,
+        "total": 8,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 119,
+        "total": 119,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/parsers/tiff.ts",
+      "branches": {
+        "covered": 349,
+        "total": 368,
+        "skipped": 0,
+        "percent": 94.83695652173914
+      },
+      "statements": {
+        "covered": 206,
+        "total": 220,
+        "percent": 93.63636363636364
+      },
+      "functions": {
+        "covered": 35,
+        "total": 35,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 161,
+        "total": 164,
+        "percent": 98.17073170731707
+      }
+    },
+    {
+      "file": "src/parsers/webp.ts",
+      "branches": {
+        "covered": 154,
+        "total": 164,
+        "skipped": 0,
+        "percent": 93.90243902439023
+      },
+      "statements": {
+        "covered": 140,
+        "total": 143,
+        "percent": 97.9020979020979
+      },
+      "functions": {
+        "covered": 14,
+        "total": 14,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 121,
+        "total": 121,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/privacy/audit.ts",
+      "branches": {
+        "covered": 240,
+        "total": 324,
+        "skipped": 0,
+        "percent": 74.07407407407408
+      },
+      "statements": {
+        "covered": 214,
+        "total": 252,
+        "percent": 84.92063492063492
+      },
+      "functions": {
+        "covered": 10,
+        "total": 10,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 196,
+        "total": 223,
+        "percent": 87.89237668161435
+      }
+    },
+    {
+      "file": "src/privacy/jpeg-surgery.ts",
+      "branches": {
+        "covered": 402,
+        "total": 504,
+        "skipped": 0,
+        "percent": 79.76190476190477
+      },
+      "statements": {
+        "covered": 485,
+        "total": 550,
+        "percent": 88.18181818181819
+      },
+      "functions": {
+        "covered": 56,
+        "total": 56,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 476,
+        "total": 540,
+        "percent": 88.14814814814815
+      }
+    },
+    {
+      "file": "src/privacy/png-surgery.ts",
+      "branches": {
+        "covered": 115,
+        "total": 146,
+        "skipped": 0,
+        "percent": 78.76712328767124
+      },
+      "statements": {
+        "covered": 138,
+        "total": 165,
+        "percent": 83.63636363636363
+      },
+      "functions": {
+        "covered": 16,
+        "total": 20,
+        "percent": 80
+      },
+      "lines": {
+        "covered": 115,
+        "total": 121,
+        "percent": 95.0413223140496
+      }
+    },
+    {
+      "file": "src/privacy/policies.ts",
+      "branches": {
+        "covered": 36,
+        "total": 37,
+        "skipped": 0,
+        "percent": 97.2972972972973
+      },
+      "statements": {
+        "covered": 60,
+        "total": 61,
+        "percent": 98.36065573770492
+      },
+      "functions": {
+        "covered": 15,
+        "total": 16,
+        "percent": 93.75
+      },
+      "lines": {
+        "covered": 49,
+        "total": 50,
+        "percent": 98
+      }
+    },
+    {
+      "file": "src/privacy/redact.ts",
+      "branches": {
+        "covered": 367,
+        "total": 484,
+        "skipped": 0,
+        "percent": 75.82644628099173
+      },
+      "statements": {
+        "covered": 450,
+        "total": 512,
+        "percent": 87.890625
+      },
+      "functions": {
+        "covered": 144,
+        "total": 154,
+        "percent": 93.5064935064935
+      },
+      "lines": {
+        "covered": 322,
+        "total": 350,
+        "percent": 92
+      }
+    },
+    {
+      "file": "src/privacy/semantic.ts",
+      "branches": {
+        "covered": 137,
+        "total": 159,
+        "skipped": 0,
+        "percent": 86.16352201257862
+      },
+      "statements": {
+        "covered": 101,
+        "total": 120,
+        "percent": 84.16666666666667
+      },
+      "functions": {
+        "covered": 14,
+        "total": 15,
+        "percent": 93.33333333333333
+      },
+      "lines": {
+        "covered": 86,
+        "total": 97,
+        "percent": 88.65979381443299
+      }
+    },
+    {
+      "file": "src/privacy/webp-surgery.ts",
+      "branches": {
+        "covered": 84,
+        "total": 102,
+        "skipped": 0,
+        "percent": 82.35294117647058
+      },
+      "statements": {
+        "covered": 106,
+        "total": 115,
+        "percent": 92.17391304347827
+      },
+      "functions": {
+        "covered": 20,
+        "total": 20,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 85,
+        "total": 93,
+        "percent": 91.39784946236558
+      }
+    },
+    {
+      "file": "src/security/abort.ts",
+      "branches": {
+        "covered": 2,
+        "total": 2,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 1,
+        "total": 1,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/security/bounds.ts",
+      "branches": {
+        "covered": 28,
+        "total": 28,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 34,
+        "total": 34,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 17,
+        "total": 17,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 34,
+        "total": 34,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/security/limits.ts",
+      "branches": {
+        "covered": 13,
+        "total": 13,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 14,
+        "total": 14,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 2,
+        "total": 2,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 14,
+        "total": 14,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/security/sha256.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 78,
+        "total": 78,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 6,
+        "total": 6,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 55,
+        "total": 55,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/security/warnings.ts",
+      "branches": {
+        "covered": 2,
+        "total": 2,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 7,
+        "total": 9,
+        "percent": 77.77777777777779
+      },
+      "functions": {
+        "covered": 5,
+        "total": 6,
+        "percent": 83.33333333333334
+      },
+      "lines": {
+        "covered": 6,
+        "total": 7,
+        "percent": 85.71428571428571
+      }
+    },
+    {
+      "file": "src/trust/c2pa-adapter.ts",
+      "branches": {
+        "covered": 65,
+        "total": 78,
+        "skipped": 0,
+        "percent": 83.33333333333334
+      },
+      "statements": {
+        "covered": 45,
+        "total": 54,
+        "percent": 83.33333333333334
+      },
+      "functions": {
+        "covered": 6,
+        "total": 8,
+        "percent": 75
+      },
+      "lines": {
+        "covered": 35,
+        "total": 39,
+        "percent": 89.74358974358975
+      }
+    },
+    {
+      "file": "src/trust/c2pa-browser.ts",
+      "branches": {
+        "covered": 18,
+        "total": 24,
+        "skipped": 0,
+        "percent": 75
+      },
+      "statements": {
+        "covered": 34,
+        "total": 38,
+        "percent": 89.47368421052632
+      },
+      "functions": {
+        "covered": 3,
+        "total": 3,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 30,
+        "total": 32,
+        "percent": 93.75
+      }
+    },
+    {
+      "file": "src/trust/c2pa-node.ts",
+      "branches": {
+        "covered": 27,
+        "total": 33,
+        "skipped": 0,
+        "percent": 81.81818181818183
+      },
+      "statements": {
+        "covered": 31,
+        "total": 34,
+        "percent": 91.17647058823529
+      },
+      "functions": {
+        "covered": 4,
+        "total": 4,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 27,
+        "total": 29,
+        "percent": 93.10344827586206
+      }
+    },
+    {
+      "file": "src/trust/c2pa-types.ts",
+      "branches": {
+        "covered": 0,
+        "total": 0,
+        "skipped": 0,
+        "percent": 100
+      },
+      "statements": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "functions": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 0,
+        "total": 0,
+        "percent": 100
+      }
+    },
+    {
+      "file": "src/trust/jumbf.ts",
+      "branches": {
+        "covered": 321,
+        "total": 351,
+        "skipped": 0,
+        "percent": 91.45299145299145
+      },
+      "statements": {
+        "covered": 388,
+        "total": 407,
+        "percent": 95.33169533169533
+      },
+      "functions": {
+        "covered": 30,
+        "total": 30,
+        "percent": 100
+      },
+      "lines": {
+        "covered": 312,
+        "total": 320,
+        "percent": 97.5
+      }
+    }
+  ],
+  "evidence": {
+    "summary": "coverage/coverage-summary.json",
+    "json": "reports/s06-coverage-evidence.json",
+    "markdown": "reports/s06-coverage-evidence.md",
+    "containsSourceOrFixtureBytes": false
+  }
+}

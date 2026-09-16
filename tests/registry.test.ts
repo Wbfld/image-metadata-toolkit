@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createMetadataRegistry, DEFAULT_METADATA_REGISTRY, METADATA_REGISTRY_SIZE, parseMetadata } from "../src/index.js";
+import { isMetadataRegistry, resolveMetadataRegistry } from "../src/registry.js";
 import { readFile } from "node:fs/promises";
 
 describe("generated metadata registry", () => {
@@ -61,5 +62,39 @@ describe("generated metadata registry", () => {
     const parsed = await pending;
     expect(parsed.fields.some((field) => field.name === "OriginalName")).toBe(true);
     expect(parsed.fields.some((field) => field.name === "MutatedName")).toBe(false);
+  });
+
+  it("validates every custom registry invariant before freezing the lookup tables", () => {
+    const base = { id: "custom:0x0001", ifd: "custom", tag: 1, name: "One" } as const;
+    expect(() => createMetadataRegistry([{ ...base, tag: -1 }])).toThrow(/tag/i);
+    expect(() => createMetadataRegistry([{ ...base, tag: 0x10000 }])).toThrow(/tag/i);
+    expect(() => createMetadataRegistry([{ ...base, tag: 1.5 }])).toThrow(/tag/i);
+    expect(() => createMetadataRegistry([{ ...base, count: { min: -1, max: null } }])).toThrow(/count/i);
+    expect(() => createMetadataRegistry([{ ...base, count: { min: 2, max: 1 } }])).toThrow(/count/i);
+    expect(() => createMetadataRegistry([{ ...base, legalTypes: [] }])).toThrow(/types/i);
+    expect(() => createMetadataRegistry([{ ...base, aliases: [""] }])).toThrow(/alias/i);
+    expect(() => createMetadataRegistry([{ ...base, aliases: ["One"] }])).toThrow(/alias/i);
+    expect(() => createMetadataRegistry({ fields: [], sources: [
+      { id: "dup", standard: "s", edition: "e", extractionDate: "d", license: "l" },
+      { id: "dup", standard: "s", edition: "e", extractionDate: "d", license: "l" },
+    ] })).toThrow(/source/i);
+    expect(() => createMetadataRegistry({ fields: [], sources: [{ id: "", standard: "s", edition: "e", extractionDate: "d", license: "l" }] })).toThrow(/provenance/i);
+    const source = { id: "source", standard: "s", edition: "e", extractionDate: "d", license: "l" } as const;
+    expect(() => createMetadataRegistry({ fields: [{ ...base, source, sourceId: "other" }], sources: [source] })).toThrow(/source/i);
+    expect(() => createMetadataRegistry({ fields: [{ ...base, sourceId: "source" }], sources: [] })).toThrow(/unknown/i);
+    expect(() => createMetadataRegistry({ fields: [{ ...base, source: { ...source, id: "source" } }, { ...base, id: "custom:0x0002", tag: 2, name: "Two", source: { ...source, standard: "different" } }], sources: [source] })).toThrow(/conflicting/i);
+    const registry = createMetadataRegistry([{ ...base, aliases: ["Alias"], enumValues: { "1": "one" }, bitfield: { flag: { mask: 1 } }, writePolicy: "safe" }]);
+    expect(registry.get("custom", 1)?.legacyEditability).toBe(true);
+    expect(registry.get("IFD1", 1)).toBeUndefined();
+    expect(registry.getByName("Alias")).toBe(registry.getById("custom:0x0001"));
+    expect(resolveMetadataRegistry(registry).getById("custom:0x0001")).toBeDefined();
+    const fallback = createMetadataRegistry([{ id: "IFD0:0x0001", ifd: "IFD0", tag: 1, name: "Fallback" }]);
+    expect(fallback.get("IFD1", 1)?.name).toBe("Fallback");
+    expect(resolveMetadataRegistry([{ id: "custom:0x0002", ifd: "custom", tag: 2, name: "ArrayInput" }]).getByName("ArrayInput")).toBeDefined();
+    const omittedSources = { fields: [], sources: undefined } as unknown as Parameters<typeof createMetadataRegistry>[0];
+    expect(createMetadataRegistry(omittedSources).sources).toHaveLength(0);
+    expect(isMetadataRegistry(registry)).toBe(true);
+    expect(isMetadataRegistry(null)).toBe(false);
+    expect(isMetadataRegistry({ fields: [], sources: [], get: () => undefined })).toBe(false);
   });
 });

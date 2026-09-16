@@ -1,10 +1,53 @@
 # browser-image-metadata
 
-Parse, explain, validate, and privacy-redact image metadata locally in browsers, Web Workers, Node.js, and serverless runtimes—without network access or pixel recompression.
+**Image metadata you can inspect, edit, and prove.**
 
-The package has no runtime dependencies. It accepts `ArrayBuffer`, any `ArrayBufferView` (including Node.js `Buffer`), `Blob`, and browser `File` inputs.
+`browser-image-metadata` is a local-first TypeScript toolkit for applications
+that need more than a flat object of tags. It parses and explains metadata,
+finds privacy risks, applies policy-driven redaction, performs supported edits
+atomically, and verifies that encoded image payloads were preserved.
+
+The browser-safe core has no runtime dependencies and never fetches. It accepts
+`ArrayBuffer`, any `ArrayBufferView` (including Node.js `Buffer`), `Blob`, and
+browser `File` inputs. Focused entry points cover workers, seekable Node files,
+explicit HTTP range reads, metadata editing, and optional official C2PA SDKs.
 
 > **Support boundaries:** Metadata support is format- and operation-specific; detection does not promise complete metadata support. Results expose bounded completeness and coverage, and malformed, opaque, or unsupported structures remain explicit outcomes. Check the generated capability matrix before relying on a format or operation.
+
+[Get started](#install) · [See why teams choose it](#why-browser-image-metadata) ·
+[Compare metadata tools](./COMPARISON.md) · [Check exact capabilities](./CAPABILITIES.md) ·
+[Migrate](./MIGRATION.md) · [Read the API](./API.md)
+
+## Why browser-image-metadata
+
+- **Ship privacy decisions, not just tag extraction.** Semantic findings cover
+  locations, people, identifiers, timestamps, regions, prompts, embedded
+  previews, unknown XMP, and opaque metadata. Reports hide sensitive values by
+  default, and strict policies refuse to emit output when coverage is
+  insufficient.
+- **Edit without recompressing image data.** Supported JPEG, PNG, WebP, TIFF,
+  and BigTIFF operations are preflighted, atomic, reparsed, and independently
+  checked against encoded-payload hashes. Unsupported or protected structures
+  produce typed refusal instead of a best-effort rewrite.
+- **Keep the evidence needed to trust a result.** Stable field identities,
+  exact family boundaries, duplicates, conflicts, source ranges, packet/block
+  provenance, completeness, and warnings remain available alongside convenient
+  summaries.
+- **Control I/O and hostile-input risk.** Parsing, recursion, decompression,
+  collections, ranges, and retained output are bounded. Blob/File, seekable
+  Node, and explicit HTTP adapters can read metadata ranges without making
+  network access an implicit parser behavior.
+- **Adopt it without flattening your data model.** ESM, CommonJS, TypeScript,
+  browser workers, focused imports, a Node CLI, and migration views for
+  ExifReader and exifr are included. The canonical result remains loss-aware.
+
+This is not a claim that one tool wins every job. ExifTool remains the stronger
+choice for maximum format/tag breadth and mature desktop batch automation;
+exifr is compelling for speed-first read-only extraction; ExifReader is a
+capable general JavaScript reader. This package is designed for product code
+that needs bounded local parsing, semantic privacy, exact mutation, and
+machine-checkable preservation in one typed API. See the
+[decision guide](./COMPARISON.md) for sourced, versioned detail.
 
 > **Current scope:** JPEG, PNG, TIFF, BigTIFF, seven TIFF-derived camera RAW variants (DNG, CR2, NEF, ARW, ORF, RW2, and IIQ), Canon CR3, Fujifilm RAF, WebP, GIF, JPEG XL, HEIF, AVIF, and bounded SVG RDF/XML metadata inventory are implemented. SVG support validates UTF-8 and the SVG namespace, retains RDF/XML packets with byte provenance, rejects DTD/entity declarations, and leaves non-RDF `metadata` opaque; it does not render, decode pixels, or write SVG. TIFF-derived RAW variants retain `format: "tiff"` for compatibility, while CR3 and RAF retain distinct format/container identities; all RAW variants expose bounded preview/thumbnail/metadata/RAW range provenance and remain read-only without sensor-pixel decoding. JPEG, PNG, and WebP metadata removal is lossless within the documented capability matrix. The W02 reusable TIFF/EXIF graph serializer writes bounded classic TIFF in both byte orders and BigTIFF after the same verified layout path; standalone TIFF/BigTIFF EXIF field transactions are atomic and reparse-verified. W03 adds atomic JPEG marker metadata writing for EXIF, standard/Extended XMP, ICC, and IPTC while preserving entropy scans and decoding-critical markers byte-for-byte. W04 adds atomic PNG eXIf, XMP, text, and ICC chunk editing while preserving IDAT and APNG image payloads. W05 adds selective WebP EXIF field and XMP/ICC editing while preserving encoded WebP image chunks. W08 adds an independent public preservation verifier with hashable encoded-payload ranges and explicit non-pixel-equivalence evidence. HEIF, AVIF, CR3, RAF, and SVG rewriting are not exposed.
 
@@ -295,7 +338,18 @@ widen to a whole APP13 block. Malformed or over-limit resources remain visible
 as incomplete/opaque evidence; TIFF resource mutation is intentionally not
 claimed. See [`B06_PHOTOSHOP_RESOURCES.md`](./B06_PHOTOSHOP_RESOURCES.md).
 
-JPEG redaction rewrites marker segments only. Selective EXIF redaction removes directory entries, zeroes their detached value bytes, and scrubs orphaned EXIF payload bytes during broad removal; whole EXIF removal drops the APP1 segment. PNG uses the same validated selective EXIF surgery and regenerates its changed chunk CRC. WebP surgery updates RIFF length and VP8X metadata flags while copying image payloads unchanged. JPEG entropy-coded scan bytes and PNG IDAT payloads are never decoded or recompressed. Every redaction includes an explicit `outcome`; if a structure required for surgery is unsafe, the operation is atomic and reports an unsuccessful outcome. JPEGs containing MPF secondary images or Ultra HDR gain-map XMP are refused atomically until their secondary-image offsets can be rewritten safely.
+T05 exposes bounded `result.mpf` and `result.ultraHdr` inventories plus an
+explicit-policy metadata-only writer for CIPA MPF APP2 structures and Android
+Ultra HDR gain-map XMP. MP Index and Attribute IFDs, stored/resolved image
+ranges, image attributes, dependencies, representative flags, ordered
+GContainer items, exact namespaces, lexical gain-map values, secondary JPEG
+dimensions, metadata-family presence, and nested provenance are retained.
+Writers still refuse these offset-bearing structures by default;
+`mpf: { mode: "preserve", ultraHdr: "preserve" }` opts into safe offset/size
+recalculation and encoded-payload verification. See
+[`T05_MPF_ULTRA_HDR.md`](./T05_MPF_ULTRA_HDR.md).
+
+JPEG redaction rewrites marker segments only. Selective EXIF redaction removes directory entries, zeroes their detached value bytes, and scrubs orphaned EXIF payload bytes during broad removal; whole EXIF removal drops the APP1 segment. PNG uses the same validated selective EXIF surgery and regenerates its changed chunk CRC. WebP surgery updates RIFF length and VP8X metadata flags while copying image payloads unchanged. JPEG entropy-coded scan bytes and PNG IDAT payloads are never decoded or recompressed. Every redaction includes an explicit `outcome`; if a structure required for surgery is unsafe, the operation is atomic and reports an unsuccessful outcome. JPEGs containing MPF secondary images or Ultra HDR gain-map XMP remain refused atomically by default; the typed T05 preserve policy opts into safe offset/size recalculation and encoded-payload verification.
 
 For strict sharing workflows, use `sanitizeMetadata()`. It retains orientation and ICC data by default, removes recognized descriptive metadata, and returns `data: null` unless the policy is completely satisfied.
 
@@ -389,7 +443,7 @@ bytes) to `reports/`, or to `IPTC_REFERENCE_REPORT_DIR` when set.
 
 Complete JPEG APP2, PNG iCCP, WebP ICCP, TIFF/BigTIFF, and HEIF/AVIF ICC profiles expose bounded header fields through `result.icc.fields` and typed common payloads through `result.icc.decodedTags` (text, MLUC, XYZ, curves, matrices, measurements, colorants, signatures, and LUT structure). Unknown payloads remain bounded profile-relative ranges; no color transform is applied.
 
-The S07 ICC interoperability gate is `ICC_REFERENCE_CORPUS_DIR=/path/to/hash-pinned-profiles ICC_REFERENCE_CORPUS_OUTPUT_DIR=reports npm run icc:reference`. It requires the complete corpus listed in `data/icc/reference-corpus.json`, runs the standards-based decoder before pinned ExifTool 13.42 output, compares header and decoded ICC semantics where both tools expose them, records explicit non-comparable curve/array values, and fails on missing, partial, or mismatching evidence. The checked redistribution-safe evidence is in `reports/icc-reference-report.json` and `reports/icc-reference-report.md`; profile files are never written to the repository.
+The S07 ICC interoperability gate is `ICC_REFERENCE_CORPUS_DIR=/path/to/hash-pinned-profiles ICC_REFERENCE_CORPUS_OUTPUT_DIR=reports npm run icc:reference`. It requires the complete corpus listed in `data/icc/reference-corpus.json`, runs the standards-based decoder before pinned ExifTool 13.59 output, compares header and decoded ICC semantics where both tools expose them, records explicit non-comparable curve/array values, and fails on missing, partial, or mismatching evidence. The checked redistribution-safe evidence is in `reports/icc-reference-report.json` and `reports/icc-reference-report.md`; profile files are never written to the repository.
 
 The `/http` entry point is the only network-capable metadata API. It keeps
 network policy explicit, validates byte-range responses and resource
@@ -619,7 +673,7 @@ npm run check
 
 `npm run check` runs type-checking, linting, the complete coverage suite, both package builds, package-manifest validation, an install-from-tarball ESM/CommonJS smoke test, and ESM/CommonJS/Blob/typed-array/worker example smoke tests. CI runs it on Node.js 22, 24, and 26. Separate CI jobs run Chromium, Firefox, WebKit, Deno, and the scheduled malformed-input property suite. `npm run benchmark` produces local reproducible latency and bundle-size evidence; it does not make a portability claim.
 
-The [capability matrix](./CAPABILITIES.md), [migration guide](./MIGRATION.md), and [version-pinned R04 compatibility guide](./R04_MIGRATION_COMPATIBILITY.md) describe supported operations and common adoption paths. See [CONTRIBUTING.md](./CONTRIBUTING.md) for development and fixture-submission guidance, [EXTERNAL_CORPORA.md](./EXTERNAL_CORPORA.md) for the pinned 100-plus-sample interoperability corpus, and [PUBLISHING.md](./PUBLISHING.md) plus the [release checklist](./RELEASE_CHECKLIST.md) to configure npm trusted publishing and cut a release.
+The [capability matrix](./CAPABILITIES.md), [migration guide](./MIGRATION.md), and [version-pinned R04 compatibility guide](./R04_MIGRATION_COMPATIBILITY.md) describe supported operations and common adoption paths. See [CONTRIBUTING.md](./CONTRIBUTING.md) for development and fixture-submission guidance, [EXTERNAL_CORPORA.md](./EXTERNAL_CORPORA.md) for the pinned external interoperability corpora and differential gates, and [PUBLISHING.md](./PUBLISHING.md) plus the [release checklist](./RELEASE_CHECKLIST.md) to configure npm trusted publishing and cut a release.
 
 ## Known limitations
 

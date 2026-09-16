@@ -18,6 +18,7 @@ import type {
   EditFailureCode,
   EditMetadataOptions,
   EditMetadataResult,
+  JpegMpfMutationPolicy,
   EditOperation,
   EditOperationEvidence,
   EditOperationKind,
@@ -462,6 +463,13 @@ function validatePolicy(rawOptions: Record<string, unknown> | null, operationIds
     else orientation = rawOrientation as EditOrientationPolicy;
   }
 
+  let mpf: JpegMpfMutationPolicy | undefined;
+  const rawMpf = getRecordValue(policyRecord, "mpf");
+  if (rawMpf !== undefined) {
+    if (!isRecord(rawMpf) || rawMpf.mode !== "preserve" || (rawMpf.ultraHdr !== undefined && rawMpf.ultraHdr !== "preserve")) diagnostics.push({ code: "INVALID_VALUE", detail: "policy.mpf must be { mode: 'preserve', ultraHdr?: 'preserve' }." });
+    else mpf = { mode: "preserve", ...(rawMpf.ultraHdr === undefined ? {} : { ultraHdr: "preserve" }) };
+  }
+
   const preserveKeys = new Set(preserve.map(targetKey));
   const overlappingTargets = remove.filter((target) => preserveKeys.has(targetKey(target)));
   const policy: EditPolicyEvidence = {
@@ -474,6 +482,7 @@ function validatePolicy(rawOptions: Record<string, unknown> | null, operationIds
     conflicts,
     verification,
     orientation,
+    ...(mpf === undefined ? {} : { mpf }),
     overlappingTargets,
   };
   return { policy, diagnostics };
@@ -902,6 +911,7 @@ export async function editMetadata(input: MetadataInput, options: EditMetadataOp
       sha256: outputSha256,
       byteChanges: jpegTransaction.byteChanges,
       payloads,
+      ...(jpegTransaction.mpf === undefined ? {} : { mpf: jpegTransaction.mpf }),
     };
     const unapplied = evidence.reduce<EditUnappliedOperation[]>((items, item) => {
       if (item.status === "applied") return items;

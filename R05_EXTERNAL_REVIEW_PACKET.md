@@ -109,3 +109,24 @@ repository’s reports directory containing:
 
 Until that record exists and is accepted by the executable audit, R05 and GA
 readiness remain unproven.
+
+## Machine-readable record contract
+
+The executable gate accepts only `reports/r05-external-review.json`. Its
+schema must be `browser-image-metadata/r05-external-review@1` and it must
+contain non-empty `reviewer.identity`, `reviewer.independent: true`, a full
+40-character `revision.commit`, `scope.tiffOffsetHandling: true`, and
+`scope.writerCoverage` entries for all of these exact paths:
+
+- `src/jpeg-writer.ts`
+- `src/png-writer.ts`
+- `src/webp-writer.ts`
+- `src/metadata/serialization.ts`
+- `src/edit.ts`
+
+Every finding must have a stable `id`, severity, at least one affected file,
+description, and disposition. The top-level record must also contain valid
+ISO calendar dates in `reviewedAt` and `approval.date`,
+`approval.status: "approved"`, and a non-empty conclusion. Human-readable
+Markdown may accompany the JSON, but Markdown alone cannot satisfy the
+release gate.

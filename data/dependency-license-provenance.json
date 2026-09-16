@@ -1,0 +1,20 @@
+{
+  "schema": "browser-image-metadata.dependency-license-provenance.v1",
+  "policy": "A dependency without package.json license metadata may be accepted only when its exact lockfile package is matched to an authoritative upstream license declaration and a hash-pinned registry tarball.",
+  "entries": [
+    {
+      "name": "buffers",
+      "version": "0.1.1",
+      "license": "MIT",
+      "copyright": "2015 James Halliday",
+      "sourceRepository": "https://github.com/substack/node-buffers",
+      "sourceCommit": "1b745ee35d33eb166e15ef1866073a07c6d7de87",
+      "sourceLicensePath": "package.json",
+      "sourceLicenseUrl": "https://github.com/substack/node-buffers/blob/1b745ee35d33eb166e15ef1866073a07c6d7de87/package.json",
+      "registryTarball": "https://registry.npmjs.org/buffers/-/buffers-0.1.1.tgz",
+      "registryIntegrity": "sha512-9q/rDEGSb/Qsvv2qvzIzdluL5k7AaJOTrw23z9reQthrbF7is4CtlT0DXyO1oei2DCp4uojjzQ7igaSHp1kAEQ==",
+      "registryTarballSha256": "f8de49c60e467005182d9687b5d87775bbcec6385ac63220b7741327441deb6d",
+      "retrievedAt": "2026-09-16"
+    }
+  ]
+}

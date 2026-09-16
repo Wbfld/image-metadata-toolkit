@@ -14,8 +14,8 @@ const minimumFixtures = 2;
 const minimumComparableValues = 12;
 const maximumMismatches = 0;
 const maximumMissing = 0;
-const expectedExifToolVersion = "13.42";
-const expectedExifToolPackageVersion = "33.5.0";
+const expectedExifToolVersion = "13.59";
+const expectedExifToolPackageVersion = "38.1.0";
 
 if (typeof corpusValue !== "string" || corpusValue.trim().length === 0) {
   throw new Error("B05 RAW corpus was not examined: set RAW_B05_CORPUS_DIR to the temporary hash-pinned CR3/RAF corpus directory.");

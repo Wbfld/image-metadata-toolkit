@@ -169,3 +169,67 @@ test("W03 edited baseline and progressive multi-scan JPEGs remain independently 
   ]);
   expect(testInfo.project.name).toMatch(/chromium|firefox|webkit/u);
 });
+
+test("T05 explicitly preserved MPF primary and secondary JPEGs remain independently displayable", async ({ page }, testInfo) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const dist = "/dist";
+    const [{ parseMetadata }, { rewriteJpegMetadata }] = await Promise.all([
+      import(`${dist}/index.js`),
+      import(`${dist}/jpeg-writer.js`),
+    ]);
+    const source = new Uint8Array(await (await fetch("/tests/fixtures/base.jpg")).arrayBuffer());
+    const concat = (...parts: Uint8Array[]): Uint8Array => {
+      const result = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
+      let offset = 0;
+      for (const part of parts) { result.set(part, offset); offset += part.length; }
+      return result;
+    };
+    const segment = (marker: number, payload: Uint8Array): Uint8Array => {
+      const result = new Uint8Array(payload.length + 4);
+      result.set([0xff, marker, (payload.length + 2) >>> 8, (payload.length + 2) & 0xff], 0);
+      result.set(payload, 4);
+      return result;
+    };
+    const mpfPayload = (primarySize: number, secondarySize: number): Uint8Array => {
+      const tiff = new Uint8Array(82);
+      tiff.set([0x49, 0x49, 0x2a, 0, 8, 0, 0, 0], 0);
+      const view = new DataView(tiff.buffer);
+      view.setUint16(8, 3, true);
+      const entry = (index: number, tag: number, type: number, count: number): number => {
+        const offset = 10 + index * 12;
+        view.setUint16(offset, tag, true);
+        view.setUint16(offset + 2, type, true);
+        view.setUint32(offset + 4, count, true);
+        return offset + 8;
+      };
+      tiff.set(new TextEncoder().encode("0100"), entry(0, 0xb000, 7, 4));
+      view.setUint32(entry(1, 0xb001, 4, 1), 2, true);
+      view.setUint32(entry(2, 0xb002, 7, 32), 50, true);
+      view.setUint32(50, 0xa0030000, true); view.setUint32(54, primarySize, true); view.setUint32(58, 0, true); view.setUint16(62, 2, true);
+      view.setUint32(66, 0x40050000, true); view.setUint32(70, secondarySize, true); view.setUint32(74, primarySize - 10, true);
+      return concat(new TextEncoder().encode("MPF\0"), tiff);
+    };
+    const secondary = source.slice();
+    const markerLength = segment(0xe2, mpfPayload(0, secondary.length)).length;
+    const primarySize = source.length + markerLength;
+    const primary = concat(source.slice(0, 2), segment(0xe2, mpfPayload(primarySize, secondary.length)), source.slice(2));
+    const input = concat(primary, secondary);
+    const edited = rewriteJpegMetadata(input, { blocks: [{ op: "add", kind: "standard-xmp", data: "browser T05" }], mpf: { mode: "preserve" } });
+    const parsed = await parseMetadata(edited.data, { select: { groups: ["Dimensions", "MPF"] } });
+    const secondaryImage = parsed.mpf?.images[1];
+    if (secondaryImage?.absoluteOffset === null || secondaryImage === undefined || secondaryImage.rangeLength === null) throw new Error("T05 browser MPF secondary range was not resolved");
+    const decode = async (bytes: Uint8Array): Promise<{ width: number; height: number }> => {
+      const url = URL.createObjectURL(new Blob([bytes.buffer as ArrayBuffer], { type: "image/jpeg" }));
+      try {
+        const image = new Image();
+        image.src = url;
+        await new Promise<void>((resolve, reject) => { image.onload = () => resolve(); image.onerror = () => reject(new Error("JPEG image decoder rejected the edited output")); });
+        return { width: image.naturalWidth, height: image.naturalHeight };
+      } finally { URL.revokeObjectURL(url); }
+    };
+    return { primary: await decode(edited.data.slice(0, parsed.mpf?.images[0]?.size ?? 0)), secondary: await decode(edited.data.slice(secondaryImage.absoluteOffset, secondaryImage.absoluteOffset + secondaryImage.size)), complete: parsed.mpf?.complete === true };
+  });
+  expect(result).toEqual({ primary: { width: 2, height: 2 }, secondary: { width: 2, height: 2 }, complete: true });
+  expect(testInfo.project.name).toMatch(/chromium|firefox|webkit/u);
+});

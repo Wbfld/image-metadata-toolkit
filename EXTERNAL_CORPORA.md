@@ -53,3 +53,44 @@ The redistribution-safe checked-in evidence from the pinned run is
 It contains the full summary and fixture path/length/hash inventory without
 copying upstream images. To emit this compact evidence file for another run,
 set `EXTERNAL_CORPUS_EVIDENCE_OUTPUT` alongside `EXTERNAL_FIXTURE_ROOT`.
+
+## Roadmap-wide read gate
+
+The roadmap read gate uses the same pinned exif-py checkout plus the independent
+[`imazen/codec-corpus`](https://github.com/imazen/codec-corpus) checkout at
+`8e10d4d765667c1c49d74413878fc4bfb46dcf8d`. It scans only the six declared
+dataset roots in [`data/external-corpus.json`](./data/external-corpus.json):
+JPEG conformance, WebP conformance, TIFF conformance, PNGSuite, HEIC
+conformance, and AVIF conformance. The codec-corpus README, top-level license,
+and each selected dataset's README/license records are the provenance source;
+the manifest records that mixed per-dataset terms apply. The checkouts remain
+temporary and are never copied into this repository.
+
+The gate requires 1,000 examined files, 1,000 unique SHA-256 fixture hashes,
+100 comparable values, at least 99% semantic agreement, zero parser/oracle
+errors, zero unexpected mismatches, and no silently lost metadata-family block.
+Malformed values with a typed parser diagnostic are reported as
+`non-comparable`, not as matches. All six comparison statuses, including
+`missing-reference`, remain visible in overall, field, producer, format,
+corpus, and metadata-family aggregates. ExifTool is queried only as the
+group-qualified numeric output oracle; the package registry and parser remain
+the implementation under test.
+
+Run it after placing both pinned repositories in temporary storage:
+
+```sh
+EXTERNAL_CORPUS_ROOTS_JSON='{"ianare-exif-py":"/tmp/exif-py","imazen-codec-corpus":"/tmp/codec-corpus"}' \
+EXTERNAL_CORPUS_OUTPUT_DIR=artifacts/external-corpus-roadmap \
+EXTERNAL_CORPUS_EVIDENCE_OUTPUT=reports/roadmap-read-corpus-evidence.json \
+npm run test:corpus:roadmap-read
+```
+
+The checked redistribution-safe summaries are
+[`reports/roadmap-read-corpus-evidence.json`](./reports/roadmap-read-corpus-evidence.json)
+and [`reports/roadmap-read-corpus-evidence.md`](./reports/roadmap-read-corpus-evidence.md).
+The JSON records both corpus revisions, license/provenance records, package
+and ExifTool versions, registry/allowlist/normalization hashes, every fixture
+identity/length/hash, registry 3.1 definition evidence, capability evidence,
+thresholds, and all aggregate counts without storing image bytes. CI runs the
+same command in a separate scheduled job and uploads the complete per-fixture
+JSON and Markdown reports as artifacts.

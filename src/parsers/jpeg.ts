@@ -6,6 +6,7 @@ import { inspectMakerNotes, makerNoteFieldsAsMetadataFields } from "../metadata/
 import { parseJfif } from "../metadata/jfif.js";
 import { extractExifThumbnail } from "../metadata/thumbnail.js";
 import { extendedXmpGuid, parseExtendedXmpChunk, parseXmpPacket, reassembleExtendedXmp, type ExtendedXmpChunk } from "../metadata/xmp.js";
+import { inspectMpfSegments, inspectUltraHdrXmp, MPF_IDENTIFIER, type MpfSegmentInput } from "../metadata/mpf-ultrahdr.js";
 import type {
   ExifData,
   ImageDimensions,
@@ -16,6 +17,8 @@ import type {
   MetadataWarning,
   MakerNotePlugin,
   PhotoshopContainerData,
+  MpfData,
+  MpfEmbeddedMetadataInventory,
   SecurityLimits,
 } from "../types.js";
 import { WarningCollector } from "../security/warnings.js";
@@ -95,6 +98,8 @@ export interface JpegParseOptions {
   readonly signal?: AbortSignal;
   readonly registry?: MetadataRegistry;
   readonly makerNotePlugins?: readonly MakerNotePlugin[];
+  /** Disable nested MPF inventory when parsing one bounded secondary image. */
+  readonly inspectMpf?: boolean;
 }
 
 export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: JpegParseOptions = {}): ParsedMetadataResult {
@@ -110,6 +115,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
   const normalizedFields: MetadataField[] = [];
   const blocks: MetadataBlock[] = [];
   const xmpPackets: string[] = [];
+  const xmpPacketBlockIds: (string | null)[] = [];
   const extendedXmp = new Map<string, ExtendedXmpChunk[]>();
   const extendedXmpBlockIds = new Map<string, string[]>();
   const iccChunks: IccChunk[] = [];
@@ -119,6 +125,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
   let iptcCharacterSet: "latin1" | "utf-8" | "unknown" | undefined;
   let photoshop: PhotoshopContainerData | null = null;
   let makerNotes: ParsedMetadataResult["makerNotes"] = null;
+  const mpfSegments: MpfSegmentInput[] = [];
   let dimensions: ImageDimensions | null = null;
   let metadataBytes = 0;
   let segmentCount = 0;
@@ -338,6 +345,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
       else if (marker === 0xe1 && hasPrefix(payload, EXIF_IDENTIFIER) && !wantsGroup(options.selection, "EXIF")) skippedBlock("EXIF", "APP1 Exif", "moderate");
       else if (marker === 0xe2 && parseIccChunk(payload) !== null && !wantsGroup(options.selection, "ICC")) skippedBlock("ICC", "APP2 ICC", "low");
       else if (marker === 0xed && !wantsGroup(options.selection, "IPTC") && !wantsGroup(options.selection, "Photoshop")) skippedBlock("Photoshop", "APP13 Photoshop image resources", "high");
+      else if (marker === 0xe2 && hasPrefix(payload, Array.from(MPF_IDENTIFIER, (character) => character.charCodeAt(0))) && !wantsGroup(options.selection, "MPF")) skippedBlock("MPF", "APP2 MPF", "high");
       else if (marker === 0xe1 && !hasPrefix(payload, EXIF_IDENTIFIER) && !wantsGroup(options.selection, "XMP")) {
         const extended = parseExtendedXmpChunk(payload);
         if (extended !== null || parseXmpPacket(payload, 0).matched) skippedBlock("XMP", extended === null ? "APP1 XMP" : "APP1 Extended XMP", "moderate");
@@ -483,8 +491,13 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
           });
           } else if (parsed.packet !== null) {
             xmpPackets.push(parsed.packet);
+            xmpPacketBlockIds.push(`jpeg:APP1:${markerStart}`);
           }
         }
+      } else if (marker === 0xe2 && hasPrefix(payload, Array.from(MPF_IDENTIFIER, (character) => character.charCodeAt(0))) && wantsGroup(options.selection, "MPF")) {
+        const blockId = `jpeg:APP2:${markerStart}`;
+        blocks.push({ id: blockId, family: "MPF", container: "APP2 MPF", status: "decoded", offset: markerStart, length: segmentEnd - markerStart, associatedImage: null, sensitivity: "high", warningCodes: [] });
+        mpfSegments.push({ id: blockId, sourceOffset: markerStart, byteLength: segmentEnd - markerStart, payload: payload.slice() });
       } else if (wantsGroup(options.selection, "ICC") && marker === 0xe2) {
         const chunk = parseIccChunk(payload);
         if (chunk !== null) {
@@ -515,6 +528,7 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
               blocks.push({ id: resourceBlockId, family: "Photoshop", container: `APP13 Photoshop resource 0x${resource.resourceId.toString(16).padStart(4, "0")}`, status: resourceBlockStatus(resource.status), offset: resource.offset, length: resource.length, associatedImage: resource.kind === "thumbnail" ? "thumbnail" : null, sensitivity: resource.kind === "unknown" || resource.kind === "thumbnail" ? "high" : "moderate", warningCodes: inventory.diagnostics.filter((item) => item.offset >= resource.offset && item.offset < resource.offset + resource.length).map((item) => item.code === "MALFORMED_PHOTOSHOP" ? "MALFORMED_PHOTOSHOP" : item.code), parentBlockId: photoshopBlockId });
               if (resource.kind === "xmp" && resource.decoded?.kind === "xmp") {
                 xmpPackets.push(resource.decoded.packet);
+                xmpPacketBlockIds.push(`${resourceBlockId}:xmp`);
                 blocks.push({ id: `${resourceBlockId}:xmp`, family: "XMP", container: "APP13 Photoshop XMP resource", status: "decoded", offset: resource.payloadOffset, length: resource.payloadLength, associatedImage: null, sensitivity: "moderate", warningCodes: [], parentBlockId: resourceBlockId });
               }
               for (const item of inventory.diagnostics.filter((candidate) => candidate.offset >= resource.offset && candidate.offset < resource.offset + resource.length)) warning(warnings, limits, { code: item.code, message: item.message, severity: item.code === "INVALID_VALUE" ? "warning" : "error", offset: item.offset, ...(item.length === undefined ? {} : { length: item.length }), ...(item.resourceId === undefined ? {} : { tag: item.resourceId }) });
@@ -594,8 +608,72 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
       warning(warnings, limits, { code: "INVALID_VALUE", message: "Extended XMP chunks are incomplete, overlapping, or invalid UTF-8.", severity: "warning" });
     } else {
       xmpPackets.push(packet);
+      xmpPacketBlockIds.push(`jpeg:extended-xmp:${guid}`);
       const relatedBlockIds = extendedXmpBlockIds.get(guid) ?? [];
       blocks.push({ id: `jpeg:extended-xmp:${guid}`, family: "XMP", container: "Assembled Extended XMP", status: "decoded", offset: null, length: null, associatedImage: null, sensitivity: "moderate", warningCodes: [], relatedBlockIds });
+    }
+  }
+
+  let mpf: MpfData | null = null;
+  let ultraHdr: ParsedMetadataResult["ultraHdr"] = null;
+  if (options.inspectMpf !== false && wantsGroup(options.selection, "MPF") && mpfSegments.length > 0) {
+    const secondaryXmpPackets: Array<{ readonly packet: string; readonly blockId: string; readonly offset: number | null; readonly length: number | null; readonly imageIndex: number }> = [];
+    const imageInspector = {
+      inspect: (imageBytes: Uint8Array, imageIndex: number, sourceOffset: number): MpfEmbeddedMetadataInventory => {
+        const nested = parseJpeg(imageBytes, limits, { selection: { groups: null, tags: null }, ...(options.registry === undefined ? {} : { registry: options.registry }), ...(options.makerNotePlugins === undefined ? {} : { makerNotePlugins: options.makerNotePlugins }), inspectMpf: false, ...(options.signal === undefined ? {} : { signal: options.signal }) });
+        if (imageIndex > 0) {
+          const xmpBlocks = (nested.blocks ?? []).filter((block) => block.family === "XMP");
+          for (const [packetIndex, packet] of (nested.xmp?.packets ?? []).entries()) {
+            const block = xmpBlocks[packetIndex];
+            const blockId = `mpf:secondary:${sourceOffset}:xmp:${packetIndex}`;
+            secondaryXmpPackets.push({ packet, blockId, offset: block?.offset === null || block?.offset === undefined ? null : sourceOffset + block.offset, length: block?.length ?? null, imageIndex });
+          }
+        }
+        const fieldIds = nested.fields.slice(0, limits.maxAdapterItems).map((field) => field.id);
+        const metadataFamilies = [...new Set((nested.blocks ?? []).map((block) => block.family))].slice(0, limits.maxAdapterItems);
+        return {
+          complete: nested.warnings.every(({ severity }) => severity !== "error"),
+          format: nested.format === "jpeg" ? "jpeg" : "unknown",
+          dimensions: nested.dimensions,
+          fieldIds,
+          metadataFamilies,
+          xmpPacketCount: nested.xmp?.packets.length ?? 0,
+          diagnostics: nested.warnings.slice(0, limits.maxWarnings).map((item) => item.offset === undefined ? item : { ...item, offset: sourceOffset + item.offset }),
+        };
+      },
+    };
+    const inspectedMpf = inspectMpfSegments(mpfSegments, source, limits, { imageInspector });
+    if (inspectedMpf === null) {
+      warning(warnings, limits, { code: "MALFORMED_MPF", message: "MPF inspection produced no result for a detected MPF segment.", severity: "error" });
+    } else {
+      mpf = inspectedMpf;
+      for (const item of inspectedMpf.diagnostics) {
+        const code: MetadataWarning["code"] = item.code === "MALFORMED_MPF" ? "MALFORMED_MPF" : item.code === "UNSUPPORTED_STRUCTURE" ? "UNSUPPORTED_STRUCTURE" : item.code === "TRUNCATED_DATA" ? "TRUNCATED_DATA" : item.code === "LIMIT_EXCEEDED" ? "LIMIT_EXCEEDED" : item.code === "UNSAFE_OFFSET" ? "UNSAFE_OFFSET" : "INVALID_VALUE";
+        warning(warnings, limits, { code, message: item.message, severity: item.severity, ...(item.offset === undefined ? {} : { offset: item.offset }), ...(item.length === undefined ? {} : { length: item.length }) });
+      }
+      for (const segment of inspectedMpf.segments) {
+        const segmentIndex = blocks.findIndex((block) => block.id === segment.id);
+        const segmentWarnings: MetadataWarning["code"][] = segment.diagnostics.map((item) => item.code === "MALFORMED_MPF" ? "MALFORMED_MPF" : item.code === "TRUNCATED_DATA" ? "TRUNCATED_DATA" : item.code === "LIMIT_EXCEEDED" ? "LIMIT_EXCEEDED" : item.code === "UNSAFE_OFFSET" ? "UNSAFE_OFFSET" : "INVALID_VALUE");
+        if (segmentIndex >= 0) {
+          const block = blocks[segmentIndex];
+          if (block !== undefined) blocks[segmentIndex] = { ...block, status: segment.complete ? block.status : "malformed", warningCodes: [...new Set([...block.warningCodes, ...segmentWarnings])], relatedBlockIds: segment.images.map((image) => image.id), relationships: segment.images.map((image) => ({ type: "component" as const, sourceBlockId: segment.id, targetBlockId: image.id })) };
+        }
+        for (const image of segment.images) blocks.push({ id: image.id, family: "MPF", container: `MPF image ${image.index + 1} (${image.imageType})`, status: image.status, offset: image.absoluteOffset, length: image.rangeLength, associatedImage: image.index === 0 ? "primary" : image.imageType === "gain-map" ? "gain-map" : "associated", sensitivity: "high", warningCodes: segmentWarnings, parentBlockId: segment.id });
+      }
+      for (const packet of secondaryXmpPackets) {
+        const image = inspectedMpf.images[packet.imageIndex];
+        if (image === undefined) continue;
+        blocks.push({ id: packet.blockId, family: "XMP", container: "MPF secondary JPEG XMP", status: "decoded", offset: packet.offset, length: packet.length, associatedImage: image.imageType === "gain-map" ? "gain-map" : "associated", sensitivity: "moderate", warningCodes: [], parentBlockId: image.id });
+      }
+      if (xmpPackets.length > 0 || secondaryXmpPackets.length > 0) {
+        const allPackets = [...xmpPackets, ...secondaryXmpPackets.map(({ packet }) => packet)];
+        const allPacketBlockIds = [...xmpPacketBlockIds, ...secondaryXmpPackets.map(({ blockId }) => blockId)];
+        ultraHdr = inspectUltraHdrXmp(allPackets, allPacketBlockIds, inspectedMpf.images, limits);
+      }
+      for (const item of ultraHdr?.diagnostics ?? []) {
+        const code: MetadataWarning["code"] = item.code === "MALFORMED_ULTRA_HDR" ? "MALFORMED_ULTRA_HDR" : item.code === "LIMIT_EXCEEDED" ? "LIMIT_EXCEEDED" : item.code === "UNSAFE_OFFSET" ? "UNSAFE_OFFSET" : item.code === "TRUNCATED_DATA" ? "TRUNCATED_DATA" : item.code === "UNSUPPORTED_STRUCTURE" ? "UNSUPPORTED_STRUCTURE" : "INVALID_VALUE";
+        warning(warnings, limits, { code, message: item.message, severity: item.severity, ...(item.offset === undefined ? {} : { offset: item.offset }), ...(item.length === undefined ? {} : { length: item.length }) });
+      }
     }
   }
 
@@ -668,6 +746,43 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
       opaqueRanges: note.opaqueRanges.map((range) => ({ ...range, provenance: { ...range.provenance, blockId: remapBlockId(range.provenance.blockId) } })),
     })),
   } satisfies NonNullable<ParsedMetadataResult["makerNotes"]>;
+  const remapMpfDiagnostic = (item: MpfData["diagnostics"][number]): MpfData["diagnostics"][number] => item.offset === undefined ? item : { ...item, offset: mapOffset(item.offset) };
+  const remapMpfIfd = (ifd: NonNullable<MpfData["segments"][number]["indexIfd"]>): typeof ifd => ({
+    ...ifd,
+    sourceOffset: mapOffset(ifd.sourceOffset),
+    entries: ifd.entries.map((entry) => ({ ...entry, sourceOffset: mapOffset(entry.sourceOffset) })),
+  });
+  const remappedMpf = mpf === null ? null : {
+    ...mpf,
+    diagnostics: mpf.diagnostics.map(remapMpfDiagnostic),
+    segments: mpf.segments.map((segment) => ({
+      ...segment,
+      sourceOffset: mapOffset(segment.sourceOffset),
+      ...(segment.indexIfd === null ? { indexIfd: null } : { indexIfd: remapMpfIfd(segment.indexIfd) }),
+      attributeIfds: segment.attributeIfds.map(remapMpfIfd),
+      diagnostics: segment.diagnostics.map(remapMpfDiagnostic),
+      images: segment.images.map((image) => ({
+        ...image,
+        id: remapBlockId(image.id),
+        absoluteOffset: image.absoluteOffset === null ? null : mapOffset(image.absoluteOffset),
+        metadata: image.metadata === null ? null : { ...image.metadata, diagnostics: image.metadata.diagnostics.map((item) => item.offset === undefined ? item : { ...item, offset: mapOffset(item.offset) }) },
+      })),
+    })),
+    images: mpf.images.map((image) => ({
+      ...image,
+      id: remapBlockId(image.id),
+      absoluteOffset: image.absoluteOffset === null ? null : mapOffset(image.absoluteOffset),
+      metadata: image.metadata === null ? null : { ...image.metadata, diagnostics: image.metadata.diagnostics.map((item) => item.offset === undefined ? item : { ...item, offset: mapOffset(item.offset) }) },
+    })),
+    relationships: mpf.relationships.map((relationship) => ({ ...relationship, sourceImageId: remapBlockId(relationship.sourceImageId), targetImageId: relationship.targetImageId === null ? null : remapBlockId(relationship.targetImageId) })),
+  } satisfies MpfData;
+  const remappedUltraHdr = ultraHdr === null ? null : {
+    ...ultraHdr,
+    sourceBlockIds: ultraHdr.sourceBlockIds.map(remapBlockId),
+    directory: ultraHdr.directory.map((item) => ({ ...item, mpfImageId: item.mpfImageId === null ? null : remapBlockId(item.mpfImageId) })),
+    primaryImageId: ultraHdr.primaryImageId === null ? null : remapBlockId(ultraHdr.primaryImageId),
+    gainMapImageId: ultraHdr.gainMapImageId === null ? null : remapBlockId(ultraHdr.gainMapImageId),
+  };
 
   return {
     format: "jpeg",
@@ -676,6 +791,8 @@ export function parseJpeg(bytes: Uint8Array, limits: SecurityLimits, options: Jp
     fields: remappedFields,
     exif: remappedExif,
     xmp: xmpPackets.length > 0 ? { packets: xmpPackets } : null,
+    mpf: remappedMpf,
+    ultraHdr: remappedUltraHdr,
     iptc: iptcBytes > 0
       ? (() => {
           const iptcFields = remappedFields.filter(({ ifd }) => ifd === "IPTC");

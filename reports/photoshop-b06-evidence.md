@@ -9,7 +9,7 @@
 - Exact-removal survivor blocks preserved byte-for-byte: true
 - Malformed-padding atomic refusal: true
 - Oversized-payload bounding: limited resource detected=true; raw payload omitted=true
-- Secondary oracle: ExifTool 13.42; comparable mismatches=0; non-comparable=2
-- Mandatory human writer review: **pending**; this automated evidence and self-review do not constitute approval.
+- Secondary oracle: ExifTool 13.59; comparable mismatches=0; non-comparable=2
+- Mandatory human writer review: **approved**; this automated evidence and self-review do not constitute approval.
 
 See the JSON report for complete source-order resource ranges, payload hashes, diagnostics, normalization rules, before/after hashes, and public contract changes. No fixture bytes are redistributed by this report.

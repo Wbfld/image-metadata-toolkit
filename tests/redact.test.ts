@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { parseExif } from "../src/metadata/exif.js";
+import { parseMetadata } from "../src/index.js";
+import { redactMetadata } from "../src/redact.js";
 import { redactBytes } from "../src/privacy/redact.js";
 import { DEFAULT_LIMITS } from "../src/security/limits.js";
+import type { RedactionTarget } from "../src/types.js";
 
 const encoder = new TextEncoder();
 
@@ -307,6 +310,33 @@ describe("lossless JPEG metadata redaction", () => {
     expect(redacted.data).toEqual(input);
     expect(redacted.removed).toEqual([]);
     expect(redacted.warnings).toContainEqual(expect.objectContaining({ code: "UNSUPPORTED_STRUCTURE" }));
+  });
+
+  it("executes typed public redaction targets without widening exact selectors", async () => {
+    const fixture = makeJpeg();
+    const parsed = await parseMetadata(fixture.jpeg);
+    const make = parsed.fields.find((field) => field.name === "Make");
+    const exifBlock = parsed.blocks.find((block) => block.family === "EXIF");
+    if (!make || !exifBlock) throw new Error("redaction fixture did not expose EXIF provenance");
+
+    const targets: readonly RedactionTarget[] = [
+      "EXIF",
+      { kind: "field", fieldId: make.id },
+      { kind: "selector", selector: { kind: "family", family: "EXIF" } },
+      { kind: "selector", selector: { kind: "field-id", fieldId: make.id } },
+      { kind: "selector", selector: { kind: "block", blockId: exifBlock.id } },
+      { kind: "selector", selector: { kind: "namespace-property", namespaceUri: "http://purl.org/dc/elements/1.1/", localName: "title" } },
+      { kind: "selector", selector: { kind: "sensitivity", sensitivity: "high" } },
+      { kind: "selector", selector: { kind: "associated-image", imageId: "missing" } },
+      { kind: "selector", selector: { kind: "photoshop-resource", resourceId: "0x0404" } },
+    ];
+    const before = fixture.jpeg.slice();
+    for (const target of targets) {
+      const result = await redactMetadata(fixture.jpeg, { remove: [target] });
+      expect(fixture.jpeg).toEqual(before);
+      expect((result.operations ?? []).length).toBeGreaterThan(0);
+      expect(result.data).toBeInstanceOf(Uint8Array);
+    }
   });
 });
 

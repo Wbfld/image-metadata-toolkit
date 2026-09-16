@@ -12,8 +12,8 @@ const manifestPath = join(root, "data/icc/reference-corpus.json");
 const maxProfiles = Number(process.env.ICC_REFERENCE_MAX_PROFILES ?? 128);
 const minimumProfiles = Number(process.env.ICC_REFERENCE_MIN_PROFILES ?? 10);
 const minimumComparableValues = Number(process.env.ICC_REFERENCE_MIN_COMPARABLE_VALUES ?? 100);
-const expectedExifToolVersion = "13.42";
-const expectedVendoredPackageVersion = "33.5.0";
+const expectedExifToolVersion = "13.59";
+const expectedVendoredPackageVersion = "38.1.0";
 
 const NORMALIZATION_POLICY = {
   localizedStrings: "Compare one decoded ICC text/MLUC record with ExifTool's selected string; preserve and report every parser MLUC record; multi-record values are non-comparable because ExifTool does not expose the complete array.",

@@ -58,6 +58,9 @@ import { verifyPreservation, verifyPreservationSync } from "./preservation.js";
 import { evaluatePrivacyPolicy, getPrivacyPolicy, policyRemovalTargets } from "./privacy/policies.js";
 export { inspectMakerNotes, makerNoteFieldsAsMetadataFields } from "./metadata/makernote.js";
 export { parsePhotoshopResources, inspectPhotoshopResourceSpans, PHOTOSHOP_IDENTIFIER, PHOTOSHOP_RESOURCE_SIGNATURE, PHOTOSHOP_RESOURCE_IDS } from "./metadata/photoshop.js";
+export { inspectMpfSegments, inspectUltraHdrXmp, MPF_IDENTIFIER, MPF_STANDARD, ULTRA_HDR_STANDARD, ULTRA_HDR_NAMESPACE, GCONTAINER_NAMESPACE, GCONTAINER_ITEM_NAMESPACE } from "./metadata/mpf-ultrahdr.js";
+export type { GContainerItem, MpfData, MpfDiagnostic, MpfEmbeddedMetadataInventory, MpfIfd, MpfIfdEntry, MpfImageEntry, MpfImageFormat, MpfImageType, MpfRelationship, MpfSegment, UltraHdrData, UltraHdrGainMapProperty } from "./types.js";
+export type { MpfSegmentInput } from "./metadata/mpf-ultrahdr.js";
 
 export { detectFormat, editMetadata, parseTiffGraph, rewriteTiff, serializeTiff, tiffEvidence, TiffSerializationError, rewriteJpegMetadata, JpegWriterError, rewritePngMetadata, PngWriterError, rewriteWebpMetadata, WebpWriterError, verifyPreservation, verifyPreservationSync, chunkExtendedXmp, serializeStructuredXmp, serializeXmp, XmpSerializationError, serializeIptcIim, serializePhotoshopIptcResources, synchronizeIptcXmp, IptcSerializationError, IptcSynchronizationError, DEFAULT_LIMITS, getCapabilities, getCaptureTime, getGps, getMetadataSummary, getOrientation, getRotation, getThumbnail, getImageDetails, fromJsonSafe, queryIccTags, queryImageDetails, queryIptcSemantic, queryMetadata, queryStructuredXmp, toExifReaderCompatible, toExifrCompatible, toFamilyGroups, toFlatObject, toJsonSafe, toJsonSafeResult, toLosslessFamilyGroups, MetadataError };
 export { PRIVACY_POLICY_PRESETS, evaluatePrivacyPolicy, getPrivacyPolicy, getPrivacyPolicyRegistryCoverage } from "./privacy/policies.js";
@@ -70,6 +73,7 @@ export type { C2paInventoryContainer, C2paInventoryDiagnostic, C2paInventoryOpti
 export type { AdapterBudgetOptions, CanonicalFamilyGroups, ExifReaderDuplicatePolicy, ExifReaderMigrationOptions, FamilyGroupOptions, FlatCollisionPolicy, FlatObjectOptions, IccTagQuery, ImageDetailQuery, IptcSemanticQuery, JsonSafeOptions, MetadataQuery, MigrationOptions, XmpPropertyQuery } from "./adapters.js";
 export type { TiffEditEvidence, TiffEditTransaction, TiffTransactionOperation } from "./tiff.js";
 export type { JpegBlockEdit, JpegBlockKind, JpegEditTransaction, JpegIndex, JpegRewriteOptions, JpegRewriteResult, JpegScanPayload, JpegSegment, JpegTransactionOperation, JpegWriterErrorCode, PlacedChange } from "./jpeg-writer.js";
+export type { JpegEncodedPayloadRangeEvidence, JpegMpfImageWriteEvidence, JpegMpfMutationPolicy, JpegMpfWriteEvidence } from "./types.js";
 export type { PngBlockEdit, PngBlockKind, PngChunk, PngCrcPolicy, PngEditTransaction, PngIndex, PngPlacedChange, PngRewriteOptions, PngRewriteResult, PngTransactionOperation, PngWriterErrorCode } from "./png-writer.js";
 export type { WebpBlockEdit, WebpBlockKind, WebpChunk, WebpEditTransaction, WebpIndex, WebpPlacedChange, WebpRewriteOptions, WebpRewriteResult, WebpTransactionOperation, WebpWriterErrorCode } from "./webp-writer.js";
 export type { PreservationComparison, PreservationComparisonStatus, PreservationDecodabilityEvidence, PreservationExtractionEvidence, PreservationImageSummary, PreservationPayloadEvidence, PreservationPayloadKind, PreservationPayloadStatus, PreservationPayloadSummary, PreservationPolicy, PreservationRangeEvidence, PreservationReport, PreservationVerifierOptions } from "./preservation.js";
@@ -186,6 +190,7 @@ function applySelection(result: ParsedMetadataResult, selection: ResolvedSelecti
   const includeIcc = wantsGroup(selection, "ICC");
   const includePhotoshop = wantsGroup(selection, "Photoshop");
   const includeMakerNote = wantsGroup(selection, "MakerNote");
+  const includeMpf = wantsGroup(selection, "MPF");
   const exif = includeExif && result.exif !== null
     ? { ...result.exif, fields: selectedExif(result.exif.fields, selection) }
     : null;
@@ -209,6 +214,8 @@ function applySelection(result: ParsedMetadataResult, selection: ResolvedSelecti
     ...(includeIcc ? {} : { icc: null }),
     photoshop: includePhotoshop ? result.photoshop ?? null : null,
     makerNotes: includeMakerNote ? result.makerNotes ?? null : null,
+    mpf: includeMpf ? result.mpf ?? null : null,
+    ultraHdr: includeMpf ? result.ultraHdr ?? null : null,
     ...(wantsGroup(selection, "JFIF") ? {} : { jfif: null }),
     ...(wantsGroup(selection, "PNGText") ? {} : { pngText: [] }),
   };

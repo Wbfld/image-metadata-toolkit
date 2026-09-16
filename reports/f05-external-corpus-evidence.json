@@ -1,14 +1,14 @@
 {
   "schema": "browser-image-metadata.external-evidence.v1",
-  "generatedAt": "2026-09-12T19:29:38.322Z",
+  "generatedAt": "2026-09-16T23:08:17.030Z",
   "package": {
     "name": "browser-image-metadata",
     "version": "2.0.0-alpha.3"
   },
   "reference": {
     "tool": "ExifTool via exiftool-vendored",
-    "package": "33.5.0",
-    "version": "13.42",
+    "package": "38.1.0",
+    "version": "13.59",
     "mode": "group-qualified numeric (-G1 -n)"
   },
   "corpus": {
@@ -18,14 +18,29 @@
     "commitVerified": true,
     "fixtureCount": 108,
     "examinedCount": 108,
+    "uniqueFixtureCount": 108,
     "totalBytes": 52427283,
     "supportedExtensions": [
       ".heic",
       ".heif",
       ".jpeg",
       ".jpg",
-      ".tif",
       ".tiff"
+    ],
+    "corpora": [
+      {
+        "id": "ianare-exif-py",
+        "source": "ianare/exif-py",
+        "repository": "https://github.com/ianare/exif-py.git",
+        "commit": "a69bf74770caf6b333221658f5092ed69f99faac",
+        "commitVerified": true,
+        "license": "LGPL-3.0-or-later for exif-py; upstream fixture terms apply.",
+        "licenseSource": "pinned exif-py repository",
+        "roots": [
+          "tests/resources"
+        ],
+        "fixtureCount": 108
+      }
     ],
     "fixtureRoot": "external-fixture-root-not-published",
     "hashes": "sha256"
@@ -36,6 +51,28 @@
     "sha256": "3ad6c7db827e6086175d713c57bec7fe67885501aebbc4f00036c6ca75c54f23",
     "fieldCount": 180,
     "blockCount": 5
+  },
+  "registryEvidence": {
+    "sourceSchemaVersion": 1,
+    "generatedFieldCount": 165,
+    "standardizedExifFieldCount": 165,
+    "exif31FieldCount": 8,
+    "completeDefinitionCount": 165,
+    "incompleteFieldIds": [],
+    "generatedUnitCaseTest": "tests/generated-registry-cases.test.ts",
+    "generatedUnitCasePolicy": "One executable semantic definition assertion per generated field, including type, cardinality, validation, sensitivity, write policy, and provenance.",
+    "unitCaseExecutionCommand": "npx vitest run tests/generated-registry-cases.test.ts"
+  },
+  "capabilityEvidence": {
+    "affirmativeCells": 37,
+    "executableEvidenceReferences": 30,
+    "testFile": "tests/capabilities-contract.test.ts"
+  },
+  "decoderRemovalEvidence": {
+    "status": "executable-failure-proven",
+    "testFile": "tests/external-corpus.test.ts",
+    "testCase": "fails the gate when a decoder field is deliberately removed",
+    "policy": "Removing a required decoder comparison causes the gate to fail through the missing-local threshold; the test does not accept a warning or a successful no-run result."
   },
   "allowlist": {
     "schema": "browser-image-metadata.external-allowlist.v1",
@@ -52,68 +89,89 @@
       "Rational strings and rational objects are compared by numeric value.",
       "NUL-terminated and printable byte strings are trimmed and decoded as UTF-8 where valid.",
       "Whitespace is collapsed in strings; EXIF YYYY:MM:DD dates are compared as ISO-like dates without inferring a timezone.",
-      "ExifTool date objects use their rawValue; binary-data placeholders are accepted as normalized matches for bounded opaque payloads.",
+      "ExifTool date objects use their rawValue; binary-data placeholders are recorded as non-comparable because an opaque oracle value is never a semantic match.",
       "The EXIF UserComment ASCII encoding prefix is removed before printable byte-string comparison.",
-      "GPS degree/minute/second arrays may be compared with their absolute decimal-degree value; no sign is inferred without its reference tag."
+      "GPS degree/minute/second arrays may be compared with their absolute decimal-degree value; no sign is inferred without its reference tag.",
+      "Undefined and legacy byte strings are compared to their byte-preserving lexical form after removing only NUL padding; non-printable bytes are not discarded.",
+      "CFAPattern accepts both TIFF byte-order interpretations because the decoded public value does not retain the source byte order.",
+      "Clock values are compared as seconds since midnight after lexical parsing; invalid clock values remain mismatches or non-comparable diagnostics.",
+      "A field with a direct typed local INVALID_VALUE or INVALID_DATE diagnostic is non-comparable rather than being counted as a semantic match; malformed block absence with typed parser diagnostics is likewise non-comparable."
     ],
-    "sha256": "0f99109001719299942c36258464fcefe153b6815ad8f5c7258d05c123636974"
+    "sha256": "042477dd007ba7862b86b6eef122d38f8a14c3e5357061e33fedd3df86ba2e0c"
   },
   "thresholds": {
     "maxMissingLocalRate": 0.05,
     "maxMismatched": 0,
-    "maxFixtureErrors": 0
+    "maxFixtureErrors": 0,
+    "minimumSemanticAgreement": 0
   },
   "gate": {
     "passed": true,
     "failures": [],
     "minimumFixtures": 100,
+    "minimumUniqueFixtures": 100,
+    "minimumComparableValues": 0,
+    "minimumSemanticAgreement": 0,
     "thresholds": {
       "maxMissingLocalRate": 0.05,
       "maxMismatched": 0,
-      "maxFixtureErrors": 0
+      "maxFixtureErrors": 0,
+      "minimumSemanticAgreement": 0
     },
     "observed": {
       "fixtureCount": 108,
+      "uniqueFixtureCount": 108,
       "fixtureErrors": 0,
-      "referencePresent": 3434,
-      "missingLocal": 28,
-      "mismatched": 0
+      "referencePresent": 3429,
+      "missingLocal": 24,
+      "rawMissingLocal": 24,
+      "mismatched": 0,
+      "rawMismatched": 0,
+      "allowlistedMismatched": 0,
+      "comparableValues": 3405,
+      "agreedValues": 3405,
+      "semanticAgreement": 1
     },
-    "missingLocalRate": 0.008153756552125802,
+    "missingLocalRate": 0.00699912510936133,
     "maxMissingLocalRate": 0.05,
-    "mismatched": 0
+    "mismatched": 0,
+    "rawMismatched": 0,
+    "semanticAgreement": 1
   },
   "summary": {
     "totals": {
-      "found": 3768,
-      "matched": 2158,
-      "normalizedMatch": 1248,
+      "found": 3773,
+      "matched": 2302,
+      "normalizedMatch": 1103,
       "mismatched": 0,
-      "missingLocal": 28,
-      "missingReference": 362
+      "missingLocal": 24,
+      "missingReference": 358,
+      "nonComparable": 10
     },
     "byField": [
       {
         "field": "block:EXIF",
         "key": "block:EXIF",
         "family": "EXIF",
-        "found": 96,
+        "found": 98,
         "matched": 96,
         "normalizedMatch": 0,
         "mismatched": 0,
-        "missingLocal": 2,
-        "missingReference": 0
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 2
       },
       {
         "field": "block:ICC",
         "key": "block:ICC",
         "family": "ICC",
-        "found": 27,
+        "found": 28,
         "matched": 27,
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 1,
+        "nonComparable": 0
       },
       {
         "field": "block:IPTC",
@@ -124,7 +182,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 2
+        "missingReference": 2,
+        "nonComparable": 0
       },
       {
         "field": "block:JFIF",
@@ -135,18 +194,20 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "block:XMP",
         "key": "block:XMP",
         "family": "XMP",
-        "found": 36,
-        "matched": 36,
+        "found": 38,
+        "matched": 38,
         "normalizedMatch": 0,
         "mismatched": 0,
-        "missingLocal": 2,
-        "missingReference": 0
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "DIMENSIONS:height",
@@ -157,7 +218,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 8
+        "missingReference": 8,
+        "nonComparable": 0
       },
       {
         "field": "DIMENSIONS:width",
@@ -168,7 +230,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 8
+        "missingReference": 8,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Acceleration",
@@ -179,7 +242,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ApertureValue",
@@ -190,7 +254,8 @@
         "normalizedMatch": 32,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Artist",
@@ -201,7 +266,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 4
+        "missingReference": 4,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:BitsPerSample",
@@ -212,7 +278,8 @@
         "normalizedMatch": 11,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:BodySerialNumber",
@@ -223,7 +290,8 @@
         "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:BrightnessValue",
@@ -234,7 +302,8 @@
         "normalizedMatch": 14,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:CameraElevationAngle",
@@ -245,7 +314,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:CameraFirmware",
@@ -256,7 +326,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:CameraOwnerName",
@@ -267,7 +338,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 2
+        "missingReference": 2,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:CFAPattern",
@@ -278,7 +350,8 @@
         "normalizedMatch": 3,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ChromaticAberrationCorrection",
@@ -289,7 +362,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ColorSpace",
@@ -300,18 +374,20 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ComponentsConfiguration",
         "key": "ComponentsConfiguration",
         "family": "EXIF",
         "found": 56,
-        "matched": 0,
-        "normalizedMatch": 56,
+        "matched": 55,
+        "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:CompositeImage",
@@ -322,7 +398,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:CompressedBitsPerPixel",
@@ -333,7 +410,8 @@
         "normalizedMatch": 33,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 1
+        "missingReference": 1,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Compression",
@@ -344,7 +422,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Contrast",
@@ -355,7 +434,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Copyright",
@@ -366,7 +446,8 @@
         "normalizedMatch": 9,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:CustomRendered",
@@ -377,7 +458,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 3,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:DateTime",
@@ -388,7 +470,8 @@
         "normalizedMatch": 67,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:DateTimeDigitized",
@@ -399,7 +482,8 @@
         "normalizedMatch": 57,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:DateTimeOriginal",
@@ -410,7 +494,8 @@
         "normalizedMatch": 62,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:DevelopmentType",
@@ -421,7 +506,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:DevelopmentTypeDescription",
@@ -432,7 +518,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:DeviceSettingDescription",
@@ -443,7 +530,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:DigitalZoomRatio",
@@ -454,7 +542,8 @@
         "normalizedMatch": 32,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 1
+        "missingReference": 1,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:DistortionCorrection",
@@ -465,7 +554,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ExifIFDPointer",
@@ -476,7 +566,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 86
+        "missingReference": 86,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ExifVersion",
@@ -487,7 +578,8 @@
         "normalizedMatch": 60,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ExposureBiasValue",
@@ -498,7 +590,8 @@
         "normalizedMatch": 58,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ExposureIndex",
@@ -509,7 +602,8 @@
         "normalizedMatch": 3,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ExposureMode",
@@ -520,7 +614,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 2,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ExposureProgram",
@@ -531,7 +626,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ExposureTime",
@@ -542,18 +638,20 @@
         "normalizedMatch": 59,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FileSource",
         "key": "FileSource",
         "family": "EXIF",
         "found": 45,
-        "matched": 0,
-        "normalizedMatch": 45,
+        "matched": 45,
+        "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Flash",
@@ -564,7 +662,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FlashEnergy",
@@ -575,7 +674,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FlashpixVersion",
@@ -586,7 +686,8 @@
         "normalizedMatch": 56,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FNumber",
@@ -597,7 +698,8 @@
         "normalizedMatch": 62,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FocalLength",
@@ -608,7 +710,8 @@
         "normalizedMatch": 62,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FocalLengthIn35mmFilm",
@@ -619,7 +722,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FocalPlaneResolutionUnit",
@@ -630,7 +734,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FocalPlaneXResolution",
@@ -641,7 +746,8 @@
         "normalizedMatch": 16,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:FocalPlaneYResolution",
@@ -652,7 +758,8 @@
         "normalizedMatch": 16,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GainControl",
@@ -663,7 +770,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Gamma",
@@ -674,7 +782,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSAltitude",
@@ -685,7 +794,8 @@
         "normalizedMatch": 7,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSAltitudeRef",
@@ -696,7 +806,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSAreaInformation",
@@ -707,7 +818,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDateStamp",
@@ -718,7 +830,8 @@
         "normalizedMatch": 15,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDestBearing",
@@ -729,7 +842,8 @@
         "normalizedMatch": 2,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDestBearingRef",
@@ -740,7 +854,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDestDistance",
@@ -751,7 +866,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDestDistanceRef",
@@ -762,7 +878,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDestLatitude",
@@ -773,7 +890,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDestLatitudeRef",
@@ -784,7 +902,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDestLongitude",
@@ -795,7 +914,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDestLongitudeRef",
@@ -806,7 +926,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDifferential",
@@ -817,7 +938,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSDOP",
@@ -828,7 +950,8 @@
         "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSHPositioningError",
@@ -839,7 +962,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSImgDirection",
@@ -850,7 +974,8 @@
         "normalizedMatch": 7,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSImgDirectionRef",
@@ -861,7 +986,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSInfoIFDPointer",
@@ -872,7 +998,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 26
+        "missingReference": 26,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSLatitude",
@@ -883,7 +1010,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 1
+        "missingReference": 1,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSLatitudeRef",
@@ -894,7 +1022,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSLongitude",
@@ -905,7 +1034,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 1
+        "missingReference": 1,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSLongitudeRef",
@@ -916,7 +1046,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSMapDatum",
@@ -927,7 +1058,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSMeasureMode",
@@ -938,7 +1070,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSProcessingMethod",
@@ -949,7 +1082,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSSatellites",
@@ -960,7 +1094,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSSpeed",
@@ -971,7 +1106,8 @@
         "normalizedMatch": 4,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSSpeedRef",
@@ -982,7 +1118,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSStatus",
@@ -993,7 +1130,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSTimeStamp",
@@ -1004,7 +1142,8 @@
         "normalizedMatch": 15,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSTrack",
@@ -1015,7 +1154,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSTrackRef",
@@ -1026,18 +1166,20 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:GPSVersionID",
         "key": "GPSVersionID",
         "family": "EXIF",
         "found": 8,
-        "matched": 0,
-        "normalizedMatch": 8,
+        "matched": 8,
+        "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Humidity",
@@ -1048,7 +1190,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ImageDescription",
@@ -1059,7 +1202,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ImageEditingSoftware",
@@ -1070,7 +1214,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ImageEditor",
@@ -1081,7 +1226,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ImageLength",
@@ -1092,7 +1238,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ImageTitle",
@@ -1103,7 +1250,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ImageUniqueID",
@@ -1114,7 +1262,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ImageWidth",
@@ -1125,7 +1274,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:InteroperabilityIFDPointer",
@@ -1136,7 +1286,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 47
+        "missingReference": 47,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:InteroperabilityIndex",
@@ -1147,7 +1298,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 47
+        "missingReference": 47,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:InteroperabilityVersion",
@@ -1158,7 +1310,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 47
+        "missingReference": 47,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ISOSpeed",
@@ -1169,7 +1322,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ISOSpeedLatitudeyyy",
@@ -1180,7 +1334,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ISOSpeedLatitudezzz",
@@ -1191,7 +1346,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ISOSpeedRatings",
@@ -1202,7 +1358,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:JPEGInterchangeFormat",
@@ -1213,7 +1370,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:JPEGInterchangeFormatLength",
@@ -1224,7 +1382,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:LearningOptOutIn",
@@ -1235,7 +1394,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:LensMake",
@@ -1246,7 +1406,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:LensModel",
@@ -1257,7 +1418,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:LensSerialNumber",
@@ -1268,7 +1430,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:LensSpecification",
@@ -1279,7 +1442,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 6
+        "missingReference": 6,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:LightSource",
@@ -1290,7 +1454,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Make",
@@ -1301,7 +1466,8 @@
         "normalizedMatch": 9,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:MakerNote",
@@ -1312,7 +1478,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 46
+        "missingReference": 46,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:MaxApertureValue",
@@ -1323,7 +1490,8 @@
         "normalizedMatch": 51,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:MetadataEditingSoftware",
@@ -1334,7 +1502,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:MeteringMode",
@@ -1345,7 +1514,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Model",
@@ -1356,7 +1526,8 @@
         "normalizedMatch": 10,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:NoiseReduction",
@@ -1367,7 +1538,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:OECF",
@@ -1378,7 +1550,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:OffsetTime",
@@ -1389,7 +1562,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:OffsetTimeDigitized",
@@ -1400,7 +1574,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:OffsetTimeOriginal",
@@ -1411,7 +1586,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Orientation",
@@ -1422,7 +1598,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Photographer",
@@ -1433,7 +1610,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:PhotometricInterpretation",
@@ -1444,7 +1622,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:PixelXDimension",
@@ -1455,7 +1634,8 @@
         "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:PixelYDimension",
@@ -1466,7 +1646,8 @@
         "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:PlanarConfiguration",
@@ -1477,7 +1658,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Pressure",
@@ -1488,7 +1670,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:PrimaryChromaticities",
@@ -1499,7 +1682,8 @@
         "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:RAWDevelopingSoftware",
@@ -1510,7 +1694,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:RecommendedExposureIndex",
@@ -1521,7 +1706,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ReferenceBlackWhite",
@@ -1532,7 +1718,8 @@
         "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:RelatedImageFileFormat",
@@ -1543,7 +1730,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:RelatedImageLength",
@@ -1554,7 +1742,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 8
+        "missingReference": 8,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:RelatedImageWidth",
@@ -1565,7 +1754,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:RelatedSoundFile",
@@ -1576,7 +1766,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ResolutionUnit",
@@ -1587,7 +1778,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:RowsPerStrip",
@@ -1598,7 +1790,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SamplesPerPixel",
@@ -1609,7 +1802,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Saturation",
@@ -1620,7 +1814,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SceneCaptureType",
@@ -1631,18 +1826,20 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 2,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SceneType",
         "key": "SceneType",
         "family": "EXIF",
         "found": 34,
-        "matched": 0,
-        "normalizedMatch": 34,
+        "matched": 34,
+        "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SensingMethod",
@@ -1653,7 +1850,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SensitivityType",
@@ -1664,7 +1862,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ShadingCorrection",
@@ -1675,7 +1874,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Sharpness",
@@ -1686,7 +1886,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:ShutterSpeedValue",
@@ -1697,7 +1898,8 @@
         "normalizedMatch": 30,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Software",
@@ -1708,7 +1910,8 @@
         "normalizedMatch": 6,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SourceExposureTimesOfCompositeImage",
@@ -1719,7 +1922,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SourceImageNumberOfCompositeImage",
@@ -1730,7 +1934,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SpatialFrequencyResponse",
@@ -1741,7 +1946,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SpectralSensitivity",
@@ -1752,7 +1958,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:StandardOutputSensitivity",
@@ -1763,7 +1970,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:StripByteCounts",
@@ -1771,10 +1979,11 @@
         "family": "EXIF",
         "found": 10,
         "matched": 5,
-        "normalizedMatch": 5,
+        "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 4
       },
       {
         "field": "EXIF:StripOffsets",
@@ -1782,10 +1991,11 @@
         "family": "EXIF",
         "found": 10,
         "matched": 5,
-        "normalizedMatch": 5,
+        "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 4
       },
       {
         "field": "EXIF:SubjectArea",
@@ -1796,7 +2006,8 @@
         "normalizedMatch": 4,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SubjectDistance",
@@ -1807,7 +2018,8 @@
         "normalizedMatch": 2,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 1
+        "missingReference": 1,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SubjectDistanceRange",
@@ -1818,7 +2030,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SubjectLocation",
@@ -1829,7 +2042,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SubSecTime",
@@ -1840,7 +2054,8 @@
         "normalizedMatch": 6,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SubSecTimeDigitized",
@@ -1851,7 +2066,8 @@
         "normalizedMatch": 5,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:SubSecTimeOriginal",
@@ -1862,7 +2078,8 @@
         "normalizedMatch": 5,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:Temperature",
@@ -1873,7 +2090,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:TransferFunction",
@@ -1884,7 +2102,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:UserComment",
@@ -1892,10 +2111,11 @@
         "family": "EXIF",
         "found": 30,
         "matched": 0,
-        "normalizedMatch": 13,
+        "normalizedMatch": 18,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 17
+        "missingReference": 12,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:WaterDepth",
@@ -1906,7 +2126,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:WhiteBalance",
@@ -1917,7 +2138,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 2,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:WhitePoint",
@@ -1928,7 +2150,8 @@
         "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:XResolution",
@@ -1939,7 +2162,8 @@
         "normalizedMatch": 84,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:YCbCrCoefficients",
@@ -1950,7 +2174,8 @@
         "normalizedMatch": 1,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:YCbCrPositioning",
@@ -1961,7 +2186,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:YCbCrSubSampling",
@@ -1972,7 +2198,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "EXIF:YResolution",
@@ -1983,7 +2210,8 @@
         "normalizedMatch": 84,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:Byline",
@@ -1994,7 +2222,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 3
+        "missingReference": 3,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:Caption",
@@ -2005,7 +2234,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:City",
@@ -2016,7 +2246,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:CopyrightNotice",
@@ -2027,7 +2258,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:CountryCode",
@@ -2038,7 +2270,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:DateCreated",
@@ -2049,7 +2282,8 @@
         "normalizedMatch": 2,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:Headline",
@@ -2060,7 +2294,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:Keywords",
@@ -2071,7 +2306,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "IPTC:ObjectName",
@@ -2082,7 +2318,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "XMP:XMP-dc:Creator",
@@ -2093,7 +2330,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "XMP:XMP-dc:Description",
@@ -2104,7 +2342,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "XMP:XMP-dc:Title",
@@ -2115,7 +2354,8 @@
         "normalizedMatch": 0,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       },
       {
         "field": "XMP:XMP-xmp:CreateDate",
@@ -2126,81 +2366,90 @@
         "normalizedMatch": 14,
         "mismatched": 0,
         "missingLocal": 1,
-        "missingReference": 0
+        "missingReference": 0,
+        "nonComparable": 0
       }
     ],
     "byProducer": [
       {
         "producer": "Apple",
-        "found": 177,
-        "matched": 96,
-        "normalizedMatch": 70,
+        "found": 178,
+        "matched": 102,
+        "normalizedMatch": 65,
         "mismatched": 0,
-        "missingLocal": 1,
-        "missingReference": 11
+        "missingLocal": 0,
+        "missingReference": 11,
+        "nonComparable": 0
       },
       {
         "producer": "Canon",
         "found": 580,
-        "matched": 289,
-        "normalizedMatch": 217,
+        "matched": 310,
+        "normalizedMatch": 196,
         "mismatched": 0,
         "missingLocal": 6,
-        "missingReference": 74
+        "missingReference": 74,
+        "nonComparable": 0
       },
       {
         "producer": "Caplio",
         "found": 39,
-        "matched": 21,
-        "normalizedMatch": 14,
+        "matched": 22,
+        "normalizedMatch": 13,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 4
+        "missingReference": 4,
+        "nonComparable": 0
       },
       {
         "producer": "CASIO COMPUTER CO.,LTD",
         "found": 50,
-        "matched": 27,
-        "normalizedMatch": 17,
+        "matched": 29,
+        "normalizedMatch": 15,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 6
+        "missingReference": 6,
+        "nonComparable": 0
       },
       {
         "producer": "CASIO COMPUTER CO.,LTD.",
         "found": 49,
-        "matched": 26,
-        "normalizedMatch": 18,
+        "matched": 28,
+        "normalizedMatch": 16,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 5
+        "missingReference": 5,
+        "nonComparable": 0
       },
       {
         "producer": "Eastman Kodak Company",
         "found": 39,
-        "matched": 21,
-        "normalizedMatch": 14,
+        "matched": 22,
+        "normalizedMatch": 13,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 4
+        "missingReference": 4,
+        "nonComparable": 0
       },
       {
         "producer": "EASTMAN KODAK COMPANY",
         "found": 101,
-        "matched": 51,
-        "normalizedMatch": 40,
+        "matched": 58,
+        "normalizedMatch": 33,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 10
+        "missingReference": 10,
+        "nonComparable": 0
       },
       {
         "producer": "FUJIFILM",
         "found": 240,
-        "matched": 110,
-        "normalizedMatch": 107,
+        "matched": 125,
+        "normalizedMatch": 92,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 23
+        "missingReference": 23,
+        "nonComparable": 0
       },
       {
         "producer": "HMD Global",
@@ -2209,7 +2458,8 @@
         "normalizedMatch": 16,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 4
+        "missingReference": 4,
+        "nonComparable": 0
       },
       {
         "producer": "Jolla",
@@ -2218,70 +2468,78 @@
         "normalizedMatch": 12,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 1
+        "missingReference": 1,
+        "nonComparable": 0
       },
       {
         "producer": "KONICA MINOLTA",
         "found": 54,
-        "matched": 31,
-        "normalizedMatch": 17,
+        "matched": 32,
+        "normalizedMatch": 16,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 6
+        "missingReference": 6,
+        "nonComparable": 0
       },
       {
         "producer": "NIKON",
         "found": 685,
-        "matched": 414,
-        "normalizedMatch": 205,
+        "matched": 447,
+        "normalizedMatch": 173,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 66
+        "missingReference": 65,
+        "nonComparable": 0
       },
       {
         "producer": "NIKON CORPORATION",
         "found": 235,
-        "matched": 139,
-        "normalizedMatch": 82,
+        "matched": 151,
+        "normalizedMatch": 70,
         "mismatched": 0,
         "missingLocal": 2,
-        "missingReference": 14
+        "missingReference": 14,
+        "nonComparable": 0
       },
       {
         "producer": "OLYMPUS CORPORATION",
         "found": 53,
-        "matched": 29,
-        "normalizedMatch": 19,
+        "matched": 32,
+        "normalizedMatch": 16,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 5
+        "missingReference": 5,
+        "nonComparable": 0
       },
       {
         "producer": "OLYMPUS IMAGING CORP.",
         "found": 102,
-        "matched": 53,
-        "normalizedMatch": 36,
+        "matched": 57,
+        "normalizedMatch": 34,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 13
+        "missingReference": 11,
+        "nonComparable": 0
       },
       {
         "producer": "OLYMPUS OPTICAL CO.,LTD",
         "found": 43,
-        "matched": 21,
-        "normalizedMatch": 16,
+        "matched": 24,
+        "normalizedMatch": 14,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 6
+        "missingReference": 5,
+        "nonComparable": 0
       },
       {
         "producer": "Panasonic",
         "found": 53,
-        "matched": 31,
-        "normalizedMatch": 17,
+        "matched": 34,
+        "normalizedMatch": 14,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 5
+        "missingReference": 5,
+        "nonComparable": 0
       },
       {
         "producer": "PENTAX Corporation",
@@ -2290,117 +2548,204 @@
         "normalizedMatch": 14,
         "mismatched": 0,
         "missingLocal": 8,
-        "missingReference": 1
+        "missingReference": 1,
+        "nonComparable": 0
       },
       {
         "producer": "Polyphony Digital Inc.",
         "found": 36,
-        "matched": 19,
-        "normalizedMatch": 11,
+        "matched": 20,
+        "normalizedMatch": 10,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 6
+        "missingReference": 6,
+        "nonComparable": 0
       },
       {
         "producer": "RICOH",
         "found": 38,
-        "matched": 15,
-        "normalizedMatch": 17,
+        "matched": 16,
+        "normalizedMatch": 16,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 6
+        "missingReference": 6,
+        "nonComparable": 0
       },
       {
         "producer": "samsung",
         "found": 30,
-        "matched": 20,
-        "normalizedMatch": 7,
+        "matched": 21,
+        "normalizedMatch": 6,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 3
+        "missingReference": 3,
+        "nonComparable": 0
       },
       {
         "producer": "Samsung Techwin",
         "found": 56,
-        "matched": 31,
-        "normalizedMatch": 20,
+        "matched": 34,
+        "normalizedMatch": 17,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 5
+        "missingReference": 5,
+        "nonComparable": 0
       },
       {
         "producer": "SANYO Electric Co.,Ltd.",
         "found": 78,
-        "matched": 38,
-        "normalizedMatch": 32,
+        "matched": 42,
+        "normalizedMatch": 29,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 8
+        "missingReference": 7,
+        "nonComparable": 0
       },
       {
         "producer": "SONY",
         "found": 239,
-        "matched": 135,
-        "normalizedMatch": 81,
+        "matched": 148,
+        "normalizedMatch": 68,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 23
+        "missingReference": 23,
+        "nonComparable": 0
       },
       {
         "producer": "unknown",
-        "found": 574,
-        "matched": 419,
-        "normalizedMatch": 111,
+        "found": 578,
+        "matched": 421,
+        "normalizedMatch": 102,
         "mismatched": 0,
-        "missingLocal": 11,
-        "missingReference": 44
+        "missingLocal": 8,
+        "missingReference": 45,
+        "nonComparable": 10
       },
       {
         "producer": "WWL",
         "found": 41,
-        "matched": 19,
-        "normalizedMatch": 18,
+        "matched": 22,
+        "normalizedMatch": 15,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 4
+        "missingReference": 4,
+        "nonComparable": 0
       },
       {
         "producer": "Xiaomi",
         "found": 51,
-        "matched": 26,
-        "normalizedMatch": 20,
+        "matched": 28,
+        "normalizedMatch": 18,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 5
+        "missingReference": 5,
+        "nonComparable": 0
       }
     ],
     "byFormat": [
       {
         "format": "heif",
-        "found": 113,
-        "matched": 68,
-        "normalizedMatch": 38,
+        "found": 118,
+        "matched": 71,
+        "normalizedMatch": 37,
         "mismatched": 0,
-        "missingLocal": 11,
-        "missingReference": 7
+        "missingLocal": 7,
+        "missingReference": 8,
+        "nonComparable": 2
       },
       {
         "format": "jpeg",
         "found": 3527,
-        "matched": 2002,
-        "normalizedMatch": 1186,
+        "matched": 2143,
+        "normalizedMatch": 1050,
         "mismatched": 0,
         "missingLocal": 17,
-        "missingReference": 339
+        "missingReference": 334,
+        "nonComparable": 0
       },
       {
         "format": "tiff",
         "found": 128,
         "matched": 88,
-        "normalizedMatch": 24,
+        "normalizedMatch": 16,
         "mismatched": 0,
         "missingLocal": 0,
-        "missingReference": 16
+        "missingReference": 16,
+        "nonComparable": 8
+      }
+    ],
+    "byCorpus": [
+      {
+        "corpus": "ianare-exif-py",
+        "found": 3773,
+        "matched": 2302,
+        "normalizedMatch": 1103,
+        "mismatched": 0,
+        "missingLocal": 24,
+        "missingReference": 358,
+        "nonComparable": 10
+      }
+    ],
+    "byMetadataFamily": [
+      {
+        "family": "DIMENSIONS",
+        "found": 216,
+        "matched": 200,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 16,
+        "nonComparable": 0
+      },
+      {
+        "family": "EXIF",
+        "found": 3377,
+        "matched": 1944,
+        "normalizedMatch": 1087,
+        "mismatched": 0,
+        "missingLocal": 23,
+        "missingReference": 336,
+        "nonComparable": 10
+      },
+      {
+        "family": "ICC",
+        "found": 28,
+        "matched": 27,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 1,
+        "nonComparable": 0
+      },
+      {
+        "family": "IPTC",
+        "found": 28,
+        "matched": 21,
+        "normalizedMatch": 2,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 5,
+        "nonComparable": 0
+      },
+      {
+        "family": "JFIF",
+        "found": 56,
+        "matched": 56,
+        "normalizedMatch": 0,
+        "mismatched": 0,
+        "missingLocal": 0,
+        "missingReference": 0,
+        "nonComparable": 0
+      },
+      {
+        "family": "XMP",
+        "found": 68,
+        "matched": 54,
+        "normalizedMatch": 14,
+        "mismatched": 0,
+        "missingLocal": 1,
+        "missingReference": 0,
+        "nonComparable": 0
       }
     ]
   },
@@ -2411,6 +2756,9 @@
       "sha256": "f576d9c6b7c3d9531a4bc10e9fa34ecdcebdf6773a907c4892fa680b8557a279",
       "format": "heif",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2419,6 +2767,9 @@
       "sha256": "c2820b3e4e0368c6f031b28b62945658a97446895cb446dfc37acdcf7109e0f5",
       "format": "heif",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 1
     },
     {
@@ -2427,6 +2778,9 @@
       "sha256": "17fccf795b0e2b749b9f5667ffcea31e665cb6964fb104b001684c60a14acb4d",
       "format": "heif",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -2435,6 +2789,9 @@
       "sha256": "e760c80eed310e4f27c092d5487693ca8e104e7cc01d25ba4828deb28f679676",
       "format": "heif",
       "producer": "Apple",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2443,6 +2800,9 @@
       "sha256": "f86ec0d3a6c82e31657bb1886e1ec95579329fa98d8be511ac1e8497c778e07f",
       "format": "heif",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 3
     },
     {
@@ -2451,6 +2811,9 @@
       "sha256": "2b81d5e490f310ef0779ab022ee0f700f6babdb5914b1e659df9912a1a71aa52",
       "format": "heif",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -2459,6 +2822,9 @@
       "sha256": "6bfdabd4fc33d112283c147acccc574e770bbe6fbdbc3d4da968ba7b606ecc2f",
       "format": "jpeg",
       "producer": "Canon",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2467,6 +2833,9 @@
       "sha256": "40a7aa2cc28d8544b31408e6d54c568e6b749a8faf239c7a6234b315e953b9d5",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2475,7 +2844,10 @@
       "sha256": "23c1ec51c075d6864862412d07b9d0f07e84237af68972c1d1293e4c28f73e4f",
       "format": "jpeg",
       "producer": "Canon",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/Canon_PowerShot_S40.jpg",
@@ -2483,7 +2855,10 @@
       "sha256": "8a9d04b92d0de5836c59ede8ae421235488e4031e893e07b1fe7e4b78f6a9901",
       "format": "jpeg",
       "producer": "Canon",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/Fujifilm_FinePix6900ZOOM.jpg",
@@ -2491,7 +2866,10 @@
       "sha256": "40afc753b4e83d72cfa1080ae7a10310e0fcbb9e4f6ebdf32c7b2f1553c83fe3",
       "format": "jpeg",
       "producer": "FUJIFILM",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/Fujifilm_FinePix_E500.jpg",
@@ -2499,7 +2877,10 @@
       "sha256": "ffbee7b07bf267dc0fb52817f8866df647758f7d48ac93e7a73d1914fb4c74da",
       "format": "jpeg",
       "producer": "FUJIFILM",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/Kodak_CX7530.jpg",
@@ -2507,6 +2888,9 @@
       "sha256": "ac759931999a215ef78469a82bdfc382ccba96eb8d039ec9e81e53a9a419d35e",
       "format": "jpeg",
       "producer": "EASTMAN KODAK COMPANY",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 13
     },
     {
@@ -2515,7 +2899,10 @@
       "sha256": "b1b914f47528384e6252fa7caabb489f123b88c81ebd62ecb8eacdf64c46fd5e",
       "format": "jpeg",
       "producer": "KONICA MINOLTA",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/Nikon_COOLPIX_P1.jpg",
@@ -2523,7 +2910,10 @@
       "sha256": "896b47424dc1c87154a50b40394ae887a0b0d7d830f38a9d969295995f27ef43",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/Nikon_D70.jpg",
@@ -2531,6 +2921,9 @@
       "sha256": "8e2a627b96ca71c20129161f46bda3d338407da99bd11b1055adb27af27d7ef5",
       "format": "jpeg",
       "producer": "NIKON CORPORATION",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2539,6 +2932,9 @@
       "sha256": "3495de26279d8d1e442177ba43cef855438e3b321481b9ee2ff513decb13ed9c",
       "format": "jpeg",
       "producer": "OLYMPUS CORPORATION",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -2547,7 +2943,10 @@
       "sha256": "45e3aa44357a4b05d78b3fc51d0732be0ddf5a544b732b0134778b146380291a",
       "format": "jpeg",
       "producer": "unknown",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/Panasonic_DMC-FZ30.jpg",
@@ -2555,7 +2954,10 @@
       "sha256": "c092a4ade7ae7b63ac13d50c3dc9da51ce2fb465caf7d1b6193d4c53f59e8ad8",
       "format": "jpeg",
       "producer": "Panasonic",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/Pentax_K10D.jpg",
@@ -2563,6 +2965,9 @@
       "sha256": "146601c9d406410abdaa832508ee4ccddbc7ad54530e81d57962c1b7728e2e6d",
       "format": "jpeg",
       "producer": "PENTAX Corporation",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2571,7 +2976,10 @@
       "sha256": "d7ba6bc532a225c955411cb96c733a45ee39403fa973312bded7732e6f8e4b3c",
       "format": "jpeg",
       "producer": "unknown",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/Ricoh_Caplio_RR330.jpg",
@@ -2579,6 +2987,9 @@
       "sha256": "e920d750c491f3088eeb0f31fb4659164755af11e4bbbe269430f32c3ae10928",
       "format": "jpeg",
       "producer": "Caplio",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2587,7 +2998,10 @@
       "sha256": "e61da5ee8d7ba1726bd0a887216ed5ae7ca38c97fcf7aac11b808e1c269e1722",
       "format": "jpeg",
       "producer": "Samsung Techwin",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/Sony_DSLR-A200.jpg",
@@ -2595,7 +3009,10 @@
       "sha256": "a21730078d69b6300c87db44a6912979b1812dd8e6f7b131e6c4709d940423ed",
       "format": "jpeg",
       "producer": "SONY",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/Sony_HDR-HC3.jpg",
@@ -2603,6 +3020,9 @@
       "sha256": "4f707d9b40d423a5246748bc1e05b66c4b87e30863f7a51ce18904a7ec43a39e",
       "format": "jpeg",
       "producer": "SONY",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2611,7 +3031,10 @@
       "sha256": "227f97c068d3fe038901b238580bac6440a6f172667b317fa85712388d73d9f7",
       "format": "jpeg",
       "producer": "SONY",
-      "warningCount": 9
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 10
     },
     {
       "fixture": "jpg/WWL_Polaroid_ION230.jpg",
@@ -2619,6 +3042,9 @@
       "sha256": "27532bdce8a2ad2afc1e392f4d24105867eec0b1ba126b01b3e398100daab664",
       "format": "jpeg",
       "producer": "WWL",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -2627,7 +3053,10 @@
       "sha256": "dcc801f45d7607d82661d08c4c6b188bdbf3129b55f7612830a6dc3fea573023",
       "format": "jpeg",
       "producer": "OLYMPUS IMAGING CORP.",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/exif-org/canon-ixus.jpg",
@@ -2635,7 +3064,10 @@
       "sha256": "b2d085bdb261cb2c56d8ba10d79175e38c0acd0d429afe19a4610eddee3b06fe",
       "format": "jpeg",
       "producer": "Canon",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/exif-org/fujifilm-dx10.jpg",
@@ -2643,6 +3075,9 @@
       "sha256": "7d6f8f7450f12bd768384a9cae66a9cc0f626cea023431614d967f34150def0d",
       "format": "jpeg",
       "producer": "FUJIFILM",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2651,7 +3086,10 @@
       "sha256": "722fa6b893b01d5970d9b0761df6ee97bcee28fcd5b8e78d761738058c6b7822",
       "format": "jpeg",
       "producer": "FUJIFILM",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/exif-org/fujifilm-mx1700.jpg",
@@ -2659,6 +3097,9 @@
       "sha256": "f45a5d2c1c5f3ae55254239c02b569c01dd3926a64e08d4a141ce4dbff637856",
       "format": "jpeg",
       "producer": "FUJIFILM",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 1
     },
     {
@@ -2667,7 +3108,10 @@
       "sha256": "6da5cfdcbd2d462220da5ac1c4e0df32c61f078efe92c777036cf629fe791ad5",
       "format": "jpeg",
       "producer": "Eastman Kodak Company",
-      "warningCount": 6
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 7
     },
     {
       "fixture": "jpg/exif-org/kodak-dc240.jpg",
@@ -2675,7 +3119,10 @@
       "sha256": "6dcac4b77b55a9f5e5c0486c1f28b8b2eb65b292d3c43499cdde47ef11d367a4",
       "format": "jpeg",
       "producer": "EASTMAN KODAK COMPANY",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/exif-org/nikon-e950.jpg",
@@ -2683,7 +3130,10 @@
       "sha256": "7920518dec63a63074ca8e1861b61f69be687b3dd0caa3eb65cdaac4c4f43fd0",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/exif-org/olympus-c960.jpg",
@@ -2691,7 +3141,10 @@
       "sha256": "325671969a8059d2ad0036e2db8476262592add0ca5174c260fa03e9e455809d",
       "format": "jpeg",
       "producer": "OLYMPUS OPTICAL CO.,LTD",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/exif-org/olympus-d320l.jpg",
@@ -2699,6 +3152,9 @@
       "sha256": "6a41599dc31c73e8a9c896e2669ecfb2b03a74be04fac0dd9371ed457e50a762",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2707,7 +3163,10 @@
       "sha256": "16182006e2f82e60f11e0bad3964cac539bba4e58d14a3152bfe5aeb1907ab19",
       "format": "jpeg",
       "producer": "RICOH",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/exif-org/sanyo-vpcg250.jpg",
@@ -2715,7 +3174,10 @@
       "sha256": "4723c892d4d3c200074f3a8a437b0d3e62e631e140b68e2386a54c45f0da2566",
       "format": "jpeg",
       "producer": "SANYO Electric Co.,Ltd.",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/exif-org/sanyo-vpcsx550.jpg",
@@ -2723,7 +3185,10 @@
       "sha256": "74401cc6e0b6bdb03b7d3a1c99a0ba3b4dd5b3ac9b7728a38f6fb3607f3360ea",
       "format": "jpeg",
       "producer": "SANYO Electric Co.,Ltd.",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/exif-org/sony-cybershot.jpg",
@@ -2731,6 +3196,9 @@
       "sha256": "0e69b12f261907dc9fcfb89082a6a61948db849d836673017a7e972d49184404",
       "format": "jpeg",
       "producer": "SONY",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 1
     },
     {
@@ -2739,6 +3207,9 @@
       "sha256": "8ff0028190b36a6c4af79989b248dd5e949d289d32c5f0e005be2db45d363c98",
       "format": "jpeg",
       "producer": "SONY",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 1
     },
     {
@@ -2747,6 +3218,9 @@
       "sha256": "608c6c0a57205c42ca4169b5574823ed1c05e4e636a038cda64b6ef18ae5d274",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2755,7 +3229,10 @@
       "sha256": "17307b1207eb6487d7908e9d154890b46e3d2e0192369cfd3f4c33d5a5af4035",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/gps/DSCN0012.jpg",
@@ -2763,7 +3240,10 @@
       "sha256": "84d60184ac4098b7967e2ef6dae6b03fc0d98b24624d2b57412dbcd7cb864680",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/gps/DSCN0021.jpg",
@@ -2771,7 +3251,10 @@
       "sha256": "441daaea545eb8bdb1434817fc36be0baa8992a4c9ad4b089726033bfc4bc963",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/gps/DSCN0025.jpg",
@@ -2779,7 +3262,10 @@
       "sha256": "9437619d5ab1afe7740d546effe76ffe52548af68b9be72cef259d0cd1f9c90b",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/gps/DSCN0027.jpg",
@@ -2787,7 +3273,10 @@
       "sha256": "0a7864e5fa07cc118f3df1e38f31e5181350c30010e8115c536c7a8a664c9f13",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/gps/DSCN0029.jpg",
@@ -2795,7 +3284,10 @@
       "sha256": "941b9c7bfe35e0a3775f013e613748f55d1152736a74bd51e34f1b66bd646697",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/gps/DSCN0038.jpg",
@@ -2803,7 +3295,10 @@
       "sha256": "84792ae83e6ec83a5d909be82f68e51aeea67fdd6a7019993fdac4be4f6e6a72",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/gps/DSCN0040.jpg",
@@ -2811,7 +3306,10 @@
       "sha256": "14f6453d145c69c96e77c7e901cdbf58f7984c09fe4ab65ca8914c5d0d37e956",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/gps/DSCN0042.jpg",
@@ -2819,7 +3317,10 @@
       "sha256": "03837b2881d4cc7e5e03191b301f082088f999e4aa59e4489193874c93c31579",
       "format": "jpeg",
       "producer": "NIKON",
-      "warningCount": 4
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 5
     },
     {
       "fixture": "jpg/hdr/canon_hdr_NO.jpg",
@@ -2827,7 +3328,10 @@
       "sha256": "fa2127ebab1b3930c998ab262795044262f41dda7eaf0f7a21a773cff48c8696",
       "format": "jpeg",
       "producer": "Canon",
-      "warningCount": 6
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 7
     },
     {
       "fixture": "jpg/hdr/canon_hdr_YES.jpg",
@@ -2835,7 +3339,10 @@
       "sha256": "30603e14619140acaea51bee6fecab4a72956d1aa570e20f5b9b3d9271b8bdf4",
       "format": "jpeg",
       "producer": "Canon",
-      "warningCount": 6
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 7
     },
     {
       "fixture": "jpg/hdr/iphone_hdr_NO.jpg",
@@ -2843,7 +3350,10 @@
       "sha256": "eb81d33a9b1d1bea5d133483f918c2cc927161c0dda44c9fedfa4da87c8b1cc3",
       "format": "jpeg",
       "producer": "Apple",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/hdr/iphone_hdr_YES.jpg",
@@ -2851,7 +3361,10 @@
       "sha256": "5125870f6f4a94a2329bc9f53482680772d3277399aed71c2f0636cb07870533",
       "format": "jpeg",
       "producer": "Apple",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/invalid/image00971.jpg",
@@ -2859,6 +3372,9 @@
       "sha256": "4793aef30d2d042f15723bf22fa8c5b9932c6b5e97bc090e7a82c0845b2a47db",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2867,6 +3383,9 @@
       "sha256": "99366772dd3e323d52bf6667b2955c8a2859f0ba9d88d96c2c0a0ade16d96d9e",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2875,6 +3394,9 @@
       "sha256": "d28160c63cbb4c9a9709e917b1bf0208d6240d1d3e22b28ec23abb08f957c52c",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2883,6 +3405,9 @@
       "sha256": "ef8e654304d58238af70f4ba8f52b095c8d801ebba0dfb6b089b53d835c36c5a",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2891,6 +3416,9 @@
       "sha256": "5281b682dc913fee5a3b7d172bfb8c8068a1bcc3138c3d29f98db34bc807798c",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2899,6 +3427,9 @@
       "sha256": "0eda850fefce6ae4c148815bfb20962309b75e542de421845615ccef7a962f00",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2907,6 +3438,9 @@
       "sha256": "527ae341310acbdeedf60d1087a23081ed279e3e6ecdd7e4b82d586acfbc0735",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2915,6 +3449,9 @@
       "sha256": "1a6e4a1b7fab604027cbb52b6cde75f6966c8b9a2eb3ea0fba5e1bf59605a339",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -2923,6 +3460,9 @@
       "sha256": "9be023624ccd5846beeb5b02d9b571251ef5bd8ed820389a430d114029f58eda",
       "format": "jpeg",
       "producer": "HMD Global",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 4
     },
     {
@@ -2931,6 +3471,9 @@
       "sha256": "b150f64e631b0df0f70cdbb88ddcbb73c5536fcb840ace8d0e71f8d58d997bc1",
       "format": "jpeg",
       "producer": "HMD Global",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 4
     },
     {
@@ -2939,6 +3482,9 @@
       "sha256": "ee6bc1200cf8b1b26f5b60d8294d9617e8099f6dfdd7a4757a424f332360f5e3",
       "format": "jpeg",
       "producer": "Jolla",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2947,6 +3493,9 @@
       "sha256": "87ea27ba9f24cb133251850a7ebd11427ba5e4be0a3a8534a58b00041b2db06d",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2955,6 +3504,9 @@
       "sha256": "47aa72c02bd24b17db58cd8e25a57dd97f54abc9461fc1fb8bf2d8889d8494a5",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2963,6 +3515,9 @@
       "sha256": "533f2e6d35a62e9bc144dbb3921a9b2105cf2498eaafb10812f197e6108bd758",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2971,6 +3526,9 @@
       "sha256": "552568f6965f76c94fced5cd3286775fcc7746fbc796f7a7ab8e7c8d533b666c",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2979,6 +3537,9 @@
       "sha256": "592f903706fe4b215a08adbd0ed8b62d28aad4e6532ee13777f4aa12787f54a7",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2987,6 +3548,9 @@
       "sha256": "a05082c57819232106a0612f57268efab011f7a2a477483b878a2b4509cd8e59",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -2995,6 +3559,9 @@
       "sha256": "e5273d4ea5fddcaf27fefc7ea4162c2b3c77ad056e2d8d65a5d61787b5b15db4",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3003,6 +3570,9 @@
       "sha256": "5b5c9979cbf6077e97894488be20c849b5eb008fe685c0cb75060c4ab6812ce0",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3011,6 +3581,9 @@
       "sha256": "31b06a687d094aabaab611bbdb83b37bee044d7411087e24120169a8a7d5a511",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3019,6 +3592,9 @@
       "sha256": "f0b06c75694f6d97e17121dae0697832dea0daf0cd81e4d0e8107cbe8a7e299f",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3027,6 +3603,9 @@
       "sha256": "ca9fb9a159320e6209d53a579b04be323095797b8bfc8ab5110ec8c38ecf9818",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3035,6 +3614,9 @@
       "sha256": "50fc16ad1174fc6eddd002ecd8baa310132c56fd8f732096889e105d718fac1a",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3043,6 +3625,9 @@
       "sha256": "dfbdfaf8a72e4fde8686c08df6cfe332864635affd0a9fb6e06cb106094b302e",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3051,6 +3636,9 @@
       "sha256": "323ce0d7140be76cbe6511e268766241dfe74eddf34b73f27f4637e552c8d824",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3059,6 +3647,9 @@
       "sha256": "792794408dc57227adb341a75a5766e36904a7ec0e640d6cca2d8b14fe25c141",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3067,6 +3658,9 @@
       "sha256": "2691666c64b68d563f50226c2df921c9edee827abf402e922be4be2e992fb061",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3075,7 +3669,10 @@
       "sha256": "2a41ccc348800707d7c19ce0e3457f5d4295486f29bf0a73f8cbe4bcf272136e",
       "format": "jpeg",
       "producer": "Canon",
-      "warningCount": 0
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 1
     },
     {
       "fixture": "jpg/tests/22-canon_tags.jpg",
@@ -3083,7 +3680,10 @@
       "sha256": "494458d1d90e7d2b7c1aefe362cbf167ecdca1f3477f0bd2c801503a1d537b14",
       "format": "jpeg",
       "producer": "Canon",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/tests/28-hex_value.jpg",
@@ -3091,7 +3691,10 @@
       "sha256": "2a08dd2931cb224f9b4864a4699cdd5093ed334faf68c9d2ef1e832855b219ae",
       "format": "jpeg",
       "producer": "Canon",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/tests/30-type_error.jpg",
@@ -3099,6 +3702,9 @@
       "sha256": "f2c156654b78e8a1f84a4d60932a15e76d3e106c7e51bd968fe2f5eda4d33f4d",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 4
     },
     {
@@ -3107,7 +3713,10 @@
       "sha256": "f0096a6d5c24dbe270525f7dc575e26ea28df63824055e7ad3253e2cf0d1dab0",
       "format": "jpeg",
       "producer": "NIKON CORPORATION",
-      "warningCount": 3
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 4
     },
     {
       "fixture": "jpg/tests/33-type_error.jpg",
@@ -3115,6 +3724,9 @@
       "sha256": "16713b68edda8862069993045bfdba03f1c63c5f05857955f5a98c2c82ca5598",
       "format": "jpeg",
       "producer": "Canon",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 5
     },
     {
@@ -3123,7 +3735,10 @@
       "sha256": "44f1819124a7f7dba6552f629372649441f8ab24e4e7f4c1ebe5091d582220c8",
       "format": "jpeg",
       "producer": "CASIO COMPUTER CO.,LTD",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/tests/36-memory_error.jpg",
@@ -3131,7 +3746,10 @@
       "sha256": "3b0d73976a304eb0fe99048b066e19e6006b35cb620737af4c8915acedf98b16",
       "format": "jpeg",
       "producer": "CASIO COMPUTER CO.,LTD.",
-      "warningCount": 1
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 2
     },
     {
       "fixture": "jpg/tests/42_IndexError.jpg",
@@ -3139,7 +3757,10 @@
       "sha256": "d64e7c04839af125647d5a7500eb3b3e1b5c1ef81698a60e8b48b272f9ca5090",
       "format": "jpeg",
       "producer": "OLYMPUS IMAGING CORP.",
-      "warningCount": 3
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 4
     },
     {
       "fixture": "jpg/tests/45-gps_ifd.jpg",
@@ -3147,7 +3768,10 @@
       "sha256": "0a986ea141d5f8f8b7588d6217e9a2d12140a76ec36cb0a022710c3e9fdfc921",
       "format": "jpeg",
       "producer": "Polyphony Digital Inc.",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/tests/46_UnicodeEncodeError.jpg",
@@ -3155,6 +3779,9 @@
       "sha256": "3cf5ec5d6337fb31c90aa081654137c8e936b828809a2f3a91d2406188220090",
       "format": "jpeg",
       "producer": "Canon",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 7
     },
     {
@@ -3163,6 +3790,9 @@
       "sha256": "d45980d197658e88f7a4452b379fc3e9b2feb37f1b271ad7e5ce8560da8c2b10",
       "format": "jpeg",
       "producer": "samsung",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3171,7 +3801,10 @@
       "sha256": "1f2b247e1ab6c26a41f670a7653404eda7eb198e923d71cafea04a0a934380e6",
       "format": "jpeg",
       "producer": "NIKON CORPORATION",
-      "warningCount": 2
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 3
     },
     {
       "fixture": "jpg/tests/Xiaomi_Mi_9T_KeyError.jpg",
@@ -3179,6 +3812,9 @@
       "sha256": "cf0be8f4b96d3792e27ff54b4efddb20a5b063ed54925c501d32977fb5c2aba7",
       "format": "jpeg",
       "producer": "Xiaomi",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3187,7 +3823,10 @@
       "sha256": "cd2de0459c0bdf5fada567b7beb5937a0bbfd3964d1122889bd8211f443a4267",
       "format": "jpeg",
       "producer": "NIKON CORPORATION",
-      "warningCount": 9
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
+      "warningCount": 10
     },
     {
       "fixture": "jpg/xmp/BlueSquare.jpg",
@@ -3195,6 +3834,9 @@
       "sha256": "1e1cdf92904b5da35302c2655e5f7a2ea68d6bf8d9b3922225e3f2a17ba3bb6b",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3203,6 +3845,9 @@
       "sha256": "8e8c4a3233e1293fbe46933bdf38c85fdbcd070b8f5daa4f8b4342371d1d9673",
       "format": "jpeg",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 0
     },
     {
@@ -3211,6 +3856,9 @@
       "sha256": "26f4b11c45ad3e56a530d03967ff4627892b3264183b85fefba194ff1fe3e08e",
       "format": "tiff",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -3219,6 +3867,9 @@
       "sha256": "f6e07811917470456d85bbe0d2c00f11fe57ea212afc33432e4457dfca6bd2a5",
       "format": "tiff",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -3227,6 +3878,9 @@
       "sha256": "bda84c06634c1dd5f79c324829c485ee39dd24bf6d91e7fd81986cd0520eea18",
       "format": "tiff",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -3235,6 +3889,9 @@
       "sha256": "eabf6e832781b0c0130b8e0cb2533877ed11118bb08b7cdfe8939afe9997acc6",
       "format": "tiff",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -3243,6 +3900,9 @@
       "sha256": "8038925348ca9606995c95438d50630982069063b7c428b126a3282a01f246cd",
       "format": "tiff",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -3251,6 +3911,9 @@
       "sha256": "50dda7bf3c42e6c3979e25d6fec05d01e424274c8f28c4c9a911966d4faeb33e",
       "format": "tiff",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 1
     },
     {
@@ -3259,6 +3922,9 @@
       "sha256": "be28b5a40ad84fbeb9a2fa8fb34fe16cd22560ff7d0cf70cfad3da8183d02b21",
       "format": "tiff",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     },
     {
@@ -3267,6 +3933,9 @@
       "sha256": "32f6aab90dc2d284a83040debe379e01333107b83a98c1aa2e6dabf56790b48a",
       "format": "tiff",
       "producer": "unknown",
+      "corpusId": "ianare-exif-py",
+      "corpusSource": "ianare/exif-py",
+      "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
       "warningCount": 2
     }
   ]

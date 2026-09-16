@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "reportVersion": "g04-launch-audit/1",
   "status": "passed",
-  "generatedAt": "2026-09-15T04:24:01.535Z",
+  "generatedAt": "2026-09-16T22:07:18.697Z",
   "package": {
     "name": "browser-image-metadata",
     "version": "2.0.0-alpha.3"
@@ -67,8 +67,8 @@
     },
     {
       "path": "docs-site/index.html",
-      "byteLength": 2569,
-      "sha256": "b0455604857d5b883b7eb17f077594e6e4d0a3cd0e960dbc02af75d80a15e8d6"
+      "byteLength": 4212,
+      "sha256": "f297dca35bc00a52a1ee9cc53095b25a463fc8e34b25f50dd18fcfb3a612e5b5"
     },
     {
       "path": "docs-site/playground.html",

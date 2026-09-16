@@ -25,6 +25,14 @@ describe("ByteSource", () => {
     expect(source.telemetry()).toMatchObject({ readRequests: 2, bytesRead: 2, coalescedReads: 0 });
   });
 
+  it("orders concurrent requests with the same start before coalescing their coverage", async () => {
+    const source = createByteSource(Uint8Array.from([0, 1, 2, 3, 4, 5]), resolveLimits({ maxReadCacheBytes: 32 }));
+    const [short, long] = await Promise.all([source.read(0, 1), source.read(0, 5)]);
+    expect(short).toEqual(Uint8Array.of(0));
+    expect(long).toEqual(Uint8Array.from([0, 1, 2, 3, 4]));
+    expect(source.telemetry()).toMatchObject({ readRequests: 1, bytesRead: 5, coalescedReads: 1 });
+  });
+
   it("composes partially overlapping reads from cached and missing ranges", async () => {
     const source = createByteSource(Uint8Array.from([0, 1, 2, 3, 4, 5]), resolveLimits({ maxReadCacheBytes: 32 }));
     expect(await source.read(0, 3)).toEqual(Uint8Array.from([0, 1, 2]));
@@ -44,5 +52,39 @@ describe("ByteSource", () => {
     controller.abort();
     const source = createByteSource(Uint8Array.of(1, 2), resolveLimits(), controller.signal);
     await expect(source.read(0, 1)).rejects.toBeInstanceOf(MetadataError);
+  });
+
+  it("rejects malformed Blob adapters and invalid input sizes without touching the source", async () => {
+    const malformedBlob = {
+      size: 2,
+      slice: () => ({ arrayBuffer: () => Promise.resolve({}) }),
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+    } as unknown as Blob;
+    const malformedSource = createByteSource(malformedBlob, resolveLimits());
+    await expect(malformedSource.read(0, 1)).rejects.toMatchObject({ code: "INVALID_VALUE" });
+
+    const noSliceBlob = {
+      size: 2,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(2)),
+    } as unknown as Blob;
+    expect(() => createByteSource(noSliceBlob, resolveLimits())).toThrow(MetadataError);
+    expect(() => createByteSource({ size: Number.NaN, arrayBuffer: () => Promise.resolve(new ArrayBuffer()) } as unknown as Blob, resolveLimits())).toThrow(MetadataError);
+    expect(() => createByteSource({ size: 1, arrayBuffer: () => Promise.resolve(new ArrayBuffer()) } as unknown as Blob, resolveLimits())).toThrow(MetadataError);
+  });
+
+  it("enforces cache eviction, disabled caching, empty reads, and adapter range lengths", async () => {
+    const source = createByteSource(Uint8Array.from([0, 1, 2, 3]), resolveLimits({ maxReadCacheBytes: 2 }), undefined, { cacheBytes: 2 });
+    expect(await source.read(0, 0)).toEqual(new Uint8Array());
+    await source.read(0, 2);
+    await source.read(2, 4);
+    await source.read(0, 2);
+    expect(source.telemetry().cacheBytes).toBeLessThanOrEqual(2);
+
+    const uncached = createByteSource(Uint8Array.from([4, 5]), resolveLimits(), undefined, { cacheBytes: 0 });
+    await uncached.read(0, 1);
+    await uncached.read(0, 1);
+    expect(uncached.telemetry().cacheHits).toBe(0);
+
+    expect(() => createByteSource(new Uint8Array([1, 2]).buffer, resolveLimits({ maxInputBytes: 1 }))).toThrow(MetadataError);
   });
 });

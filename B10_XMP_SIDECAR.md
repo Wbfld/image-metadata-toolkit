@@ -1,6 +1,8 @@
 # B10 XMP sidecar and merge API
 
-Status: implementation and retained evidence complete; mandatory human review of the B10 writer/serializer diff is pending.
+Status: implementation and retained evidence complete; human review is treated
+as approved based on the explicit repository-owner instruction recorded in the
+task session: “B10 human review has passed.”
 
 ## Scope
 
@@ -27,4 +29,5 @@ The standards basis is pinned in [`data/sidecar/b10-sources.json`](./data/sideca
 
 `npm run test:sidecar-b10` builds the package, runs the focused sidecar and worker tests, and runs [`scripts/sidecar-b10-evidence.mjs`](./scripts/sidecar-b10-evidence.mjs). The command writes redistribution-safe [`reports/sidecar-b10-evidence.json`](./reports/sidecar-b10-evidence.json) and [`reports/sidecar-b10-evidence.md`](./reports/sidecar-b10-evidence.md). Evidence uses a repository fixture plus deterministic, caller-authored embedded and sidecar packets, verifies both sources participate, exercises all four merge policies, checks arrays and language alternatives, checks nested resources and unknown properties, records hashes and provenance, proves semantic serialization reparse, and proves source image bytes remain unchanged. No third-party image or sidecar bytes are retained.
 
-The B10 serializer diff remains subject to the roadmap's separate mandatory human review before later roadmap tickets proceed.
+The approval basis is limited to the explicit owner instruction above. No
+reviewer identity, independence claim, findings, or commands are inferred.

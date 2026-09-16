@@ -138,4 +138,45 @@ describe("S06 standards-aware serializers", () => {
     const bounded: XmpRdfDocument = { ...unsafe, descriptions: [{ ...unsafe.descriptions[0] as XmpRdfDocument["descriptions"][number], properties: [property(name(EXAMPLE, "p", "ex"), text("safe"), 0)] }] };
     expect(() => serializeStructuredXmp(bounded, { maxOutputBytes: 1 })).toThrow(/maxOutputBytes|exceeds/iu);
   });
+
+  it("covers RDF/XML wrapper modes, typed literals, blank nodes, and namespace failures", () => {
+    const datatype = name(RDF, "datatype", "rdf");
+    const blank = {
+      kind: "blank-node" as const,
+      resourceUri: null,
+      nodeId: "node-1",
+      typeName: null,
+      properties: [],
+      qualifiers: [],
+    };
+    const literal = { ...text("2025-01-02"), datatypeUri: "http://www.w3.org/2001/XMLSchema#date", parseType: "Literal" as const, qualifiers: [{ name: datatype, value: text("lexical"), order: 0 }] };
+    const document: XmpRdfDocument = {
+      namespaces: [{ prefix: "ex", namespaceUri: EXAMPLE, order: 0 }],
+      descriptions: [{ subject: "https://example.invalid/item", typeName: null, properties: [property(name(EXAMPLE, "blank", "ex"), blank, 0), property(name(EXAMPLE, "date", "ex"), literal, 1)], sourceStart: 0, sourceEnd: 0 }],
+      properties: [],
+      sourceLength: 0,
+    };
+    const packet = serializeStructuredXmp(document, { includeWrapper: false });
+    expect(packet.startsWith("<rdf:RDF ")).toBe(true);
+    expect(packet).toContain("rdf:nodeID=\"node-1\"");
+    expect(packet).toContain("rdf:datatype=\"http://www.w3.org/2001/XMLSchema#date\"");
+    expect(() => serializeStructuredXmp({ namespaces: [{ prefix: "1bad", namespaceUri: EXAMPLE, order: 0 }], descriptions: [], properties: [], sourceLength: 0 })).not.toThrow();
+    expect(() => serializeStructuredXmp({ namespaces: [], descriptions: [{ subject: "", typeName: null, properties: [property(name(EXAMPLE, "bad name", "ex"), text("x"), 0)], sourceStart: 0, sourceEnd: 0 }], properties: [], sourceLength: 0 })).toThrow(/local name/iu);
+    expect(() => serializeStructuredXmp({ namespaces: [{ prefix: "ex", namespaceUri: "", order: 0 }], descriptions: [], properties: [], sourceLength: 0 })).toThrow(/namespace URI/iu);
+  });
+
+  it("executes every explicit IPTC/XMP synchronization policy with arrays and absent documents", () => {
+    const city = property(name("http://ns.adobe.com/photoshop/1.0/", "City", "photoshop"), { kind: "array", container: "Seq", items: [text("Old"), text("Older")], qualifiers: [] }, 0);
+    const creator = property(name(DC, "creator", "dc"), { kind: "array", container: "Seq", items: [text("Ada"), text("Grace")], qualifiers: [] }, 1);
+    const document: XmpRdfDocument = { namespaces: [{ prefix: "photoshop", namespaceUri: "http://ns.adobe.com/photoshop/1.0/", order: 0 }, { prefix: "dc", namespaceUri: DC, order: 1 }], descriptions: [{ subject: "", typeName: null, properties: [city, creator], sourceStart: 0, sourceEnd: 0 }], properties: [city, creator], sourceLength: 0 };
+    const preferIim = synchronizeIptcXmp({ iim: [{ record: 2, dataset: 90, value: "Paris" }], xmp: document }, { policy: "prefer-iim" });
+    expect(parseStructuredXmp(preferIim.xmp ?? "")?.rdf?.properties[0]?.value).toMatchObject({ kind: "array", items: [{ lexicalValue: "Paris" }] });
+    expect(preferIim.conflicts).toHaveLength(1);
+    const preferXmp = synchronizeIptcXmp({ iim: [{ record: 2, dataset: 80, value: "Original" }], xmp: document }, { policy: "prefer-xmp" });
+    const preferXmpIim = preferXmp.iim === null ? null : parseIptcMetadata(preferXmp.iim, DEFAULT_LIMITS);
+    expect(preferXmpIim?.fields.find((field) => field.tag === 0x025a)?.value).toBe("Old");
+    expect(preferXmpIim?.fields.filter((field) => field.tag === 0x0250).map((field) => field.value)).toEqual(["Ada", "Grace"]);
+    expect(synchronizeIptcXmp({ xmp: null }, { policy: "preserve-all" })).toMatchObject({ iim: null, xmp: null, conflicts: [] });
+    expect(synchronizeIptcXmp({ xmp: document }, { policy: "preserve-all" }).iim).toBeNull();
+  });
 });

@@ -1,15 +1,15 @@
 {
   "schema": "browser-image-metadata/icc-reference-report@2",
   "status": "pass",
-  "generatedAt": "2026-09-12T19:29:52.566Z",
+  "generatedAt": "2026-09-16T23:08:26.227Z",
   "reference": {
     "standard": "ICC.1:2022",
     "implementationUnderTest": "browser-image-metadata standards-based ICC.1:2022 decoder",
     "oracle": {
       "name": "ExifTool",
-      "version": "13.42",
+      "version": "13.59",
       "package": "exiftool-vendored",
-      "packageVersion": "33.5.0",
+      "packageVersion": "38.1.0",
       "license": "ExifTool: Perl Artistic License or GPL-1.0-or-later; exiftool-vendored.js: MIT",
       "provenance": [
         "https://exiftool.org/",
@@ -17,7 +17,7 @@
       ]
     },
     "corpusManifest": "data/icc/reference-corpus.json",
-    "corpusManifestSha256": "de4089212874ec464b98323b05b55746490702dba4537466a4323724f35eb144",
+    "corpusManifestSha256": "425f3f6915a835f663b415f53b413303fad6a528805e72fe58e9a4be758d9922",
     "baseImage": "tests/fixtures/jpeg-exif-little-endian.jpg"
   },
   "corpus": {

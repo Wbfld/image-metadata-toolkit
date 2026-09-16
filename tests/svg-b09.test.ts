@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { parseMetadata } from "../src/index.js";
+import { parseSvg } from "../src/parsers/svg.js";
+import { resolveLimits } from "../src/security/limits.js";
 
 const encoder = new TextEncoder();
 const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -70,5 +72,39 @@ describe("B09 SVG metadata inventory", () => {
       expect(result.completeness.complete).toBe(false);
       expect(result.warnings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "INVALID_VALUE", severity: "error" })]));
     }
+  });
+
+  it("covers bounded SVG lexical constructs, namespace failures, and packet limits", () => {
+    const lexical = `<svg xmlns="${SVG}"><metadata><!-- comment --><![CDATA[ignored]]><?packet value="a>b"?>${packet}</metadata></svg>`;
+    const lexicalResult = parseSvg(encoder.encode(lexical), resolveLimits());
+    expect(lexicalResult.xmp?.packets).toEqual([packet]);
+
+    const selfClosing = parseSvg(encoder.encode(`<svg xmlns="${SVG}"><metadata/></svg>`), resolveLimits());
+    expect(selfClosing.blocks).toEqual(expect.arrayContaining([expect.objectContaining({ family: "Unknown", status: "opaque" })]));
+
+    const invalidDocuments = [
+      `<svg xmlns="urn:not-svg"/>`,
+      `<svg xmlns="${SVG}"><metadata><!-- unterminated</metadata></svg>`,
+      `<svg xmlns="${SVG}"><metadata><![CDATA[unterminated</metadata></svg>`,
+      `<svg xmlns="${SVG}"><metadata><?unterminated</metadata></svg>`,
+      `<svg xmlns="${SVG}"><metadata><broken</metadata></svg>`,
+      `<svg xmlns="${SVG}"><metadata></broken></svg>`,
+      `<svg xmlns="${SVG}"><metadata><x:p xmlns:x="${SVG}">x</x:p></metadata>`,
+    ];
+    for (const input of invalidDocuments) {
+      const result = parseSvg(encoder.encode(input), resolveLimits());
+      expect(result.warnings.length, input).toBeGreaterThan(0);
+      expect(result.warnings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "INVALID_VALUE" })]));
+    }
+
+    const twice = `<svg xmlns="${SVG}"><metadata>${packet}${packet}</metadata></svg>`;
+    const packetLimited = parseSvg(encoder.encode(twice), resolveLimits({ maxXmpPackets: 1 }));
+    expect(packetLimited.blocks).toEqual(expect.arrayContaining([expect.objectContaining({ family: "XMP", status: "partial", warningCodes: ["LIMIT_EXCEEDED"] })]));
+    expect(packetLimited.warnings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "LIMIT_EXCEEDED" })]));
+
+    const attributeLimited = `<svg xmlns="${SVG}" ${Array.from({ length: 5 }, (_, index) => `xmlns:p${index}="urn:p${index}"`).join(" ")}/>`;
+    const attributeResult = parseSvg(encoder.encode(attributeLimited), resolveLimits({ maxXmpAttributes: 2 }));
+    expect(attributeResult.warnings.length).toBeGreaterThan(0);
+    expect(attributeResult.warnings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "INVALID_VALUE" })]));
   });
 });

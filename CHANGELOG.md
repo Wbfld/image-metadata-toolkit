@@ -79,6 +79,13 @@
   redistribution-safe structural evidence in
   `reports/heif-b03-evidence.{json,md}`; sequence sample payloads remain
   undecoded and HEIF/AVIF writing remains unsupported;
+- added bounded CIPA MPF and Android Ultra HDR inventories with
+  source-ordered MP Index/Attribute IFDs, resolved image ranges, secondary
+  JPEG metadata summaries, exact GContainer relationships, typed gain-map
+  values, fail-closed malformed-structure diagnostics, and pinned real-fixture
+  evidence in `reports/mpf-t05-evidence.{json,md}`; the explicit T05 JPEG
+  preserve policy now recalculates MPF offsets/sizes and verifies associated
+  encoded scan hashes while default mutation remains refused;
 - added B05 read-only CR3 and RAF phase-two RAW inventories with separate
   ISO-BMFF/RAF result models, bounded preview/metadata/RAW range provenance,
   embedded EXIF parsing, explicit opaque vendor structures, no sensor-pixel
@@ -94,7 +101,8 @@
   Extended XMP, ICC, and IPTC marker blocks; the writer preserves entropy
   scans, decoding-critical markers, duplicate APP markers, comments, and
   trailing bytes, reports byte-change and payload evidence, splits oversized
-  XMP/ICC values safely, and refuses MPF, Ultra HDR, JUMBF/C2PA, malformed,
+  XMP/ICC values safely, refuses MPF and Ultra HDR by default (with the
+  explicit T05 preserve policy available), and refuses JUMBF/C2PA, malformed,
   and other unsupported offset-bearing structures atomically;
 - added the `browser-image-metadata/jpeg-writer` package entry point and
   documented its explicit block and trust-first edit APIs;

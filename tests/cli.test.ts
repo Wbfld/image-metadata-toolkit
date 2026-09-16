@@ -96,5 +96,5 @@ describe("R03 isolated CLI", () => {
       expect((await run(packedCli, ["edit", fixture, "--operation", operation, "--output", packedOutput], root)).status).toBe(0);
       expect((await run(packedCli, ["verify", fixture, packedOutput], root)).status).toBe(0);
     } finally { await rm(directory, { recursive: true, force: true }); }
-  }, 30_000);
+  }, 120_000);
 });

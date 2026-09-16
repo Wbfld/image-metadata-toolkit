@@ -8,10 +8,22 @@ import { promisify } from "node:util";
 
 const root = resolve(import.meta.dirname, "..");
 const execFile = promisify(execFileCallback);
-const REPORT_SCHEMA = "browser-image-metadata/r05-release-audit@1";
+const REPORT_SCHEMA = "browser-image-metadata/r05-release-audit@2";
 const DEFAULT_REPORT_DIRECTORY = "reports";
 const MAX_OUTPUT = 32 * 1024 * 1024;
 const COMMAND_TIMEOUT = 30 * 60 * 1000;
+const MAX_REGISTRY_RESPONSE = 8 * 1024 * 1024;
+const REGISTRY_URL = "https://registry.npmjs.org";
+const SLSA_PROVENANCE_V1 = "https://slsa.dev/provenance/v1";
+
+export const R05_PHASES = Object.freeze(["prepublication", "postpublication"]);
+export const REQUIRED_EXTERNAL_WRITER_SCOPE = Object.freeze([
+  "src/jpeg-writer.ts",
+  "src/png-writer.ts",
+  "src/webp-writer.ts",
+  "src/metadata/serialization.ts",
+  "src/edit.ts",
+]);
 
 export const REQUIRED_AUDIT_CHECKS = Object.freeze([
   "clean-clone",
@@ -48,7 +60,7 @@ export const REQUIRED_AUDIT_CHECKS = Object.freeze([
 ]);
 
 const PUBLIC_DOCUMENTS = Object.freeze([
-  "README.md", "API.md", "CAPABILITIES.md", "METADATA_REGISTRY.md", "MIGRATION.md",
+  "README.md", "API.md", "CAPABILITIES.md", "METADATA_REGISTRY.md", "MIGRATION.md", "COMPARISON.md",
   "CONTRIBUTING.md", "PUBLISHING.md", "BENCHMARKS.md", "EXTERNAL_CORPORA.md",
   "RELEASE_CHECKLIST.md", "RUNTIME_SUPPORT.md", "CHANGELOG.md",
   "W01_MUTATION_MODEL.md", "W02_TIFF_SERIALIZATION.md", "W03_JPEG_WRITING.md",
@@ -76,6 +88,13 @@ function now() {
 
 function asError(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function validIsoDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(value ?? "")) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
 function sanitizedFailureReason(output) {
@@ -152,7 +171,7 @@ async function toolingRecord() {
   const manifests = [
     "data/metadata-registry.json", "scripts/external-registry.json", "scripts/external-allowlist.json",
     "data/iptc/reference-images.json", "data/icc/reference-corpus.json", "data/c2pa/provenance.json",
-    "data/raw/raw-b04-sources.json", "data/raw/raw-b05-sources.json",
+    "data/raw/raw-b04-sources.json", "data/raw/raw-b05-sources.json", "data/dependency-license-provenance.json",
     "data/makernote-b08-sources.json", "data/svg/b09-sources.json",
   ];
   return {
@@ -287,10 +306,21 @@ async function cleanCloneCheck() {
   const status = await run("git", ["status", "--porcelain", "--untracked-files=all"], { cwd: checkout, timeout: 10_000, maxBuffer: 4 * 1024 * 1024, retainStdout: true });
   if (status.status !== "passed") return { id: "clean-clone", status: "failed", reason: "Unable to inspect the configured candidate checkout.", detail: status };
   if (status.stdoutTail.trim() !== "") return { id: "clean-clone", status: "failed", reason: "Configured candidate checkout is not clean.", detail: status.stdoutTail.trim().slice(0, 4000) };
+  const revision = await run("git", ["rev-parse", "HEAD"], { cwd: checkout, timeout: 10_000, maxBuffer: 64 * 1024, retainStdout: true });
+  if (revision.status !== "passed" || !revision.stdoutTail.trim()) return { id: "clean-clone", status: "failed", reason: "Unable to identify the clean candidate revision." };
+  const expectedRevision = process.env.R05_CANDIDATE_COMMIT?.trim() || null;
+  if (expectedRevision && revision.stdoutTail.trim() !== expectedRevision) {
+    return { id: "clean-clone", status: "failed", reason: `Clean candidate revision ${revision.stdoutTail.trim()} does not match the reviewed candidate ${expectedRevision}.`, candidateCommit: revision.stdoutTail.trim(), expectedCommit: expectedRevision };
+  }
+  const expectedTag = process.env.R05_CANDIDATE_TAG?.trim() || null;
+  if (expectedTag) {
+    const tag = await run("git", ["describe", "--tags", "--exact-match", "HEAD"], { cwd: checkout, timeout: 10_000, maxBuffer: 64 * 1024, retainStdout: true });
+    if (tag.status !== "passed" || tag.stdoutTail.trim() !== expectedTag) return { id: "clean-clone", status: "failed", reason: `Clean candidate is not exactly the reviewed release tag ${expectedTag}.`, candidateCommit: revision.stdoutTail.trim(), expectedTag, observedTag: tag.stdoutTail.trim() || null };
+  }
   const packageCheck = await run("npm", ["ci"], { cwd: checkout, timeout: COMMAND_TIMEOUT, maxBuffer: MAX_OUTPUT });
   if (packageCheck.status !== "passed") return { id: "clean-clone", status: "failed", reason: "npm ci failed in the clean candidate checkout.", detail: packageCheck };
   const check = await run("npm", ["run", "check"], { cwd: checkout, timeout: COMMAND_TIMEOUT, maxBuffer: MAX_OUTPUT });
-  return { id: "clean-clone", status: check.status, checkout: configured ? "operator-supplied clean checkout" : "current clean candidate checkout", npmCi: packageCheck, check };
+  return { id: "clean-clone", status: check.status, checkout: configured ? "operator-supplied clean checkout" : "current clean candidate checkout", candidateCommit: revision.stdoutTail.trim(), expectedCommit: expectedRevision, expectedTag, npmCi: packageCheck, check };
 }
 
 async function documentationAudit() {
@@ -387,6 +417,31 @@ async function sourceAudit() {
 
 async function packageLicenseAudit() {
   const packageJson = await packageManifest();
+  const lockfile = JSON.parse(await readFile(join(root, "package-lock.json"), "utf8"));
+  const provenancePath = "data/dependency-license-provenance.json";
+  let provenance;
+  try {
+    provenance = JSON.parse(await readFile(join(root, provenancePath), "utf8"));
+  } catch (error) {
+    return { status: "failed", reason: `Dependency license provenance could not be read: ${asError(error)}`, provenancePath, scannedPackages: 0, missingLicenses: [], byGroup: {} };
+  }
+  if (provenance?.schema !== "browser-image-metadata.dependency-license-provenance.v1" || !Array.isArray(provenance.entries)) {
+    return { status: "failed", reason: "Dependency license provenance has an invalid schema.", provenancePath, scannedPackages: 0, missingLicenses: [], byGroup: {} };
+  }
+  const provenanceKeys = new Set();
+  const provenanceFailures = [];
+  for (const entry of provenance.entries) {
+    const key = `${entry?.name ?? ""}@${entry?.version ?? ""}`;
+    if (provenanceKeys.has(key)) provenanceFailures.push({ key, reason: "duplicate provenance entry" });
+    provenanceKeys.add(key);
+    if (
+      typeof entry?.name !== "string" || typeof entry?.version !== "string" || typeof entry?.license !== "string" ||
+      !/^https:\/\//u.test(entry?.sourceRepository ?? "") || !/^[0-9a-f]{40}$/u.test(entry?.sourceCommit ?? "") ||
+      !/^https:\/\//u.test(entry?.sourceLicenseUrl ?? "") || !/^https:\/\//u.test(entry?.registryTarball ?? "") ||
+      !/^sha512-[A-Za-z0-9+/]+=*$/u.test(entry?.registryIntegrity ?? "") || !/^[0-9a-f]{64}$/u.test(entry?.registryTarballSha256 ?? "") ||
+      !/^\d{4}-\d{2}-\d{2}$/u.test(entry?.retrievedAt ?? "")
+    ) provenanceFailures.push({ key, reason: "incomplete or malformed provenance fields" });
+  }
   const groups = {
     runtime: Object.keys(packageJson.dependencies ?? {}),
     optional: Object.keys(packageJson.optionalDependencies ?? {}),
@@ -430,12 +485,215 @@ async function packageLicenseAudit() {
     }
   }
   await visit(join(root, "node_modules"));
-  const missing = packages.filter((item) => !item.license);
-  const byGroup = Object.fromEntries(Object.entries(groups).map(([group, names]) => [group, names.map((name) => packages.find((item) => item.name === name) ?? { name, missing: true })]));
-  return { status: missing.length === 0 ? "passed" : "failed", reason: missing.length === 0 ? null : `License metadata is unresolved for: ${missing.map((item) => `${item.name}@${item.version ?? "unknown"}`).join(", ")}.`, scannedPackages: packages.length, missingLicenses: missing, byGroup, policy: "Every installed package must expose a package.json license or an identifiable common license file; optional, development, peer, and runtime groups are reported separately." };
+  const resolvedPackages = packages.map((item) => {
+    if (item.license) return item;
+    const entry = provenance.entries.find((candidate) => candidate?.name === item.name && candidate?.version === item.version);
+    const lockKey = item.path.replace(/\/package\.json$/u, "");
+    const lockEntry = lockfile.packages?.[lockKey];
+    if (!entry || provenanceFailures.some((failure) => failure.key === `${entry.name}@${entry.version}`) || lockEntry?.version !== entry.version || lockEntry?.integrity !== entry.registryIntegrity) {
+      return item;
+    }
+    return {
+      ...item,
+      license: entry.license,
+      licenseSource: `${provenancePath}#${entry.name}@${entry.version}`,
+      licenseProvenance: {
+        sourceRepository: entry.sourceRepository,
+        sourceCommit: entry.sourceCommit,
+        sourceLicenseUrl: entry.sourceLicenseUrl,
+        registryTarball: entry.registryTarball,
+        registryTarballSha256: entry.registryTarballSha256,
+        registryIntegrity: entry.registryIntegrity,
+        retrievedAt: entry.retrievedAt,
+      },
+    };
+  });
+  const missing = resolvedPackages.filter((item) => !item.license);
+  const byGroup = Object.fromEntries(Object.entries(groups).map(([group, names]) => [group, names.map((name) => resolvedPackages.find((item) => item.name === name) ?? { name, missing: true })]));
+  return {
+    status: missing.length === 0 && provenanceFailures.length === 0 ? "passed" : "failed",
+    reason: missing.length === 0 && provenanceFailures.length === 0 ? null : [
+      missing.length ? `License metadata is unresolved for: ${missing.map((item) => `${item.name}@${item.version ?? "unknown"}`).join(", ")}.` : null,
+      provenanceFailures.length ? `License provenance is invalid: ${provenanceFailures.map((failure) => `${failure.key} (${failure.reason})`).join(", ")}.` : null,
+    ].filter(Boolean).join(" "),
+    scannedPackages: resolvedPackages.length,
+    packages: resolvedPackages,
+    missingLicenses: missing,
+    byGroup,
+    provenancePath,
+    provenanceEntries: provenance.entries.length,
+    provenanceFailures,
+    policy: "Every installed package must expose a package.json license or an identifiable common license file; a package without metadata may use only an exact lockfile-matched, hash-pinned upstream provenance entry. Optional, development, peer, and runtime groups are reported separately.",
+  };
 }
 
-async function packageProvenanceAudit() {
+function requestedPhase() {
+  const argumentIndex = process.argv.findIndex((argument) => argument === "--phase" || argument.startsWith("--phase="));
+  const argumentValue = argumentIndex < 0 ? null : process.argv[argumentIndex].startsWith("--phase=") ? process.argv[argumentIndex].slice("--phase=".length) : process.argv[argumentIndex + 1];
+  const phase = argumentValue ?? process.env.R05_PHASE ?? "prepublication";
+  if (!R05_PHASES.includes(phase)) throw new Error(`R05 phase must be one of ${R05_PHASES.join(" or ")}; received ${phase}.`);
+  return phase;
+}
+
+function expectedDistTag(version) {
+  const prerelease = version.split("+", 1)[0].split("-", 2)[1];
+  return process.env.R05_EXPECTED_DIST_TAG?.trim() || (prerelease ? prerelease.split(".", 1)[0] : "latest");
+}
+
+async function fetchBounded(url, maximumBytes = MAX_REGISTRY_RESPONSE) {
+  const controller = new globalThis.AbortController();
+  const timeout = globalThis.setTimeout(() => controller.abort(), 120_000);
+  try {
+    const response = await globalThis.fetch(url, { signal: controller.signal, redirect: "error" });
+    if (!response.ok) throw new Error(`HTTP ${response.status} from ${url}`);
+    const declaredLength = Number(response.headers.get("content-length"));
+    if (Number.isSafeInteger(declaredLength) && declaredLength > maximumBytes) throw new Error(`Response from ${url} exceeds the ${maximumBytes}-byte limit.`);
+    if (!response.body) return Buffer.alloc(0);
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (!Number.isSafeInteger(total) || total > maximumBytes) {
+        await reader.cancel();
+        throw new Error(`Response from ${url} exceeds the ${maximumBytes}-byte limit.`);
+      }
+      chunks.push(Buffer.from(value));
+    }
+    return Buffer.concat(chunks, total);
+  } finally {
+    globalThis.clearTimeout(timeout);
+  }
+}
+
+function registryUnavailable(error) {
+  return error?.name === "AbortError" || /(?:ENOTFOUND|EAI_AGAIN|ECONNRESET|ECONNREFUSED|fetch failed|network|timed out)/iu.test(asError(error));
+}
+
+function registryUrl(path) {
+  return `${REGISTRY_URL}/${path}`;
+}
+
+async function registryProvenanceAudit(packageJson) {
+  const packageName = packageJson.name;
+  const version = packageJson.version;
+  const encodedName = encodeURIComponent(packageName);
+  const versionUrl = registryUrl(`${encodedName}/${encodeURIComponent(version)}`);
+  const packageUrl = registryUrl(encodedName);
+  const expectedTag = expectedDistTag(version);
+  let versionMetadata;
+  let packageMetadata;
+  try {
+    const [versionBytes, packageBytes] = await Promise.all([fetchBounded(versionUrl), fetchBounded(packageUrl)]);
+    try {
+      versionMetadata = JSON.parse(versionBytes.toString("utf8"));
+      packageMetadata = JSON.parse(packageBytes.toString("utf8"));
+    } catch (error) {
+      return { status: "failed", reason: `The npm registry returned malformed JSON: ${asError(error)}.`, registry: { versionUrl, packageUrl } };
+    }
+  } catch (error) {
+    return { status: registryUnavailable(error) ? "unavailable" : "failed", reason: registryUnavailable(error) ? "The npm registry or provenance service was unavailable; postpublication evidence is not successful without a completed registry read." : `The npm registry metadata could not be read: ${asError(error)}.`, registry: { versionUrl, packageUrl } };
+  }
+
+  const dist = versionMetadata?.dist;
+  const tags = packageMetadata?.["dist-tags"];
+  const metadataFailures = [];
+  if (versionMetadata?.name !== packageName || versionMetadata?.version !== version) metadataFailures.push("registry metadata does not identify the exact package name and version");
+  if (tags?.[expectedTag] !== version) metadataFailures.push(`dist-tag ${expectedTag} does not resolve to ${version}`);
+  if (typeof dist?.tarball !== "string" || !/^https:\/\//u.test(dist.tarball)) metadataFailures.push("registry metadata has no HTTPS tarball URL");
+  if (typeof dist?.integrity !== "string" || !/^sha512-[A-Za-z0-9+/]+=*$/u.test(dist.integrity)) metadataFailures.push("registry metadata has no valid SHA-512 integrity");
+  if (typeof dist?.shasum !== "string" || !/^[0-9a-f]{40}$/iu.test(dist.shasum)) metadataFailures.push("registry metadata has no valid SHA-1 shasum");
+  const signatures = Array.isArray(dist?.signatures) ? dist.signatures : [];
+  if (signatures.length === 0 || signatures.some((signature) => typeof signature?.keyid !== "string" || typeof signature?.sig !== "string" || signature.sig.length === 0)) metadataFailures.push("registry metadata has no complete npm signature set");
+  const attestations = dist?.attestations;
+  const attestationPredicate = typeof attestations?.provenance === "string" ? attestations.provenance : attestations?.provenance?.predicateType;
+  if (attestationPredicate !== SLSA_PROVENANCE_V1 || typeof attestations?.url !== "string" || !/^https:\/\//u.test(attestations.url)) metadataFailures.push("registry metadata has no SLSA provenance attestation URL");
+  if (metadataFailures.length) return { status: "failed", reason: metadataFailures.join("; ") + ".", registry: { versionUrl, packageUrl, expectedTag, observedTagVersion: tags?.[expectedTag] ?? null, metadataFailures } };
+
+  const directory = await mkdtemp(join(tmpdir(), "browser-image-metadata-r05-registry-"));
+  try {
+    let tarballBytes;
+    try {
+      tarballBytes = await fetchBounded(dist.tarball, 64 * 1024 * 1024);
+    } catch (error) {
+      return { status: registryUnavailable(error) ? "unavailable" : "failed", reason: registryUnavailable(error) ? "The npm registry tarball was unavailable; this is not successful postpublication evidence." : `The npm registry tarball could not be read: ${asError(error)}.`, registry: { versionUrl, packageUrl, expectedTag } };
+    }
+    const tarballPath = join(directory, "package.tgz");
+    await writeFile(tarballPath, tarballBytes);
+    const sha512 = `sha512-${createHash("sha512").update(tarballBytes).digest("base64")}`;
+    const sha1 = createHash("sha1").update(tarballBytes).digest("hex");
+    const tarball = { bytes: tarballBytes.byteLength, sha256: sha256(tarballBytes), sha1, integrity: sha512, expectedIntegrity: dist.integrity, expectedShasum: dist.shasum };
+    const tarballFailures = [];
+    if (sha512 !== dist.integrity) tarballFailures.push("downloaded tarball integrity does not match registry metadata");
+    if (sha1.toLowerCase() !== dist.shasum.toLowerCase()) tarballFailures.push("downloaded tarball shasum does not match registry metadata");
+    let listing;
+    let packageEntry;
+    try {
+      listing = await execFile("tar", ["-tzf", tarballPath], { cwd: root, timeout: 30_000, maxBuffer: MAX_OUTPUT, encoding: "utf8" });
+      packageEntry = await execFile("tar", ["-xOf", tarballPath, "package/package.json"], { cwd: root, timeout: 30_000, maxBuffer: 2 * 1024 * 1024, encoding: "utf8" });
+    } catch (error) {
+      tarballFailures.push(`downloaded registry tarball could not be inspected: ${asError(error)}`);
+    }
+    let packedPackage = null;
+    if (packageEntry) {
+      try { packedPackage = JSON.parse(packageEntry.stdout); } catch (error) { tarballFailures.push(`downloaded package manifest is malformed: ${asError(error)}`); }
+    }
+    const entries = listing?.stdout.split("\n").filter(Boolean) ?? [];
+    const required = ["package/package.json", "package/README.md", "package/LICENSE", "package/dist/index.js", "package/dist/index.d.ts"];
+    const missing = required.filter((name) => !entries.includes(name));
+    if (missing.length) tarballFailures.push(`downloaded registry tarball is missing: ${missing.join(", ")}`);
+    if (packedPackage?.name !== packageName || packedPackage?.version !== version) tarballFailures.push("downloaded package manifest does not match the exact candidate");
+
+    let attestationDocument;
+    let attestationBytes;
+    try {
+      attestationBytes = await fetchBounded(attestations.url);
+      attestationDocument = JSON.parse(attestationBytes.toString("utf8"));
+    } catch (error) {
+      return { status: registryUnavailable(error) ? "unavailable" : "failed", reason: registryUnavailable(error) ? "The npm provenance attestation was unavailable; no provenance claim is made." : `The npm provenance attestation could not be validated: ${asError(error)}.`, registry: { versionUrl, packageUrl, expectedTag, tarball, signatures: signatures.length } };
+    }
+    const statements = Array.isArray(attestationDocument?.attestations) ? attestationDocument.attestations.filter((item) => item?.predicateType === SLSA_PROVENANCE_V1) : [];
+    const decodedStatements = [];
+    for (const statement of statements) {
+      const encodedPayload = statement?.bundle?.dsseEnvelope?.payload ?? statement?.dsseEnvelope?.payload;
+      if (typeof encodedPayload !== "string") continue;
+      try {
+        const decoded = JSON.parse(Buffer.from(encodedPayload, "base64").toString("utf8"));
+        if (decoded?.predicateType === SLSA_PROVENANCE_V1 && Array.isArray(decoded.subject) && decoded.subject.length > 0) decodedStatements.push(decoded);
+      } catch {
+        // An undecodable attestation is not counted as provenance evidence.
+      }
+    }
+    if (decodedStatements.length === 0) tarballFailures.push("the registry attestation contains no decodable SLSA provenance statement");
+    const tarballSha512Hex = createHash("sha512").update(tarballBytes).digest("hex");
+    const provenanceSubjectMatches = decodedStatements.some((statement) => statement.subject.some((subject) => subject?.name === `pkg:npm/${packageName}@${version}` && subject?.digest?.sha512 === tarballSha512Hex));
+    if (!provenanceSubjectMatches) tarballFailures.push("the registry SLSA subject does not match the exact package and tarball SHA-512");
+    return {
+      status: tarballFailures.length === 0 ? "passed" : "failed",
+      reason: tarballFailures.length ? tarballFailures.join("; ") + "." : null,
+      registry: {
+        versionUrl,
+        packageUrl,
+        expectedTag,
+        observedTagVersion: tags[expectedTag],
+        tarball,
+        requiredEntries: required,
+        entryCount: entries.length,
+        sourceMapCount: entries.filter((name) => name.endsWith(".map")).length,
+        signatures: signatures.map((signature) => ({ keyid: signature.keyid, signatureSha256: sha256(signature.sig) })),
+        attestation: { url: attestations.url, predicateType: SLSA_PROVENANCE_V1, responseBytes: attestationBytes.byteLength, responseSha256: sha256(attestationBytes), statementCount: decodedStatements.length, subjectMatchesTarball: provenanceSubjectMatches },
+        parserCompleteness: { metadata: metadataFailures.length === 0, tarball: tarballFailures.length === 0, attestation: decodedStatements.length > 0 && provenanceSubjectMatches },
+      },
+    };
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}
+
+export async function packageProvenanceAudit(phase = "prepublication") {
+  if (!R05_PHASES.includes(phase)) throw new Error(`Unsupported R05 phase: ${phase}.`);
   const directory = await mkdtemp(join(tmpdir(), "browser-image-metadata-r05-pack-"));
   try {
     let packed;
@@ -471,18 +729,36 @@ async function packageProvenanceAudit() {
     const required = ["package/package.json", "package/README.md", "package/LICENSE", "package/dist/index.js", "package/dist/index.d.ts"];
     const missing = required.filter((name) => !entries.includes(name));
     const packageManifest = await packageManifestFile();
-    return {
-      status: missing.length === 0 && packageJson.name === packageManifest.name && packageJson.version === packageManifest.version ? "unavailable" : "failed",
-      tarball: { file: entry.filename, bytes: bytes.byteLength, sha256: sha256(bytes), integrity: entry.integrity ?? null },
+    const localIntegrity = `sha512-${createHash("sha512").update(bytes).digest("base64")}`;
+    const localTarball = { file: entry.filename, bytes: bytes.byteLength, sha256: sha256(bytes), integrity: localIntegrity, reportedIntegrity: entry.integrity ?? null };
+    const localPassed = missing.length === 0 && packageJson.name === packageManifest.name && packageJson.version === packageManifest.version && entry.integrity === localIntegrity;
+    if (!localPassed) {
+      return {
+        status: "failed",
+        phase,
+        tarball: localTarball,
+        package: { name: packageJson.name, version: packageJson.version },
+        requiredEntries: required,
+        missing,
+        sourceMaps: entries.filter((name) => name.endsWith(".map")).length,
+        entryCount: entries.length,
+        reason: "The locally generated package artifact does not match the candidate package contract.",
+      };
+    }
+    const local = {
+      status: "passed",
+      phase,
+      tarball: localTarball,
       package: { name: packageJson.name, version: packageJson.version },
       requiredEntries: required,
       missing,
       sourceMaps: entries.filter((name) => name.endsWith(".map")).length,
       entryCount: entries.length,
-      registryProvenance: "unavailable until a trusted-publishing registry release exists; npm pack does not create registry provenance",
-      reason: "Local npm pack structure was verified, but registry trusted-publishing provenance cannot be established without a publication, which this task forbids.",
-      policy: "The audit records a locally generated npm pack artifact; npm registry publication and registry provenance are intentionally not performed.",
+      registryProvenance: phase === "prepublication" ? { status: "pending", reason: "Registry version, dist-tag, tarball, signatures, and npm provenance are verified only after trusted publication." } : await registryProvenanceAudit(packageManifest),
+      policy: "Prepublication verifies the local package artifact and records registry provenance as pending. Postpublication requires exact registry metadata, prerelease/stable dist-tag, tarball integrity, npm signatures, and a decodable SLSA provenance attestation.",
     };
+    if (phase === "postpublication") local.status = local.registryProvenance.status;
+    return local;
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
@@ -530,7 +806,7 @@ async function runConfiguredCommand(id, command, args, envName, label, timeout =
   return commandResult(id, await run(command, args, { env: { [envName]: process.env[envName] }, timeout }));
 }
 
-async function runChecks() {
+async function runChecks(phase) {
   const results = [];
   const npm = (id, script, args = [], timeout = COMMAND_TIMEOUT) => run("npm", ["run", script, ...args], { timeout, maxBuffer: MAX_OUTPUT }).then((result) => commandResult(id, result));
   results.push(await npm("release-preflight", "release:check"));
@@ -584,39 +860,82 @@ async function runChecks() {
   results.push({ id: "source-marker-audit", ...(await sourceAudit()) });
   results.push({ id: "dependency-vulnerability-scan", ...(await npmAudit()) });
   results.push({ id: "license-scan", ...(await packageLicenseAudit()) });
-  results.push({ id: "package-provenance", ...(await packageProvenanceAudit()) });
+  results.push({ id: "package-provenance", ...(await packageProvenanceAudit(phase)) });
   results.push(commandResult("git-diff-check", await run("git", ["diff", "--check"], { timeout: 30_000, maxBuffer: 4 * 1024 * 1024 })));
   return results;
 }
 
-async function externalReviewGate() {
-  const candidates = ["reports/r05-external-review.json", "reports/r05-external-review.md", "R05_EXTERNAL_REVIEW.md"];
-  for (const candidate of candidates) {
-    const path = join(root, candidate);
-    if (!(await exists(path))) continue;
-    const content = await readFile(path, "utf8");
-    if (/reviewer/iu.test(content) && /scope/iu.test(content) && /revision/iu.test(content) && /TIFF/iu.test(content) && /writer/iu.test(content) && /findings/iu.test(content) && /disposition/iu.test(content) && /\b(?:20\d{2}-\d{2}-\d{2}|date)/iu.test(content) && /accepted|approved/iu.test(content)) {
-      return { status: "passed", record: candidate, policy: "Only a retained external record with reviewer, scope, revision, findings, dispositions, and approval can satisfy this gate." };
-    }
-  }
-  return { status: "blocked", reason: "No retained external review record covers TIFF offset handling and every writer with reviewer identity, scope, revision, findings, dispositions, date, and approval." };
+export function validateExternalReviewRecord(record) {
+  const failures = [];
+  if (record?.schema !== "browser-image-metadata/r05-external-review@1") failures.push("schema is not browser-image-metadata/r05-external-review@1");
+  if (typeof record?.reviewer?.identity !== "string" || record.reviewer.identity.trim().length < 2) failures.push("reviewer identity is missing");
+  if (record?.reviewer?.independent !== true) failures.push("reviewer independence is not explicitly recorded");
+  if (!/^[0-9a-f]{40}$/iu.test(record?.revision?.commit ?? "")) failures.push("reviewed revision is not a full commit hash");
+  if (record?.scope?.tiffOffsetHandling !== true) failures.push("TIFF offset handling is not in scope");
+  const writerCoverage = Array.isArray(record?.scope?.writerCoverage) ? new Set(record.scope.writerCoverage) : new Set();
+  for (const writer of REQUIRED_EXTERNAL_WRITER_SCOPE) if (!writerCoverage.has(writer)) failures.push(`writer scope is missing ${writer}`);
+  if (!Array.isArray(record?.findings)) failures.push("findings is not an array");
+  else record.findings.forEach((finding, index) => {
+    if (typeof finding?.id !== "string" || !finding.id.trim()) failures.push(`finding ${index + 1} has no stable id`);
+    if (typeof finding?.severity !== "string" || !finding.severity.trim()) failures.push(`finding ${index + 1} has no severity`);
+    if (!Array.isArray(finding?.affectedFiles) || finding.affectedFiles.length === 0) failures.push(`finding ${index + 1} has no affected files`);
+    if (typeof finding?.description !== "string" || !finding.description.trim()) failures.push(`finding ${index + 1} has no description`);
+    if (typeof finding?.disposition !== "string" || !finding.disposition.trim()) failures.push(`finding ${index + 1} has no disposition`);
+  });
+  if (!validIsoDate(record?.reviewedAt)) failures.push("review date is missing or invalid");
+  if (record?.approval?.status !== "approved") failures.push("review approval is not recorded as approved");
+  if (!validIsoDate(record?.approval?.date)) failures.push("approval date is missing or invalid");
+  if (typeof record?.conclusion !== "string" || !record.conclusion.trim()) failures.push("review conclusion is missing");
+  return failures;
 }
 
-function publicationGate(packageJson) {
+async function externalReviewGate() {
+  const candidate = "reports/r05-external-review.json";
+  const path = join(root, candidate);
+  if (!(await exists(path))) return { status: "blocked", reason: "No retained external review record exists. The prepared packet is not an approval." };
+  let record;
+  try {
+    record = JSON.parse(await readFile(path, "utf8"));
+  } catch (error) {
+    return { status: "failed", record: candidate, reason: `The retained external review record is not valid JSON: ${asError(error)}.` };
+  }
+  const failures = validateExternalReviewRecord(record);
+  if (failures.length) return { status: "blocked", record: candidate, reason: `The retained external review record is incomplete: ${failures.join("; ")}.`, recordSha256: await hashFile(candidate) };
+  return { status: "passed", record: candidate, recordSha256: await hashFile(candidate), reviewer: record.reviewer.identity, revision: record.revision.commit, reviewedAt: record.reviewedAt, findingCount: record.findings.length, policy: "Only a structured retained external record with independent reviewer identity, exact revision, complete TIFF and writer scope, per-finding dispositions, dated conclusion, and explicit approval can satisfy this gate." };
+}
+
+function publicationGate(packageJson, phase, packageProvenance) {
+  const tag = expectedDistTag(packageJson.version);
+  if (phase === "prepublication") {
+    return {
+      status: "pending",
+      phase,
+      expectedDistTag: tag,
+      package: { name: packageJson.name, version: packageJson.version },
+      reason: "Registry version, dist-tag, tarball integrity, npm signatures, and provenance are intentionally pending until the trusted-publishing step succeeds.",
+      policy: "Prepublication is the permission gate for npm publish; it must not require facts that can exist only after publication.",
+    };
+  }
   return {
-    status: "blocked",
-    reason: "Publication is intentionally prohibited by the task instructions; no tag, release, registry publication, or external provenance claim is made.",
+    status: packageProvenance?.registryProvenance?.status === "passed" ? "passed" : packageProvenance?.registryProvenance?.status ?? "failed",
+    phase,
+    expectedDistTag: tag,
     package: { name: packageJson.name, version: packageJson.version },
-    requiredReleaseAction: `Publish the reviewed ${packageJson.name}@${packageJson.version} release through the documented trusted-publishing workflow after governance approval.`,
+    reason: packageProvenance?.registryProvenance?.reason ?? "Postpublication registry verification did not produce a successful result.",
+    registry: packageProvenance?.registryProvenance?.registry ?? null,
+    policy: "Postpublication is successful only after exact registry metadata, the expected dist-tag, tarball integrity, npm signatures, and a decodable SLSA provenance attestation have all been verified.",
   };
 }
 
-export function evaluateReleaseGate({ checks, externalReview, publication }) {
+export function evaluateReleaseGate({ phase = "prepublication", checks, externalReview, publication }) {
+  if (!R05_PHASES.includes(phase)) throw new Error(`Unsupported R05 phase: ${phase}.`);
   const required = new Set(REQUIRED_AUDIT_CHECKS);
   const missing = [...required].filter((id) => !checks.some((check) => check.id === id));
   const failed = checks.filter((check) => required.has(check.id) && check.status !== "passed");
-  const passed = missing.length === 0 && failed.length === 0 && externalReview.status === "passed" && publication.status === "passed";
+  const publicationAccepted = phase === "prepublication" ? publication.status === "pending" : publication.status === "passed";
+  const passed = missing.length === 0 && failed.length === 0 && externalReview.status === "passed" && publicationAccepted;
   return {
+    phase,
     passed,
     automatedPassed: missing.length === 0 && failed.length === 0,
     missingChecks: missing,
@@ -627,17 +946,22 @@ export function evaluateReleaseGate({ checks, externalReview, publication }) {
       ...(missing.length ? [`Missing required audit checks: ${missing.join(", ")}.`] : []),
       ...failed.map((check) => `${check.id} is ${check.status}.`),
       ...(externalReview.status !== "passed" ? [externalReview.reason] : []),
-    ],
+      ...(!publicationAccepted ? [`${phase} publication gate is ${publication.status}; expected ${phase === "prepublication" ? "pending" : "passed"}.`] : []),
+    ].filter(Boolean),
   };
 }
 
 export function validateReport(report) {
   if (report?.schema !== REPORT_SCHEMA) throw new Error(`Unexpected R05 report schema: ${report?.schema ?? "missing"}`);
+  if (!R05_PHASES.includes(report?.phase)) throw new Error(`R05 report phase must be one of ${R05_PHASES.join(" or ")}.`);
   if (!Array.isArray(report.checks)) throw new Error("R05 report checks must be an array.");
   const ids = new Set(report.checks.map((check) => check.id));
   for (const id of REQUIRED_AUDIT_CHECKS) if (!ids.has(id)) throw new Error(`R05 report is missing required check ${id}.`);
   if (report.gate?.passed === true && report.gate?.externalReview !== "passed") throw new Error("R05 cannot pass without external review approval.");
   if (report.gate?.passed === true && report.gate?.automatedPassed !== true) throw new Error("R05 cannot pass with failed automation.");
+  if (report.gate?.phase !== report.phase) throw new Error("R05 report gate phase does not match the report phase.");
+  if (report.gate?.passed === true && report.phase === "prepublication" && report.publication?.status !== "pending") throw new Error("R05 prepublication cannot pass unless registry publication remains explicitly pending.");
+  if (report.gate?.passed === true && report.phase === "postpublication" && report.publication?.status !== "passed") throw new Error("R05 postpublication cannot pass without registry publication verification.");
   return true;
 }
 
@@ -647,11 +971,12 @@ function markdown(report) {
     "",
     `- Schema: \`${report.schema}\``,
     `- Generated: \`${report.generatedAt}\``,
+    `- Phase: \`${report.phase}\``,
     `- Package: \`${report.environment.package.name}@${report.environment.package.version}\``,
     `- Overall gate: **${report.gate.passed ? "PASS" : "BLOCKED"}**`,
     `- Automated gates: **${report.gate.automatedPassed ? "PASS" : "BLOCKED"}**`,
     `- External TIFF/writer review: **${report.externalReview.status.toUpperCase()}**`,
-    `- Publication: **${report.publication.status.toUpperCase()}**`,
+    `- Publication/provenance: **${report.publication.status.toUpperCase()}**`,
     "",
     "This is a redistribution-safe audit record. It contains no external corpus, reference image, ICC profile, or other third-party payload.",
     "",
@@ -690,7 +1015,7 @@ function markdown(report) {
     "",
     `- Status: **${report.publication.status.toUpperCase()}**.`,
     `- ${report.publication.reason}`,
-    "- The compatibility and limitations report is prepared in `R05_COMPATIBILITY_LIMITATIONS.md` for a later reviewed release; this run does not publish, tag, commit, or push.",
+    report.phase === "prepublication" ? "- Prepublication does not publish, tag, commit, or push. A `pending` registry result is intentional and is not a successful postpublication claim." : "- Postpublication verifies the registry tarball, integrity, expected dist-tag, npm signatures, and provenance; no publication action is performed by this verifier.",
     "",
     "## Failures and unproven criteria",
     "",
@@ -703,12 +1028,14 @@ function markdown(report) {
 }
 
 async function main() {
+  const phase = requestedPhase();
   const packageJson = await packageManifest();
   const directory = await reportDirectory();
   await mkdir(directory, { recursive: true });
-  const checks = await runChecks();
+  const checks = await runChecks(phase);
   const report = {
     schema: REPORT_SCHEMA,
+    phase,
     generatedAt: now(),
     environment: await environmentRecord(),
     tooling: await toolingRecord(),
@@ -719,11 +1046,11 @@ async function main() {
       noRunIsPass: true,
       externalAssets: "temporary untracked storage only; only paths, byte lengths, and hashes may be retained",
       unsupportedClaims: "fully featured, safest, and fastest require defined scope and direct evidence",
-      publication: "not performed by this audit",
+      publication: phase === "prepublication" ? "Prepublication gates publication and leaves registry provenance explicitly pending." : "Postpublication verifies registry metadata and provenance; it never publishes.",
     },
     checks,
     externalReview: await externalReviewGate(),
-    publication: publicationGate(packageJson),
+    publication: publicationGate(packageJson, phase, checks.find((check) => check.id === "package-provenance")),
   };
   report.gate = evaluateReleaseGate(report);
   validateReport(report);
@@ -737,4 +1064,4 @@ async function main() {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();
 
-export { REPORT_SCHEMA, documentationAudit, markdown, packageLicenseAudit };
+export { REPORT_SCHEMA, documentationAudit, expectedDistTag, markdown, packageLicenseAudit, registryProvenanceAudit };

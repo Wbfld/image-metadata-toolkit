@@ -9,6 +9,47 @@ permissions:
   contents: read
 
 jobs:
+  mpf-t05:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Download and verify hash-pinned MPF and Ultra HDR sources and fixtures
+        run: |
+          mkdir -p "$RUNNER_TEMP/mpf-t05/fixtures" "$RUNNER_TEMP/mpf-t05/sources"
+          node --input-type=module <<'NODE'
+          import { createHash } from "node:crypto";
+          import { readFile, writeFile } from "node:fs/promises";
+          import { join } from "node:path";
+
+          const manifest = JSON.parse(await readFile("data/mpf/reference-corpus.json", "utf8"));
+          const base = join(process.env.RUNNER_TEMP, "mpf-t05");
+          async function download(url, destination, expectedHash) {
+            const response = await fetch(url, { redirect: "follow" });
+            if (!response.ok) throw new Error(`T05 download failed (${response.status}): ${url}`);
+            const bytes = new Uint8Array(await response.arrayBuffer());
+            const hash = createHash("sha256").update(bytes).digest("hex");
+            if (hash !== expectedHash) throw new Error(`${url} SHA-256 mismatch: expected ${expectedHash}, received ${hash}`);
+            await writeFile(destination, bytes);
+          }
+          for (const source of manifest.standards) await download(source.url, join(base, "sources", source.temporaryFileName), source.sha256);
+          for (const fixture of manifest.fixtures) await download(fixture.url, join(base, "fixtures", fixture.fileName), fixture.sha256);
+          NODE
+      - run: npm run test:mpf-t05 -- --corpus "$RUNNER_TEMP/mpf-t05/fixtures" --sources "$RUNNER_TEMP/mpf-t05/sources" --report-dir artifacts/mpf-t05
+      - run: npm run test:mpf-t05-write -- --corpus "$RUNNER_TEMP/mpf-t05/fixtures" --report-dir artifacts/mpf-t05
+      - name: Upload MPF and Ultra HDR evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpf-t05-evidence
+          path: artifacts/mpf-t05/
+          if-no-files-found: error
+
   exif-py:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -35,6 +76,104 @@ jobs:
         with:
           name: external-corpus-differential-report
           path: artifacts/external-corpus/
+          if-no-files-found: error
+
+  roadmap-read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check out the pinned external read corpora into runner-local temporary storage
+        run: |
+          mkdir -p "$RUNNER_TEMP/roadmap-read"
+          git clone --filter=blob:none --no-checkout https://github.com/ianare/exif-py.git "$RUNNER_TEMP/roadmap-read/exif-py"
+          git -C "$RUNNER_TEMP/roadmap-read/exif-py" fetch --depth 1 origin a69bf74770caf6b333221658f5092ed69f99faac
+          git -C "$RUNNER_TEMP/roadmap-read/exif-py" checkout --detach a69bf74770caf6b333221658f5092ed69f99faac
+          git clone --filter=blob:none --no-checkout https://github.com/imazen/codec-corpus.git "$RUNNER_TEMP/roadmap-read/codec-corpus"
+          git -C "$RUNNER_TEMP/roadmap-read/codec-corpus" fetch --depth 1 origin 8e10d4d765667c1c49d74413878fc4bfb46dcf8d
+          git -C "$RUNNER_TEMP/roadmap-read/codec-corpus" sparse-checkout init --cone
+          git -C "$RUNNER_TEMP/roadmap-read/codec-corpus" sparse-checkout set jpeg-conformance webp-conformance tiff-conformance pngsuite heic-conformance avif-conformance
+          git -C "$RUNNER_TEMP/roadmap-read/codec-corpus" checkout --detach 8e10d4d765667c1c49d74413878fc4bfb46dcf8d
+      - run: npm run test:corpus:roadmap-read
+        env:
+          EXTERNAL_CORPUS_ROOTS_JSON: >-
+            {"ianare-exif-py":"${{ runner.temp }}/roadmap-read/exif-py","imazen-codec-corpus":"${{ runner.temp }}/roadmap-read/codec-corpus"}
+          EXTERNAL_CORPUS_OUTPUT_DIR: artifacts/external-corpus-roadmap
+      - name: Upload roadmap-wide differential reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-corpus-roadmap-read
+          path: artifacts/external-corpus-roadmap/
+          if-no-files-found: error
+
+  roadmap-writer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install pinned independent browser decoders
+        run: npx playwright install --with-deps chromium firefox
+      - name: Check out the pinned writer corpora into runner-local temporary storage
+        run: |
+          mkdir -p "$RUNNER_TEMP/writer-corpus"
+          git clone --filter=blob:none --no-checkout https://github.com/web-platform-tests/wpt.git "$RUNNER_TEMP/writer-corpus/wpt"
+          git -C "$RUNNER_TEMP/writer-corpus/wpt" fetch --depth 1 origin 63ff666e50e7ef4c11a6885612a05951f6f63547
+          git -C "$RUNNER_TEMP/writer-corpus/wpt" sparse-checkout init --no-cone
+          git -C "$RUNNER_TEMP/writer-corpus/wpt" ls-tree -r --name-only 63ff666e50e7ef4c11a6885612a05951f6f63547 | grep -Ei '\.(jpg|jpeg|png|webp)$' > "$RUNNER_TEMP/writer-corpus/wpt-images.txt"
+          { head -n 900 "$RUNNER_TEMP/writer-corpus/wpt-images.txt"; grep -E '^(apng/|png/apng/)|^images/apng\.png$' "$RUNNER_TEMP/writer-corpus/wpt-images.txt"; } | sort -u > "$RUNNER_TEMP/writer-corpus/wpt-selected.txt"
+          git -C "$RUNNER_TEMP/writer-corpus/wpt" sparse-checkout set --stdin < "$RUNNER_TEMP/writer-corpus/wpt-selected.txt"
+          git -C "$RUNNER_TEMP/writer-corpus/wpt" checkout --detach 63ff666e50e7ef4c11a6885612a05951f6f63547
+          git clone --filter=blob:none --no-checkout https://github.com/imazen/codec-corpus.git "$RUNNER_TEMP/writer-corpus/codec-corpus"
+          git -C "$RUNNER_TEMP/writer-corpus/codec-corpus" fetch --depth 1 origin 8e10d4d765667c1c49d74413878fc4bfb46dcf8d
+          git -C "$RUNNER_TEMP/writer-corpus/codec-corpus" sparse-checkout init --cone
+          git -C "$RUNNER_TEMP/writer-corpus/codec-corpus" sparse-checkout set jpeg-conformance webp-conformance pngsuite
+          git -C "$RUNNER_TEMP/writer-corpus/codec-corpus" checkout --detach 8e10d4d765667c1c49d74413878fc4bfb46dcf8d
+          git clone --filter=blob:none --no-checkout https://github.com/ianare/exif-py.git "$RUNNER_TEMP/writer-corpus/exif-py"
+          git -C "$RUNNER_TEMP/writer-corpus/exif-py" fetch --depth 1 origin a69bf74770caf6b333221658f5092ed69f99faac
+          git -C "$RUNNER_TEMP/writer-corpus/exif-py" sparse-checkout init --cone
+          git -C "$RUNNER_TEMP/writer-corpus/exif-py" sparse-checkout set tests/resources
+          git -C "$RUNNER_TEMP/writer-corpus/exif-py" checkout --detach a69bf74770caf6b333221658f5092ed69f99faac
+      - name: Download and verify the temporary hash-pinned T05 protected fixtures
+        run: |
+          mkdir -p "$RUNNER_TEMP/writer-corpus/protected"
+          node --input-type=module <<'NODE'
+          import { createHash } from "node:crypto";
+          import { readFile, writeFile } from "node:fs/promises";
+          import { join } from "node:path";
+          const manifest = JSON.parse(await readFile("data/mpf/reference-corpus.json", "utf8"));
+          const directory = join(process.env.RUNNER_TEMP, "writer-corpus", "protected");
+          for (const fixture of manifest.fixtures) {
+            const response = await fetch(fixture.url, { redirect: "follow" });
+            if (!response.ok) throw new Error(`Protected fixture download failed (${response.status}): ${fixture.url}`);
+            const bytes = new Uint8Array(await response.arrayBuffer());
+            const hash = createHash("sha256").update(bytes).digest("hex");
+            if (hash !== fixture.sha256) throw new Error(`${fixture.fileName} SHA-256 mismatch: expected ${fixture.sha256}, received ${hash}`);
+            await writeFile(join(directory, fixture.fileName), bytes);
+          }
+          NODE
+      - run: npm run test:corpus:writer
+        env:
+          WRITER_CORPUS_ROOTS_JSON: >-
+            {"web-platform-tests":"${{ runner.temp }}/writer-corpus/wpt","imazen-codec-corpus":"${{ runner.temp }}/writer-corpus/codec-corpus","ianare-exif-py":"${{ runner.temp }}/writer-corpus/exif-py"}
+          WRITER_PROTECTED_CORPUS_DIR: ${{ runner.temp }}/writer-corpus/protected
+          WRITER_CORPUS_OUTPUT_DIR: artifacts/roadmap-writer
+      - name: Upload roadmap-wide writer reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roadmap-writer-corpus
+          path: artifacts/roadmap-writer/
           if-no-files-found: error
 
   raw-b04:

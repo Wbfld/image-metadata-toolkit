@@ -6,7 +6,7 @@ Status: **pass**. Both official images were required, hash-verified, serialized 
 - Normalization: Lossless semantic candidates are normalized into sorted JSON object keys; RDF array order, language alternatives, lexical values, nested resources, IIM/XMP repetitions, conflicts, and packet/block/offset provenance remain ordered evidence. Physical offsets are compared only for validity after writing, never for semantic equality.
 - Serialization policy: Parse the complete supported official IIM/XMP view, serialize each XMP packet and each IPTC resource through the package writers, replace only those JPEG metadata blocks, reparse, and compare stable semantic candidates. No source or output image is retained in the repository.
 - Source manifest: `data/iptc/reference-images.json`
-- Executed: 2026-09-13T07:51:16.632Z
+- Executed: 2026-09-16T23:08:33.698Z
 
 | Edition | Image | Source SHA-256 | Parsed properties | Candidates | Round-tripped properties | Round-trip | Serialized output SHA-256 |
 | --- | --- | --- | ---: | ---: | ---: | --- | --- |

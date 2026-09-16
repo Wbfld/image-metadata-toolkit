@@ -9,6 +9,7 @@ import {
   toJsonSafeResult,
   editMetadata,
 } from "../src/index.js";
+import { inspectPhotoshopResourceSpans, PHOTOSHOP_RESOURCE_IDS } from "../src/metadata/photoshop.js";
 import { DEFAULT_LIMITS } from "../src/security/limits.js";
 
 const encoder = new TextEncoder();
@@ -217,6 +218,46 @@ describe("B06 bounded Photoshop image-resource inventory", () => {
     expect(pathLimited?.resources.find((resource) => resource.kind === "path")?.status).toBe("limited");
   });
 
+  it("validates each decoded resource payload form and retains typed malformed states", () => {
+    const invalidThumbnail = (format: number, compressedBytes: number, width = 1, height = 1): Uint8Array => {
+      const payload = new Uint8Array(29);
+      const view = new DataView(payload.buffer);
+      view.setUint32(0, format);
+      view.setUint32(4, width);
+      view.setUint32(8, height);
+      view.setUint32(12, 3);
+      view.setUint32(16, 3);
+      view.setUint32(20, compressedBytes);
+      view.setUint16(24, 24);
+      view.setUint16(26, 1);
+      payload[28] = 1;
+      return payload;
+    };
+    const cases = [
+      resource(PHOTOSHOP_RESOURCE_IDS.resolution, "bad-resolution", new Uint8Array(15)),
+      resource(PHOTOSHOP_RESOURCE_IDS.resolution, "zero-resolution", new Uint8Array(16)),
+      resource(PHOTOSHOP_RESOURCE_IDS.thumbnailBgr, "short-thumbnail", new Uint8Array(27)),
+      resource(PHOTOSHOP_RESOURCE_IDS.thumbnailRgb, "format-thumbnail", invalidThumbnail(2, 1)),
+      resource(PHOTOSHOP_RESOURCE_IDS.thumbnailRgb, "empty-jpeg-thumbnail", invalidThumbnail(1, 0)),
+      resource(PHOTOSHOP_RESOURCE_IDS.thumbnailRgb, "too-compressed-thumbnail", invalidThumbnail(0, 2)),
+      resource(PHOTOSHOP_RESOURCE_IDS.thumbnailRgb, "zero-width-thumbnail", invalidThumbnail(0, 1, 0, 1)),
+      resource(PHOTOSHOP_RESOURCE_IDS.xmp, "invalid-xmp", Uint8Array.of(0xff)),
+      resource(PHOTOSHOP_RESOURCE_IDS.captionDigest, "short-digest", new Uint8Array(15)),
+      resource(PHOTOSHOP_RESOURCE_IDS.pathFirst, "short-path", Uint8Array.of(1)),
+      resource(PHOTOSHOP_RESOURCE_IDS.clippingPathName, "short-clip", Uint8Array.of(4, 65)),
+      resource(PHOTOSHOP_RESOURCE_IDS.clippingPathName, "empty-clip", new Uint8Array()),
+    ];
+    const result = parsePhotoshopResources(concat(encoder.encode("Photoshop 3.0\0"), ...cases), DEFAULT_LIMITS, { container: "app13", blockId: "malformed", sourceOffset: 0, sourceLength: cases.reduce((total, item) => total + item.length, 14) });
+    expect(result?.complete).toBe(false);
+    expect(result?.resources.filter(({ status }) => status === "malformed").length).toBeGreaterThanOrEqual(10);
+    expect(result?.resources.every(({ decoded, status }) => status === "malformed" ? decoded === null : true)).toBe(true);
+
+    const limitedXmp = parsePhotoshopResources(concat(encoder.encode("Photoshop 3.0\0"), resource(PHOTOSHOP_RESOURCE_IDS.xmp, "xmp", encoder.encode("long"))), { ...DEFAULT_LIMITS, maxStringBytes: 1 }, { container: "app13", blockId: "limited", sourceOffset: 0, sourceLength: 14 + 4 + 2 + 2 + 4 + 4 });
+    expect(limitedXmp?.resources[0]?.status).toBe("limited");
+    const limitedPath = parsePhotoshopResources(concat(encoder.encode("Photoshop 3.0\0"), resource(PHOTOSHOP_RESOURCE_IDS.pathFirst, "path", new Uint8Array(52))), { ...DEFAULT_LIMITS, maxAdapterItems: 1 }, { container: "app13", blockId: "path-limited", sourceOffset: 0, sourceLength: 14 + 4 + 2 + 5 + 4 + 52 + 0 });
+    expect(limitedPath?.resources[0]?.status).toBe("limited");
+  });
+
   it("removes exactly one duplicate resource and preserves unrelated image and resource bytes", async () => {
     const input = jpegWithPhotoshop();
     const parsed = await parseMetadata(input);
@@ -297,5 +338,63 @@ describe("B06 bounded Photoshop image-resource inventory", () => {
     }
     if (!(thrown instanceof Error)) throw new Error("malformed Photoshop writer input was not rejected");
     expect((thrown as { readonly code?: unknown }).code).toBe("UNSAFE_STRUCTURE");
+  });
+
+  it("covers the remaining bounded resource headers, fixed-point units, thumbnail limits, and retention failures", () => {
+    expect(inspectPhotoshopResourceSpans(new Uint8Array(), "app13", DEFAULT_LIMITS)).toBeNull();
+    expect(inspectPhotoshopResourceSpans(encoder.encode("not Photoshop"), "app13", DEFAULT_LIMITS)).toBeNull();
+    expect(inspectPhotoshopResourceSpans(encoder.encode("not resources"), "tiff", DEFAULT_LIMITS)).toBeNull();
+
+    const unknownUnits = resolution();
+    new DataView(unknownUnits.buffer).setUint16(4, 9, false);
+    new DataView(unknownUnits.buffer).setUint16(6, 9, false);
+    new DataView(unknownUnits.buffer).setUint16(12, 9, false);
+    new DataView(unknownUnits.buffer).setUint16(14, 9, false);
+
+    const thumbnailCase = (changes: (view: DataView) => void): Uint8Array => {
+      const payload = thumbnail();
+      changes(new DataView(payload.buffer));
+      return payload;
+    };
+    const invalidThumbnails = [
+      thumbnailCase((view) => { view.setUint32(4, 0x7fffffff, false); view.setUint32(8, 2, false); }),
+      thumbnailCase((view) => view.setUint32(8, 0x7fffffff, false)),
+      thumbnailCase((view) => view.setUint16(24, 0, false)),
+      thumbnailCase((view) => view.setUint16(26, 0, false)),
+      thumbnailCase((view) => view.setUint16(24, 65, false)),
+      thumbnailCase((view) => view.setUint16(26, 5, false)),
+      thumbnailCase((view) => view.setUint32(20, 7, false)),
+      thumbnailCase((view) => { view.setUint32(0, 1, false); view.setUint32(20, 0, false); }),
+      thumbnailCase((view) => view.setUint32(0, 2, false)),
+      thumbnailCase((view) => view.setUint32(4, 0xffffffff, false)),
+      thumbnailCase((view) => { view.setUint32(4, 0x7fffffff, false); view.setUint32(8, 2, false); }),
+    ];
+    const malformedPayloads = [
+      resource(PHOTOSHOP_RESOURCE_IDS.resolution, "units", unknownUnits),
+      ...invalidThumbnails.map((payload, index) => resource(PHOTOSHOP_RESOURCE_IDS.thumbnailRgb, `bad-${index}`, payload)),
+      resource(PHOTOSHOP_RESOURCE_IDS.pathFirst, "empty-path", new Uint8Array()),
+      resource(PHOTOSHOP_RESOURCE_IDS.pathFirst, "partial-path", new Uint8Array(27)),
+      resource(PHOTOSHOP_RESOURCE_IDS.clippingPathName, "long-name", Uint8Array.of(5, 65, 66)),
+      resource(PHOTOSHOP_RESOURCE_IDS.xmp, "invalid-utf8", Uint8Array.of(0xc3, 0x28)),
+    ];
+    const malformed = parsePhotoshopResources(concat(encoder.encode("Photoshop 3.0\0"), ...malformedPayloads), DEFAULT_LIMITS, { container: "app13", blockId: "remaining", sourceOffset: 0, sourceLength: malformedPayloads.reduce((sum, item) => sum + item.length, 14) });
+    expect(malformed?.resources.filter(({ status }) => status === "malformed").length).toBeGreaterThanOrEqual(invalidThumbnails.length + 4);
+    expect(malformed?.resources.find(({ name }) => name === "units")?.decoded).toMatchObject({ horizontalUnit: "unknown", widthUnit: "unknown" });
+
+    const nonZeroNamePadding = resources(true).slice();
+    nonZeroNamePadding[14 + 4 + 2 + 1 + 10] = 7;
+    const namedPadding = parsePhotoshopResources(nonZeroNamePadding, DEFAULT_LIMITS, { container: "app13", blockId: "name-padding", sourceOffset: 0, sourceLength: nonZeroNamePadding.length });
+    expect(namedPadding?.diagnostics).toContainEqual(expect.objectContaining({ code: "MALFORMED_PHOTOSHOP" }));
+
+    const oddPayload = resource(0x1234, "odd", Uint8Array.of(9));
+    const nonZeroPayloadPadding = concat(encoder.encode("Photoshop 3.0\0"), oddPayload);
+    nonZeroPayloadPadding[nonZeroPayloadPadding.length - 1] = 7;
+    const payloadPadding = parsePhotoshopResources(nonZeroPayloadPadding, DEFAULT_LIMITS, { container: "app13", blockId: "payload-padding", sourceOffset: 0, sourceLength: nonZeroPayloadPadding.length });
+    expect(payloadPadding?.diagnostics).toContainEqual(expect.objectContaining({ code: "MALFORMED_PHOTOSHOP" }));
+
+    const large = resource(0x1234, "large", new Uint8Array(32));
+    const retained = parsePhotoshopResources(concat(encoder.encode("Photoshop 3.0\0"), large), { ...DEFAULT_LIMITS, maxValueBytes: 8, maxMetadataBytes: 8 }, { container: "app13", blockId: "retention", sourceOffset: 0, sourceLength: 14 + large.length });
+    expect(retained?.resources[0]).toMatchObject({ status: "limited", rawPayload: null });
+    expect(retained?.diagnostics).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
   });
 });

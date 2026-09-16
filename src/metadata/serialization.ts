@@ -543,10 +543,11 @@ function iimWithXmp(document: XmpRdfDocument, iim: readonly IptcIimFieldInput[],
   const output: IptcIimFieldInput[] = [];
   const replaced = new Set<string>();
   for (const field of iim) {
-    const definition = datasetDefinition(field.record, field.dataset); const mapping = definition?.mappings.xmp[0]; const replacement = mapping === undefined ? undefined : values.get(IPTC_TECHREFERENCE_PROPERTIES.find((candidate) => candidate.namespaceUri === mapping.namespaceUri && candidate.localName === mapping.localName)?.id ?? "");
+    const definition = datasetDefinition(field.record, field.dataset); const mapping = definition?.mappings.xmp[0]; const mappedDefinition = mapping === undefined ? undefined : IPTC_TECHREFERENCE_PROPERTIES.find((candidate) => candidate.namespaceUri === mapping.namespaceUri && candidate.localName === mapping.localName); const replacement = mappedDefinition === undefined ? undefined : values.get(mappedDefinition.id);
     if (definition === undefined || replacement === undefined || replacement.length === 0) { output.push(field); continue; }
+    if (mappedDefinition !== undefined && replaced.has(mappedDefinition.id)) continue;
     const valuesToWrite = definition.repeatable ? replacement : [replacement[0] ?? ""];
-    output.push(...valuesToWrite.map((value) => ({ ...field, value, encoding: "utf-8" as const }))); replaced.add(definition.id);
+    output.push(...valuesToWrite.map((value) => ({ ...field, value, encoding: "utf-8" as const }))); if (mappedDefinition !== undefined) replaced.add(mappedDefinition.id);
   }
   for (const definition of IPTC_TECHREFERENCE_PROPERTIES) {
     if (replaced.has(definition.id) || definition.iimId === null) continue;

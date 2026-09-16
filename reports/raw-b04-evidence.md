@@ -3,7 +3,7 @@
 - Status: **pass**
 - Package: `browser-image-metadata@2.0.0-alpha.3`
 - Fixtures: 7 (minimum 7)
-- Independent oracle: `exiftool-vendored@33.5.0`, ExifTool 13.42
+- Independent oracle: `exiftool-vendored@38.1.0`, ExifTool 13.59
 - Comparable values: 31; non-comparable: 11; mismatched: 0
 - Redistribution policy: only hashes, source metadata, parser facts, and comparison results are retained; no RAW image bytes are copied into the repository.
 

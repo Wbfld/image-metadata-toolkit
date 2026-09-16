@@ -1,5 +1,7 @@
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { parseMetadata, toJsonSafeResult } from "../src/index.js";
+import { parseHeifDimensions } from "../src/parsers/heif.js";
 import { materializeHeifMetadata } from "../src/heif-range.js";
 import { resolveSelection } from "../src/selection.js";
 import { resolveLimits } from "../src/security/limits.js";
@@ -300,6 +302,105 @@ function setDataReference(bytes: Uint8Array, itemId: number, value: number): voi
   }
 }
 
+function appendTopLevel(bytes: Uint8Array, ...children: readonly Uint8Array[]): Uint8Array {
+  return concatenate([bytes, ...children]);
+}
+
+function appendMetaChild(bytes: Uint8Array, child: Uint8Array): Uint8Array {
+  const metaOffset = findFirstBox(bytes, "meta");
+  if (metaOffset < 0) throw new Error("fixture has no MetaBox");
+  const oldSize = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(metaOffset, false);
+  const oldEnd = metaOffset + oldSize;
+  if (oldEnd > bytes.length) throw new Error("fixture MetaBox is truncated");
+  const payload = concatenate([bytes.subarray(metaOffset + 8, oldEnd), child]);
+  const meta = box("meta", payload);
+  return concatenate([bytes.subarray(0, metaOffset), meta, bytes.subarray(oldEnd)]);
+}
+
+function propertiesFixture(properties: readonly Uint8Array[], associations: Uint8Array = ipma([[1, properties.map((_, index) => index + 1)]])): Uint8Array {
+  const ftyp = box("ftyp", new TextEncoder().encode("heic\0\0\0\0"));
+  const itemProperties = box("iprp", concatenate([box("ipco", concatenate(properties)), associations]));
+  const meta = box("meta", concatenate([new Uint8Array(4), pitm(1), iinf([infe(1, "av01")]), itemProperties]));
+  return concatenate([ftyp, meta]);
+}
+
+function wideIpma(encodedProperty: number, version = 1): Uint8Array {
+  const payload = new Uint8Array(version === 1 ? 4 + 4 + 4 + 1 + 2 : 4 + 4 + 2 + 1 + 2);
+  payload[0] = version;
+  payload[3] = version === 1 ? 1 : 0;
+  new DataView(payload.buffer).setUint32(4, 1, false);
+  let cursor = 8;
+  if (version === 1) { new DataView(payload.buffer).setUint32(cursor, 1, false); cursor += 4; }
+  else { new DataView(payload.buffer).setUint16(cursor, 1, false); cursor += 2; }
+  payload[cursor] = 1;
+  new DataView(payload.buffer).setUint16(cursor + 1, encodedProperty, false);
+  return box("ipma", payload);
+}
+
+function simpleNclx(primaries: number, transfer: number, matrix: number, fullRange = false): Uint8Array {
+  const payload = new Uint8Array(11);
+  payload.set(new TextEncoder().encode("nclx"), 0);
+  const view = new DataView(payload.buffer);
+  view.setUint16(4, primaries, false);
+  view.setUint16(6, transfer, false);
+  view.setUint16(8, matrix, false);
+  payload[10] = fullRange ? 0x80 : 0;
+  return box("colr", payload);
+}
+
+function simpleProfile(type: "prof" | "rICC", bytes = Uint8Array.of(1, 2, 3)): Uint8Array {
+  return box("colr", concatenate([new TextEncoder().encode(type), bytes]));
+}
+
+function rangeFixture(children: readonly Uint8Array[]): Uint8Array {
+  return concatenate([box("ftyp", new TextEncoder().encode("heic\0\0\0\0")), box("meta", concatenate([new Uint8Array(4), ...children]))]);
+}
+
+function putUint64(bytes: Uint8Array, offset: number, value: number): void {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  view.setUint32(offset, Math.floor(value / 0x100000000), false);
+  view.setUint32(offset + 4, value >>> 0, false);
+}
+
+function versionZeroIloc(): Uint8Array {
+  const payload = new Uint8Array(38);
+  payload[4] = 0x88;
+  payload[5] = 0x08;
+  new DataView(payload.buffer).setUint16(6, 1, false);
+  new DataView(payload.buffer).setUint16(8, 1, false);
+  new DataView(payload.buffer).setUint16(20, 1, false);
+  putUint64(payload, 22, 0);
+  putUint64(payload, 30, 1);
+  return box("iloc", payload);
+}
+
+function wideVersionOneIloc(): Uint8Array {
+  const payload = new Uint8Array(48);
+  payload[0] = 1;
+  payload[4] = 0x88;
+  payload[5] = 0x88;
+  new DataView(payload.buffer).setUint16(6, 1, false);
+  new DataView(payload.buffer).setUint16(8, 1, false);
+  new DataView(payload.buffer).setUint16(22, 1, false);
+  putUint64(payload, 24, 1);
+  putUint64(payload, 32, 0);
+  putUint64(payload, 40, 1);
+  return box("iloc", payload);
+}
+
+function versionedLocationFixture(location: Uint8Array): Uint8Array {
+  const meta = box("meta", concatenate([new Uint8Array(4), pitm(1), iinf([infe(1, "av01")]), location]));
+  return concatenate([box("ftyp", new TextEncoder().encode("heic\0\0\0\0")), meta]);
+}
+
+function versionOneIref(): Uint8Array {
+  const childPayload = new Uint8Array(10);
+  new DataView(childPayload.buffer).setUint32(0, 1, false);
+  new DataView(childPayload.buffer).setUint16(4, 1, false);
+  new DataView(childPayload.buffer).setUint32(6, 2, false);
+  return box("iref", concatenate([Uint8Array.of(1, 0, 0, 0), box("dimg", childPayload)]));
+}
+
 describe("B02 HEIF/AVIF item semantics", () => {
   it("exposes multi-extent items, item-offset construction, relationships, properties, and data references", async () => {
     const result = await parseMetadata(buildFixture());
@@ -419,5 +520,185 @@ describe("B02 HEIF/AVIF item semantics", () => {
     const malformedExif = concatenate([buildFixture(), box("Exif", new Uint8Array(8))]);
     const malformedExifResult = await parseMetadata(malformedExif);
     expect(malformedExifResult.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+  });
+
+  it("exercises every item-graph truncation boundary with bounded typed results", async () => {
+    const fixture = buildFixture();
+    for (let length = 0; length <= fixture.length; length += 1) {
+      const result = await parseMetadata(fixture.subarray(0, length), { limits: { maxSegments: 128, maxAdapterItems: 32, maxImageDetailFrames: 32, maxImageDetailRelationships: 64 } });
+      expect(result.heif ?? []).toBeInstanceOf(Array);
+      expect(result.warnings.every(({ code }) => /^[A-Z][A-Z0-9_]+$/u.test(code))).toBe(true);
+      expect((result.heif?.[0]?.items.length ?? 0)).toBeLessThanOrEqual(32);
+      expect((result.heif?.[0]?.properties.length ?? 0)).toBeLessThanOrEqual(32);
+      expect((result.heif?.[0]?.relationships.length ?? 0)).toBeLessThanOrEqual(64);
+    }
+  });
+});
+
+describe("S06 HEIF standards and safety branch matrix", () => {
+  it("validates dimension scanning, extended and zero-sized boxes, conflicts, limits, and cancellation", () => {
+    const valid = ispe(12, 8);
+    expect(parseHeifDimensions(valid)).toEqual({ width: 12, height: 8 });
+    expect(parseHeifDimensions(extendedBox("ispe", valid.subarray(8)))).toEqual({ width: 12, height: 8 });
+    expect(parseHeifDimensions(zeroSizedBox("ispe", valid.subarray(8)))).toEqual({ width: 12, height: 8 });
+    expect(parseHeifDimensions(fullBox("meta", valid))).toEqual({ width: 12, height: 8 });
+    expect(parseHeifDimensions(concatenate([ispe(12, 8), ispe(13, 8)]) )).toBeNull();
+    expect(parseHeifDimensions(box("ispe", new Uint8Array(11)))).toBeNull();
+    expect(parseHeifDimensions(ispe(0, 8))).toBeNull();
+    expect(parseHeifDimensions(new Uint8Array())).toBeNull();
+    expect(parseHeifDimensions(valid, -1)).toBeNull();
+    expect(parseHeifDimensions(valid, 8, 0)).toBeNull();
+    expect(parseHeifDimensions(fullBox("meta", valid.subarray(8)), 0)).toBeNull();
+    expect(parseHeifDimensions(concatenate([valid, valid]), 8, 1)).toBeNull();
+    const malformedExtended = new Uint8Array(16);
+    new DataView(malformedExtended.buffer).setUint32(0, 1, false);
+    malformedExtended.set(new TextEncoder().encode("ispe"), 4);
+    new DataView(malformedExtended.buffer).setUint32(8, 0x00200000, false);
+    expect(parseHeifDimensions(malformedExtended)).toBeNull();
+    const controller = new AbortController();
+    controller.abort();
+    expect(() => parseHeifDimensions(valid, 8, 4096, controller.signal)).toThrow(expect.objectContaining({ code: "ABORTED" }));
+  });
+
+  it("retains valid primary properties and rejects contradictory dimensions, profiles, colour, and transforms", async () => {
+    const valid = await parseMetadata(propertiesFixture([
+      ispe(12, 8),
+      simpleNclx(1, 13, 6, true),
+      simpleProfile("prof", Uint8Array.of(1, 2, 3, 4)),
+      box("irot", Uint8Array.of(1)),
+      box("imir", Uint8Array.of(0)),
+      auxc("urn:mpeg:mpegB:cicp:systems:auxiliary:alpha"),
+    ]));
+    expect(valid.dimensions).toEqual({ width: 12, height: 8 });
+    expect(valid.nclx).toEqual({ colourPrimaries: 1, transferCharacteristics: 13, matrixCoefficients: 6, fullRange: true });
+    expect(valid.transform).toEqual({ rotation: 90, mirrored: true, mirrorAxis: "vertical" });
+    expect(valid.displayDimensions).toEqual({ width: 8, height: 12 });
+    expect(valid.blocks).toEqual(expect.arrayContaining([
+      expect.objectContaining({ family: "ICC", container: "HEIF colr item property" }),
+      expect.objectContaining({ family: "Unknown", container: "HEIF auxC item property" }),
+    ]));
+
+    const contradictory = await parseMetadata(propertiesFixture([
+      ispe(12, 8), ispe(13, 8),
+      simpleProfile("prof", Uint8Array.of(1)), simpleProfile("rICC", Uint8Array.of(2)),
+      simpleNclx(1, 13, 6), simpleNclx(9, 16, 1),
+      box("irot", Uint8Array.of(1)), box("irot", Uint8Array.of(2)),
+      box("imir", Uint8Array.of(0)), box("imir", Uint8Array.of(1)),
+    ]));
+    expect(contradictory.dimensions).toBeNull();
+    expect(contradictory.icc).toBeNull();
+    expect(contradictory.nclx).toBeUndefined();
+    expect(contradictory.transform).toBeUndefined();
+    expect(contradictory.warnings.filter(({ code }) => code === "MALFORMED_HEIF").length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("exercises property, association, item-information, and reference rejection paths", async () => {
+    const malformedAux = fullBox("auxC", Uint8Array.of(0, 0, 0, 0, 0x61));
+    const malformedColour = box("colr", new TextEncoder().encode("nclx"));
+    const malformedProperty = box("ispe", new Uint8Array(4));
+    const malformedProperties = propertiesFixture([malformedAux, malformedColour, malformedProperty]);
+    expect((await parseMetadata(malformedProperties)).warnings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "MALFORMED_HEIF" })]));
+
+    const duplicatePropertyContainers = concatenate([
+      box("iprp", concatenate([box("ipco", ispe(2, 2)), box("ipco", ispe(3, 3)), ipma([[1, [1]]])])),
+    ]);
+    expect((await parseMetadata(appendMetaChild(propertiesFixture([]), duplicatePropertyContainers))).warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const wide = await parseMetadata(propertiesFixture([ispe(20, 10)], wideIpma(0x8001)));
+    expect(wide.heif?.[0]?.items.find(({ id }) => id === 1)?.properties).toContainEqual({ propertyIndex: 1, essential: true });
+    const reservedWide = await parseMetadata(propertiesFixture([ispe(20, 10)], wideIpma(0)));
+    expect(reservedWide.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+    const invalidFlags = await parseMetadata(propertiesFixture([ispe(20, 10)], box("ipma", Uint8Array.of(0, 0, 0, 2, 0, 0, 0, 0))));
+    expect(invalidFlags.warnings).toContainEqual(expect.objectContaining({ code: "MALFORMED_HEIF" }));
+
+    const malformedInfos = [
+      box("iinf", new Uint8Array()),
+      box("iinf", Uint8Array.of(2, 0, 0, 0, 0, 0)),
+      box("iinf", Uint8Array.of(0, 0, 0, 0)),
+      iinf([infe(0, "av01"), infe(1, "av01")]),
+      iinf([infe(2, "mime", "application/\xff")]),
+    ];
+    const infoResult = await parseMetadata(appendMetaChild(buildFixture(), concatenate(malformedInfos)));
+    expect(infoResult.warnings.filter(({ code }) => code === "MALFORMED_HEIF").length).toBeGreaterThan(0);
+
+    const malformedReferences = [
+      box("iref", Uint8Array.of(2, 0, 0, 0)),
+      box("iref", Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 0)),
+      box("iref", Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0)),
+    ];
+    const referenceResult = await parseMetadata(appendMetaChild(buildFixture(), concatenate(malformedReferences)));
+    expect(referenceResult.warnings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "MALFORMED_HEIF" })]));
+
+    const versionOneReference = await parseMetadata(appendMetaChild(buildFixture(), versionOneIref()));
+    expect(versionOneReference.heif?.[0]?.relationships).toEqual(expect.arrayContaining([expect.objectContaining({ referenceType: "dimg", sourceItemId: 1, targetItemId: 2 })]));
+
+    const versionZeroLocation = await parseMetadata(versionedLocationFixture(versionZeroIloc()));
+    expect(versionZeroLocation.heif?.[0]?.items.find(({ id }) => id === 1)?.location).toMatchObject({ constructionMethod: "file", resolution: "resolved", resolvedByteLength: 1 });
+    const wideLocation = await parseMetadata(versionedLocationFixture(wideVersionOneIloc()));
+    expect(wideLocation.heif?.[0]?.items.find(({ id }) => id === 1)?.location).toMatchObject({ constructionMethod: "file", resolution: "resolved", resolvedByteLength: 1 });
+  });
+
+  it("covers direct Exif and XMP boxes, duplicate metadata, encoding failures, and output limits", async () => {
+    const tiff = new Uint8Array(await readFile(new URL("./fixtures/tiff-exif-little-endian.tif", import.meta.url)));
+    const xmp = new TextEncoder().encode("<x:xmpmeta xmlns:x=\"adobe:ns:meta/\"><rdf:RDF/></x:xmpmeta>");
+    const direct = await parseMetadata(appendTopLevel(buildFixture(), box("Exif", tiff), box("Exif", tiff), box("xml ", xmp), box("XMP ", Uint8Array.of(0xff, 0xfe))));
+    expect(direct.exif).not.toBeNull();
+    expect(direct.xmp?.packets.length).toBeGreaterThan(1);
+    expect(direct.warnings).toContainEqual(expect.objectContaining({ code: "DUPLICATE_EXIF" }));
+    expect(direct.blocks).toEqual(expect.arrayContaining([expect.objectContaining({ family: "EXIF", container: "HEIF Exif box" }), expect.objectContaining({ family: "XMP", container: "HEIF XMP box" })]));
+
+    const bounded = await parseMetadata(appendTopLevel(buildFixture(), box("Exif", tiff), box("xml ", xmp)), { limits: { maxSegmentBytes: 4, maxMetadataBytes: 8 } });
+    expect(bounded.warnings).toContainEqual(expect.objectContaining({ code: "LIMIT_EXCEEDED" }));
+    const selection = await parseMetadata(appendTopLevel(buildFixture(), box("Exif", tiff), box("xml ", xmp)), { select: { groups: ["Dimensions"] } });
+    expect(selection.exif).toBeNull();
+    expect(selection.xmp).toBeNull();
+  });
+
+  it("keeps every prefix of a property-bearing MetaBox bounded and typed", async () => {
+    const source = propertiesFixture([
+      ispe(640, 480),
+      simpleNclx(1, 13, 6),
+      simpleProfile("prof", Uint8Array.of(1, 2, 3, 4)),
+      box("irot", Uint8Array.of(3)),
+      box("imir", Uint8Array.of(1)),
+      auxc("urn:mpeg:mpegB:cicp:systems:auxiliary:alpha"),
+    ]);
+    for (let length = 0; length <= source.length; length += 1) {
+      const result = await parseMetadata(source.subarray(0, length), { limits: { maxSegments: 64, maxWarnings: 32, maxIfdEntries: 32 } });
+      expect(result.heif ?? []).toBeInstanceOf(Array);
+      expect(result.warnings.every(({ code }) => /^[A-Z][A-Z0-9_]+$/u.test(code))).toBe(true);
+      expect(result.warnings.length).toBeLessThanOrEqual(32);
+    }
+  });
+
+  it("keeps the range materializer fail-closed across every bounded HEIF child parser", async () => {
+    const selection = resolveSelection(undefined);
+    const invalidChildren = [
+      box("iinf", new Uint8Array()),
+      box("iinf", Uint8Array.of(2, 0, 0, 0, 0, 0)),
+      box("iinf", Uint8Array.of(0, 0, 0, 0)),
+      box("iloc", Uint8Array.of(3, 0, 0, 0, 0, 0, 0, 0)),
+      box("iloc", Uint8Array.of(0, 0, 0, 0, 0x14, 0, 0, 0)),
+      box("iref", Uint8Array.of(2, 0, 0, 0)),
+      box("iref", Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 0)),
+      box("dinf", Uint8Array.of(0, 0, 0, 4, 0x64, 0x72, 0x65, 0x66)),
+      box("dinf", box("dref", Uint8Array.of(1, 0, 0, 0, 0, 0, 0, 0))),
+    ];
+    for (const child of invalidChildren) {
+      expect(await materializeHeifMetadata(readerFor(rangeFixture([child])), resolveLimits(), selection)).toBeNull();
+    }
+    expect(await materializeHeifMetadata(readerFor(rangeFixture([box("free", Uint8Array.of(1, 2, 3))])), resolveLimits(), selection)).toMatchObject({ partial: true, warnings: [] });
+    const empty = await materializeHeifMetadata(readerFor(rangeFixture([])), resolveLimits(), selection);
+    expect(empty?.partial).toBe(true);
+    expect(typeof empty?.bytesRead).toBe("number");
+    expect(await materializeHeifMetadata(readerFor(box("ftyp", new TextEncoder().encode("heic\0\0\0\0"))), resolveLimits(), selection)).toMatchObject({ partial: true });
+    expect(await materializeHeifMetadata(readerFor(concatenate([box("ftyp", new TextEncoder().encode("heic\0\0\0\0")), box("moov", new Uint8Array())])), resolveLimits(), selection)).toBeNull();
+    expect(await materializeHeifMetadata(readerFor(rangeFixture([Uint8Array.of(0, 0, 0, 4, 0x66, 0x72, 0x65)])), resolveLimits(), selection)).toBeNull();
+    expect(await materializeHeifMetadata(readerFor(rangeFixture([box("iinf", Uint8Array.of(0, 0, 0, 0, 0, 2))])), resolveLimits({ maxIfdEntries: 1 }), selection)).toBeNull();
+    expect(await materializeHeifMetadata(readerFor(rangeFixture([box("iloc", Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 2))])), resolveLimits({ maxIfdEntries: 1 }), selection)).toBeNull();
+    const rebuilt = await materializeHeifMetadata(readerFor(buildFixture()), resolveLimits({ maxMetadataBytes: buildFixture().length * 2 }), selection);
+    expect(rebuilt?.partial).toBe(true);
+    expect(rebuilt?.bytes).toBeInstanceOf(Uint8Array);
+    expect(rebuilt?.warnings).toBeInstanceOf(Array);
   });
 });

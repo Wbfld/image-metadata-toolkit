@@ -1,6 +1,6 @@
 {
   "schema": "c2pa-terminology-audit-1",
-  "checkedAt": "2026-09-13T10:44:33.380Z",
+  "checkedAt": "2026-09-15T06:42:47.492Z",
   "policy": "T03 inventory APIs may use detected/inventoried/present; official verification terminology is reserved for T04 adapters.",
   "sourceResults": [
     {

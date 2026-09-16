@@ -60,11 +60,14 @@ semantic contract, sample policy, and recorded environment described in
 
 ## Remaining release actions
 
-1. Run the full R05 audit from a clean checkout containing the exact candidate.
+1. Run the prepublication R05 audit from a clean checkout containing the exact candidate.
 2. Supply every required external corpus/reference/runtime/scanner result and
    resolve any unexpected failure.
 3. Obtain and retain the independent TIFF and all-writers review described in
    [`R05_EXTERNAL_REVIEW_PACKET.md`](./R05_EXTERNAL_REVIEW_PACKET.md).
 4. Have a maintainer review this report and the complete evidence bundle.
 5. Publish only through the documented trusted-publishing workflow after the
-   review and release preflight pass.
+   review and release preflight pass. Use the prerelease dist-tag for a
+   prerelease candidate rather than `latest`.
+6. Run the postpublication R05 phase and retain its registry tarball,
+   dist-tag, signature, and provenance evidence.

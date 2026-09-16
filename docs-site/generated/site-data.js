@@ -20,7 +20,7 @@ export default {
     },
     "capabilities": {
       "path": "scripts/capabilities-manifest.json",
-      "sha256": "5bd56d538947a674c124122951f79b1a2901bc444daa9be92f8f06436f3b48cd"
+      "sha256": "9c3e0f44ee18d4b999f715113a8720111886a627136b4137642982cf85ced985"
     }
   },
   "package": {
@@ -9679,7 +9679,7 @@ export default {
   "formats": [
     {
       "format": "JPEG",
-      "read": "Dimensions and image details, EXIF, XMP, IPTC-IIM, decoded common ICC tags, JFIF, bounded Photoshop 8BIM image resources",
+      "read": "Dimensions and image details, EXIF, XMP, IPTC-IIM, decoded common ICC tags, JFIF, bounded Photoshop 8BIM image resources, and bounded CIPA MPF/Android Ultra HDR inventories",
       "selectiveDecode": "EXIF tags and metadata groups, including Photoshop resources",
       "evidence": {
         "positive": "tests/integration.test.ts#parses the real JPEG fixture and all first-pass normalized fields",

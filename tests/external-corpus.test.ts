@@ -180,6 +180,25 @@ describe("external corpus differential report", () => {
     expect(fixture.rows[0]?.status).toBe("normalized-match");
   });
 
+  it("does not count an opaque oracle binary value as a match", () => {
+    const binaryRegistry = {
+      schema: "browser-image-metadata.external-registry.v1",
+      version: 1,
+      fields: [{ name: "MakerNote", family: "EXIF", references: ["MakerNote"] }],
+      blocks: [],
+    };
+    const fixture = compareFixture({
+      relativePath: "camera/opaque.jpg",
+      hash: "opaque",
+      bytes: new Uint8Array([7]),
+      result: result([{ name: "MakerNote", value: new Uint8Array([1, 2, 3]) }]),
+      external: { MakerNote: { rawValue: "(Binary data 3 bytes, use -b option to extract)" } },
+      registry: binaryRegistry,
+    });
+    expect(fixture.rows[0]?.status).toBe("non-comparable");
+    expect(fixture.rows[0]?.metrics).toMatchObject({ matched: 0, normalizedMatch: 0, nonComparable: 1 });
+  });
+
   it("fails the gate when a decoder field is deliberately removed", () => {
     const fixture = compareFixture({
       relativePath: "removed-decoder.jpg",
@@ -264,5 +283,68 @@ describe("external corpus differential report", () => {
       allowlist,
       currentVersion: "2.0.0",
     }).passed).toBe(false);
+  });
+
+  it("requires meaningful comparable values and unique fixture identities for the roadmap gate", () => {
+    const empty = compareFixture({
+      relativePath: "empty.jpg",
+      hash: "unique-empty",
+      bytes: new Uint8Array([1]),
+      result: result([]),
+      external: {},
+      registry,
+    });
+    const gate = evaluateGate({
+      fixtures: [empty],
+      summary: summarize([empty]),
+      minimumFixtures: 1,
+      minimumUniqueFixtures: 1,
+      minimumComparableValues: 1,
+      minimumSemanticAgreement: 0.99,
+    });
+    expect(gate.passed).toBe(false);
+    expect(gate.failures).toContain("Expected at least 1 comparable values, found 0.");
+    expect(gate.failures).toContain("No meaningful semantic comparison occurred; minimum agreement is 99.00%.");
+    expect(gate.observed).toMatchObject({ uniqueFixtureCount: 1, comparableValues: 0, semanticAgreement: 0 });
+  });
+
+  it("fails explicit metadata-family loss even when ordinary value thresholds are permissive", () => {
+    const lostBlock = compareFixture({
+      relativePath: "lost-block.jpg",
+      hash: "lost-block",
+      bytes: new Uint8Array([2]),
+      result: { ...result([]), blocks: [] },
+      external: { "IFD0:Make": "Acme" },
+      registry,
+    });
+    const gate = evaluateGate({
+      fixtures: [lostBlock],
+      summary: summarize([lostBlock]),
+      minimumFixtures: 1,
+      minimumComparableValues: 0,
+      maxMissingLocalRate: 1,
+    });
+    expect(lostBlock.rows.find((row: { fieldId: string }) => row.fieldId === "block:EXIF")?.status).toBe("missing-local");
+    expect(gate.passed).toBe(false);
+    expect(gate.failures).toContain("lost-block.jpg: metadata family EXIF was found by the reference but absent locally.");
+  });
+
+  it("reports corpus and metadata-family aggregates without merging same-named fields", () => {
+    const fixture = compareFixture({
+      relativePath: "corpus-one/a.jpg",
+      hash: "corpus-one-a",
+      bytes: new Uint8Array([3]),
+      result: result([{ name: "Make", value: "Acme" }]),
+      external: { Make: "Acme" },
+      registry,
+      corpusId: "corpus-one",
+      corpusSource: "example/source",
+      corpusCommit: "0123456789012345678901234567890123456789",
+      corpusLicense: "MIT",
+    });
+    const summary = summarize([fixture]);
+    expect(summary.byCorpus).toContainEqual(expect.objectContaining({ corpus: "corpus-one", matched: 2 }));
+    expect(summary.byMetadataFamily).toContainEqual(expect.objectContaining({ family: "EXIF", matched: 2 }));
+    expect(fixture.corpusCommit).toBe("0123456789012345678901234567890123456789");
   });
 });

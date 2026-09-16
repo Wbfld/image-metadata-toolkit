@@ -1,6 +1,7 @@
 {
-  "schema": "browser-image-metadata/r05-release-audit@1",
-  "generatedAt": "2026-09-15T03:42:52.028Z",
+  "schema": "browser-image-metadata/r05-release-audit@2",
+  "phase": "prepublication",
+  "generatedAt": "2026-09-16T23:54:38.792Z",
   "environment": {
     "package": {
       "name": "browser-image-metadata",
@@ -16,11 +17,11 @@
       "architecture": "arm64"
     },
     "git": {
-      "head": "dc8677fd376078a1e5c4068cc47f4b7d2d20a074",
+      "head": "fb0b526476d876a36f17eca51c665994fcd051dc",
       "dirty": true,
       "statusBytes": 4000
     },
-    "lockfileSha256": "72ae48f4ed1896d55d0803bd206d268954463d78e7809dc279a0d0822fced200"
+    "lockfileSha256": "456b0e71d185ae978b18f26f31ca6088901adcde4e4cf975c2cff6aea8ae5d7c"
   },
   "tooling": {
     "package": {
@@ -31,11 +32,11 @@
       "@playwright/test": "1.63.0",
       "@contentauth/c2pa-node": "0.9.5",
       "@contentauth/c2pa-web": "0.14.6",
-      "exiftool-vendored": "33.5.0",
+      "exiftool-vendored": "38.1.0",
       "exifr": "7.1.3",
       "exifreader": "4.45.0",
       "typescript": "5.9.3",
-      "vitest": "3.2.7",
+      "vitest": "4.1.11",
       "publint": "0.3.24"
     },
     "corpusCommit": "a69bf74770caf6b333221658f5092ed69f99faac",
@@ -44,11 +45,12 @@
       "scripts/external-registry.json": "c0a643468137cbca137b8bf4357ad841d238e1126ca673fedae427cf50ef945a",
       "scripts/external-allowlist.json": "614b922099aac29ff42ad71fb300c34422fca4fc6b40acd3895747c4f05f25cf",
       "data/iptc/reference-images.json": "c84e6a90a8bad42e0cd46adbec3b8380d37a685d94355f568cd41ec8d0d04b99",
-      "data/icc/reference-corpus.json": "de4089212874ec464b98323b05b55746490702dba4537466a4323724f35eb144",
+      "data/icc/reference-corpus.json": "425f3f6915a835f663b415f53b413303fad6a528805e72fe58e9a4be758d9922",
       "data/c2pa/provenance.json": "974069b098607b9430ce4d44856925eb6e30f57197a2accedc375aec0d3dcef9",
       "data/raw/raw-b04-sources.json": "3f8b479de1aa67119576919f558736847dd30105f419a68b50c6753ba3cc797a",
       "data/raw/raw-b05-sources.json": "d7a4eb33e001ce308e2132b219bcd97f55470081fdffda125156d2e974441e39",
-      "data/makernote-b08-sources.json": "6a874f4d9fc87bb55c5bdcca08d1236f7bbde4cd1eb2e6bdc693f08fe404b2e7",
+      "data/dependency-license-provenance.json": "4e3a407d744a812b7454561fc0b6becc34a716063eea4e08b15705e467ec4f8d",
+      "data/makernote-b08-sources.json": "161bc0075ef095d9c1f9ccd68d675c7e0f9f9aa997e3855bdee89f23a8dd472b",
       "data/svg/b09-sources.json": "53a5322a5baad171d56e5d47022eb2845a9a52ea08913eb0e72d321c46fb4eb2"
     },
     "browserProjects": [
@@ -65,244 +67,290 @@
   },
   "candidate": {
     "trackedDiff": [
-      ".github/SECURITY.md",
+      ".github/workflows/ci.yml",
+      ".github/workflows/fuzz.yml",
       ".github/workflows/interoperability.yml",
+      ".github/workflows/release-audit.yml",
       ".github/workflows/release.yml",
       "API.md",
-      "CAPABILITIES.md",
-      "CHANGELOG.md",
-      "CONTRIBUTING.md",
-      "MIGRATION.md",
-      "PUBLISHING.md",
-      "README.md",
-      "RELEASE_CHECKLIST.md",
-      "baselines/2.0.0-alpha.3.json",
-      "package-lock.json",
-      "package.json",
-      "reports/c2pa-adapter-integration.json",
-      "reports/heif-b02-evidence.json",
-      "reports/heif-b03-evidence.json",
-      "reports/jxl-b01-evidence.json",
-      "scripts/capabilities-manifest.json",
-      "scripts/generate-capabilities.mjs",
-      "scripts/package-smoke.mjs",
-      "scripts/release-check.mjs",
-      "src/adapters.ts",
-      "src/capabilities.ts",
-      "src/details.ts",
-      "src/detect-format.ts",
-      "src/edit.ts",
-      "src/index.ts",
-      "src/jpeg-writer.ts",
-      "src/normalize/iptc.ts",
-      "src/parsers/heif.ts",
-      "src/parsers/jpeg.ts",
-      "src/parsers/tiff.ts",
-      "src/privacy/audit.ts",
-      "src/privacy/redact.ts",
-      "src/result.ts",
-      "src/selection.ts",
-      "src/tiff-range.ts",
-      "src/tiff.ts",
-      "src/types.ts",
-      "src/worker.ts",
-      "tests/browser/metadata.spec.ts",
-      "tests/browser/server.mjs",
-      "tests/capabilities-contract.test.ts",
-      "tests/detect-format.test.ts",
-      "tests/integration.test.ts",
-      "tests/worker.test.ts",
-      "tsup.config.ts"
-    ],
-    "untracked": [
-      ".github/workflows/release-audit.yml",
-      "B04_B10_R01_R05_AUTONOMOUS_PROMPT.md",
       "B04_RAW_PHASE_ONE.md",
       "B05_RAW_PHASE_TWO.md",
-      "B06_PHOTOSHOP_RESOURCES.md",
-      "B07_MAKERNOTE_PLUGIN_CONTRACT.md",
       "B08_MAKERNOTE_VENDOR_PACKS.md",
-      "B09_DEMAND_GATE.md",
       "B10_XMP_SIDECAR.md",
-      "DEPRECATION_POLICY.md",
-      "R01_API_DECISION.md",
-      "R02_DOCUMENTATION_SITE.md",
-      "R03_CLI.md",
-      "R04_CODEMOD_DECISION.md",
-      "R04_MIGRATION_COMPATIBILITY.md",
+      "CAPABILITIES.md",
+      "CHANGELOG.md",
+      "EXTERNAL_CORPORA.md",
+      "METADATA_REGISTRY.md",
+      "MIGRATION.md",
+      "PUBLISHING.md",
       "R05_COMPATIBILITY_LIMITATIONS.md",
       "R05_EXTERNAL_REVIEW_PACKET.md",
+      "README.md",
+      "RELEASE_CHECKLIST.md",
       "RUNTIME_SUPPORT.md",
-      "cli/index.mjs",
+      "W03_JPEG_WRITING.md",
+      "W05_WEBP_WRITING.md",
+      "baselines/2.0.0-alpha.3.json",
+      "data/icc/reference-corpus.json",
       "data/makernote-b08-sources.json",
-      "data/photoshop-b06-sources.json",
-      "data/r04-compatibility-sources.json",
-      "data/raw/raw-b04-sources.json",
-      "data/raw/raw-b05-sources.json",
-      "data/sidecar/b10-sources.json",
-      "data/svg/b09-sources.json",
-      "docs-site/fetch-demo.html",
-      "docs-site/fetch-demo.js",
       "docs-site/generated/MANIFEST.md",
       "docs-site/generated/site-data.js",
       "docs-site/generated/site-data.json",
       "docs-site/index.html",
-      "docs-site/playground.html",
-      "docs-site/playground.js",
-      "docs-site/recipes.html",
-      "docs-site/registry-capabilities.html",
-      "docs-site/registry-exif.html",
-      "docs-site/registry-formats.html",
-      "docs-site/registry-icc.html",
-      "docs-site/registry-iptc.html",
-      "docs-site/registry-page.html",
-      "docs-site/registry-policies.html",
-      "docs-site/registry-selectors.html",
-      "docs-site/registry-xmp.html",
-      "docs-site/registry.html",
-      "docs-site/registry.js",
-      "docs-site/server.mjs",
-      "docs-site/styles.css",
-      "reports/b09-demand-decision.json",
-      "reports/makernote-b07-contract-evidence.json",
-      "reports/makernote-b07-contract-evidence.md",
+      "package-lock.json",
+      "package.json",
+      "reports/c2pa-adapter-integration.json",
+      "reports/c2pa-adapter-integration.md",
+      "reports/c2pa-terminology-audit.json",
+      "reports/c2pa-terminology-audit.md",
+      "reports/f05-external-corpus-evidence.json",
+      "reports/g04-launch-evidence.json",
+      "reports/g04-launch-evidence.md",
+      "reports/heif-b02-evidence.json",
+      "reports/heif-b03-evidence.json",
+      "reports/icc-reference-report.json",
+      "reports/icc-reference-report.md",
+      "reports/iptc-reference-conformance.json",
+      "reports/iptc-reference-conformance.md",
+      "reports/jxl-b01-evidence.json",
       "reports/makernote-b08-evidence.json",
       "reports/makernote-b08-evidence.md",
       "reports/photoshop-b06-evidence.json",
       "reports/photoshop-b06-evidence.md",
-      "reports/photoshop-b06-human-review.json",
-      "reports/photoshop-b06-human-review.md",
       "reports/r01-api-snapshot.json",
-      "reports/r02-r03-evidence.json",
-      "reports/r02-r03-evidence.md",
-      "reports/r04-compatibility.json",
-      "reports/r04-compatibility.md",
       "reports/r05-benchmark.json",
-      "reports/r05-release-audit.json",
-      "reports/r05-release-audit.md",
       "reports/raw-b04-evidence.json",
       "reports/raw-b04-evidence.md",
       "reports/raw-b05-evidence.json",
       "reports/raw-b05-evidence.md",
       "reports/sidecar-b10-evidence.json",
-      "reports/sidecar-b10-evidence.md",
       "reports/sidecar-b10-human-review.md",
       "reports/svg-b09-evidence.json",
-      "reports/svg-b09-evidence.md",
-      "schemas/r01-api-v1.schema.json",
-      "scripts/b09-demand-decision.mjs",
-      "scripts/bun-smoke.mjs",
-      "scripts/cli-contract.mjs",
-      "scripts/generate-docs-site.mjs",
-      "scripts/makernote-b07-evidence.mjs",
-      "scripts/makernote-b08-evidence.mjs",
+      "scripts/baseline.mjs",
+      "scripts/c2pa-terminology-audit.mjs",
+      "scripts/capabilities-manifest.json",
+      "scripts/external-corpus-lib.d.mts",
+      "scripts/external-corpus-lib.mjs",
+      "scripts/external-corpus.mjs",
+      "scripts/generate-capabilities.mjs",
+      "scripts/icc-reference-corpus.mjs",
+      "scripts/package-smoke.mjs",
       "scripts/photoshop-b06-evidence.mjs",
-      "scripts/prepare-r05-corpora.d.mts",
-      "scripts/prepare-r05-corpora.mjs",
-      "scripts/r01-api-contract.mjs",
-      "scripts/r04-compatibility-lib.d.mts",
-      "scripts/r04-compatibility-lib.mjs",
-      "scripts/r04-compatibility.mjs",
       "scripts/r05-release-audit.d.mts",
       "scripts/r05-release-audit.mjs",
       "scripts/raw-b04-evidence.mjs",
       "scripts/raw-b05-evidence.mjs",
-      "scripts/sidecar-b10-evidence.mjs",
-      "scripts/svg-b09-evidence.mjs",
-      "src/makernote/apple.ts",
-      "src/makernote/canon.ts",
-      "src/makernote/fujifilm.ts",
-      "src/makernote/nikon.ts",
-      "src/makernote/panasonic-leica.ts",
-      "src/makernote/pentax.ts",
-      "src/makernote/sony.ts",
-      "src/metadata/makernote-pack-sources.ts",
+      "scripts/release-check.mjs",
+      "src/edit.ts",
+      "src/index.ts",
+      "src/jpeg-range.ts",
+      "src/jpeg-writer.ts",
+      "src/jpeg.ts",
+      "src/metadata/iptc.ts",
       "src/metadata/makernote-pack.ts",
-      "src/metadata/makernote.ts",
       "src/metadata/photoshop.ts",
+      "src/metadata/serialization.ts",
+      "src/parsers/gif.ts",
+      "src/parsers/heif.ts",
+      "src/parsers/jpeg.ts",
+      "src/parsers/jxl.ts",
+      "src/parsers/png.ts",
       "src/parsers/raw-phase-two.ts",
-      "src/parsers/svg.ts",
-      "src/raw.ts",
-      "src/sidecar.ts",
-      "src/xmp-sidecar.ts",
-      "tests/b09-demand.test.ts",
-      "tests/browser/docs-site.spec.ts",
+      "src/parsers/webp.ts",
+      "src/png-writer.ts",
+      "src/security/sha256.ts",
+      "src/selection.ts",
+      "src/trust/jumbf.ts",
+      "src/types.ts",
+      "tests/browser/metadata.spec.ts",
+      "tests/byte-source.test.ts",
       "tests/cli.test.ts",
-      "tests/docs-site.test.ts",
+      "tests/external-corpus.test.ts",
+      "tests/heif-b02.test.ts",
+      "tests/heif-b03.test.ts",
+      "tests/jpeg-writer.test.ts",
+      "tests/jxl-b01.test.ts",
       "tests/makernote-b07.test.ts",
-      "tests/makernote-b08.test.ts",
       "tests/photoshop-b06.test.ts",
-      "tests/r01-api.test.ts",
-      "tests/r01-type-contracts.ts",
       "tests/r04-compatibility.test.ts",
-      "tests/r05-corpus-preparation.test.ts",
       "tests/r05-release-audit.test.ts",
       "tests/raw-b04.test.ts",
-      "tests/raw-b05.test.ts",
-      "tests/sidecar-b10.test.ts",
-      "tests/svg-b09.test.ts"
+      "tests/redact.test.ts",
+      "tests/registry.test.ts",
+      "tests/serialization-s06.test.ts",
+      "tests/sha256.test.ts",
+      "tests/svg-b09.test.ts",
+      "tests/trust-t03.test.ts",
+      "tests/webp-writer.test.ts",
+      "vitest.config.ts"
+    ],
+    "untracked": [
+      "BUSTNESS.md",
+      "T05_MPF_ULTRA_HDR.md",
+      "WRITER_CORPUS.md",
+      "data/dependency-license-provenance.json",
+      "data/external-corpus.json",
+      "data/mpf/reference-corpus.json",
+      "data/writer-corpus.json",
+      "reports/f05-external-corpus-evidence.md",
+      "reports/mpf-t05-evidence.json",
+      "reports/mpf-t05-evidence.md",
+      "reports/mpf-t05-write-evidence.json",
+      "reports/mpf-t05-write-evidence.md",
+      "reports/roadmap-read-corpus-evidence.json",
+      "reports/roadmap-read-corpus-evidence.md",
+      "reports/roadmap-writer-corpus-evidence.json",
+      "reports/roadmap-writer-corpus-evidence.md",
+      "reports/s06-coverage-evidence.json",
+      "reports/s06-coverage-evidence.md",
+      "reports/s06-high-volume-fuzz-evidence.json",
+      "reports/s06-high-volume-fuzz-evidence.md",
+      "scripts/mpf-t05-evidence.mjs",
+      "scripts/mpf-t05-write-evidence.mjs",
+      "scripts/release-dist-tag.mjs",
+      "scripts/s06-coverage-gate.mjs",
+      "scripts/s06-high-volume-fuzz.mjs",
+      "scripts/writer-corpus.mjs",
+      "src/metadata/mpf-ultrahdr.ts",
+      "tests/generated-registry-cases.test.ts",
+      "tests/mpf-t05.test.ts",
+      "tests/result-completion.test.ts",
+      "tests/robustness-s06.test.ts",
+      "tests/s06-adapter-edge.test.ts",
+      "tests/s06-adapter-remaining-matrix.test.ts",
+      "tests/s06-adversarial-byte-grid.test.ts",
+      "tests/s06-c2pa-carrier-branches.test.ts",
+      "tests/s06-complete-fixture-api-matrix.test.ts",
+      "tests/s06-container-boundaries.test.ts",
+      "tests/s06-coverage-boundary-matrix.test.ts",
+      "tests/s06-creator-boundary-matrix.test.ts",
+      "tests/s06-creator-edge.test.ts",
+      "tests/s06-decoder-boundaries.test.ts",
+      "tests/s06-decoder-completion-matrix.test.ts",
+      "tests/s06-decoder-depth-matrix.test.ts",
+      "tests/s06-details-byte-matrix.test.ts",
+      "tests/s06-details-projection.test.ts",
+      "tests/s06-edit-policy-matrix.test.ts",
+      "tests/s06-edit-runtime-matrix.test.ts",
+      "tests/s06-exif-type-completion-matrix.test.ts",
+      "tests/s06-exif-value-matrix.test.ts",
+      "tests/s06-fixture-mutation-matrix.test.ts",
+      "tests/s06-format-decompression-boundaries.test.ts",
+      "tests/s06-fuzz-contract.test.ts",
+      "tests/s06-gif-semantic-matrix.test.ts",
+      "tests/s06-heif-branch-matrix.test.ts",
+      "tests/s06-heif-completion-matrix.test.ts",
+      "tests/s06-heif-error-matrix.test.ts",
+      "tests/s06-heif-valid-structure-matrix.test.ts",
+      "tests/s06-http-boundary-matrix.test.ts",
+      "tests/s06-icc-coverage-matrix.test.ts",
+      "tests/s06-input-jfif-boundary.test.ts",
+      "tests/s06-inventory-matrix.test.ts",
+      "tests/s06-iptc-boundary-matrix.test.ts",
+      "tests/s06-iptc-generated-semantic-matrix.test.ts",
+      "tests/s06-jpeg-metadata-branch-matrix.test.ts",
+      "tests/s06-jpeg-projection-contract.test.ts",
+      "tests/s06-jpeg-writer-boundary-grid.test.ts",
+      "tests/s06-jpeg-writer-validation-matrix.test.ts",
+      "tests/s06-makernote-contract-matrix.test.ts",
+      "tests/s06-makernote-pack-matrix.test.ts",
+      "tests/s06-materialization-selection-grid.test.ts",
+      "tests/s06-optional-adapter-branches.test.ts",
+      "tests/s06-optional-family-branch-matrix.test.ts",
+      "tests/s06-parser-branch-completion.test.ts",
+      "tests/s06-png-writer-boundary-grid.test.ts",
+      "tests/s06-privacy-fixture-matrix.test.ts",
+      "tests/s06-public-api-matrix.test.ts",
+      "tests/s06-range-exhaustive.test.ts",
+      "tests/s06-range-matrix.test.ts",
+      "tests/s06-raw-completion-matrix.test.ts",
+      "tests/s06-raw-phase-two-matrix.test.ts",
+      "tests/s06-reachable-boundary-matrix.test.ts",
+      "tests/s06-redaction-format-matrix.test.ts",
+      "tests/s06-runtime-boundary-matrix.test.ts",
+      "tests/s06-security-completion-matrix.test.ts",
+      "tests/s06-semantic-coverage.test.ts",
+      "tests/s06-serialization-branch-matrix.test.ts",
+      "tests/s06-small-boundary-matrix.test.ts",
+      "tests/s06-structured-mutation-fuzz.test.ts",
+      "tests/s06-structured-parser-mutation-matrix.test.ts",
+      "tests/s06-tiff-edge-matrix.test.ts",
+      "tests/s06-tiff-pointer-matrix.test.ts",
+      "tests/s06-tiff-projection-contract.test.ts",
+      "tests/s06-tiff-range-completion-matrix.test.ts",
+      "tests/s06-tiff-range-endian-matrix.test.ts",
+      "tests/s06-tiff-serializer-boundary-grid.test.ts",
+      "tests/s06-tiff-value-validation-matrix.test.ts",
+      "tests/s06-valid-fixture-byte-grid.test.ts",
+      "tests/s06-webp-redaction-boundary-matrix.test.ts",
+      "tests/s06-webp-writer-boundary-grid.test.ts",
+      "tests/s06-writer-complete-matrix.test.ts",
+      "tests/s06-writer-input-validation-matrix.test.ts",
+      "tests/s06-writer-validation.test.ts",
+      "tests/s06-xmp-serialization-boundaries.test.ts",
+      "tests/writer-corpus.test.ts"
     ]
   },
   "retainedEvidence": [
     {
       "path": "reports/f05-external-corpus-evidence.json",
       "present": true,
-      "bytes": 86418,
-      "sha256": "c6aba99919a5dd4590ba80db8a75bcc5a500dfd6ac2e48f26720bf440d7f02dc"
+      "bytes": 112250,
+      "sha256": "76417955b205b0298e3114475b59e24e6eb948c54925cda7ee4de8000cd22003"
     },
     {
       "path": "reports/iptc-reference-conformance.json",
       "present": true,
       "bytes": 11273,
-      "sha256": "6fc08cceefa14f8e4d1482c77eca7792a8ca88548b28faee29e9f4aa76e4bdd8"
+      "sha256": "d1df6de89f91cb402d85398098a2dc2b15c177d26caeec529aa159af632be6ea"
     },
     {
       "path": "reports/icc-reference-report.json",
       "present": true,
       "bytes": 311976,
-      "sha256": "24cf0c5acc246214bab1a2e199a4b7d7d6df28bff793fc0348c3a693b054a6e6"
+      "sha256": "342f3a7508ae2842533aa54e6522093e8dfd35011f48fc6de95227d13c4c03f4"
     },
     {
       "path": "reports/c2pa-adapter-integration.json",
       "present": true,
-      "bytes": 4428,
-      "sha256": "46eba14a4a0dc057ccd37abc0bef02111e1253321cfb45021775840d9bd29772"
+      "bytes": 135,
+      "sha256": "213083695b1b89e6b21afbebfce5aa167f011c709860cf6fe3a3cb17c0ac6692"
     },
     {
       "path": "reports/raw-b04-evidence.json",
       "present": true,
       "bytes": 36261,
-      "sha256": "f0a8dcc5e6517d66c2510fb0a90976c0de0f35a82fff0adbf6ff153988a69094"
+      "sha256": "a9a2fd36bdfb4108ad40acc24a33c2979e44073fc1eb122d757221b1caa00fdc"
     },
     {
       "path": "reports/raw-b04-evidence.md",
       "present": true,
       "bytes": 2559,
-      "sha256": "b8f7b0b163b44f6efe95553b829e33cc9e587c8dc77577b5052a9363613264da"
+      "sha256": "1fd87ee5d6c271fac686d08be912318a5b736ad41f43fad81fd40b9059f804fa"
     },
     {
       "path": "reports/raw-b05-evidence.json",
       "present": true,
       "bytes": 39082,
-      "sha256": "67f26368545b3f18178de33cd830ccff62d3546701b5fd7e18d7fd9dc56f8647"
+      "sha256": "fec0c5c96799e7de5fa5da49c3da6eaf0f5f1bab08176a4727ea0fdce8af4a9d"
     },
     {
       "path": "reports/raw-b05-evidence.md",
       "present": true,
       "bytes": 4912,
-      "sha256": "91671e7ed0a6b3085ce0ebc203aee683f745d5f4671b15f9a56d992bd347eba3"
+      "sha256": "837aafbd9cfb396e0c526872aecb97f72ac3eda003a686b8906963853fd2ad4f"
     },
     {
       "path": "reports/photoshop-b06-evidence.json",
       "present": true,
-      "bytes": 10813,
-      "sha256": "c535aa217de5fb451368785af423501d0061cd421ae2d2723a8bd7fa0d87f934"
+      "bytes": 10871,
+      "sha256": "0e35c9030dec48bb2e84f5f1e17ce0c8f9ff10b9e1c206a6c82ca4ff12d08114"
     },
     {
       "path": "reports/photoshop-b06-evidence.md",
       "present": true,
-      "bytes": 1106,
-      "sha256": "15aab456efa7c5096e3d77038fe9c2641a721389eec8ede60a7d8f52fce0f640"
+      "bytes": 1107,
+      "sha256": "15c5c5be8900843b672f8bcf3a5d543f849ba857f5f2f63a6336177f9a060ac8"
     },
     {
       "path": "reports/makernote-b07-contract-evidence.json",
@@ -320,19 +368,19 @@
       "path": "reports/makernote-b08-evidence.json",
       "present": true,
       "bytes": 157027,
-      "sha256": "eac06e2363311f73ef1c3c40b9f10a6d0c4a359e89615cb523058afd82e8c41c"
+      "sha256": "0319ec8ef03e4c404e7d43680a1dbc69ccfa6d50f6906648d88b09ea468e8ecc"
     },
     {
       "path": "reports/makernote-b08-evidence.md",
       "present": true,
       "bytes": 6361,
-      "sha256": "4831c35e3533e3077762fb620b5978980f09f6956223f05c0de9eab8b8e80684"
+      "sha256": "2a201f44441673ac82cc2ecb6ed78439bd3c488bb1badcee06ca70f5f40891e6"
     },
     {
       "path": "reports/svg-b09-evidence.json",
       "present": true,
       "bytes": 3089,
-      "sha256": "1f34690b184120af45a12d8e641010089d76f9750d7e7972ccb8a867ed2daba4"
+      "sha256": "869a63294b0c00c32218c10505035c5e718b687ec7cfb64efcb7e8fe746717ed"
     },
     {
       "path": "reports/svg-b09-evidence.md",
@@ -344,7 +392,7 @@
       "path": "reports/sidecar-b10-evidence.json",
       "present": true,
       "bytes": 6703,
-      "sha256": "99767bd7afeb82c276da4a476d415069d2178f2f4b69629b9a425c4915e49adf"
+      "sha256": "f50acafcde1c07b1fd7da4ac3913238c9d450328ff9e26bdd7aa7fe0a7dabf59"
     },
     {
       "path": "reports/sidecar-b10-evidence.md",
@@ -356,7 +404,7 @@
       "path": "reports/r01-api-snapshot.json",
       "present": true,
       "bytes": 1238,
-      "sha256": "44bd195677d943c5f66f1d111d9f1a3af3e1e4568763232ff980f3944c54d9fc"
+      "sha256": "3fd7dc258d0a697d7ab5ff28d55458703b7e0df12cf2017720f947cd8b53f899"
     },
     {
       "path": "reports/r02-r03-evidence.json",
@@ -385,44 +433,44 @@
     {
       "path": "reports/r05-benchmark.json",
       "present": true,
-      "bytes": 74901,
-      "sha256": "dee7ed4aa13ec388d242a68d9e418c000211e3e153c541a29663fe0b74a36397"
+      "bytes": 74904,
+      "sha256": "3f7ef05469d515e77b07ca42e854bd23c3eac05f9b416c50682e27a64a468ff7"
     },
     {
       "path": "artifacts/r05-external/external-corpus-report.json",
       "present": true,
-      "bytes": 11375561,
-      "sha256": "de6ef043c942b920c518fc00222e8a48980ddb5405f6957b78a58d04b1b20470"
+      "bytes": 12294060,
+      "sha256": "f6fda23f47172d214627756ac9b2561dcf1219cafbac87681278ea3ac67949af"
     },
     {
       "path": "artifacts/r05-external/external-corpus-report.md",
       "present": true,
-      "bytes": 382159,
-      "sha256": "554fa48b53d507d80647676d2bda3c7253d964c2f39e80650561360088c63895"
+      "bytes": 418642,
+      "sha256": "9a98bfd927f25fa0f31c69ab76f6c81f0d42e02998e32d178748019b002c62c9"
     },
     {
       "path": "artifacts/r05-iptc/iptc-reference-conformance.json",
       "present": true,
       "bytes": 11273,
-      "sha256": "561686a9c016f9695af7db8c680c2026d378539e15aa8cb9163b6c5a106ba47a"
+      "sha256": "019072ed788895a120a0d12cfd1a66a7442bf956def76f93cbd8804fad51fec2"
     },
     {
       "path": "artifacts/r05-iptc/iptc-reference-conformance.md",
       "present": true,
       "bytes": 6214,
-      "sha256": "6b150ab099a42b6899fe4f5c859e592ec23a440d4eaac3777261c35ef9d85dfb"
+      "sha256": "5d07d1664b0030539cae1ff3fe5d667038865843ef0680f1038cb3287c569bae"
     },
     {
       "path": "artifacts/r05-icc/icc-reference-report.json",
       "present": true,
       "bytes": 311976,
-      "sha256": "57d53796f5adeff85cb1bc8ed122d6db49796cf550a5c76cb49a2eff35e5f648"
+      "sha256": "d4531b16531f82ad81d37f9d6af8f47dca66cde365eb27dc18d4c7fdd1226577"
     },
     {
       "path": "artifacts/r05-icc/icc-reference-report.md",
       "present": true,
       "bytes": 4529,
-      "sha256": "c8e958f9a93d24a21ce39f9c3e8310babd510839c6004d1f66329f51a6ff5cfe"
+      "sha256": "6fddd38a4251af4faa002a221c7452de3feb61a3561563b08fd55396559950df"
     }
   ],
   "policy": {
@@ -462,20 +510,20 @@
     "noRunIsPass": true,
     "externalAssets": "temporary untracked storage only; only paths, byte lengths, and hashes may be retained",
     "unsupportedClaims": "fully featured, safest, and fastest require defined scope and direct evidence",
-    "publication": "not performed by this audit"
+    "publication": "Prepublication gates publication and leaves registry provenance explicitly pending."
   },
   "checks": [
     {
       "id": "release-preflight",
       "status": "failed",
       "command": "npm run release:check",
-      "durationMs": 320,
+      "durationMs": 372,
       "exitCode": null,
       "signal": null,
       "timedOut": false,
       "stdoutBytes": 88,
       "stderrBytes": 8192,
-      "outputSha256": "5e378796b2804f84217297fdbbdfd780d85ce6be13bc12ab04f5e8fa8c806ae3",
+      "outputSha256": "40772dc561d4c10a11763133a73adaa120a8c503fef483f76b97515140a98be8",
       "errorCode": null,
       "reason": "The current source tree is dirty; release preflight requires a clean candidate checkout."
     },
@@ -486,97 +534,111 @@
     },
     {
       "id": "unit-integration-check",
-      "status": "passed",
+      "status": "unavailable",
       "command": "npm run test",
-      "durationMs": 19736,
-      "exitCode": 0,
-      "stdoutBytes": 4515,
-      "stderrBytes": 0,
-      "outputSha256": "06ca111063f9780012e5d61d7e5e9405352e5384e2e0deb30676c445d2c2d2ed"
+      "durationMs": 41287,
+      "exitCode": null,
+      "signal": null,
+      "timedOut": false,
+      "stdoutBytes": 1371,
+      "stderrBytes": 1689,
+      "outputSha256": "ea359e41b07c2cf8af5729b81ad60c3d4a781b1dbcb46abbf689432cb1c4f163",
+      "errorCode": null,
+      "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
     },
     {
       "id": "full-check",
-      "status": "passed",
+      "status": "unavailable",
       "command": "npm run check",
-      "durationMs": 195095,
-      "exitCode": 0,
-      "stdoutBytes": 66932,
-      "stderrBytes": 0,
-      "outputSha256": "9edbd21d787a9ea6afd74e1067c97c8d3e952cd1da3f8454fafca80d8e3f8571"
+      "durationMs": 105028,
+      "exitCode": null,
+      "signal": null,
+      "timedOut": false,
+      "stdoutBytes": 31071,
+      "stderrBytes": 1689,
+      "outputSha256": "ca685dd0921e031c9cb752e4771be2f03795886c049acf901eb6b14c229d0070",
+      "errorCode": null,
+      "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
     },
     {
       "id": "fuzzing",
       "status": "passed",
       "command": "npm run test:fuzz",
-      "durationMs": 2141,
+      "durationMs": 1840,
       "exitCode": 0,
-      "stdoutBytes": 409,
+      "stdoutBytes": 355,
       "stderrBytes": 0,
-      "outputSha256": "86131503cce3b77db95faacdc68ae5549c55958bf8fa05cdaaf69ea93d7e2e51"
+      "outputSha256": "64823e129203c01555072a7fbe0dbb58f8db350bc904c38b69da2b3adf00c1ee"
     },
     {
       "id": "browser-matrix",
-      "status": "failed",
+      "status": "unavailable",
       "command": "npm run test:browser",
-      "durationMs": 141225,
+      "durationMs": 37909,
       "exitCode": null,
       "signal": null,
       "timedOut": false,
-      "stdoutBytes": 27767,
-      "stderrBytes": 3304,
-      "outputSha256": "782c8b4759382f7dcac2b869c09383b721ad36dedf3ee738f4d6987ea6bf6a14",
+      "stdoutBytes": 17289,
+      "stderrBytes": 1043,
+      "outputSha256": "08d41dc5e4d952c93782c252b9de8f980c9531e4d4a12bedbe68afc2bfd86dd6",
       "errorCode": null,
-      "reason": "The installed Playwright WebKit engine rejects the PushAPIEnabled context setting during page setup; Chromium and Firefox completed separately."
+      "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
     },
     {
       "id": "deno-runtime",
-      "status": "unavailable",
+      "status": "passed",
       "command": "npm run test:deno",
-      "reason": "Deno executable is not installed; no Deno result is treated as pass.",
-      "durationMs": 0
+      "durationMs": 36428,
+      "exitCode": 0,
+      "stdoutBytes": 17399,
+      "stderrBytes": 19,
+      "outputSha256": "1065819da1c3329a95fb98fcc71c8a0a65931ac52be3edb84deded553cdf49bf"
     },
     {
       "id": "bun-runtime",
-      "status": "unavailable",
+      "status": "passed",
       "command": "bun run test:bun",
-      "reason": "Bun executable is not installed; no Bun result is treated as pass.",
-      "durationMs": 0
+      "durationMs": 34167,
+      "exitCode": 0,
+      "stdoutBytes": 17099,
+      "stderrBytes": 52,
+      "outputSha256": "9981b7bad7bdefbfcd0cb22e35e5bcdb334582d8ef864d809ac80cd8118ce469"
     },
     {
       "id": "benchmark",
       "status": "passed",
       "command": "npm run benchmark -- --output ./reports/r05-benchmark.json",
-      "durationMs": 36354,
+      "durationMs": 45312,
       "exitCode": 0,
-      "stdoutBytes": 16891,
+      "stdoutBytes": 17327,
       "stderrBytes": 0,
-      "outputSha256": "f53a9261029654cbc087a8ac38a5f3cc801a91f04b34572d2a682205791b3e58"
+      "outputSha256": "4c41a904997060a9cf04621562c686c5160864f11b92cf14f919352e285a8fc1"
     },
     {
       "id": "external-corpus",
       "status": "passed",
       "command": "npm run test:corpus",
-      "durationMs": 34273,
+      "durationMs": 36904,
       "exitCode": 0,
-      "stdoutBytes": 16946,
+      "stdoutBytes": 17382,
       "stderrBytes": 0,
-      "outputSha256": "86fa7db2f385071bc201381783776a27462222537749b4015a1cac3c97074f97"
+      "outputSha256": "5d8769d83961567adf7a78483caf174fb069752a3745d637037328e3e1eac200"
     },
     {
       "id": "official-iptc-reference",
       "status": "passed",
       "command": "npm run iptc:reference",
-      "durationMs": 33159,
+      "durationMs": 35771,
       "exitCode": 0,
-      "stdoutBytes": 16926,
+      "stdoutBytes": 17362,
       "stderrBytes": 0,
-      "outputSha256": "20e833bbc27cfa30847c7fe649ddee3b8e670a40c105f8ef3c551d32784d4591"
+      "outputSha256": "665d041c4841dfd5a09f0f1c5568d01b6fb35c388f711d72889a4f54f301022c"
     },
     {
       "id": "official-icc-reference",
       "status": "passed",
       "command": "npm run icc:reference",
-      "durationMs": 951,
+      "durationMs": 847,
       "exitCode": 0,
       "stdoutBytes": 401,
       "stderrBytes": 0,
@@ -586,7 +648,7 @@
       "id": "generated-artifacts",
       "status": "passed",
       "command": "npm run capabilities:check",
-      "durationMs": 192,
+      "durationMs": 180,
       "exitCode": 0,
       "stdoutBytes": 140,
       "stderrBytes": 0,
@@ -596,7 +658,7 @@
       "id": "generated-registry",
       "status": "passed",
       "command": "npm run registry:check",
-      "durationMs": 170,
+      "durationMs": 156,
       "exitCode": 0,
       "stdoutBytes": 101,
       "stderrBytes": 0,
@@ -606,7 +668,7 @@
       "id": "generated-iptc",
       "status": "passed",
       "command": "npm run iptc:check",
-      "durationMs": 172,
+      "durationMs": 161,
       "exitCode": 0,
       "stdoutBytes": 102,
       "stderrBytes": 0,
@@ -616,7 +678,7 @@
       "id": "typecheck",
       "status": "passed",
       "command": "npm run typecheck",
-      "durationMs": 4973,
+      "durationMs": 6232,
       "exitCode": 0,
       "stdoutBytes": 66,
       "stderrBytes": 0,
@@ -626,7 +688,7 @@
       "id": "lint",
       "status": "passed",
       "command": "npm run lint",
-      "durationMs": 15966,
+      "durationMs": 20071,
       "exitCode": 0,
       "stdoutBytes": 57,
       "stderrBytes": 0,
@@ -634,29 +696,33 @@
     },
     {
       "id": "coverage",
-      "status": "passed",
+      "status": "unavailable",
       "command": "npm run test:coverage",
-      "durationMs": 21957,
-      "exitCode": 0,
-      "stdoutBytes": 13383,
-      "stderrBytes": 0,
-      "outputSha256": "865dc54ca0a8e3c6b1942f71e872269e2085202763cbd407682dcc0b79798b32"
+      "durationMs": 44032,
+      "exitCode": null,
+      "signal": null,
+      "timedOut": false,
+      "stdoutBytes": 12698,
+      "stderrBytes": 1689,
+      "outputSha256": "7c235c508640be9f0a1cece10b6292ed5f40964a1cac8f8904a064b15d95f0d5",
+      "errorCode": null,
+      "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
     },
     {
       "id": "build",
       "status": "passed",
       "command": "npm run build",
-      "durationMs": 36078,
+      "durationMs": 32659,
       "exitCode": 0,
-      "stdoutBytes": 16690,
+      "stdoutBytes": 17126,
       "stderrBytes": 0,
-      "outputSha256": "b809fd4063547b7610e91d4078dada20b72e5ffd1d58caa3cbd108965aaef360"
+      "outputSha256": "72477a56c430fa93d6c44861909ba0721412ef96737d44ed3108aefd1f16e810"
     },
     {
       "id": "publint",
       "status": "passed",
       "command": "npm run publint",
-      "durationMs": 9462,
+      "durationMs": 11204,
       "exitCode": 0,
       "stdoutBytes": 167,
       "stderrBytes": 0,
@@ -666,7 +732,7 @@
       "id": "package-smoke",
       "status": "passed",
       "command": "npm run package:smoke",
-      "durationMs": 31992,
+      "durationMs": 40143,
       "exitCode": 0,
       "stdoutBytes": 151,
       "stderrBytes": 0,
@@ -676,17 +742,17 @@
       "id": "examples",
       "status": "passed",
       "command": "npm run examples",
-      "durationMs": 31194,
+      "durationMs": 34116,
       "exitCode": 0,
-      "stdoutBytes": 17940,
+      "stdoutBytes": 18376,
       "stderrBytes": 0,
-      "outputSha256": "7b864378b2359796ecef98cf09d8cdb07f0e40e07eab427f50b2a8f2e6b509ca"
+      "outputSha256": "4b4177996ec8160372ed428b6e09418836a6494decdce84f95cca00bdab9103d"
     },
     {
       "id": "api-schema-contract",
       "status": "passed",
       "command": "npm run r01:check",
-      "durationMs": 344,
+      "durationMs": 328,
       "exitCode": 0,
       "stdoutBytes": 160,
       "stderrBytes": 0,
@@ -694,19 +760,23 @@
     },
     {
       "id": "baseline",
-      "status": "passed",
+      "status": "failed",
       "command": "npm run baseline:verify",
-      "durationMs": 14894,
-      "exitCode": 0,
-      "stdoutBytes": 176,
-      "stderrBytes": 0,
-      "outputSha256": "3fed1402766119198c489847111ed2fb3ab97af6d54c92b63a12c53e65f601f4"
+      "durationMs": 5462,
+      "exitCode": null,
+      "signal": null,
+      "timedOut": false,
+      "stdoutBytes": 123,
+      "stderrBytes": 1055,
+      "outputSha256": "e94ba0bea6e01af2f3517472014f50c45759a173be5eb74729834f3eb9a5666b",
+      "errorCode": null,
+      "reason": null
     },
     {
       "id": "cli-contract",
       "status": "passed",
       "command": "npm run cli:check",
-      "durationMs": 165,
+      "durationMs": 159,
       "exitCode": 0,
       "stdoutBytes": 150,
       "stderrBytes": 0,
@@ -716,7 +786,7 @@
       "id": "docs-site",
       "status": "passed",
       "command": "npm run docs:check",
-      "durationMs": 209,
+      "durationMs": 203,
       "exitCode": 0,
       "stdoutBytes": 193,
       "stderrBytes": 0,
@@ -724,123 +794,127 @@
     },
     {
       "id": "official-adapter-integration",
-      "status": "passed",
+      "status": "unavailable",
       "command": "npm run test:c2pa",
-      "durationMs": 35469,
-      "exitCode": 0,
-      "stdoutBytes": 17070,
-      "stderrBytes": 0,
-      "outputSha256": "57b34eef1b4e6c3dad7b72927df24f69f94b08bbe1abb707d1d2b9fcafe36156"
+      "durationMs": 30206,
+      "exitCode": null,
+      "signal": null,
+      "timedOut": false,
+      "stdoutBytes": 17230,
+      "stderrBytes": 785,
+      "outputSha256": "76c3d702ea237d205a541ff994d6523018a56e631a1e16b7af5a0ebcecfd8036",
+      "errorCode": null,
+      "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
     },
     {
       "id": "jxl-b01",
       "status": "passed",
       "command": "npm run test:jxl",
-      "durationMs": 37738,
+      "durationMs": 34452,
       "exitCode": 0,
-      "stdoutBytes": 16878,
+      "stdoutBytes": 17314,
       "stderrBytes": 0,
-      "outputSha256": "a948cfce2b9e49ef23e3213bf2d311c6001eb23e5af87a9d33c915b2512aa936"
+      "outputSha256": "0192f23e5a9fdd97d8f2c846ae91553eed3035ce043d97425c6da14394b5c027"
     },
     {
       "id": "heif-b02",
       "status": "passed",
       "command": "npm run test:heif",
-      "durationMs": 33005,
+      "durationMs": 33764,
       "exitCode": 0,
-      "stdoutBytes": 16884,
+      "stdoutBytes": 17320,
       "stderrBytes": 0,
-      "outputSha256": "4589c0477d96b302048c25b0df05b425f64f7029ad200a4bc9930327e29266d9"
+      "outputSha256": "eaafea3c4e6f5d8245e169d90e37bf102d70c64e44198d77453a2fc21c8fbfc3"
     },
     {
       "id": "heif-b03",
       "status": "passed",
       "command": "npm run test:heif-sequences",
-      "durationMs": 35965,
+      "durationMs": 40698,
       "exitCode": 0,
-      "stdoutBytes": 16893,
+      "stdoutBytes": 17329,
       "stderrBytes": 0,
-      "outputSha256": "0dfa3d5ae8196019364018904b58d12fc60c9e0bb007a9807f0ac8e4480ed738"
+      "outputSha256": "68d81f5de7ca7b7b37dd24b6b26af2553d3e506bdc253c387c344529c50bc719"
     },
     {
       "id": "raw-b04",
       "status": "passed",
       "command": "npm run test:raw",
-      "durationMs": 37990,
+      "durationMs": 35449,
       "exitCode": 0,
-      "stdoutBytes": 16887,
+      "stdoutBytes": 17323,
       "stderrBytes": 0,
-      "outputSha256": "0534c12b8fa29271160cb558e2f2cd45fe42f3512cbbd9a6179ec540788e02c6"
+      "outputSha256": "e37b27cf0ab2f52a554afe34fd8a21622df45286f99e35c1c9c2f5ac468a2a43"
     },
     {
       "id": "raw-b05",
       "status": "passed",
       "command": "npm run test:raw-b05",
-      "durationMs": 37931,
+      "durationMs": 38093,
       "exitCode": 0,
-      "stdoutBytes": 16910,
+      "stdoutBytes": 17346,
       "stderrBytes": 0,
-      "outputSha256": "b69ea483e70a1ee2c94bd816366e1ffcbb6daa0610696e94302997b4e27c0240"
+      "outputSha256": "c8c84d6d7229e4aa5b5066de0d52fbfab24cff274c212f5ffc839d69a7fba3b9"
     },
     {
       "id": "photoshop-b06",
       "status": "passed",
       "command": "npm run test:photoshop-b06",
-      "durationMs": 38511,
+      "durationMs": 35938,
       "exitCode": 0,
-      "stdoutBytes": 17271,
+      "stdoutBytes": 17646,
       "stderrBytes": 0,
-      "outputSha256": "6093b296c9ff73ae7d8f777d6c544fec7600ecce7bf65f2f288724d9322382ac"
+      "outputSha256": "3a41fe9570a03661e239cc5db593cf6cb44a4049b24d2b3321b6e935008f9f7f"
     },
     {
       "id": "makernote-b07",
       "status": "passed",
       "command": "npm run test:makernote-b07",
-      "durationMs": 35719,
+      "durationMs": 35636,
       "exitCode": 0,
-      "stdoutBytes": 17214,
+      "stdoutBytes": 17587,
       "stderrBytes": 0,
-      "outputSha256": "c352d841cbae854d72c971a0a63f32ec6d3652e98fe81538cffe26ad77dec4f2"
+      "outputSha256": "35c0ba6e7252fc50061cc06a2ae083efb825cb01831025bb47549bf1197b2efd"
     },
     {
       "id": "makernote-b08",
       "status": "passed",
       "command": "npm run test:makernote-b08",
-      "durationMs": 41811,
+      "durationMs": 47503,
       "exitCode": 0,
-      "stdoutBytes": 17287,
+      "stdoutBytes": 17659,
       "stderrBytes": 0,
-      "outputSha256": "cf0cffc7abfe4eef6948980a93cefae7a52840305ceb8f9a93be651bfff81d84"
+      "outputSha256": "d58266cae27cef2d6fbfe1cbf04c3589e397b9dd0ce531a7768435e2e5488b2e"
     },
     {
       "id": "svg-b09",
       "status": "passed",
       "command": "npm run test:svg-b09",
-      "durationMs": 38974,
+      "durationMs": 39473,
       "exitCode": 0,
-      "stdoutBytes": 17227,
+      "stdoutBytes": 17606,
       "stderrBytes": 0,
-      "outputSha256": "b98e69dcd37555c9713ff8a7024ae8f6a0f07d00bc032a23e7168152af37224b"
+      "outputSha256": "14486ae876448df81b1bad491db5ef4bad906bcfc50a7ce6ba82e6f7adb21cca"
     },
     {
       "id": "sidecar-b10",
       "status": "passed",
       "command": "npm run test:sidecar-b10",
-      "durationMs": 36326,
+      "durationMs": 38880,
       "exitCode": 0,
-      "stdoutBytes": 17318,
+      "stdoutBytes": 17652,
       "stderrBytes": 0,
-      "outputSha256": "da1df8f691ecf6e8c024a32f23af5399ed0cc5c3895ec743bd89c049a882b632"
+      "outputSha256": "6e977105a5a793d3d2f48ca7423bd1401457854514634850e7715a0fa6d5cb71"
     },
     {
       "id": "r04-compatibility",
       "status": "passed",
       "command": "npm run test:r04",
-      "durationMs": 51326,
+      "durationMs": 52329,
       "exitCode": 0,
-      "stdoutBytes": 17396,
+      "stdoutBytes": 17490,
       "stderrBytes": 0,
-      "outputSha256": "b47d7a031866f3265ec557169c080a7d2d14cc93331dc8a5d7b33ebcafc7d9b9"
+      "outputSha256": "5f658c3f57b7148341531453278566e66c12e756d9805aaffb9c6f2e21e8a079"
     },
     {
       "id": "focused-ticket-evidence",
@@ -862,9 +936,44 @@
     {
       "id": "documentation-links",
       "status": "passed",
-      "checkedDocuments": 39,
+      "checkedDocuments": 40,
       "missing": [],
       "links": [
+        {
+          "file": "README.md",
+          "target": "#install",
+          "status": "external-or-local-anchor"
+        },
+        {
+          "file": "README.md",
+          "target": "#why-browser-image-metadata",
+          "status": "external-or-local-anchor"
+        },
+        {
+          "file": "README.md",
+          "target": "./COMPARISON.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
+          "target": "./CAPABILITIES.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
+          "target": "./MIGRATION.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
+          "target": "./API.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
+          "target": "./COMPARISON.md",
+          "status": "passed"
+        },
         {
           "file": "README.md",
           "target": "./CAPABILITIES.md",
@@ -902,6 +1011,26 @@
         },
         {
           "file": "README.md",
+          "target": "./G01_CREATOR_METADATA.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
+          "target": "./G02_COMPARISON_REPORTS.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
+          "target": "./G03_COMMUNITY_PROGRAM.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
+          "target": "./G04_LAUNCH_PLAN.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
           "target": "B01_JPEG_XL.md",
           "status": "passed"
         },
@@ -913,6 +1042,11 @@
         {
           "file": "README.md",
           "target": "./B06_PHOTOSHOP_RESOURCES.md",
+          "status": "passed"
+        },
+        {
+          "file": "README.md",
+          "target": "./T05_MPF_ULTRA_HDR.md",
           "status": "passed"
         },
         {
@@ -1157,6 +1291,11 @@
         },
         {
           "file": "API.md",
+          "target": "./G01_CREATOR_METADATA.md",
+          "status": "passed"
+        },
+        {
+          "file": "API.md",
           "target": "./README.md",
           "status": "passed"
         },
@@ -1232,6 +1371,11 @@
         },
         {
           "file": "MIGRATION.md",
+          "target": "./COMPARISON.md",
+          "status": "passed"
+        },
+        {
+          "file": "MIGRATION.md",
           "target": "./R01_API_DECISION.md",
           "status": "passed"
         },
@@ -1243,6 +1387,16 @@
         {
           "file": "MIGRATION.md",
           "target": "./RUNTIME_SUPPORT.md",
+          "status": "passed"
+        },
+        {
+          "file": "MIGRATION.md",
+          "target": "./CAPABILITIES.md",
+          "status": "passed"
+        },
+        {
+          "file": "MIGRATION.md",
+          "target": "./R03_CLI.md",
           "status": "passed"
         },
         {
@@ -1259,6 +1413,91 @@
           "file": "MIGRATION.md",
           "target": "https://github.com/exif-js/exif-js",
           "status": "external-or-local-anchor"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./G02_COMPARISON_REPORTS.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./reports/g02-comparison.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./BENCHMARKS.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./MIGRATION.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./R04_MIGRATION_COMPATIBILITY.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./CAPABILITIES.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "https://github.com/mattiasw/ExifReader",
+          "status": "external-or-local-anchor"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "https://github.com/MikeKovarik/exifr",
+          "status": "external-or-local-anchor"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "https://exiftool.org/",
+          "status": "external-or-local-anchor"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "https://exiftool.org/#supported",
+          "status": "external-or-local-anchor"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "https://exiftool.org/writing.html",
+          "status": "external-or-local-anchor"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./CAPABILITIES.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./API.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./EXTERNAL_CORPORA.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./WRITER_CORPUS.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./G02_COMPARISON_REPORTS.md",
+          "status": "passed"
+        },
+        {
+          "file": "COMPARISON.md",
+          "target": "./R05_COMPATIBILITY_LIMITATIONS.md",
+          "status": "passed"
         },
         {
           "file": "CONTRIBUTING.md",
@@ -1323,6 +1562,26 @@
         {
           "file": "EXTERNAL_CORPORA.md",
           "target": "./reports/f05-external-corpus-evidence.json",
+          "status": "passed"
+        },
+        {
+          "file": "EXTERNAL_CORPORA.md",
+          "target": "https://github.com/imazen/codec-corpus",
+          "status": "external-or-local-anchor"
+        },
+        {
+          "file": "EXTERNAL_CORPORA.md",
+          "target": "./data/external-corpus.json",
+          "status": "passed"
+        },
+        {
+          "file": "EXTERNAL_CORPORA.md",
+          "target": "./reports/roadmap-read-corpus-evidence.json",
+          "status": "passed"
+        },
+        {
+          "file": "EXTERNAL_CORPORA.md",
+          "target": "./reports/roadmap-read-corpus-evidence.md",
           "status": "passed"
         },
         {
@@ -1526,8 +1785,14 @@
     },
     {
       "id": "source-marker-audit",
-      "status": "passed",
-      "findings": [],
+      "status": "failed",
+      "findings": [
+        {
+          "file": "tests/external-corpus.test.ts",
+          "line": 183,
+          "text": "it(\"does not count an opaque oracle binary placeholder as a match\", () => {"
+        }
+      ],
       "allowedMarkers": [
         {
           "file": "src/node-browser.ts",
@@ -1541,36 +1806,2006 @@
     },
     {
       "id": "dependency-vulnerability-scan",
-      "status": "failed",
+      "status": "unavailable",
       "command": "npm audit --json --omit=optional",
       "exitCode": null,
-      "stderrBytes": 0,
-      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "vulnerabilities": {
-        "info": 0,
-        "low": 0,
-        "moderate": 3,
-        "high": 1,
-        "critical": 0,
-        "total": 4
-      },
-      "reason": "npm audit exited without a zero-vulnerability result.",
+      "stderrBytes": 327,
+      "stderrSha256": "d6ae1f544932ba455efab67e645101bd065cddad23721543899d8fcda2e09f82",
+      "vulnerabilities": null,
+      "reason": "The npm audit service was unavailable; this is not successful evidence.",
       "policy": "A non-zero vulnerability result or unavailable audit service is not a pass."
     },
     {
       "id": "license-scan",
-      "status": "failed",
-      "reason": "License metadata is unresolved for: buffers@0.1.1.",
-      "scannedPackages": 317,
-      "missingLicenses": [
+      "status": "passed",
+      "reason": null,
+      "scannedPackages": 282,
+      "packages": [
+        {
+          "name": "@babel/helper-string-parser",
+          "version": "7.29.7",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@babel/helper-string-parser/package.json"
+        },
+        {
+          "name": "@babel/helper-validator-identifier",
+          "version": "7.29.7",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@babel/helper-validator-identifier/package.json"
+        },
+        {
+          "name": "@babel/parser",
+          "version": "7.29.8",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@babel/parser/package.json"
+        },
+        {
+          "name": "@babel/types",
+          "version": "7.29.8",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@babel/types/package.json"
+        },
+        {
+          "name": "@bcoe/v8-coverage",
+          "version": "1.0.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@bcoe/v8-coverage/package.json"
+        },
+        {
+          "name": "@contentauth/c2pa-node",
+          "version": "0.9.5",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@contentauth/c2pa-node/package.json"
+        },
+        {
+          "name": "@contentauth/c2pa-types",
+          "version": "0.7.4",
+          "license": "MIT",
+          "licenseSource": "LICENSE",
+          "path": "node_modules/@contentauth/c2pa-types/package.json"
+        },
+        {
+          "name": "@contentauth/c2pa-utilities",
+          "version": "0.2.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@contentauth/c2pa-utilities/package.json"
+        },
+        {
+          "name": "@contentauth/c2pa-wasm",
+          "version": "0.11.6",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@contentauth/c2pa-wasm/package.json"
+        },
+        {
+          "name": "@contentauth/c2pa-web",
+          "version": "0.14.6",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@contentauth/c2pa-web/package.json"
+        },
+        {
+          "name": "@esbuild/darwin-arm64",
+          "version": "0.28.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@esbuild/darwin-arm64/package.json"
+        },
+        {
+          "name": "@eslint/config-array",
+          "version": "0.21.2",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint/config-array/package.json"
+        },
+        {
+          "name": "@eslint/config-helpers",
+          "version": "0.4.2",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint/config-helpers/package.json"
+        },
+        {
+          "name": "@eslint/core",
+          "version": "0.17.0",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint/core/package.json"
+        },
+        {
+          "name": "@eslint/eslintrc",
+          "version": "3.3.7",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint/eslintrc/package.json"
+        },
+        {
+          "name": "@eslint/js",
+          "version": "9.39.5",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint/js/package.json"
+        },
+        {
+          "name": "@eslint/object-schema",
+          "version": "2.1.7",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint/object-schema/package.json"
+        },
+        {
+          "name": "@eslint/plugin-kit",
+          "version": "0.4.1",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint/plugin-kit/package.json"
+        },
+        {
+          "name": "@eslint-community/eslint-utils",
+          "version": "4.10.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint-community/eslint-utils/package.json"
+        },
+        {
+          "name": "eslint-visitor-keys",
+          "version": "3.4.3",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint-community/eslint-utils/node_modules/eslint-visitor-keys/package.json"
+        },
+        {
+          "name": "@eslint-community/regexpp",
+          "version": "4.12.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@eslint-community/regexpp/package.json"
+        },
+        {
+          "name": "@humanfs/core",
+          "version": "0.19.2",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@humanfs/core/package.json"
+        },
+        {
+          "name": "@humanfs/node",
+          "version": "0.16.8",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@humanfs/node/package.json"
+        },
+        {
+          "name": "@humanfs/types",
+          "version": "0.15.0",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@humanfs/types/package.json"
+        },
+        {
+          "name": "@humanwhocodes/module-importer",
+          "version": "1.0.1",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@humanwhocodes/module-importer/package.json"
+        },
+        {
+          "name": "@humanwhocodes/retry",
+          "version": "0.4.3",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@humanwhocodes/retry/package.json"
+        },
+        {
+          "name": "@jridgewell/gen-mapping",
+          "version": "0.3.13",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@jridgewell/gen-mapping/package.json"
+        },
+        {
+          "name": "@jridgewell/resolve-uri",
+          "version": "3.1.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@jridgewell/resolve-uri/package.json"
+        },
+        {
+          "name": "@jridgewell/sourcemap-codec",
+          "version": "1.6.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@jridgewell/sourcemap-codec/package.json"
+        },
+        {
+          "name": "@jridgewell/trace-mapping",
+          "version": "0.3.31",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@jridgewell/trace-mapping/package.json"
+        },
+        {
+          "name": "@oxc-project/types",
+          "version": "0.149.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@oxc-project/types/package.json"
+        },
+        {
+          "name": "@photostructure/tz-lookup",
+          "version": "11.7.0",
+          "license": "CC0-1.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@photostructure/tz-lookup/package.json"
+        },
+        {
+          "name": "@playwright/test",
+          "version": "1.63.0",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@playwright/test/package.json"
+        },
+        {
+          "name": "@publint/pack",
+          "version": "0.1.7",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@publint/pack/package.json"
+        },
+        {
+          "name": "tinyexec",
+          "version": "1.3.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@publint/pack/node_modules/tinyexec/package.json"
+        },
+        {
+          "name": "@rgrove/parse-xml",
+          "version": "5.0.0",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/@rgrove/parse-xml/package.json"
+        },
+        {
+          "name": "@rolldown/binding-darwin-arm64",
+          "version": "1.2.8",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@rolldown/binding-darwin-arm64/package.json"
+        },
+        {
+          "name": "@rolldown/pluginutils",
+          "version": "1.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@rolldown/pluginutils/package.json"
+        },
+        {
+          "name": "@rollup/rollup-darwin-arm64",
+          "version": "4.63.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@rollup/rollup-darwin-arm64/package.json"
+        },
+        {
+          "name": "@standard-schema/spec",
+          "version": "1.1.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@standard-schema/spec/package.json"
+        },
+        {
+          "name": "@types/chai",
+          "version": "5.2.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@types/chai/package.json"
+        },
+        {
+          "name": "@types/deep-eql",
+          "version": "4.0.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@types/deep-eql/package.json"
+        },
+        {
+          "name": "@types/estree",
+          "version": "1.0.9",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@types/estree/package.json"
+        },
+        {
+          "name": "@types/json-schema",
+          "version": "7.0.15",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@types/json-schema/package.json"
+        },
+        {
+          "name": "@types/luxon",
+          "version": "3.7.5",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@types/luxon/package.json"
+        },
+        {
+          "name": "@types/node",
+          "version": "22.20.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@types/node/package.json"
+        },
+        {
+          "name": "@typescript-eslint/eslint-plugin",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/eslint-plugin/package.json"
+        },
+        {
+          "name": "ignore",
+          "version": "7.0.8",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/eslint-plugin/node_modules/ignore/package.json"
+        },
+        {
+          "name": "@typescript-eslint/parser",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/parser/package.json"
+        },
+        {
+          "name": "@typescript-eslint/project-service",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/project-service/package.json"
+        },
+        {
+          "name": "@typescript-eslint/scope-manager",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/scope-manager/package.json"
+        },
+        {
+          "name": "@typescript-eslint/tsconfig-utils",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/tsconfig-utils/package.json"
+        },
+        {
+          "name": "@typescript-eslint/type-utils",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/type-utils/package.json"
+        },
+        {
+          "name": "@typescript-eslint/types",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/types/package.json"
+        },
+        {
+          "name": "@typescript-eslint/typescript-estree",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/typescript-estree/package.json"
+        },
+        {
+          "name": "balanced-match",
+          "version": "4.0.4",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/typescript-estree/node_modules/balanced-match/package.json"
+        },
+        {
+          "name": "brace-expansion",
+          "version": "5.0.9",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/typescript-estree/node_modules/brace-expansion/package.json"
+        },
+        {
+          "name": "minimatch",
+          "version": "10.2.6",
+          "license": "BlueOak-1.0.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/typescript-estree/node_modules/minimatch/package.json"
+        },
+        {
+          "name": "@typescript-eslint/utils",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/utils/package.json"
+        },
+        {
+          "name": "@typescript-eslint/visitor-keys",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/visitor-keys/package.json"
+        },
+        {
+          "name": "eslint-visitor-keys",
+          "version": "5.0.1",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/@typescript-eslint/visitor-keys/node_modules/eslint-visitor-keys/package.json"
+        },
+        {
+          "name": "@vitest/coverage-v8",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@vitest/coverage-v8/package.json"
+        },
+        {
+          "name": "@vitest/expect",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@vitest/expect/package.json"
+        },
+        {
+          "name": "@vitest/mocker",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@vitest/mocker/package.json"
+        },
+        {
+          "name": "@vitest/pretty-format",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@vitest/pretty-format/package.json"
+        },
+        {
+          "name": "@vitest/runner",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@vitest/runner/package.json"
+        },
+        {
+          "name": "@vitest/snapshot",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@vitest/snapshot/package.json"
+        },
+        {
+          "name": "@vitest/spy",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@vitest/spy/package.json"
+        },
+        {
+          "name": "@vitest/utils",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@vitest/utils/package.json"
+        },
+        {
+          "name": "@xmldom/xmldom",
+          "version": "0.9.12",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/@xmldom/xmldom/package.json"
+        },
+        {
+          "name": "acorn",
+          "version": "8.18.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/acorn/package.json"
+        },
+        {
+          "name": "acorn-jsx",
+          "version": "5.3.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/acorn-jsx/package.json"
+        },
+        {
+          "name": "ajv",
+          "version": "6.15.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/ajv/package.json"
+        },
+        {
+          "name": "ansi-styles",
+          "version": "4.3.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/ansi-styles/package.json"
+        },
+        {
+          "name": "any-promise",
+          "version": "1.3.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/any-promise/package.json"
+        },
+        {
+          "name": "argparse",
+          "version": "2.0.1",
+          "license": "Python-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/argparse/package.json"
+        },
+        {
+          "name": "assertion-error",
+          "version": "2.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/assertion-error/package.json"
+        },
+        {
+          "name": "ast-v8-to-istanbul",
+          "version": "1.0.6",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/ast-v8-to-istanbul/package.json"
+        },
+        {
+          "name": "balanced-match",
+          "version": "1.0.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/balanced-match/package.json"
+        },
+        {
+          "name": "batch-cluster",
+          "version": "19.2.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/batch-cluster/package.json"
+        },
+        {
+          "name": "big-integer",
+          "version": "1.6.52",
+          "license": "Unlicense",
+          "licenseSource": "package.json",
+          "path": "node_modules/big-integer/package.json"
+        },
+        {
+          "name": "binary",
+          "version": "0.3.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/binary/package.json"
+        },
+        {
+          "name": "bluebird",
+          "version": "3.4.7",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/bluebird/package.json"
+        },
+        {
+          "name": "brace-expansion",
+          "version": "1.1.18",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/brace-expansion/package.json"
+        },
+        {
+          "name": "buffer-indexof-polyfill",
+          "version": "1.0.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/buffer-indexof-polyfill/package.json"
+        },
         {
           "name": "buffers",
           "version": "0.1.1",
-          "license": null,
-          "licenseSource": null,
-          "path": "node_modules/buffers/package.json"
+          "license": "MIT",
+          "licenseSource": "data/dependency-license-provenance.json#buffers@0.1.1",
+          "path": "node_modules/buffers/package.json",
+          "licenseProvenance": {
+            "sourceRepository": "https://github.com/substack/node-buffers",
+            "sourceCommit": "1b745ee35d33eb166e15ef1866073a07c6d7de87",
+            "sourceLicenseUrl": "https://github.com/substack/node-buffers/blob/1b745ee35d33eb166e15ef1866073a07c6d7de87/package.json",
+            "registryTarball": "https://registry.npmjs.org/buffers/-/buffers-0.1.1.tgz",
+            "registryTarballSha256": "f8de49c60e467005182d9687b5d87775bbcec6385ac63220b7741327441deb6d",
+            "registryIntegrity": "sha512-9q/rDEGSb/Qsvv2qvzIzdluL5k7AaJOTrw23z9reQthrbF7is4CtlT0DXyO1oei2DCp4uojjzQ7igaSHp1kAEQ==",
+            "retrievedAt": "2026-09-16"
+          }
+        },
+        {
+          "name": "bundle-require",
+          "version": "5.1.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/bundle-require/package.json"
+        },
+        {
+          "name": "cac",
+          "version": "6.7.14",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/cac/package.json"
+        },
+        {
+          "name": "callsites",
+          "version": "3.1.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/callsites/package.json"
+        },
+        {
+          "name": "cargo-cp-artifact",
+          "version": "0.1.9",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/cargo-cp-artifact/package.json"
+        },
+        {
+          "name": "chai",
+          "version": "6.2.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/chai/package.json"
+        },
+        {
+          "name": "chainsaw",
+          "version": "0.1.0",
+          "license": "MIT/X11",
+          "licenseSource": "package.json",
+          "path": "node_modules/chainsaw/package.json"
+        },
+        {
+          "name": "chalk",
+          "version": "4.1.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/chalk/package.json"
+        },
+        {
+          "name": "chokidar",
+          "version": "4.0.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/chokidar/package.json"
+        },
+        {
+          "name": "cli-progress",
+          "version": "3.12.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/cli-progress/package.json"
+        },
+        {
+          "name": "ansi-regex",
+          "version": "5.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/cli-progress/node_modules/ansi-regex/package.json"
+        },
+        {
+          "name": "emoji-regex",
+          "version": "8.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/cli-progress/node_modules/emoji-regex/package.json"
+        },
+        {
+          "name": "string-width",
+          "version": "4.2.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/cli-progress/node_modules/string-width/package.json"
+        },
+        {
+          "name": "strip-ansi",
+          "version": "6.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/cli-progress/node_modules/strip-ansi/package.json"
+        },
+        {
+          "name": "color-convert",
+          "version": "2.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/color-convert/package.json"
+        },
+        {
+          "name": "color-name",
+          "version": "1.1.4",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/color-name/package.json"
+        },
+        {
+          "name": "commander",
+          "version": "4.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/commander/package.json"
+        },
+        {
+          "name": "concat-map",
+          "version": "0.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/concat-map/package.json"
+        },
+        {
+          "name": "confbox",
+          "version": "0.1.8",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/confbox/package.json"
+        },
+        {
+          "name": "consola",
+          "version": "3.4.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/consola/package.json"
+        },
+        {
+          "name": "convert-source-map",
+          "version": "2.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/convert-source-map/package.json"
+        },
+        {
+          "name": "core-util-is",
+          "version": "1.0.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/core-util-is/package.json"
+        },
+        {
+          "name": "cross-spawn",
+          "version": "7.0.6",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/cross-spawn/package.json"
+        },
+        {
+          "name": "data-uri-to-buffer",
+          "version": "4.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/data-uri-to-buffer/package.json"
+        },
+        {
+          "name": "debug",
+          "version": "4.4.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/debug/package.json"
+        },
+        {
+          "name": "deep-is",
+          "version": "0.1.4",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/deep-is/package.json"
+        },
+        {
+          "name": "detect-libc",
+          "version": "2.1.2",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/detect-libc/package.json"
+        },
+        {
+          "name": "duplexer2",
+          "version": "0.1.4",
+          "license": "BSD-3-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/duplexer2/package.json"
+        },
+        {
+          "name": "es-module-lexer",
+          "version": "2.3.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/es-module-lexer/package.json"
+        },
+        {
+          "name": "esbuild",
+          "version": "0.28.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/esbuild/package.json"
+        },
+        {
+          "name": "escape-string-regexp",
+          "version": "4.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/escape-string-regexp/package.json"
+        },
+        {
+          "name": "eslint",
+          "version": "9.39.5",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/eslint/package.json"
+        },
+        {
+          "name": "eslint-scope",
+          "version": "8.4.0",
+          "license": "BSD-2-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/eslint-scope/package.json"
+        },
+        {
+          "name": "eslint-visitor-keys",
+          "version": "4.2.1",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/eslint-visitor-keys/package.json"
+        },
+        {
+          "name": "espree",
+          "version": "10.4.0",
+          "license": "BSD-2-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/espree/package.json"
+        },
+        {
+          "name": "esquery",
+          "version": "1.7.0",
+          "license": "BSD-3-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/esquery/package.json"
+        },
+        {
+          "name": "esrecurse",
+          "version": "4.3.0",
+          "license": "BSD-2-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/esrecurse/package.json"
+        },
+        {
+          "name": "estraverse",
+          "version": "5.3.0",
+          "license": "BSD-2-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/estraverse/package.json"
+        },
+        {
+          "name": "estree-walker",
+          "version": "3.0.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/estree-walker/package.json"
+        },
+        {
+          "name": "esutils",
+          "version": "2.0.3",
+          "license": "BSD-2-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/esutils/package.json"
+        },
+        {
+          "name": "exif-js",
+          "version": "2.3.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/exif-js/package.json"
+        },
+        {
+          "name": "exifr",
+          "version": "7.1.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/exifr/package.json"
+        },
+        {
+          "name": "exifreader",
+          "version": "4.45.0",
+          "license": "MPL-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/exifreader/package.json"
+        },
+        {
+          "name": "exiftool-vendored",
+          "version": "38.1.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/exiftool-vendored/package.json"
+        },
+        {
+          "name": "exiftool-vendored.pl",
+          "version": "13.59.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/exiftool-vendored.pl/package.json"
+        },
+        {
+          "name": "expect-type",
+          "version": "1.4.0",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/expect-type/package.json"
+        },
+        {
+          "name": "fast-check",
+          "version": "4.10.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fast-check/package.json"
+        },
+        {
+          "name": "fast-deep-equal",
+          "version": "3.1.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fast-deep-equal/package.json"
+        },
+        {
+          "name": "fast-json-stable-stringify",
+          "version": "2.1.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fast-json-stable-stringify/package.json"
+        },
+        {
+          "name": "fast-levenshtein",
+          "version": "2.0.6",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fast-levenshtein/package.json"
+        },
+        {
+          "name": "fdir",
+          "version": "6.5.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fdir/package.json"
+        },
+        {
+          "name": "fetch-blob",
+          "version": "3.2.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fetch-blob/package.json"
+        },
+        {
+          "name": "file-entry-cache",
+          "version": "8.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/file-entry-cache/package.json"
+        },
+        {
+          "name": "find-up",
+          "version": "5.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/find-up/package.json"
+        },
+        {
+          "name": "find-up-simple",
+          "version": "1.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/find-up-simple/package.json"
+        },
+        {
+          "name": "fix-dts-default-cjs-exports",
+          "version": "1.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fix-dts-default-cjs-exports/package.json"
+        },
+        {
+          "name": "flat-cache",
+          "version": "4.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/flat-cache/package.json"
+        },
+        {
+          "name": "flatted",
+          "version": "3.4.4",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/flatted/package.json"
+        },
+        {
+          "name": "formdata-polyfill",
+          "version": "4.0.10",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/formdata-polyfill/package.json"
+        },
+        {
+          "name": "fs-extra",
+          "version": "11.4.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fs-extra/package.json"
+        },
+        {
+          "name": "fs.realpath",
+          "version": "1.0.0",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/fs.realpath/package.json"
+        },
+        {
+          "name": "fsevents",
+          "version": "2.3.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fsevents/package.json"
+        },
+        {
+          "name": "fstream",
+          "version": "1.0.12",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/fstream/package.json"
+        },
+        {
+          "name": "mkdirp",
+          "version": "0.5.6",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/fstream/node_modules/mkdirp/package.json"
+        },
+        {
+          "name": "glob-parent",
+          "version": "6.0.2",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/glob-parent/package.json"
+        },
+        {
+          "name": "globals",
+          "version": "14.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/globals/package.json"
+        },
+        {
+          "name": "graceful-fs",
+          "version": "4.2.11",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/graceful-fs/package.json"
+        },
+        {
+          "name": "has-flag",
+          "version": "4.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/has-flag/package.json"
+        },
+        {
+          "name": "he",
+          "version": "1.2.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/he/package.json"
+        },
+        {
+          "name": "highgain",
+          "version": "0.1.0",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/highgain/package.json"
+        },
+        {
+          "name": "html-escaper",
+          "version": "2.0.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/html-escaper/package.json"
+        },
+        {
+          "name": "ignore",
+          "version": "5.3.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/ignore/package.json"
+        },
+        {
+          "name": "import-fresh",
+          "version": "3.3.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/import-fresh/package.json"
+        },
+        {
+          "name": "imurmurhash",
+          "version": "0.1.4",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/imurmurhash/package.json"
+        },
+        {
+          "name": "inflight",
+          "version": "1.0.6",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/inflight/package.json"
+        },
+        {
+          "name": "inherits",
+          "version": "2.0.4",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/inherits/package.json"
+        },
+        {
+          "name": "is-extglob",
+          "version": "2.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/is-extglob/package.json"
+        },
+        {
+          "name": "is-fullwidth-code-point",
+          "version": "3.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/is-fullwidth-code-point/package.json"
+        },
+        {
+          "name": "is-glob",
+          "version": "4.0.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/is-glob/package.json"
+        },
+        {
+          "name": "isarray",
+          "version": "1.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/isarray/package.json"
+        },
+        {
+          "name": "isexe",
+          "version": "2.0.0",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/isexe/package.json"
+        },
+        {
+          "name": "istanbul-lib-coverage",
+          "version": "3.2.2",
+          "license": "BSD-3-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/istanbul-lib-coverage/package.json"
+        },
+        {
+          "name": "istanbul-lib-report",
+          "version": "3.0.1",
+          "license": "BSD-3-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/istanbul-lib-report/package.json"
+        },
+        {
+          "name": "istanbul-reports",
+          "version": "3.2.0",
+          "license": "BSD-3-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/istanbul-reports/package.json"
+        },
+        {
+          "name": "joycon",
+          "version": "3.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/joycon/package.json"
+        },
+        {
+          "name": "js-tokens",
+          "version": "10.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/js-tokens/package.json"
+        },
+        {
+          "name": "js-yaml",
+          "version": "4.3.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/js-yaml/package.json"
+        },
+        {
+          "name": "json-buffer",
+          "version": "3.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/json-buffer/package.json"
+        },
+        {
+          "name": "json-schema-traverse",
+          "version": "0.4.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/json-schema-traverse/package.json"
+        },
+        {
+          "name": "json-stable-stringify-without-jsonify",
+          "version": "1.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/json-stable-stringify-without-jsonify/package.json"
+        },
+        {
+          "name": "jsonfile",
+          "version": "6.2.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/jsonfile/package.json"
+        },
+        {
+          "name": "keyv",
+          "version": "4.5.4",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/keyv/package.json"
+        },
+        {
+          "name": "levn",
+          "version": "0.4.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/levn/package.json"
+        },
+        {
+          "name": "lightningcss",
+          "version": "1.33.0",
+          "license": "MPL-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/lightningcss/package.json"
+        },
+        {
+          "name": "lightningcss-darwin-arm64",
+          "version": "1.33.0",
+          "license": "MPL-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/lightningcss-darwin-arm64/package.json"
+        },
+        {
+          "name": "lilconfig",
+          "version": "3.1.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/lilconfig/package.json"
+        },
+        {
+          "name": "lines-and-columns",
+          "version": "1.2.4",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/lines-and-columns/package.json"
+        },
+        {
+          "name": "listenercount",
+          "version": "1.0.1",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/listenercount/package.json"
+        },
+        {
+          "name": "load-tsconfig",
+          "version": "0.2.5",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/load-tsconfig/package.json"
+        },
+        {
+          "name": "locate-path",
+          "version": "6.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/locate-path/package.json"
+        },
+        {
+          "name": "lodash.merge",
+          "version": "4.6.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/lodash.merge/package.json"
+        },
+        {
+          "name": "luxon",
+          "version": "3.7.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/luxon/package.json"
+        },
+        {
+          "name": "magic-string",
+          "version": "0.30.21",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/magic-string/package.json"
+        },
+        {
+          "name": "magicast",
+          "version": "0.5.5",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/magicast/package.json"
+        },
+        {
+          "name": "make-dir",
+          "version": "4.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/make-dir/package.json"
+        },
+        {
+          "name": "minimatch",
+          "version": "3.1.5",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/minimatch/package.json"
+        },
+        {
+          "name": "minimist",
+          "version": "1.2.8",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/minimist/package.json"
+        },
+        {
+          "name": "mkdirp",
+          "version": "3.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/mkdirp/package.json"
+        },
+        {
+          "name": "mlly",
+          "version": "1.8.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/mlly/package.json"
+        },
+        {
+          "name": "mri",
+          "version": "1.2.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/mri/package.json"
+        },
+        {
+          "name": "ms",
+          "version": "2.1.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/ms/package.json"
+        },
+        {
+          "name": "mz",
+          "version": "2.7.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/mz/package.json"
+        },
+        {
+          "name": "nanoid",
+          "version": "3.3.19",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/nanoid/package.json"
+        },
+        {
+          "name": "natural-compare",
+          "version": "1.4.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/natural-compare/package.json"
+        },
+        {
+          "name": "node-domexception",
+          "version": "1.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/node-domexception/package.json"
+        },
+        {
+          "name": "node-fetch",
+          "version": "3.3.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/node-fetch/package.json"
+        },
+        {
+          "name": "object-assign",
+          "version": "4.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/object-assign/package.json"
+        },
+        {
+          "name": "obug",
+          "version": "2.2.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/obug/package.json"
+        },
+        {
+          "name": "once",
+          "version": "1.4.0",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/once/package.json"
+        },
+        {
+          "name": "optionator",
+          "version": "0.9.4",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/optionator/package.json"
+        },
+        {
+          "name": "p-limit",
+          "version": "3.1.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/p-limit/package.json"
+        },
+        {
+          "name": "p-locate",
+          "version": "5.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/p-locate/package.json"
+        },
+        {
+          "name": "package-manager-detector",
+          "version": "1.8.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/package-manager-detector/package.json"
+        },
+        {
+          "name": "parent-module",
+          "version": "1.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/parent-module/package.json"
+        },
+        {
+          "name": "path-exists",
+          "version": "4.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/path-exists/package.json"
+        },
+        {
+          "name": "path-is-absolute",
+          "version": "1.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/path-is-absolute/package.json"
+        },
+        {
+          "name": "path-key",
+          "version": "3.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/path-key/package.json"
+        },
+        {
+          "name": "pathe",
+          "version": "2.0.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/pathe/package.json"
+        },
+        {
+          "name": "picocolors",
+          "version": "1.1.1",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/picocolors/package.json"
+        },
+        {
+          "name": "picomatch",
+          "version": "4.0.7",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/picomatch/package.json"
+        },
+        {
+          "name": "piexifjs",
+          "version": "1.0.6",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/piexifjs/package.json"
+        },
+        {
+          "name": "pirates",
+          "version": "4.0.7",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/pirates/package.json"
+        },
+        {
+          "name": "pkg-dir",
+          "version": "8.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/pkg-dir/package.json"
+        },
+        {
+          "name": "pkg-types",
+          "version": "1.3.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/pkg-types/package.json"
+        },
+        {
+          "name": "playwright",
+          "version": "1.63.0",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/playwright/package.json"
+        },
+        {
+          "name": "playwright-core",
+          "version": "1.63.0",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/playwright-core/package.json"
+        },
+        {
+          "name": "postcss",
+          "version": "8.5.28",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/postcss/package.json"
+        },
+        {
+          "name": "postcss-load-config",
+          "version": "6.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/postcss-load-config/package.json"
+        },
+        {
+          "name": "prelude-ls",
+          "version": "1.2.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/prelude-ls/package.json"
+        },
+        {
+          "name": "pretty-bytes",
+          "version": "6.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/pretty-bytes/package.json"
+        },
+        {
+          "name": "process-nextick-args",
+          "version": "2.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/process-nextick-args/package.json"
+        },
+        {
+          "name": "publint",
+          "version": "0.3.24",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/publint/package.json"
+        },
+        {
+          "name": "punycode",
+          "version": "2.3.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/punycode/package.json"
+        },
+        {
+          "name": "pure-rand",
+          "version": "8.4.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/pure-rand/package.json"
+        },
+        {
+          "name": "readable-stream",
+          "version": "2.3.8",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/readable-stream/package.json"
+        },
+        {
+          "name": "readdirp",
+          "version": "4.1.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/readdirp/package.json"
+        },
+        {
+          "name": "resolve-from",
+          "version": "4.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/resolve-from/package.json"
+        },
+        {
+          "name": "rimraf",
+          "version": "2.7.1",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/rimraf/package.json"
+        },
+        {
+          "name": "glob",
+          "version": "7.2.3",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/rimraf/node_modules/glob/package.json"
+        },
+        {
+          "name": "rolldown",
+          "version": "1.2.8",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/rolldown/package.json"
+        },
+        {
+          "name": "rollup",
+          "version": "4.63.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/rollup/package.json"
+        },
+        {
+          "name": "sade",
+          "version": "1.8.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/sade/package.json"
+        },
+        {
+          "name": "safe-buffer",
+          "version": "5.1.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/safe-buffer/package.json"
+        },
+        {
+          "name": "semver",
+          "version": "7.8.5",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/semver/package.json"
+        },
+        {
+          "name": "setimmediate",
+          "version": "1.0.5",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/setimmediate/package.json"
+        },
+        {
+          "name": "shebang-command",
+          "version": "2.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/shebang-command/package.json"
+        },
+        {
+          "name": "shebang-regex",
+          "version": "3.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/shebang-regex/package.json"
+        },
+        {
+          "name": "siginfo",
+          "version": "2.0.0",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/siginfo/package.json"
+        },
+        {
+          "name": "source-map",
+          "version": "0.7.6",
+          "license": "BSD-3-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/source-map/package.json"
+        },
+        {
+          "name": "source-map-js",
+          "version": "1.2.1",
+          "license": "BSD-3-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/source-map-js/package.json"
+        },
+        {
+          "name": "stackback",
+          "version": "0.0.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/stackback/package.json"
+        },
+        {
+          "name": "std-env",
+          "version": "4.2.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/std-env/package.json"
+        },
+        {
+          "name": "string_decoder",
+          "version": "1.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/string_decoder/package.json"
+        },
+        {
+          "name": "strip-json-comments",
+          "version": "3.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/strip-json-comments/package.json"
+        },
+        {
+          "name": "sucrase",
+          "version": "3.35.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/sucrase/package.json"
+        },
+        {
+          "name": "supports-color",
+          "version": "7.2.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/supports-color/package.json"
+        },
+        {
+          "name": "thenify",
+          "version": "3.3.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/thenify/package.json"
+        },
+        {
+          "name": "thenify-all",
+          "version": "1.6.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/thenify-all/package.json"
+        },
+        {
+          "name": "tinybench",
+          "version": "2.9.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/tinybench/package.json"
+        },
+        {
+          "name": "tinyexec",
+          "version": "0.3.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/tinyexec/package.json"
+        },
+        {
+          "name": "tinyglobby",
+          "version": "0.2.17",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/tinyglobby/package.json"
+        },
+        {
+          "name": "tinyrainbow",
+          "version": "3.1.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/tinyrainbow/package.json"
+        },
+        {
+          "name": "traverse",
+          "version": "0.3.9",
+          "license": "MIT/X11",
+          "licenseSource": "package.json",
+          "path": "node_modules/traverse/package.json"
+        },
+        {
+          "name": "tree-kill",
+          "version": "1.2.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/tree-kill/package.json"
+        },
+        {
+          "name": "ts-api-utils",
+          "version": "2.5.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/ts-api-utils/package.json"
+        },
+        {
+          "name": "ts-deepmerge",
+          "version": "8.0.0",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/ts-deepmerge/package.json"
+        },
+        {
+          "name": "ts-interface-checker",
+          "version": "0.1.13",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/ts-interface-checker/package.json"
+        },
+        {
+          "name": "tsup",
+          "version": "8.5.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/tsup/package.json"
+        },
+        {
+          "name": "resolve-from",
+          "version": "5.0.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/tsup/node_modules/resolve-from/package.json"
+        },
+        {
+          "name": "type-check",
+          "version": "0.4.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/type-check/package.json"
+        },
+        {
+          "name": "typescript",
+          "version": "5.9.3",
+          "license": "Apache-2.0",
+          "licenseSource": "package.json",
+          "path": "node_modules/typescript/package.json"
+        },
+        {
+          "name": "typescript-eslint",
+          "version": "8.70.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/typescript-eslint/package.json"
+        },
+        {
+          "name": "ufo",
+          "version": "1.6.4",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/ufo/package.json"
+        },
+        {
+          "name": "undici-types",
+          "version": "6.21.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/undici-types/package.json"
+        },
+        {
+          "name": "universalify",
+          "version": "2.0.1",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/universalify/package.json"
+        },
+        {
+          "name": "unzipper",
+          "version": "0.10.14",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/unzipper/package.json"
+        },
+        {
+          "name": "uri-js",
+          "version": "4.4.1",
+          "license": "BSD-2-Clause",
+          "licenseSource": "package.json",
+          "path": "node_modules/uri-js/package.json"
+        },
+        {
+          "name": "util-deprecate",
+          "version": "1.0.2",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/util-deprecate/package.json"
+        },
+        {
+          "name": "vite",
+          "version": "8.3.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/vite/package.json"
+        },
+        {
+          "name": "vitest",
+          "version": "4.1.11",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/vitest/package.json"
+        },
+        {
+          "name": "tinyexec",
+          "version": "1.3.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/vitest/node_modules/tinyexec/package.json"
+        },
+        {
+          "name": "web-streams-polyfill",
+          "version": "3.3.3",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/web-streams-polyfill/package.json"
+        },
+        {
+          "name": "which",
+          "version": "2.0.2",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/which/package.json"
+        },
+        {
+          "name": "why-is-node-running",
+          "version": "2.3.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/why-is-node-running/package.json"
+        },
+        {
+          "name": "word-wrap",
+          "version": "1.2.5",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/word-wrap/package.json"
+        },
+        {
+          "name": "wrappy",
+          "version": "1.0.2",
+          "license": "ISC",
+          "licenseSource": "package.json",
+          "path": "node_modules/wrappy/package.json"
+        },
+        {
+          "name": "yocto-queue",
+          "version": "0.1.0",
+          "license": "MIT",
+          "licenseSource": "package.json",
+          "path": "node_modules/yocto-queue/package.json"
         }
       ],
+      "missingLicenses": [],
       "byGroup": {
         "runtime": [],
         "optional": [],
@@ -1619,7 +3854,7 @@
           },
           {
             "name": "@vitest/coverage-v8",
-            "version": "3.2.7",
+            "version": "4.1.11",
             "license": "MIT",
             "licenseSource": "package.json",
             "path": "node_modules/@vitest/coverage-v8/package.json"
@@ -1654,7 +3889,7 @@
           },
           {
             "name": "exiftool-vendored",
-            "version": "33.5.0",
+            "version": "38.1.0",
             "license": "MIT",
             "licenseSource": "package.json",
             "path": "node_modules/exiftool-vendored/package.json"
@@ -1703,7 +3938,7 @@
           },
           {
             "name": "vitest",
-            "version": "3.2.7",
+            "version": "4.1.11",
             "license": "MIT",
             "licenseSource": "package.json",
             "path": "node_modules/vitest/package.json"
@@ -1733,16 +3968,21 @@
           }
         ]
       },
-      "policy": "Every installed package must expose a package.json license or an identifiable common license file; optional, development, peer, and runtime groups are reported separately."
+      "provenancePath": "data/dependency-license-provenance.json",
+      "provenanceEntries": 1,
+      "provenanceFailures": [],
+      "policy": "Every installed package must expose a package.json license or an identifiable common license file; a package without metadata may use only an exact lockfile-matched, hash-pinned upstream provenance entry. Optional, development, peer, and runtime groups are reported separately."
     },
     {
       "id": "package-provenance",
-      "status": "unavailable",
+      "status": "passed",
+      "phase": "prepublication",
       "tarball": {
         "file": "browser-image-metadata-2.0.0-alpha.3.tgz",
-        "bytes": 8421999,
-        "sha256": "4539a608dea3d2c37553456c82f03532e458424d0a11977a933a74c131ce5fc8",
-        "integrity": "sha512-rNu5MDs0v95k4U4mrikOKB+aTwO3GPpn1uM1NjwQ3FMeutuVOETrYDgFpCTCLmZvH7cSZpM2qZ/PkRdxKwSCtA=="
+        "bytes": 9948407,
+        "sha256": "b08d5e5783fe2aa983a50378de286a4cb9c17bf6cfb4540739495c1a0f22b5e7",
+        "integrity": "sha512-yQ5NBHG7Lxbv9kiF7i6DsUnRplPpsDTMnlIYin12ztAWmq/XI3G632Wo3JBFEwzVjstM8zNAd3fxooKKp/+3mg==",
+        "reportedIntegrity": "sha512-yQ5NBHG7Lxbv9kiF7i6DsUnRplPpsDTMnlIYin12ztAWmq/XI3G632Wo3JBFEwzVjstM8zNAd3fxooKKp/+3mg=="
       },
       "package": {
         "name": "browser-image-metadata",
@@ -1756,17 +3996,19 @@
         "package/dist/index.d.ts"
       ],
       "missing": [],
-      "sourceMaps": 109,
-      "entryCount": 379,
-      "registryProvenance": "unavailable until a trusted-publishing registry release exists; npm pack does not create registry provenance",
-      "reason": "Local npm pack structure was verified, but registry trusted-publishing provenance cannot be established without a publication, which this task forbids.",
-      "policy": "The audit records a locally generated npm pack artifact; npm registry publication and registry provenance are intentionally not performed."
+      "sourceMaps": 112,
+      "entryCount": 408,
+      "registryProvenance": {
+        "status": "pending",
+        "reason": "Registry version, dist-tag, tarball, signatures, and npm provenance are verified only after trusted publication."
+      },
+      "policy": "Prepublication verifies the local package artifact and records registry provenance as pending. Postpublication requires exact registry metadata, prerelease/stable dist-tag, tarball integrity, npm signatures, and a decodable SLSA provenance attestation."
     },
     {
       "id": "git-diff-check",
       "status": "passed",
       "command": "git diff --check",
-      "durationMs": 46,
+      "durationMs": 108,
       "exitCode": 0,
       "stdoutBytes": 0,
       "stderrBytes": 0,
@@ -1775,18 +4017,21 @@
   ],
   "externalReview": {
     "status": "blocked",
-    "reason": "No retained external review record covers TIFF offset handling and every writer with reviewer identity, scope, revision, findings, dispositions, date, and approval."
+    "reason": "No retained external review record exists. The prepared packet is not an approval."
   },
   "publication": {
-    "status": "blocked",
-    "reason": "Publication is intentionally prohibited by the task instructions; no tag, release, registry publication, or external provenance claim is made.",
+    "status": "pending",
+    "phase": "prepublication",
+    "expectedDistTag": "alpha",
     "package": {
       "name": "browser-image-metadata",
       "version": "2.0.0-alpha.3"
     },
-    "requiredReleaseAction": "Publish the reviewed browser-image-metadata@2.0.0-alpha.3 release through the documented trusted-publishing workflow after governance approval."
+    "reason": "Registry version, dist-tag, tarball integrity, npm signatures, and provenance are intentionally pending until the trusted-publishing step succeeds.",
+    "policy": "Prepublication is the permission gate for npm publish; it must not require facts that can exist only after publication."
   },
   "gate": {
+    "phase": "prepublication",
     "passed": false,
     "automatedPassed": false,
     "missingChecks": [],
@@ -1802,48 +4047,54 @@
         "reason": "R05_CLEAN_CHECKOUT is not set and the current source tree is dirty. A dirty working tree cannot prove a clean checkout containing the exact candidate."
       },
       {
+        "id": "unit-integration-check",
+        "status": "unavailable",
+        "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
+      },
+      {
+        "id": "full-check",
+        "status": "unavailable",
+        "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
+      },
+      {
         "id": "browser-matrix",
+        "status": "unavailable",
+        "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
+      },
+      {
+        "id": "coverage",
+        "status": "unavailable",
+        "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
+      },
+      {
+        "id": "baseline",
         "status": "failed",
-        "reason": "The installed Playwright WebKit engine rejects the PushAPIEnabled context setting during page setup; Chromium and Firefox completed separately."
+        "reason": null
       },
       {
-        "id": "deno-runtime",
+        "id": "official-adapter-integration",
         "status": "unavailable",
-        "reason": "Deno executable is not installed; no Deno result is treated as pass."
-      },
-      {
-        "id": "bun-runtime",
-        "status": "unavailable",
-        "reason": "Bun executable is not installed; no Bun result is treated as pass."
+        "reason": "The local execution environment prevented this command from running to completion; this is not successful evidence."
       },
       {
         "id": "dependency-vulnerability-scan",
-        "status": "failed",
-        "reason": "npm audit exited without a zero-vulnerability result."
-      },
-      {
-        "id": "license-scan",
-        "status": "failed",
-        "reason": "License metadata is unresolved for: buffers@0.1.1."
-      },
-      {
-        "id": "package-provenance",
         "status": "unavailable",
-        "reason": "Local npm pack structure was verified, but registry trusted-publishing provenance cannot be established without a publication, which this task forbids."
+        "reason": "The npm audit service was unavailable; this is not successful evidence."
       }
     ],
     "externalReview": "blocked",
-    "publication": "blocked",
+    "publication": "pending",
     "failures": [
       "release-preflight is failed.",
       "clean-clone is unavailable.",
-      "browser-matrix is failed.",
-      "deno-runtime is unavailable.",
-      "bun-runtime is unavailable.",
-      "dependency-vulnerability-scan is failed.",
-      "license-scan is failed.",
-      "package-provenance is unavailable.",
-      "No retained external review record covers TIFF offset handling and every writer with reviewer identity, scope, revision, findings, dispositions, date, and approval."
+      "unit-integration-check is unavailable.",
+      "full-check is unavailable.",
+      "browser-matrix is unavailable.",
+      "coverage is unavailable.",
+      "baseline is failed.",
+      "official-adapter-integration is unavailable.",
+      "dependency-vulnerability-scan is unavailable.",
+      "No retained external review record exists. The prepared packet is not an approval."
     ]
   }
 }
