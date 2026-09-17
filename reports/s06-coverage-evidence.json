@@ -7,8 +7,8 @@
     "version": "2.0.0-alpha.3"
   },
   "runtime": {
-    "node": "23.7.0",
-    "v8": "12.9.202.28-node.12",
+    "node": "22.22.2",
+    "v8": "12.4.254.21-node.39",
     "platform": "darwin",
     "architecture": "arm64"
   },
@@ -34,16 +34,16 @@
   },
   "overall": {
     "branches": {
-      "covered": 18197,
+      "covered": 18198,
       "total": 21223,
       "skipped": 0,
-      "percent": 85.74188380530556
+      "percent": 85.74659567450408
     },
     "statements": {
       "total": 20566,
-      "covered": 18890,
+      "covered": 18908,
       "skipped": 0,
-      "pct": 91.85
+      "pct": 91.93
     },
     "functions": {
       "total": 2584,
@@ -53,17 +53,17 @@
     },
     "lines": {
       "total": 15425,
-      "covered": 14682,
+      "covered": 14699,
       "skipped": 0,
-      "pct": 95.18
+      "pct": 95.29
     }
   },
   "securityScope": {
     "branches": {
-      "covered": 8378,
+      "covered": 8379,
       "total": 9308,
       "skipped": 0,
-      "percent": 90.00859475719811
+      "percent": 90.01933820369574
     },
     "files": [
       "src/heif-range.ts",
@@ -1810,15 +1810,15 @@
     {
       "file": "src/parsers/jxl.ts",
       "branches": {
-        "covered": 205,
+        "covered": 206,
         "total": 235,
         "skipped": 0,
-        "percent": 87.2340425531915
+        "percent": 87.65957446808511
       },
       "statements": {
-        "covered": 285,
+        "covered": 303,
         "total": 330,
-        "percent": 86.36363636363636
+        "percent": 91.81818181818183
       },
       "functions": {
         "covered": 25,
@@ -1826,9 +1826,9 @@
         "percent": 96.15384615384616
       },
       "lines": {
-        "covered": 256,
+        "covered": 273,
         "total": 292,
-        "percent": 87.67123287671232
+        "percent": 93.4931506849315
       }
     },
     {

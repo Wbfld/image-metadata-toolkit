@@ -2,12 +2,12 @@
 
 Status: **passed** (checked: true)
 
-Package: browser-image-metadata@2.0.0-alpha.3; Node 23.7.0; V8 12.9.202.28-node.12; Vitest 4.1.11; @vitest/coverage-v8 4.1.11.
+Package: browser-image-metadata@2.0.0-alpha.3; Node 22.22.2; V8 12.4.254.21-node.39; Vitest 4.1.11; @vitest/coverage-v8 4.1.11.
 
 ## Enforced result
 
-Overall branch coverage: **85.74%** (18197/21223); required minimum: 85%.
-Security-scope branch coverage: **90.01%** (8378/9308); required minimum: 90%; files: 33.
+Overall branch coverage: **85.75%** (18198/21223); required minimum: 85%.
+Security-scope branch coverage: **90.02%** (8379/9308); required minimum: 90%; files: 33.
 Skipped branches: 0 overall, 0 in scope.
 
 ## Scope and policy
@@ -42,7 +42,7 @@ Any skipped branch record fails the gate; no c8 ignore or source exclusion is us
 | src/parsers/gif.ts | 96/99 | 96.97% |
 | src/parsers/heif.ts | 1106/1222 | 90.51% |
 | src/parsers/jpeg.ts | 522/579 | 90.16% |
-| src/parsers/jxl.ts | 205/235 | 87.23% |
+| src/parsers/jxl.ts | 206/235 | 87.66% |
 | src/parsers/png.ts | 275/289 | 95.16% |
 | src/parsers/raw-phase-two.ts | 433/521 | 83.11% |
 | src/parsers/svg.ts | 140/148 | 94.59% |
