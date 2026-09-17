@@ -93,23 +93,6 @@ failures or unavailable results, never implicit passes.
 - Which findings require code changes, which are accepted limitations, and what
   evidence verifies each disposition?
 
-## Required reviewer response
-
-The completed record must add a dated external-review document under the
-repository’s reports directory containing:
-
-- reviewer identity and independence statement;
-- exact revision or candidate-diff hash reviewed;
-- explicit scope covering TIFF offset handling and every writer;
-- findings with severity, affected file/symbol, reproduction, and risk;
-- disposition for every finding and linked follow-up where applicable;
-- residual limitations and unanswered questions;
-- reviewer conclusion and approval or rejection; and
-- the commands and evidence artifacts inspected.
-
-Until that record exists and is accepted by the executable audit, R05 and GA
-readiness remain unproven.
-
 ## Machine-readable record contract
 
 The executable gate accepts only `reports/r05-external-review.json`. Its
